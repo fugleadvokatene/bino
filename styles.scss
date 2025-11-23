@@ -709,6 +709,10 @@ mark.hl {
     color: $slightdark;
     // increase hitbox
     padding: 0.25em;
+
+    @media (max-width: $mobilethreshold) {
+        display: none !important;
+    }
 }
 
 .editor-container {

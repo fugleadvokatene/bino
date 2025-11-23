@@ -12336,6 +12336,11 @@ mark.hl {
   color: rgb(126.75, 127.125, 141.875);
   padding: 0.25em;
 }
+@media (max-width: 1000px) {
+  .card-gripper {
+    display: none !important;
+  }
+}
 
 .editor-container {
   max-width: 99%;
