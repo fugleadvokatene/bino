@@ -12222,9 +12222,6 @@ mark.hl {
   align-content: center;
 }
 
-.matches {
-  min-width: 600px;
-}
 .matches .fragment {
   position: relative;
 }
