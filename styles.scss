@@ -710,9 +710,9 @@ mark.hl {
     // increase hitbox
     padding: 0.25em;
 
-    @media (max-width: $mobilethreshold) {
-        display: none !important;
-    }
+    //@media (max-width: $mobilethreshold) {
+    //    display: none !important;
+    //}
 }
 
 .editor-container {

@@ -1,4 +1,4 @@
-if (matchMedia("(width >= 1000px)").matches) {
+//if (matchMedia("(width >= 1000px)").matches) {
   document.addEventListener("DOMContentLoaded", function() {
     document.querySelectorAll(".dashboard-patient-list").forEach(function(list) {
       new Sortable(list, {
@@ -9,7 +9,7 @@ if (matchMedia("(width >= 1000px)").matches) {
         ghostClass: "drop-target",
         chosenClass: "chosen",
         dragClass: "dragging",
-        filter: "a,button",
+        filter: ".must-be-clickable",
         onUpdate: function(evt) {
           reordered(parseInt(evt.to.dataset.home));
         }
@@ -39,4 +39,4 @@ if (matchMedia("(width >= 1000px)").matches) {
       body: JSON.stringify(req)
     });
   }
-}
+//}
