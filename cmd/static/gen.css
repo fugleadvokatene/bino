@@ -11988,6 +11988,7 @@ h1, h2, h3, h4, h5, h6 {
   align-self: flex-start;
   display: flex;
   flex-direction: column;
+  flex-grow: initial;
 }
 @media (min-width: 1000px) {
   .dashboard-left-sidebar {

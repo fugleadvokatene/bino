@@ -335,11 +335,11 @@ templ DashboardJournalUpdate(data *CommonData, patient PatientView, unconditiona
                     {data.User.Language.DashboardGoToJournal}
                 </a>
             } else {
-                <p class="mb-0">{data.User.Language.GDriveNoJournalForPatient}</p>
+                <p class="mb-0 small">{data.User.Language.GDriveNoJournalForPatient}</p>
                 @SingleButtonForm(patient.URLSuffix("create-journal"), data.User.Language.GDriveCreateJournalForPatient, "POST", "btn-primary", "d-flex", "flex-column", "center", "mb-2")
             }
             if patient.JournalURL == "" || unconditionallyShowAttachForm  {
-                <p class="mb-0">{data.User.Language.GDriveSelectExistingJournalInstruction}</p>
+                <p class="mb-0 small">{data.User.Language.GDriveSelectExistingJournalInstruction}</p>
                 @Form(
                     patient.URLSuffix("attach-journal"),
                     "POST",
