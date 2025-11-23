@@ -707,6 +707,8 @@ mark.hl {
 .card-gripper {
     align-self: center;
     color: $slightdark;
+    // increase hitbox
+    padding: 0.25em;
 }
 
 .editor-container {

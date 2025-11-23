@@ -1264,7 +1264,7 @@ func DashboardPatientCard(data *CommonData, dashboardData *DashboardData, home *
 			return templ_7745c5c3_Err
 		}
 		if data.User.HasHomeOrAccess(home.Home.ID, AccessLevelCoordinator) {
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 98, "<i class=\"fa-solid fa-grip-vertical card-gripper\"></i> ")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 98, "<i class=\"fa-solid fa-grip-vertical card-gripper dark-on-hover\"></i> ")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
@@ -1458,9 +1458,9 @@ func DashboardMove(data *CommonData, homes []HomeView, home *HomeView, patient P
 			return templ_7745c5c3_Err
 		}
 		var templ_7745c5c3_Var75 templ.SafeURL
-		templ_7745c5c3_Var75, templ_7745c5c3_Err = templ.JoinURLErrs(patient.URLSuffix("move"))
+		templ_7745c5c3_Var75, templ_7745c5c3_Err = templ.JoinURLErrs(templ.URL(patient.URLSuffix("move")))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `cmd/dashboard.templ`, Line: 268, Col: 49}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `cmd/dashboard.templ`, Line: 268, Col: 60}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var75))
 		if templ_7745c5c3_Err != nil {

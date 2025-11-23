@@ -227,7 +227,7 @@ templ DashboardPatientCard(data *CommonData, dashboardData *DashboardData, home 
         <div class="card-header card-header-patient d-flex justify-content-between">
             <div>
                 if data.User.HasHomeOrAccess(home.Home.ID, AccessLevelCoordinator) {
-                    <i class="fa-solid fa-grip-vertical card-gripper"></i>
+                    <i class="fa-solid fa-grip-vertical card-gripper dark-on-hover"></i>
                 }
                 <a href={templ.URL(patient.URL())} class="filter-content">{patient.Name}</a>
             </div>
@@ -265,7 +265,7 @@ templ DashboardMove(data *CommonData, homes []HomeView, home *HomeView, patient 
         <th class="w-25">{data.User.Language.GenericMoveTo}</th>
         <td>
             <form
-                action={patient.URLSuffix("move")}
+                action={templ.URL(patient.URLSuffix("move"))}
                 method="POST"
                 class="form-control-sm form-control-plaintext d-flex justify-content-between"
             >
