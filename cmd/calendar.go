@@ -31,6 +31,8 @@ func (server *Server) calendarHandler(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	commonData := MustLoadCommonData(ctx)
 
+	commonData.Subtitle = commonData.User.Language.Calendar
+
 	initialtime := time.Now().Format(timeFormatFullCalendarNoTZ)
 	if altTime, err := server.getQueryValue(r, "t"); err == nil {
 		initialtime = altTime
@@ -125,7 +127,7 @@ func (gupirr GetUnavailablePeriodsInRangeRow) ToFullCalendarEvent(language *Lang
 		Start:   gupirr.FromDate.Time.Format(timeFormatFullCalendar),
 		End:     gupirr.ToDate.Time.Format(timeFormatFullCalendar),
 		Title:   language.HomeIsUnavailable(gupirr.Name, gupirr.Note.String),
-		URL:     HomeURL(gupirr.HomeID),
+		URL:     string(HomeURL(gupirr.HomeID)),
 		Display: "block",
 	}
 }

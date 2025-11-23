@@ -151,6 +151,7 @@ type Language struct {
 	GenericSearch       string
 	GenericSave         string
 	GenericUnauthorized string
+	GenericEdit         string
 
 	HomesArchiveHome               string
 	HomesAddToHome                 string
@@ -203,6 +204,8 @@ type Language struct {
 
 	NavbarCalendar  string
 	NavbarDashboard string
+
+	WikiHeader string
 
 	Status    map[Status]string
 	Event     map[Event]string
@@ -261,7 +264,7 @@ func (l *Language) HomeIsUnavailable(name string, note string) string {
 }
 
 func (l *Language) TODO(s string) string {
-	return fmt.Sprintf("TODO[%s]", s)
+	return s
 }
 
 var NO = &Language{
@@ -337,7 +340,7 @@ var NO = &Language{
 	AdminInvitationFailed:       "Kunne ikke invitere brukeren. Kontakt administrator.",
 	AdminInvitationOKNoEmail:    "Eposten ble lagt til i listen, men det er ikke sendt ut en epost. Send personen en lenke til forsiden og be dem om å opprette en bruker.",
 	AdminInviteCode:             "Kode",
-	AdminRoot:                   "Admin",
+	AdminRoot:                   "Verktøy",
 	AdminDebug:                  "Debug",
 
 	AuthLogOut: "Logg ut",
@@ -432,6 +435,7 @@ var NO = &Language{
 	GenericSearch:       "Søk",
 	GenericSave:         "Lagre",
 	GenericUnauthorized: "Du har ikke lov til å gjøre dette",
+	GenericEdit:         "Rediger",
 
 	HomesAddToHome:                 "Legg til",
 	HomesArchiveHome:               "Arkiver rehabhjem",
@@ -463,6 +467,8 @@ var NO = &Language{
 
 	NavbarCalendar:  "Kalender",
 	NavbarDashboard: "Hovedside",
+
+	WikiHeader: "Wiki",
 
 	PatientRegisteredTime: "Registrert",
 	PatientCheckedOutTime: "Sjekket ut",
@@ -619,7 +625,7 @@ var EN = &Language{
 	AdminInvitationFailed:       "Failed to invite user. Contact site administrator.",
 	AdminInvitationOKNoEmail:    "The user was added to the list of invited user. No email was sent; send them a link to the main page and ask them to log in.",
 	AdminInviteCode:             "Code",
-	AdminRoot:                   "Admin",
+	AdminRoot:                   "Tools",
 	AdminDebug:                  "Debug",
 
 	AuthLogOut: "Log out",
@@ -714,8 +720,9 @@ var EN = &Language{
 	GenericMessage:      "Message",
 	GenericURL:          "URL",
 	GenericSearch:       "Search",
-	GenericSave:         "Lagre",
+	GenericSave:         "Save",
 	GenericUnauthorized: "Unauthorized.",
+	GenericEdit:         "Edit",
 
 	HomesAddToHome:                 "Add",
 	HomesArchiveHome:               "Archive rehab home",
@@ -744,6 +751,8 @@ var EN = &Language{
 
 	NavbarCalendar:  "Calendar",
 	NavbarDashboard: "Dashboard",
+
+	WikiHeader: "Wiki",
 
 	PatientRegisteredTime: "Registrert",
 	PatientCheckedOutTime: "Checked out",

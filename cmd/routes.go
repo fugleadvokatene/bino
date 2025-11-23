@@ -53,6 +53,7 @@ func (server *Server) lastGoodURL(r *http.Request) string {
 func (server *Server) renderError(w http.ResponseWriter, r *http.Request, commonData *CommonData, err error) {
 	ctx := r.Context()
 	w.WriteHeader(http.StatusInternalServerError)
+	commonData.Subtitle = commonData.User.Language.GenericFailed
 	_ = ErrorPage(commonData, err, server.lastGoodURL(r)).Render(ctx, w)
 	logError(r, err)
 }

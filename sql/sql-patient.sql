@@ -119,3 +119,8 @@ UPDATE patient
 SET time_checkout = $2
 WHERE id = $1
 ;
+
+-- name: AssociateFileWithPatient :exec
+INSERT INTO file_patient (file_id, patient_id)
+VALUES (@file_id, @patient_id)
+;

@@ -70,7 +70,7 @@ func (w *GDriveWorker) searchIndexFolder(ctx context.Context, folderID string) e
 func (w *GDriveWorker) searchIndexFile(ctx context.Context, folder, file GDriveItem) error {
 	// Initialize to be used in the extraData field
 	journalInfo := SearchJournalInfo{
-		FolderURL:  folder.FolderURL(),
+		FolderURL:  string(folder.FolderURL()),
 		FolderName: folder.Name,
 	}
 

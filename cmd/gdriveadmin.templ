@@ -23,7 +23,7 @@ templ (server *Server) GDrivePermissionOverview(
 ) {
     @Card() {
         <p>{data.User.Language.GDriveBaseDir} <a href={info.JournalFolder.FolderURL()}>{info.JournalFolder.Name}</a></p>
-        <p>{data.User.Language.GDriveTemplateFile} <a href={info.TemplateDoc.Item.DocumentURL()}>{info.TemplateDoc.Item.Name}</a></p>
+        <p>{data.User.Language.GDriveTemplateFile} <a href={templ.URL(info.TemplateDoc.Item.DocumentURL())}>{info.TemplateDoc.Item.Name}</a></p>
         if len(info.ExtraFolders) > 0 {
             <p>{data.User.Language.GDriveExtraDirs}</p>
             <ul>

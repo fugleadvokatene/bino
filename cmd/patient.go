@@ -29,6 +29,8 @@ func (server *Server) getPatientHandler(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
+	commonData.Subtitle = patientData.Name
+
 	var home *HomeView
 	if patientData.CurrHomeID.Valid {
 		homeResult, err := server.Queries.GetHome(ctx, patientData.CurrHomeID.Int32)

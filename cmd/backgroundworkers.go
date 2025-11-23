@@ -33,6 +33,13 @@ func backgroundDeleteExpiredItems(
 			log.Printf("deleted old staged files (%d)", n)
 		}
 
+		log.Printf("running background job: remove false wiki file associations")
+		if tag, err := queries.RemoveFalseFileWikiLinks(ctx); err != nil {
+			log.Printf("error removing false wiki file associations: %v", err)
+		} else {
+			log.Printf("removed false wiki file associations (%d)", tag.RowsAffected())
+		}
+
 		time.Sleep(time.Hour)
 	}
 }

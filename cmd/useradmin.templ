@@ -123,7 +123,7 @@ templ UserAdmin(data *CommonData, homes []HomeView, users []UserView, invitation
 
 templ UserConfirmScrubOrNuke(data *CommonData, user UserView, header, confirmMsg, dest, referer string) {
     @Layout(data) {
-        <a href={referer}>{data.User.Language.GenericGoBack}</a>
+        <a href={templ.URL(referer)}>{data.User.Language.GenericGoBack}</a>
         <h1>{header}</h1>
         @Card() {
             <p>{confirmMsg} ({user.Email})</p>

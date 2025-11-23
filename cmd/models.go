@@ -28,14 +28,25 @@ type AppuserLanguage struct {
 }
 
 type File struct {
-	ID            int32
-	Uuid          string
-	Creator       int32
-	Created       pgtype.Timestamptz
-	Accessibility int32
-	Filename      string
-	Mimetype      string
-	Size          int64
+	ID                   int32
+	Uuid                 string
+	Creator              int32
+	Created              pgtype.Timestamptz
+	Accessibility        int32
+	Filename             string
+	Mimetype             string
+	Size                 int64
+	PresentationFilename string
+}
+
+type FilePatient struct {
+	FileID    int32
+	PatientID int32
+}
+
+type FileWiki struct {
+	FileID int32
+	WikiID int32
 }
 
 // Each row is a rehab home
@@ -134,4 +145,20 @@ type SpeciesLanguage struct {
 	LanguageID int32
 	// The name of the species in the given language
 	Name string
+}
+
+type WikiPage struct {
+	ID        int32
+	SortOrder pgtype.Int4
+	Title     string
+	Created   pgtype.Timestamptz
+	Creator   int32
+}
+
+type WikiRevision struct {
+	ID      int32
+	PageID  int32
+	Content []byte
+	Edited  pgtype.Timestamptz
+	Editor  int32
 }

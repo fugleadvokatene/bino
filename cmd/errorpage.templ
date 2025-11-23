@@ -4,7 +4,7 @@ import "runtime/debug"
 
 templ ErrorPage(data *CommonData, err error, referer string) {
 	@Layout(data) {
-        <a href={referer}>{data.User.Language.GenericGoBack}</a>
+        <a href={templ.URL(referer)}>{data.User.Language.GenericGoBack}</a>
         <h1>{data.User.Language.ErrorPageHead}</h1>
         <div class="card b-card">
             <p>{data.User.Language.ErrorPageInstructions}</p>

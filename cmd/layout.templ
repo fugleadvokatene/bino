@@ -14,6 +14,15 @@ templ FullLayout(data *CommonData) {
     </html>
 }
 
+templ Head(data *CommonData) {
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="autocomplete" content="off">
+    <title>🕊️ bino – {data.Subtitle}</title>
+    <link href={data.StaticFile("gen.css")} rel="stylesheet">
+    <script src="https://kit.fontawesome.com/9e1149297d.js" crossorigin="anonymous"></script>
+}
+
 templ Body(data *CommonData) {
     @Navbar(data)
     if len(data.Feedback.Items) > 0 {
@@ -58,14 +67,6 @@ templ Card(classes ...string) {
     </div>
 }
 
-templ Head(data *CommonData) {
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="autocomplete" content="off">
-    <title>🕊️ bino</title>
-    <link href={data.StaticFile("gen.css")} rel="stylesheet">
-}
-
 templ Navbar(data *CommonData) {
     <nav class="b-navbar navbar navbar-expand-lg shadow-lg">
         <div class="container">
@@ -80,6 +81,7 @@ templ Navbar(data *CommonData) {
             <div class="collapse navbar-collapse" id="navbarSupportedContent">
                 @NavbarPageLink(data.User.Language.NavbarDashboard, "/")
                 @NavbarPageLink(data.User.Language.Calendar, "/calendar")
+                @NavbarPageLink(data.User.Language.WikiHeader, "/wiki")
                 if false {
                     // Not ready
                     @NavbarPageLink(data.User.Language.FormerPatients, "/former-patients")
@@ -96,7 +98,7 @@ templ Navbar(data *CommonData) {
 
 templ NavbarPageLink(text, loc string) {
     <div class="b-navbar-item b-navbar-item-text">
-        <a href={loc}>{text}</a>
+        <a href={templ.URL(loc)}>{text}</a>
     </div>
 }
 
@@ -126,7 +128,9 @@ templ FullTextSearch(data *CommonData) {
                     autocapitalize="off"
                 >
                 <div class="input-group-append">
-                    <button class="btn btn-success" type="submit" >🔍</button>
+                    <button class="btn btn-success" type="submit" >
+                        <i class="fa-solid fa-magnifying-glass"></i>
+                    </button>
                 </div>
             </div>
         </form>

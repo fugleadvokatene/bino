@@ -3,7 +3,7 @@ function setupCreateButton(listener) {
         const formFields = event.target.parentElement.parentElement.getElementsByClassName("form-control");
         const { url, req } = listener(formFields);
         fetch(url, {
-            method: "POSt",
+            method: "POST",
             headers: {
                 "Content-Type": "application/json"
             },

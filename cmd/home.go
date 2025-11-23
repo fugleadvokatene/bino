@@ -23,6 +23,8 @@ func (server *Server) getHomeHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	commonData.Subtitle = homeData.Name
+
 	users, err := server.Queries.GetAppusersForHome(ctx, id)
 	if err != nil {
 		server.renderError(w, r, commonData, err)

@@ -36,7 +36,7 @@ templ PatientPage(ctx context.Context, data *CommonData, view PatientPageView, s
             <table class="patient-table table table-bordered mb-2">
                 <tbody>
                     if data.User.HasGDriveAccess {
-                        @DashboardJournalUpdate(data, view.Patient, true)
+                        @PatientJournalUpdate(data, view.Patient, true)
                     }
 
                     if !IsCheckoutStatus[Status(view.Patient.Status)] {
@@ -86,7 +86,7 @@ templ PatientCheckout(data *CommonData, patient PatientView) {
                 "POST",
                 "form-control-sm", "form-control-plaintext",
             ) {
-                <div class="break-on-mobile justify-content-between form-control-sm form-control-plaintext input-group-sm">
+                <div class="justify-content-between form-control-sm form-control-plaintext input-group-sm">
                     <div class="form-group">
                         <label for={patient.CheckoutStatusID("#")} class="input-group-text">{data.User.Language.GenericStatus}</label>
                         <select autocomplete="off" class="form-control form-select form-select-sm" id={patient.CheckoutStatusID("")} name="status">
@@ -102,8 +102,38 @@ templ PatientCheckout(data *CommonData, patient PatientView) {
                         <label for={patient.CheckoutNoteID("#")} class="input-group-text">{data.User.Language.GenericNote}</label>
                         <input autocomplete="off" type="text" class="form-control" id={patient.CheckoutNoteID("")} name="note"></input>
                     </div>
-                    <button type="submit" class="btn btn-primary btn-sm w-100">{data.User.Language.DashboardCheckOut}</button>
+                    @Button("submit", "fa-dove", data.User.Language.DashboardCheckOut, "w-100")
                 </div>
+            }
+        </td>
+    </tr>
+}
+
+templ PatientJournalUpdate(data *CommonData, patient PatientView, unconditionallyShowAttachForm bool) {
+    <tr>
+        <th class="w-25">{data.User.Language.GenericJournal}</th>
+        <td>
+            if patient.JournalURL != "" {
+                <a href={templ.URL(patient.JournalURL)}>
+                    {data.User.Language.DashboardGoToJournal}
+                </a>
+            } else {
+                <p class="mb-0 small">{data.User.Language.GDriveNoJournalForPatient}</p>
+                @SingleButtonForm(patient.URLSuffix("create-journal"), data.User.Language.GDriveCreateJournalForPatient, "POST", "btn-primary", "d-flex", "flex-column", "center", "mb-2")
+            }
+            if patient.JournalURL == "" || unconditionallyShowAttachForm  {
+                <p class="mb-0 small">{data.User.Language.GDriveSelectExistingJournalInstruction}</p>
+                @Form(
+                    patient.URLSuffix("attach-journal"),
+                    "POST",
+                    "form-control-sm", "form-control-plaintext",
+                ) {
+                    <form-group class="d-flex justify-content-between form-control-sm form-control-plaintext">
+                        <label for={patient.AttachJournalID("#")} class="input-group-text short-label">{data.User.Language.GenericURL}</label>
+                        <input autocomplete="off" type="text" class="form-control" id={patient.AttachJournalID("")} name="url"></input>
+                        @Button("submit", "fa-link", data.User.Language.GenericUpdate)
+                    </form-group>
+                }
             }
         </td>
     </tr>

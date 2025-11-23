@@ -9,6 +9,7 @@ import (
 	"slices"
 	"time"
 
+	"github.com/a-h/templ"
 	"google.golang.org/api/docs/v1"
 	"google.golang.org/api/drive/v3"
 	"google.golang.org/api/option"
@@ -69,8 +70,8 @@ func GDriveFolderURL(id string) string {
 	return "https://drive.google.com/drive/folders/" + id
 }
 
-func (item *GDriveItem) FolderURL() string {
-	return GDriveFolderURL(item.ID)
+func (item *GDriveItem) FolderURL() templ.SafeURL {
+	return templ.URL(GDriveFolderURL(item.ID))
 }
 
 func (item *GDriveItem) DocumentURL() string {

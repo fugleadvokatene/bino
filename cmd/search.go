@@ -237,6 +237,8 @@ func (server *Server) searchHandler(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	commonData := MustLoadCommonData(ctx)
 
+	commonData.Subtitle = commonData.User.Language.GenericSearch
+
 	result, err := server.doSearch(r)
 	if err != nil {
 		server.emptySearch(w, r, result, err.Error(), true)

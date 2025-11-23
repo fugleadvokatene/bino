@@ -3,6 +3,8 @@ package main
 import (
 	"context"
 	"fmt"
+
+	"github.com/a-h/templ"
 )
 
 type ctxKey int32
@@ -34,6 +36,7 @@ func MustLoadCommonData(ctx context.Context) *CommonData {
 type CommonData struct {
 	BuildKey string
 	User     UserData
+	Subtitle string
 	// Cached result of queries that might be called more than once
 	QueryCache struct {
 		self             UserView
@@ -99,8 +102,8 @@ func (server *Server) lookupUserByEmail(ctx context.Context, email string) UserV
 	return server.getUserViews(ctx)[email]
 }
 
-func (cd *CommonData) StaticFile(name string) string {
-	return fmt.Sprintf("/static/%s/%s", cd.BuildKey, name)
+func (cd *CommonData) StaticFile(name string) templ.SafeURL {
+	return templ.URL(fmt.Sprintf("/static/%s/%s", cd.BuildKey, name))
 }
 
 func (cd *CommonData) Lang() LanguageID {

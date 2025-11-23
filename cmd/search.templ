@@ -66,7 +66,7 @@ templ SearchMatches(data *CommonData, result SearchResult, fallbackMsg string) {
                 <div class="card">
                     <div class="card-header match-header">
                         <div class="match-name">
-                            <a href={match.URL}>
+                            <a href={templ.URL(match.URL)}>
                                 @Runs(match.HeaderRuns, false)
                             </a>
                         </div>
@@ -132,13 +132,13 @@ templ (mv *MatchView) ExtraInfo() {
         case MatchTypePatient:
             if info := parseJSON[SearchPatientInfo](mv.ExtraData); info != nil {
                 <span class="micro">
-                    <a href={info.JournalURL}>Gå til journal</a> i <a href={info.JournalInfo.FolderURL}>{info.JournalInfo.FolderName}</a>
+                    <a href={templ.URL(info.JournalURL)}>Gå til journal</a> i <a href={templ.URL(info.JournalInfo.FolderURL)}>{info.JournalInfo.FolderName}</a>
                 </span>
             }
         case MatchTypeJournal:
             if info := parseJSON[SearchJournalInfo](mv.ExtraData); info != nil {
                 <span class="micro">
-                    <a href={info.FolderURL}>{info.FolderName}</a>
+                    <a href={templ.URL(info.FolderURL)}>{info.FolderName}</a>
                 </span>
             }
     }

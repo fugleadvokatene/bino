@@ -289,9 +289,9 @@ func UnauthorizedPage(data *CommonData, err error, referer string) templ.Compone
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var17 templ.SafeURL
-			templ_7745c5c3_Var17, templ_7745c5c3_Err = templ.JoinURLErrs(referer)
+			templ_7745c5c3_Var17, templ_7745c5c3_Err = templ.JoinURLErrs(templ.URL(referer))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `cmd/accesslevel.templ`, Line: 39, Col: 24}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `cmd/accesslevel.templ`, Line: 39, Col: 35}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var17))
 			if templ_7745c5c3_Err != nil {
@@ -304,7 +304,7 @@ func UnauthorizedPage(data *CommonData, err error, referer string) templ.Compone
 			var templ_7745c5c3_Var18 string
 			templ_7745c5c3_Var18, templ_7745c5c3_Err = templ.JoinStringErrs(data.User.Language.GenericGoBack)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `cmd/accesslevel.templ`, Line: 39, Col: 59}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `cmd/accesslevel.templ`, Line: 39, Col: 70}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var18))
 			if templ_7745c5c3_Err != nil {

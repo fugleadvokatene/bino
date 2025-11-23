@@ -48,6 +48,8 @@ func (server *Server) dashboardHandler(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	commonData := MustLoadCommonData(ctx)
 
+	commonData.Subtitle = commonData.User.Language.NavbarDashboard
+
 	preferredSpecies, otherSpecies, err := server.getSpeciesForUser(ctx, commonData.User.PreferredHome.ID)
 	if err != nil {
 		server.renderError(w, r, commonData, err)

@@ -3,19 +3,17 @@ package main
 templ AdminRootPage(data *CommonData) {
 	@Layout(data) {
         <h1>{data.User.Language.AdminRoot}</h1>
-        <div class="card b-card">
-            // TODO: make these check for capabilities instead
-            <li class="card mb-1 p-1"><a href="/file">{data.User.Language.FilesUploadHeader}</a></li>
-            if data.User.AccessLevel >= AccessLevelCoordinator {
-                <li class="card mb-1 p-1"><a href="/species">{data.User.Language.AdminManageSpecies}</a></li>
-                <li class="card mb-1 p-1"><a href="/import">{data.User.Language.ImportHeader}</a></li>
-            }
-            if data.User.AccessLevel >= AccessLevelAdmin {
-                <li class="card mb-1 p-1"><a href="/homes">{data.User.Language.AdminManageHomes}</a></li>
-                <li class="card mb-1 p-1"><a href="/users">{data.User.Language.AdminManageUsers}</a></li>
-                <li class="card mb-1 p-1"><a href="/gdrive">{data.User.Language.AdminManageGoogleDrive}</a></li>
-                <li class="card mb-1 p-1"><a href="/debug">{data.User.Language.AdminDebug}</a></li>
-            }
-        </div>
+        // TODO: make these check for capabilities instead
+        <li class="card mb-1"><div class="card-header"><a href="/file">{data.User.Language.FilesUploadHeader}</a></div></li>
+        if data.User.AccessLevel >= AccessLevelCoordinator {
+            <li class="card mb-1"><div class="card-header"><a href="/species">{data.User.Language.AdminManageSpecies}</a></div></li>
+            <li class="card mb-1"><div class="card-header"><a href="/import">{data.User.Language.ImportHeader}</a></div></li>
+        }
+        if data.User.AccessLevel >= AccessLevelAdmin {
+            <li class="card mb-1"><div class="card-header"><a href="/homes">{data.User.Language.AdminManageHomes}</a></div></li>
+            <li class="card mb-1"><div class="card-header"><a href="/users">{data.User.Language.AdminManageUsers}</a></div></li>
+            <li class="card mb-1"><div class="card-header"><a href="/gdrive">{data.User.Language.AdminManageGoogleDrive}</a></div></li>
+            <li class="card mb-1"><div class="card-header"><a href="/debug">{data.User.Language.AdminDebug}</a></div></li>
+        }
     }
 }

@@ -8,6 +8,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/a-h/templ"
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
@@ -30,11 +31,11 @@ type HomeView struct {
 // ENUM(AvailableIndefinitely, AvailableUntil, UnavailableUntil, UnavailableIndefinitely)
 type Availability int
 
-func HomeURL(id int32) string {
-	return fmt.Sprintf("/home/%d", id)
+func HomeURL(id int32) templ.SafeURL {
+	return templ.URL(fmt.Sprintf("/home/%d", id))
 }
 
-func (hv HomeView) URL() string {
+func (hv HomeView) URL() templ.SafeURL {
 	return HomeURL(hv.Home.ID)
 }
 
@@ -574,32 +575,36 @@ func HighlightFallback(text, query string) []HighlightRun {
 // ---- File
 
 type FileView struct {
-	ID               int32
-	UUID             string
-	Creator          int32
-	Accessibility    FileAccessibility
-	Created          time.Time
-	OriginalFileName string
-	MIMEType         string
-	Size             int64
+	ID                   int32
+	UUID                 string
+	Creator              int32
+	Accessibility        FileAccessibility
+	Created              time.Time
+	OriginalFilename     string
+	PresentationFilename string
+	MIMEType             string
+	Size                 int64
+	WikiLinks            []WikiLinkView
+	PatientLinks         []PatientView
 }
 
 func (in *File) ToFileView() FileView {
 	return FileView{
-		ID:               in.ID,
-		Creator:          in.Creator,
-		Accessibility:    FileAccessibility(in.Accessibility),
-		Created:          in.Created.Time,
-		UUID:             in.Uuid,
-		OriginalFileName: in.Filename,
-		MIMEType:         in.Mimetype,
-		Size:             in.Size,
+		ID:                   in.ID,
+		Creator:              in.Creator,
+		Accessibility:        FileAccessibility(in.Accessibility),
+		Created:              in.Created.Time,
+		UUID:                 in.Uuid,
+		OriginalFilename:     in.Filename,
+		PresentationFilename: in.PresentationFilename,
+		MIMEType:             in.Mimetype,
+		Size:                 in.Size,
 	}
 }
 
 func (in *FileView) FileInfo() FileInfo {
 	return FileInfo{
-		FileName: in.OriginalFileName,
+		FileName: in.OriginalFilename,
 		MIMEType: in.MIMEType,
 		Size:     in.Size,
 		Created:  in.Created,
@@ -624,11 +629,19 @@ func (in *FileView) IsPDF() bool {
 }
 
 func (in *FileView) Extension() string {
-	return filepath.Ext(in.OriginalFileName)
+	return filepath.Ext(in.PresentationFilename)
+}
+
+func FileURL(id int32, filename string) string {
+	return fmt.Sprintf("/file/%d/%s", id, filename)
 }
 
 func (in *FileView) URL() string {
-	return fmt.Sprintf("/file/%d/%s", in.ID, in.OriginalFileName)
+	return FileURL(in.ID, in.PresentationFilename)
+}
+
+func (in *FileView) EditPresentationFilenameURL() string {
+	return fmt.Sprintf("/file/%d/set-filename", in.ID)
 }
 
 func (in *FileView) FileSizeText() string {
@@ -644,4 +657,50 @@ func (in *FileView) FileSizeText() string {
 	}
 	s /= 1000
 	return fmt.Sprintf("%d GB", s)
+}
+
+// ---- Wiki link
+
+type WikiLinkView struct {
+	ID    int32
+	Title string
+}
+
+func (wlw WikiLinkView) URL() templ.SafeURL {
+	return templ.URL(fmt.Sprintf("/wiki/view/%d", wlw.ID))
+}
+
+func (in *WikiPage) ToWikiLinkView() WikiLinkView {
+	return WikiLinkView{
+		ID:    in.ID,
+		Title: in.Title,
+	}
+}
+
+// ---- Wiki page
+
+type WikiPageView struct {
+	ID      int32
+	Title   string
+	Content string
+}
+
+func (wpw *WikiPageView) EditTitleURL() string {
+	return fmt.Sprintf("/wiki/title/%d", wpw.ID)
+}
+
+func (in *GetWikiMainPageRow) ToWikiPageView() WikiPageView {
+	return WikiPageView{
+		ID:      in.ID,
+		Title:   in.Title,
+		Content: string(in.Content),
+	}
+}
+
+func (in *GetLastWikiRevisionRow) ToWikiPageView() WikiPageView {
+	return WikiPageView{
+		ID:      in.ID,
+		Title:   in.Title,
+		Content: string(in.Content),
+	}
 }

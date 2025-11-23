@@ -14,6 +14,7 @@ type PrivacyConfig struct {
 func (server *Server) privacyHandler(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	commonData := MustLoadCommonData(ctx)
+	commonData.Subtitle = commonData.User.Language.FooterPrivacy
 	_ = Privacy(commonData, server.Config.Privacy).Render(ctx, w)
 }
 

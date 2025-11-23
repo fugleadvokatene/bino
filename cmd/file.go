@@ -71,11 +71,40 @@ func (server *Server) fileHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func (server *Server) fileSetFilename(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	data := MustLoadCommonData(ctx)
+
+	id, err := server.getPathID(r, "id")
+	if err != nil {
+		server.renderError(w, r, data, err)
+		return
+	}
+
+	value, err := server.getFormValue(r, "value")
+	if err != nil {
+		server.renderError(w, r, data, err)
+		return
+	}
+
+	if err := server.Queries.UpdatePresentationFilename(ctx, UpdatePresentationFilenameParams{
+		Filename: value,
+		ID:       id,
+	}); err != nil {
+		server.renderError(w, r, data, err)
+		return
+	}
+
+	server.redirectToReferer(w, r)
+}
+
 func (server *Server) filePage(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	data := MustLoadCommonData(ctx)
 
-	files, err := server.Queries.GetFilesForUser(ctx, GetFilesForUserParams{
+	data.Subtitle = data.User.Language.FilesUploadHeader
+
+	files, err := server.Queries.GetFilesAccessibleByUser(ctx, GetFilesAccessibleByUserParams{
 		Creator:       data.User.AppuserID,
 		Accessibility: int32(FileAccessibilityPersonal),
 	})
@@ -83,8 +112,46 @@ func (server *Server) filePage(w http.ResponseWriter, r *http.Request) {
 		data.Error(data.User.Language.TODO("Failed to load files"), err)
 		files = nil
 	}
+	fileViews := SliceToSlice(files, func(in File) FileView {
+		fv := in.ToFileView()
+		return fv
+	})
+	fileViewLookupByID := map[int32]*FileView{}
+	for i := range fileViews {
+		fileViewLookupByID[fileViews[i].ID] = &fileViews[i]
+	}
 
-	_ = FileUploadPage(data, SliceToSlice(files, func(in File) FileView { return in.ToFileView() })).Render(ctx, w)
+	fileWikiAssociations, err := server.Queries.GetFileWikiAssociationsAccessibleByUser(ctx, GetFileWikiAssociationsAccessibleByUserParams{
+		Creator:       data.User.AppuserID,
+		Accessibility: int32(FileAccessibilityPersonal),
+	})
+	if err != nil {
+		data.Error(data.User.Language.TODO("Failed to get file wiki associations"), err)
+		fileWikiAssociations = nil
+	}
+	for _, fwa := range fileWikiAssociations {
+		fileViewLookupByID[fwa.FileID].WikiLinks = append(fileViewLookupByID[fwa.FileID].WikiLinks, WikiLinkView{
+			ID:    fwa.WikiID,
+			Title: fwa.Title,
+		})
+	}
+
+	filePatientAssociations, err := server.Queries.GetFilePatientAssociationsAccessibleByUser(ctx, GetFilePatientAssociationsAccessibleByUserParams{
+		Creator:       data.User.AppuserID,
+		Accessibility: int32(FileAccessibilityPersonal),
+	})
+	if err != nil {
+		data.Error(data.User.Language.TODO("Failed to get file patient associations"), err)
+		filePatientAssociations = nil
+	}
+	for _, fpa := range filePatientAssociations {
+		fileViewLookupByID[fpa.FileID].PatientLinks = append(fileViewLookupByID[fpa.FileID].PatientLinks, PatientView{
+			ID:   fpa.PatientID,
+			Name: fpa.Name,
+		})
+	}
+
+	_ = FileUploadPage(data, fileViews).Render(ctx, w)
 }
 
 func (server *Server) filepondSubmit(w http.ResponseWriter, r *http.Request) {

@@ -199,7 +199,8 @@ func startServer(
 	mux.Handle("GET /search", loggedInHandler(server.searchHandler, CapSearch))
 	mux.Handle("GET /search/live", loggedInHandler(server.searchLiveHandler, CapSearch))
 	mux.Handle("GET /file", loggedInHandler(server.filePage, CapUploadFile))
-	mux.Handle("GET /editor", loggedInHandler(server.editor, CapEditWiki))
+	mux.Handle("GET /wiki", loggedInHandler(server.wikiMain, CapEditWiki))
+	mux.Handle("GET /wiki/view/{id}", loggedInHandler(server.wikiPage, CapEditWiki))
 	// Forms
 	mux.Handle("POST /checkin", loggedInHandler(server.postCheckinHandler, CapCheckInPatient))
 	mux.Handle("POST /privacy", loggedInHandler(server.postPrivacyHandler, CapSetOwnPreferences))
@@ -217,6 +218,9 @@ func startServer(
 	mux.Handle("POST /home/{home}/species/reorder", loggedInHandler(server.reorderSpeciesHandler, CapManageOwnHomes))
 	mux.Handle("POST /period/{period}/delete", loggedInHandler(server.deleteHomeUnavailableHandler, CapManageOwnHomes))
 	mux.Handle("POST /import", loggedInHandler(server.postImportHandler, CapUseImportTool))
+	mux.Handle("POST /wiki/create", loggedInHandler(server.wikiCreate, CapEditWiki))
+	mux.Handle("POST /wiki/title/{id}", loggedInHandler(server.wikiSetTitle, CapEditWiki))
+	mux.Handle("POST /file/{id}/set-filename", loggedInHandler(server.fileSetFilename, CapEditWiki))
 	// Ajax
 	mux.Handle("POST /language", loggedInHandler(server.postLanguageHandler, CapSetOwnPreferences))
 	mux.Handle("POST /ajaxreorder", loggedInHandler(server.ajaxReorderHandler, CapManageOwnPatients))
@@ -224,6 +228,9 @@ func startServer(
 	mux.Handle("GET /calendar/away", loggedInHandler(server.ajaxCalendarAwayHandler, CapViewCalendar))
 	mux.Handle("GET /calendar/patientevents", loggedInHandler(server.ajaxCalendarPatientEventsHandler, CapViewCalendar))
 	mux.Handle("GET /import/validation", loggedInHandler(server.ajaxImportValidateHandler, CapViewCalendar))
+	mux.Handle("POST /wiki/save/{id}", loggedInHandler(server.wikiSave, CapEditWiki))
+	mux.Handle("POST /wiki/fetchimage/{id}", loggedInHandler(server.wikiFetchImage, CapEditWiki))
+	mux.Handle("POST /wiki/uploadimage/{id}", loggedInHandler(server.wikiUploadImage, CapEditWiki))
 	// Filepond
 	mux.Handle("POST /file/filepond", loggedInHandler(server.filepondProcess, CapUploadFile))
 	mux.Handle("DELETE /file/filepond", loggedInHandler(server.imageFilepondRevert, CapUploadFile))

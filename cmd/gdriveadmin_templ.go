@@ -175,9 +175,9 @@ func (server *Server) GDrivePermissionOverview(
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var10 templ.SafeURL
-			templ_7745c5c3_Var10, templ_7745c5c3_Err = templ.JoinURLErrs(info.TemplateDoc.Item.DocumentURL())
+			templ_7745c5c3_Var10, templ_7745c5c3_Err = templ.JoinURLErrs(templ.URL(info.TemplateDoc.Item.DocumentURL()))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `cmd/gdriveadmin.templ`, Line: 26, Col: 95}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `cmd/gdriveadmin.templ`, Line: 26, Col: 106}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var10))
 			if templ_7745c5c3_Err != nil {
@@ -190,7 +190,7 @@ func (server *Server) GDrivePermissionOverview(
 			var templ_7745c5c3_Var11 string
 			templ_7745c5c3_Var11, templ_7745c5c3_Err = templ.JoinStringErrs(info.TemplateDoc.Item.Name)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `cmd/gdriveadmin.templ`, Line: 26, Col: 124}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `cmd/gdriveadmin.templ`, Line: 26, Col: 135}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var11))
 			if templ_7745c5c3_Err != nil {

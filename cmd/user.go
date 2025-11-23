@@ -19,6 +19,7 @@ func (server *Server) getUserHandler(w http.ResponseWriter, r *http.Request) {
 		server.renderError(w, r, commonData, err)
 		return
 	}
+	commonData.Subtitle = user.DisplayName
 
 	homes, err := server.Queries.GetHomesWithDataForUser(ctx, user.ID)
 	if err != nil {

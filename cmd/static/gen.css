@@ -12341,13 +12341,16 @@ mark.hl {
 }
 
 .editor-container {
-  max-width: 99%;
-  margin: auto;
-  height: 100%;
+  max-width: 800px;
+  width: 99%;
   color: rgb(60, 60, 80);
-  height: calc(100% - 1em);
   border: 1px solid rgb(126.75, 127.125, 141.875);
   background: rgb(238, 239, 245);
+}
+@media (min-width: 1000px) {
+  .editor-container {
+    height: calc(100% - 1em);
+  }
 }
 
 .form-switch > input[type=checkbox] {
@@ -12356,6 +12359,22 @@ mark.hl {
 
 .cdx-notifies {
   color: rgb(60, 60, 80);
+}
+
+.ce-block__content, .ce-toolbar__content {
+  max-width: calc(100% - 100px) !important;
+}
+
+.cdx-block {
+  max-width: 100% !important;
+}
+
+.codex-editor__loader {
+  height: 38px !important;
+}
+
+.codex-editor__redactor {
+  padding-bottom: 38px !important;
 }
 
 /*# sourceMappingURL=gen.css.map */

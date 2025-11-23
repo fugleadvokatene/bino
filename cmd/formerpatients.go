@@ -12,6 +12,8 @@ func (server *Server) formerPatientsHandler(w http.ResponseWriter, r *http.Reque
 		return
 	}
 
+	commonData.Subtitle = commonData.User.Language.FormerPatients
+
 	FormerPatients(commonData, SliceToSlice(patients, func(in GetFormerPatientsRow) PatientView {
 		return in.ToPatientView()
 	})).Render(ctx, w)

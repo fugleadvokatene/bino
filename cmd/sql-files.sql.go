@@ -8,6 +8,7 @@ package main
 import (
 	"context"
 
+	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
@@ -22,8 +23,32 @@ func (q *Queries) DeregisterFile(ctx context.Context, id int32) error {
 	return err
 }
 
+const getAllFileWikiAssociations = `-- name: GetAllFileWikiAssociations :many
+SELECT file_id, wiki_id from file_wiki
+`
+
+func (q *Queries) GetAllFileWikiAssociations(ctx context.Context) ([]FileWiki, error) {
+	rows, err := q.db.Query(ctx, getAllFileWikiAssociations)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []FileWiki
+	for rows.Next() {
+		var i FileWiki
+		if err := rows.Scan(&i.FileID, &i.WikiID); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getFileByID = `-- name: GetFileByID :one
-SELECT id, uuid, creator, created, accessibility, filename, mimetype, size
+SELECT id, uuid, creator, created, accessibility, filename, mimetype, size, presentation_filename
 FROM file
 WHERE id = $1
 `
@@ -40,26 +65,115 @@ func (q *Queries) GetFileByID(ctx context.Context, id int32) (File, error) {
 		&i.Filename,
 		&i.Mimetype,
 		&i.Size,
+		&i.PresentationFilename,
 	)
 	return i, err
 }
 
-const getFilesForUser = `-- name: GetFilesForUser :many
-SELECT id, uuid, creator, created, accessibility, filename, mimetype, size
+const getFilePatientAssociationsAccessibleByUser = `-- name: GetFilePatientAssociationsAccessibleByUser :many
+SELECT fp.file_id, fp.patient_id, p.name
 FROM file
+INNER JOIN file_patient AS fp
+  ON file.id = fp.file_id
+INNER JOIN patient AS p
+  ON p.id = fp.patient_id
 WHERE
-      creator = $1
-  AND accessibility >= $2
-ORDER BY created DESC
+      file.creator = $1
+  OR accessibility >= $2
+ORDER BY file.created DESC
 `
 
-type GetFilesForUserParams struct {
+type GetFilePatientAssociationsAccessibleByUserParams struct {
 	Creator       int32
 	Accessibility int32
 }
 
-func (q *Queries) GetFilesForUser(ctx context.Context, arg GetFilesForUserParams) ([]File, error) {
-	rows, err := q.db.Query(ctx, getFilesForUser, arg.Creator, arg.Accessibility)
+type GetFilePatientAssociationsAccessibleByUserRow struct {
+	FileID    int32
+	PatientID int32
+	Name      string
+}
+
+func (q *Queries) GetFilePatientAssociationsAccessibleByUser(ctx context.Context, arg GetFilePatientAssociationsAccessibleByUserParams) ([]GetFilePatientAssociationsAccessibleByUserRow, error) {
+	rows, err := q.db.Query(ctx, getFilePatientAssociationsAccessibleByUser, arg.Creator, arg.Accessibility)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetFilePatientAssociationsAccessibleByUserRow
+	for rows.Next() {
+		var i GetFilePatientAssociationsAccessibleByUserRow
+		if err := rows.Scan(&i.FileID, &i.PatientID, &i.Name); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getFileWikiAssociationsAccessibleByUser = `-- name: GetFileWikiAssociationsAccessibleByUser :many
+SELECT fw.file_id, fw.wiki_id, wp.title
+FROM file
+INNER JOIN file_wiki AS fw
+  ON file.id = fw.file_id
+INNER JOIN wiki_page AS wp
+  ON wp.id = fw.wiki_id
+WHERE
+      file.creator = $1
+  OR accessibility >= $2
+ORDER BY file.created DESC
+`
+
+type GetFileWikiAssociationsAccessibleByUserParams struct {
+	Creator       int32
+	Accessibility int32
+}
+
+type GetFileWikiAssociationsAccessibleByUserRow struct {
+	FileID int32
+	WikiID int32
+	Title  string
+}
+
+func (q *Queries) GetFileWikiAssociationsAccessibleByUser(ctx context.Context, arg GetFileWikiAssociationsAccessibleByUserParams) ([]GetFileWikiAssociationsAccessibleByUserRow, error) {
+	rows, err := q.db.Query(ctx, getFileWikiAssociationsAccessibleByUser, arg.Creator, arg.Accessibility)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetFileWikiAssociationsAccessibleByUserRow
+	for rows.Next() {
+		var i GetFileWikiAssociationsAccessibleByUserRow
+		if err := rows.Scan(&i.FileID, &i.WikiID, &i.Title); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getFilesAccessibleByUser = `-- name: GetFilesAccessibleByUser :many
+SELECT id, uuid, creator, created, accessibility, filename, mimetype, size, presentation_filename
+FROM file
+WHERE
+      creator = $1
+  OR accessibility >= $2
+ORDER BY created DESC
+`
+
+type GetFilesAccessibleByUserParams struct {
+	Creator       int32
+	Accessibility int32
+}
+
+func (q *Queries) GetFilesAccessibleByUser(ctx context.Context, arg GetFilesAccessibleByUserParams) ([]File, error) {
+	rows, err := q.db.Query(ctx, getFilesAccessibleByUser, arg.Creator, arg.Accessibility)
 	if err != nil {
 		return nil, err
 	}
@@ -76,6 +190,7 @@ func (q *Queries) GetFilesForUser(ctx context.Context, arg GetFilesForUserParams
 			&i.Filename,
 			&i.Mimetype,
 			&i.Size,
+			&i.PresentationFilename,
 		); err != nil {
 			return nil, err
 		}
@@ -90,9 +205,9 @@ func (q *Queries) GetFilesForUser(ctx context.Context, arg GetFilesForUserParams
 const registerFile = `-- name: RegisterFile :one
 INSERT
 INTO file
-  (uuid, accessibility, creator, created, filename, mimetype, size)
+  (uuid, accessibility, creator, created, filename, presentation_filename, mimetype, size)
 VALUES 
-  ($1, $2, $3, $4, $5, $6, $7)
+  ($1, $2, $3, $4, $5, $5, $6, $7)
 RETURNING id
 `
 
@@ -119,4 +234,41 @@ func (q *Queries) RegisterFile(ctx context.Context, arg RegisterFileParams) (int
 	var id int32
 	err := row.Scan(&id)
 	return id, err
+}
+
+const removeFalseFileWikiLinks = `-- name: RemoveFalseFileWikiLinks :execresult
+with unused as (
+    select fw.file_id, fw.wiki_id
+    from file_wiki fw
+    left join wiki_revision wr
+      on wr.page_id = fw.wiki_id
+         and wr.content @? (
+               ('$.blocks[*].data.file.url ? (@ like_regex "^/file/' || fw.file_id || '")')::jsonpath
+           )
+    where wr.page_id is null
+)
+delete from file_wiki fw
+using unused u
+where fw.file_id = u.file_id
+  and fw.wiki_id = u.wiki_id
+`
+
+func (q *Queries) RemoveFalseFileWikiLinks(ctx context.Context) (pgconn.CommandTag, error) {
+	return q.db.Exec(ctx, removeFalseFileWikiLinks)
+}
+
+const updatePresentationFilename = `-- name: UpdatePresentationFilename :exec
+UPDATE file
+SET presentation_filename = $1
+WHERE id = $2
+`
+
+type UpdatePresentationFilenameParams struct {
+	Filename string
+	ID       int32
+}
+
+func (q *Queries) UpdatePresentationFilename(ctx context.Context, arg UpdatePresentationFilenameParams) error {
+	_, err := q.db.Exec(ctx, updatePresentationFilename, arg.Filename, arg.ID)
+	return err
 }
