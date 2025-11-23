@@ -77,4 +77,6 @@ const setupBoard = (elem) => {
   }, true);
 };
 
-document.querySelectorAll(".dashboard").forEach(setupBoard);
+if (matchMedia("(width >= 1000px)").matches) {
+  document.querySelectorAll(".dashboard").forEach(setupBoard);
+}
