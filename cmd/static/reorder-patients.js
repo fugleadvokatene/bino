@@ -1,4 +1,4 @@
-//if (matchMedia("(width >= 1000px)").matches) {
+if (matchMedia("(width >= 1000px)").matches) {
   document.addEventListener("DOMContentLoaded", function() {
     document.querySelectorAll(".dashboard-patient-list").forEach(function(list) {
       new Sortable(list, {
@@ -39,4 +39,4 @@
       body: JSON.stringify(req)
     });
   }
-//}
+}
