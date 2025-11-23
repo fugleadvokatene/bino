@@ -36,9 +36,19 @@ func main() {
 	}
 	worker := NewGDriveWorker(ctx, config.GoogleDrive, gdriveSA)
 
-	go backgroundDeleteExpiredItems(ctx, queries)
+	fileBackend := NewLocalFileStorage(ctx, "file", "tmp")
 
-	err = startServer(ctx, conn, queries, worker, config, BuildKey)
+	go backgroundDeleteExpiredItems(ctx, queries, fileBackend)
+
+	err = startServer(
+		ctx,
+		conn,
+		queries,
+		worker,
+		fileBackend,
+		config,
+		BuildKey,
+	)
 	if err != nil {
 		panic(err)
 	}

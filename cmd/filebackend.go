@@ -39,6 +39,11 @@ type CommitResult struct {
 	HTTPStatusCode int
 }
 
+type ListTempResult struct {
+	Files map[string]FileInfo
+	Error error
+}
+
 type FileInfo struct {
 	FileName string
 	MIMEType string
@@ -50,10 +55,12 @@ type FileInfo struct {
 type FileBackend interface {
 	// Upload to temporary storage
 	Upload(ctx context.Context, data io.Reader, fileInfo FileInfo) UploadResult
-	// DeleteTemp from temporary storage
+	// Delete from temporary storage
 	DeleteTemp(ctx context.Context, ID string) DeleteResult
-	// ReadTemp file from temporary storage
+	// Read file from temporary storage
 	ReadTemp(ctx context.Context, ID string) ReadResult
+	// List files in temporary storage
+	ListTemp(ctx context.Context) ListTempResult
 	// Commit files from temporary storage to real storage
 	Commit(ctx context.Context, IDs []string) CommitResult
 	// Open file
@@ -210,6 +217,34 @@ func (lfs *LocalFileStorage) readMetaFile(ctx context.Context, dir *os.Root, id 
 	metaFile.Close()
 
 	return info, nil
+}
+
+func (lfs *LocalFileStorage) ListTemp(ctx context.Context) (out ListTempResult) {
+	out.Files = map[string]FileInfo{}
+
+	dir, err := os.OpenRoot(lfs.TmpDirectory)
+	if err != nil {
+		return ListTempResult{
+			Error: err,
+		}
+	}
+	defer dir.Close()
+
+	entries, err := os.ReadDir(lfs.TmpDirectory)
+	if err != nil {
+		return ListTempResult{Error: err}
+	}
+
+	for _, entry := range entries {
+		name := entry.Name()
+		if entry.IsDir() && uuid.Validate(name) == nil {
+			if info, err := lfs.readMetaFile(ctx, dir, name); err == nil {
+				out.Files[name] = info
+			}
+		}
+	}
+
+	return out
 }
 
 func (lfs *LocalFileStorage) ReadTemp(ctx context.Context, id string) (out ReadResult) {

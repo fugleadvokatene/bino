@@ -90,7 +90,15 @@ func getStatusCode(err error) int {
 	return http.StatusInternalServerError
 }
 
-func startServer(ctx context.Context, conn *pgxpool.Pool, queries *Queries, gdriveWorker *GDriveWorker, config Config, buildKey string) error {
+func startServer(
+	ctx context.Context,
+	conn *pgxpool.Pool,
+	queries *Queries,
+	gdriveWorker *GDriveWorker,
+	fileBackend FileBackend,
+	config Config,
+	buildKey string,
+) error {
 	sessionKey, err := os.ReadFile(config.Auth.SessionKeyLocation)
 	if err != nil {
 		return err
@@ -136,7 +144,7 @@ func startServer(ctx context.Context, conn *pgxpool.Pool, queries *Queries, gdri
 			PublicIP:    fetchPublicIP(),
 			TimeStarted: time.Now(),
 		},
-		FileBackend: NewLocalFileStorage(ctx, "file", "tmp"),
+		FileBackend: fileBackend,
 		BuildKey:    buildKey,
 		Config:      config,
 	}
