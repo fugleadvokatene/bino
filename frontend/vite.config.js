@@ -5,6 +5,7 @@ export default {
             editor: 'editor.js',
             search: 'search.js',
             speciesadmin: 'speciesadmin.js',
+            imageupload: 'imageupload.js',
         },
         output: {
             entryFileNames: '[name].js',
