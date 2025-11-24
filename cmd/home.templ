@@ -37,13 +37,8 @@ templ HomePage(ctx context.Context, data *CommonData, dashboardData *DashboardDa
     }
     
     // drag and drop
-    <link rel="stylesheet" href="https://code.jquery.com/ui/1.14.1/themes/base/jquery-ui.css">
-    <script src="https://code.jquery.com/jquery-3.7.1.js"></script>
-    <script src="https://code.jquery.com/ui/1.14.1/jquery-ui.js"></script>
-    <script src="https://kit.fontawesome.com/9e1149297d.js" crossorigin="anonymous"></script>
-    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js"></script>
-    <script src={data.StaticFile("home.js")}></script>
-    <script src={data.StaticFile("reorder-patients.js")}></script>
+    <script type="module" src={data.StaticFile("bundle/home.js")}></script>
+    <script type="module" src={data.StaticFile("bundle/reorderPatients.js")}></script>
 }
 
 templ (dv DateView) View(data *CommonData) {
