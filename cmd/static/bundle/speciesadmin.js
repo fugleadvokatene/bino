@@ -1,1 +1,60 @@
-function i(n){document.getElementById("new-submit").addEventListener("click",t=>{const e=t.target.parentElement.parentElement.getElementsByClassName("form-control"),{url:a,req:s}=n(e);fetch(a,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(s)}).then(()=>location.reload())})}function o(n){document.addEventListener("click",t=>{if(!t.target.classList.contains("update-submit"))return;const e=parseInt(t.target.dataset.id),a=t.target.parentElement.parentElement.getElementsByClassName("form-control"),{url:s,req:l}=n(e,a);fetch(s,{method:"PUT",headers:{"Content-Type":"application/json"},body:JSON.stringify(l)}).then(()=>location.reload())})}i(n=>{let t={Latin:"",Languages:{}};for(const e of n)e.dataset.field=="latin"?t.Latin=e.value:e.dataset.field=="lang"&&(t.Languages[e.dataset.lang]=e.value);return{url:"/species",req:t}});o((n,t)=>{let e={ID:n,Latin:"",Languages:{}};for(const a of t)a.dataset.field=="latin"?e.Latin=a.value:a.dataset.field=="lang"&&(e.Languages[a.dataset.lang]=a.value);return{url:"/species",req:e}});
+// crud.js
+function setupCreateButton(listener) {
+  document.getElementById("new-submit").addEventListener("click", (event) => {
+    const formFields = event.target.parentElement.parentElement.getElementsByClassName("form-control");
+    const { url, req } = listener(formFields);
+    fetch(url, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify(req)
+    }).then(() => location.reload());
+  });
+}
+function setupUpdateButtons(listener) {
+  document.addEventListener("click", (event) => {
+    if (!event.target.classList.contains("update-submit")) return;
+    const id = parseInt(event.target.dataset["id"]);
+    const formFields = event.target.parentElement.parentElement.getElementsByClassName("form-control");
+    const { url, req } = listener(id, formFields);
+    fetch(url, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify(req)
+    }).then(() => location.reload());
+  });
+}
+
+// speciesadmin.js
+setupCreateButton((formFields) => {
+  let req = {
+    Latin: "",
+    Languages: {}
+  };
+  for (const field of formFields) {
+    if (field.dataset["field"] == "latin") {
+      req.Latin = field.value;
+    } else if (field.dataset["field"] == "lang") {
+      req.Languages[field.dataset["lang"]] = field.value;
+    }
+  }
+  return { url: "/species", req };
+});
+setupUpdateButtons((id, formFields) => {
+  let req = {
+    ID: id,
+    Latin: "",
+    Languages: {}
+  };
+  for (const field of formFields) {
+    if (field.dataset["field"] == "latin") {
+      req.Latin = field.value;
+    } else if (field.dataset["field"] == "lang") {
+      req.Languages[field.dataset["lang"]] = field.value;
+    }
+  }
+  return { url: "/species", req };
+});

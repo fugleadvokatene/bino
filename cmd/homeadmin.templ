@@ -99,7 +99,7 @@ templ HomesPage(data *CommonData, homes []HomeViewAdmin, homeless []UserView) {
             </form>
         }
     }
-    <script src={data.StaticFile("dashboard.js")}></script>
+    <script type="module" src={data.StaticFile("dashboard.js")}></script>
 }
 
 templ (u *UserView) Component(data *CommonData) {

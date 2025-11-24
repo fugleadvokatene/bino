@@ -14,7 +14,7 @@ document.addEventListener('click', e => {
   const input = document.createElement(large ? 'textarea' : 'input');
   input.name = 'value';
   input.value = el.textContent.trim();
-  input.type = 'text';
+  if (!large) input.type = 'text';
   input.classList.add('form-control');
   input.style.fontSize = getComputedStyle(el).fontSize;
   input.spellcheck = false;
@@ -40,7 +40,7 @@ document.addEventListener('click', e => {
   form.method = 'POST';
 
   if (large) {
-    const container = document.createElement('form-group');
+    const container = document.createElement('div');
     container.classList.add('d-flex', 'form-control-sm', 'form-control-plaintext');
     container.append(input);
     form.append(container, submit);

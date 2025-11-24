@@ -47,7 +47,7 @@ templ SearchPage(data *CommonData, result SearchResult, fallbackMsg string) {
         </div>
         @SearchMatches(data, result, fallbackMsg)
 	}
-    <script src={data.StaticFile("bundle/search.js")}></script>
+    <script type="module" src={data.StaticFile("bundle/search.js")}></script>
 }
 
 templ SearchMatches(data *CommonData, result SearchResult, fallbackMsg string) {

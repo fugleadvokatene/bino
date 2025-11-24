@@ -38,7 +38,7 @@ templ WikiPageTempl(data *CommonData, page WikiPageView, links []WikiLinkView) {
                 </div>
             </div>
         }
-    <script src={data.StaticFile("bundle/editor.js")}></script>
+    <script type="module" src={data.StaticFile("bundle/editor.js")}></script>
     </body>
     </html>
 }

@@ -19,11 +19,7 @@ templ DashboardPage(data *CommonData, dashboardData *DashboardData) {
         @DashboardHomes(data, dashboardData)
     }
 
-    // drag and drop
-    <script src="https://code.jquery.com/jquery-3.7.1.js"></script>
-
-    <script src={data.StaticFile("dashboard.js")}></script>
-    <script src={data.StaticFile("dashboard-search.js")}></script>
+    <script type="module" src={data.StaticFile("bundle/dashboard.js")}></script>
     <script type="module" src={data.StaticFile("bundle/reorderPatients.js")}></script>
 }
 

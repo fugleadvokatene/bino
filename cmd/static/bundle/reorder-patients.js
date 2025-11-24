@@ -2203,27 +2203,44 @@ Sortable.mount(new AutoScrollPlugin());
 Sortable.mount(Remove, Revert);
 var sortable_esm_default = Sortable;
 
-// home.js
-document.addEventListener("DOMContentLoaded", () => {
-  const table = document.getElementById("species-list");
-  if (!table) return;
-  const home = parseInt(table.dataset.home);
-  sortable_esm_default.create(table, {
-    handle: "td",
-    animation: 0,
-    onEnd: () => {
-      const req = {
-        ID: home,
-        Order: Array.from(table.children).map((row) => parseInt(row.dataset.id))
-      };
-      fetch(`/home/${home}/species/reorder`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(req)
-      }).then(() => location.reload());
-    }
+// reorder-patients.js
+if (matchMedia("(width >= 1000px)").matches) {
+  let reordered = function(home) {
+    const req = {
+      Id: home,
+      Order: []
+    };
+    document.querySelectorAll(".dashboard-patient-list").forEach((list) => {
+      if (parseInt(list.dataset.home) === home) {
+        req.Order = Array.from(list.children).map(
+          (item) => parseInt(item.dataset.patientId)
+        );
+      }
+    });
+    fetch("/ajaxreorder", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(req)
+    });
+  };
+  document.addEventListener("DOMContentLoaded", () => {
+    document.querySelectorAll(".dashboard-patient-list").forEach((list) => {
+      new sortable_esm_default(list, {
+        handle: ".card-gripper",
+        animation: 0,
+        forceFallback: true,
+        fallbackClass: "sortable-fallback",
+        ghostClass: "drop-target",
+        chosenClass: "chosen",
+        dragClass: "dragging",
+        filter: ".must-be-clickable",
+        onUpdate: (evt) => {
+          reordered(parseInt(evt.to.dataset.home));
+        }
+      });
+    });
   });
-});
+}
 /*! Bundled license information:
 
 sortablejs/modular/sortable.esm.js:
