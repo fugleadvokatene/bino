@@ -1,4 +1,3 @@
-//go:generate go tool go-enum --no-iota --values
 package main
 
 import (
@@ -17,16 +16,6 @@ const (
 	nWorkers                         = 1
 	timeFormatDriveQ                 = "2006-01-02T15:04:05"
 )
-
-// ENUM(
-//
-//	GetFile,
-//	InviteUser,
-//	CreateJournal,
-//	ListFiles,
-//
-// )
-type GDriveTaskRequestID int
 
 type GDriveWorker struct {
 	cfg GDriveConfig

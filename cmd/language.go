@@ -1,4 +1,3 @@
-//go:generate go tool go-enum --no-iota --values
 package main
 
 import (
@@ -8,14 +7,6 @@ import (
 
 	"github.com/jackc/pgx/v5/pgtype"
 )
-
-// ENUM(
-//
-//	NO = 1,
-//	EN = 2,
-//
-// )
-type LanguageID int32
 
 type Language struct {
 	ID          LanguageID
@@ -213,7 +204,7 @@ type Language struct {
 
 	CapabilitiesExplanation       string
 	CapabilitiesYourAccessLevelIs string
-	Capabilities                  map[Capability]string
+	Capabilities                  map[Cap]string
 	CapabilitiesLink              string
 	CapabilitiesHeader            string
 }
@@ -527,7 +518,7 @@ var NO = &Language{
 	CapabilitiesHeader:            "Brukertilganger",
 	CapabilitiesYourAccessLevelIs: "Ditt tilgangsnivå er: ",
 	CapabilitiesExplanation:       "Her er det brukere med forskjellig tilgangsnivå kan gjøre: ",
-	Capabilities: map[Capability]string{
+	Capabilities: map[Cap]string{
 		CapViewAllActivePatients: "Se alle pasienter som er i rehab",
 		CapViewAllFormerPatients: "Se alle pasienter som har vært i rehab",
 		CapViewAllHomes:          "Se alle rehabhjem",
@@ -811,7 +802,7 @@ var EN = &Language{
 	CapabilitiesLink:              "Read about access levels in Bino",
 	CapabilitiesYourAccessLevelIs: "Your access level is: ",
 	CapabilitiesExplanation:       "Here is the list of actions users with different levels can perform: ",
-	Capabilities: map[Capability]string{
+	Capabilities: map[Cap]string{
 		CapViewAllActivePatients: "View all patients currently in rehab",
 		CapViewAllFormerPatients: "View all patients who have been in rehab",
 		CapViewAllHomes:          "View all rehab homes",

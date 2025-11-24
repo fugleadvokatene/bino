@@ -71,7 +71,7 @@ func (server *Server) requireAccessLevel(al AccessLevel) Middleware {
 	}
 }
 
-func (server *Server) requireCapability(cap Capability) Middleware {
+func (server *Server) requireCapability(cap Cap) Middleware {
 	al, ok := RequiredAccessLevel[cap]
 	if !ok {
 		panic(fmt.Errorf("no access level for %s", cap.String()))

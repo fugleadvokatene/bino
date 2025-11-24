@@ -163,7 +163,7 @@ func startServer(
 	requiresAdmin := slices.Clone(requiresLogin)
 	requiresAdmin = append(requiresAdmin, server.requireAccessLevel(AccessLevelAdmin))
 
-	loggedInHandler := func(handler http.HandlerFunc, cap Capability) http.Handler {
+	loggedInHandler := func(handler http.HandlerFunc, cap Cap) http.Handler {
 		requirements := slices.Clone(requiresLogin)
 		requirements = append(requirements, server.requireCapability(cap))
 		return chainf(handler, requirements...)

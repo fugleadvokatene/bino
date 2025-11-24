@@ -64,7 +64,7 @@ func (cd *CommonData) Info(msg string) {
 	cd.SetFeedback(FBInfo, msg)
 }
 
-func (cd *CommonData) SetFeedback(fbt FeedbackType, msg string) {
+func (cd *CommonData) SetFeedback(fbt FB, msg string) {
 	if n := len(cd.Feedback.Items); n < 10 {
 		// Filter dupes
 		for i := range n {

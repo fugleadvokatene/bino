@@ -1,4 +1,3 @@
-//go:generate go tool go-enum --no-iota --values
 package main
 
 import (
@@ -27,9 +26,6 @@ type HomeView struct {
 	PreferredSpecies   []SpeciesView
 	UnavailablePeriods []PeriodView
 }
-
-// ENUM(AvailableIndefinitely, AvailableUntil, UnavailableUntil, UnavailableIndefinitely)
-type Availability int
 
 func HomeURL(id int32) templ.SafeURL {
 	return templ.URL(fmt.Sprintf("/home/%d", id))
@@ -377,9 +373,6 @@ func (ev *EventView) SetNoteURL() string {
 }
 
 // ---- Match
-
-// ENUM(journal, patient)
-type MatchType string
 
 type MatchView struct {
 	URL           string

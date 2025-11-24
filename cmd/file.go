@@ -1,4 +1,3 @@
-//go:generate go tool go-enum --no-iota --values
 package main
 
 import (
@@ -17,9 +16,6 @@ import (
 const (
 	MaxImageSize = 20 * 1024
 )
-
-// ENUM(Personal=0, Internal=1, Public=2)
-type FileAccessibility int32
 
 func (server *Server) fileHandler(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()

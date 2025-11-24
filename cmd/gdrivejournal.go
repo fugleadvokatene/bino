@@ -1,4 +1,3 @@
-//go:generate go tool go-enum --no-iota --values
 package main
 
 import (
@@ -9,18 +8,6 @@ import (
 
 	"google.golang.org/api/docs/v1"
 )
-
-// ENUM(
-//
-//	YYYY,
-//	MM,
-//	DD,
-//	Name,
-//	Species,
-//	BinoURL,
-//
-// )
-type Template string
 
 type GDriveJournal struct {
 	Item    GDriveItem

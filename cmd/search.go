@@ -1,4 +1,3 @@
-//go:generate go tool go-enum --no-iota --values
 package main
 
 import (
@@ -11,9 +10,6 @@ import (
 
 	"github.com/jackc/pgx/v5/pgtype"
 )
-
-// ENUM(None = 0, Newer, Older)
-type TimePreference int
 
 const (
 	pageSize = int32(20)

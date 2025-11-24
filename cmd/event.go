@@ -1,27 +1,6 @@
-//go:generate go tool go-enum --no-iota
 package main
 
 import "net/http"
-
-// ENUM(
-//
-//	Unknown                        = 0,
-//	Registered                     = 1,
-//	Adopted                        = 3,
-//	Released                       = 4,
-//	TransferredToOtherHome         = 5,
-//	TransferredOutsideOrganization = 6,
-//	Died                           = 7,
-//	Euthanized                     = 8,
-//	StatusChanged                  = 11, // Associated ID is status
-//	Deleted                        = 12,
-//	NameChanged                    = 13,
-//	JournalCreated                 = 14,
-//	JournalAttached                = 15,
-//	JournalDetached                = 16,
-//
-// )
-type Event int32
 
 func (server *Server) postEventSetNoteHandler(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()

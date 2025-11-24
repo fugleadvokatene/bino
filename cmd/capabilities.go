@@ -1,37 +1,8 @@
-//go:generate go tool go-enum --no-iota --noprefix --prefix=Cap
 package main
 
 import "slices"
 
-// ENUM(
-// ViewAllActivePatients,
-// ViewAllFormerPatients,
-// ViewAllHomes,
-// ViewAllUsers,
-// ViewCalendar,
-// Search,
-// SetOwnPreferences,
-// CheckInPatient,
-// ManageOwnPatients,
-// ManageAllPatients,
-// ManageOwnHomes,
-// ManageAllHomes,
-// CreatePatientJournal,
-// ManageSpecies,
-// ManageUsers,
-// DeleteUsers,
-// ViewAdminTools,
-// ViewGDriveSettings,
-// InviteToGDrive,
-// InviteToBino,
-// UseImportTool,
-// Debug,
-// UploadFile,
-// EditWiki,
-// )
-type Capability int32
-
-var RequiredAccessLevel = map[Capability]AccessLevel{
+var RequiredAccessLevel = map[Cap]AccessLevel{
 	CapViewAllActivePatients: AccessLevelNone,
 	CapViewAllFormerPatients: AccessLevelNone,
 	CapViewAllHomes:          AccessLevelNone,
@@ -62,10 +33,10 @@ var RequiredAccessLevel = map[Capability]AccessLevel{
 }
 
 var AccessLevelToCapabilities = func() (out struct {
-	None        []Capability
-	Rehabber    []Capability
-	Coordinator []Capability
-	Admin       []Capability
+	None        []Cap
+	Rehabber    []Cap
+	Coordinator []Cap
+	Admin       []Cap
 }) {
 	for cap, al := range RequiredAccessLevel {
 		switch al {

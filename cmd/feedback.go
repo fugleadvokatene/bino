@@ -1,4 +1,3 @@
-//go:generate go tool go-enum --no-iota --values --noprefix --prefix=FB
 package main
 
 import (
@@ -14,7 +13,7 @@ type Feedback struct {
 }
 
 func (fb Feedback) CSSClass() string {
-	var maxFBT FeedbackType
+	var maxFBT FB
 	for _, item := range fb.Items {
 		if item.Type > maxFBT {
 			maxFBT = item.Type
@@ -25,20 +24,10 @@ func (fb Feedback) CSSClass() string {
 
 type FeedbackItem struct {
 	Message string
-	Type    FeedbackType
+	Type    FB
 }
 
-// ENUM(
-//
-//	Info = 0,
-//	Success = 1,
-//	Warning = 2,
-//	Error = 3,
-//
-// )
-type FeedbackType int32
-
-func (fbt FeedbackType) CSSClass() string {
+func (fbt FB) CSSClass() string {
 	return "feedback-" + strings.ToLower(fbt.String())
 }
 
