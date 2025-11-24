@@ -7,12 +7,13 @@ build({
   entryPoints: [
     'common.js',
     'editor.js',
+    'editor2.js',
     'search.js',
     'speciesadmin.js',
     'imageupload.js',
     'home.js',
     'reorder-patients.js',
-    'dashboard.js'
+    'dashboard.js',
   ],
   outdir: '../cmd/static/bundle',
   bundle: true,
@@ -28,6 +29,6 @@ build({
     '.jpg': 'file',
     '.jpeg': 'file',
     '.svg': 'file',
-    '.css': 'css'
-  }
+    '.css': 'css',
+  },
 });

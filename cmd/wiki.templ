@@ -9,15 +9,16 @@ templ WikiPageTempl(data *CommonData, page WikiPageView, links []WikiLinkView) {
     <body data-lang={templ.JSONString(data.User.Language)}>
         @Body(data) {
             <div class="main b-container dashboard-container gap-2 justify-content-center">
-                <div class="card editor-container shadow-lg">
+                <div class="card editor-container-outer shadow-lg">
                     <div class="card-header d-flex justify-content-between p-1">
                         <div class="editor-document-name align-self-center editable" data-action={page.EditTitleURL()}>{page.Title}</div>
-                        <button id="editor-edit-toggler" data-id={page.ID} class={"btn", "btn-primary", "btn-sm", "d-flex", "justify-content-center", "gap-1",}>
-                            <i class={"align-self-center", "fa-solid", "fa-file-pen"}></i>
-                            <span class="align-self-center">{data.User.Language.GenericEdit}</span>
-                        </button>
                     </div>
-                    <div id="editorjs" class="card-content p-1" data-content={page.Content}>
+                    <div class="editor-container-inner">
+                        <div id="editor-toolbar" class="editor-toolbar">
+                            <div class="editor-toolbar-buttons"></div>
+                            <div id="editor-status" class="editor-status"></div>
+                        </div>
+                        <div id="editorjs" spellcheck="false" data-page-id={page.ID} data-content={page.Content}></div>
                     </div>
                 </div>
                 <div class="dashboard-left-sidebar m-2 wiki-list">
@@ -38,7 +39,7 @@ templ WikiPageTempl(data *CommonData, page WikiPageView, links []WikiLinkView) {
                 </div>
             </div>
         }
-    <script type="module" src={data.StaticFile("bundle/editor.js")}></script>
+        <script type="module" src={data.StaticFile("bundle/editor2.js")}></script>
     </body>
     </html>
 }

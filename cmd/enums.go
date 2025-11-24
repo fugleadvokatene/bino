@@ -14,7 +14,12 @@ package main
 // )
 type AccessLevel int32
 
-// ENUM(AvailableIndefinitely, AvailableUntil, UnavailableUntil, UnavailableIndefinitely)
+// ENUM(
+// AvailableIndefinitely,
+// AvailableUntil,
+// UnavailableUntil,
+// UnavailableIndefinitely,
+// )
 type Availability int
 
 // ENUM(
@@ -75,7 +80,11 @@ type Event int32
 // )
 type FB int32
 
-// ENUM(Personal=0, Internal=1, Public=2)
+// ENUM(
+// Personal=0,
+// Internal=1,
+// Public=2,
+// )
 type FileAccessibility int32
 
 // ENUM(
@@ -96,7 +105,10 @@ type GDriveTaskRequestID int
 // )
 type LanguageID int32
 
-// ENUM(journal, patient)
+// ENUM(
+// journal,
+// patient,
+// )
 type MatchType string
 
 // ENUM(

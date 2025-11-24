@@ -1,8 +1,8 @@
 import EditorJS from '@editorjs/editorjs'
 import Header from '@editorjs/header'
 import EditorjsList from '@editorjs/list'
-import Table from '@editorjs/table'
 import ImageTool from '@editorjs/image'
+import Table from '@editorjs/table'
 
 const initialContent = document.getElementById('editorjs').dataset.content
 const editToggler = document.getElementById('editor-edit-toggler')
@@ -11,7 +11,6 @@ const pageID = editToggler.dataset.id
 document.body.setAttribute('spellcheck', false)
 document.body.setAttribute('autocomplete', false)
 document.body.setAttribute('autocorrect', false)
-
 const editor = new EditorJS({
   holder: 'editorjs',
   placeholder: 'Write something...',
@@ -49,7 +48,7 @@ const editor = new EditorJS({
     }
   },
   data: JSON.parse(initialContent)
-})
+});
 
 const editTogglerIcon = editToggler.querySelector('i')
 const editTogglerLabel = editToggler.querySelector('span')
