@@ -13,9 +13,19 @@ const editor = new EditorJS({
     tools: { 
         header: {
             class: Header,
+            inlineToolbar: true,
         },
         list: {
             class: EditorjsList,
+            inlineToolbar: true,
+        },
+        table: {
+            class: Table,
+            config: {
+                rows: 2,
+                cols: 2,
+            },
+            inlineToolbar: true,
         },
         image: {
             class: ImageTool,
@@ -24,6 +34,11 @@ const editor = new EditorJS({
                     byFile: `/wiki/uploadimage/${pageID}`,
                     byUrl: `/wiki/fetchimage/${pageID}`,
                 }
+            },
+            features: {
+                border: false,
+                caption: 'optional',
+                stretch: true,
             }
         }
     },

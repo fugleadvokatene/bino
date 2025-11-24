@@ -255,14 +255,14 @@ func WikiPageTempl(data *CommonData, page WikiPageView, links []WikiLinkView) te
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 21, "<script src=\"https://cdn.jsdelivr.net/npm/@editorjs/editorjs@latest\"></script><script src=\"https://cdn.jsdelivr.net/npm/@editorjs/list@latest\"></script><script src=\"https://cdn.jsdelivr.net/npm/@editorjs/header@latest\"></script><script src=\"https://cdn.jsdelivr.net/npm/@editorjs/simple-image@latest\"></script><script src=\"https://cdn.jsdelivr.net/npm/@editorjs/image@latest\"></script><script src=\"")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 21, "<script src=\"https://cdn.jsdelivr.net/npm/@editorjs/editorjs@latest\"></script><script src=\"https://cdn.jsdelivr.net/npm/@editorjs/list@latest\"></script><script src=\"https://cdn.jsdelivr.net/npm/@editorjs/header@latest\"></script><script src=\"https://cdn.jsdelivr.net/npm/@editorjs/simple-image@latest\"></script><script src=\"https://cdn.jsdelivr.net/npm/@editorjs/image@latest\"></script><script src=\"https://cdn.jsdelivr.net/npm/@editorjs/table@latest\"></script><script src=\"")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
 		var templ_7745c5c3_Var16 string
 		templ_7745c5c3_Var16, templ_7745c5c3_Err = templ.JoinStringErrs(data.StaticFile("editor.js"))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `cmd/wiki.templ`, Line: 46, Col: 45}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `cmd/wiki.templ`, Line: 47, Col: 45}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var16))
 		if templ_7745c5c3_Err != nil {

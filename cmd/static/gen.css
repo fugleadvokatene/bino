@@ -12377,4 +12377,25 @@ mark.hl {
   padding-bottom: 38px !important;
 }
 
+.cdx-list {
+  --line-height: 1em !important;
+}
+
+.tc-table {
+  line-height: 1.2em !important;
+}
+
+.tc-table {
+  border-top: 1px solid rgb(126.75, 127.125, 141.875) !important;
+  border-left: 1px solid rgb(126.75, 127.125, 141.875) !important;
+}
+
+.tc-row {
+  border-bottom: 1px solid rgb(126.75, 127.125, 141.875) !important;
+}
+
+.tc-cell {
+  border-right: 1px solid rgb(126.75, 127.125, 141.875) !important;
+}
+
 /*# sourceMappingURL=gen.css.map */
