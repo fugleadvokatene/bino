@@ -1,3 +1,5 @@
+import 'htmx.org'
+
 function setupSearchForm(target) {
     let isAdvancedChecked = false; 
     target.querySelectorAll("[name='mode']").forEach(elem => {
