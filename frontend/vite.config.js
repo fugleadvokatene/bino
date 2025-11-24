@@ -4,6 +4,7 @@ export default {
         input: {
             editor: 'editor.js',
             search: 'search.js',
+            speciesadmin: 'speciesadmin.js',
         },
         output: {
             entryFileNames: '[name].js',

@@ -1,4 +1,4 @@
-function setupCreateButton(listener) {
+export function setupCreateButton(listener) {
     document.getElementById("new-submit").addEventListener('click', (event) => {
         const formFields = event.target.parentElement.parentElement.getElementsByClassName("form-control");
         const { url, req } = listener(formFields);
@@ -12,7 +12,7 @@ function setupCreateButton(listener) {
     });
 }
 
-function setupUpdateButtons(listener) {
+export function setupUpdateButtons(listener) {
     document.addEventListener('click', event => {
         if (!event.target.classList.contains('update-submit')) return;
         const id = parseInt(event.target.dataset["id"]);

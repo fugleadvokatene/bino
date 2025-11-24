@@ -1,3 +1,8 @@
+import {
+    setupCreateButton,
+    setupUpdateButtons
+} from "./crud";
+
 setupCreateButton((formFields) => {
     let req = {
         Latin: "",
