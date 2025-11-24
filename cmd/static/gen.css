@@ -12414,6 +12414,7 @@ mark.hl {
   overflow: hidden;
   width: 100%;
   margin-bottom: 0.5em;
+  height: max-content;
 }
 
 .editor-container-inner {
