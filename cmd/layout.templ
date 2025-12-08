@@ -6,11 +6,19 @@ templ FullLayout(data *CommonData) {
     <head>
         @Head(data)
     </head>
-    <body data-lang={templ.JSONString(data.User.Language)}>
-        @Body(data) {
-            { children... }
-        }
-    </body>
+    if data != nil {
+        <body data-lang={templ.JSONString(data.User.Language)}>
+            @Body(data) {
+                { children... }
+            }
+        </body>
+    } else {
+        <body>
+            @Body(data) {
+                { children... }
+            }
+        </body>
+    }
     </html>
 }
 
@@ -18,27 +26,35 @@ templ Head(data *CommonData) {
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="autocomplete" content="off">
-    <title>🕊️ bino – {data.Subtitle}</title>
+    if data == nil {
+        <title>🕊️ bino</title>    
+    } else {
+        <title>🕊️ bino – {data.Subtitle}</title>
+    }
     <link href={data.StaticFile("gen.css")} rel="stylesheet">
     <script src="https://kit.fontawesome.com/9e1149297d.js" crossorigin="anonymous"></script>
 }
 
 templ Body(data *CommonData) {
-    @Navbar(data)
-    if len(data.Feedback.Items) > 0 {
-        <div class="b-container">
-            @Card("feedback-container", data.Feedback.CSSClass()) {
-                <ul class="feedback-list">
-                    for _, item := range data.Feedback.Items {
-                        <li class={"feedback-item", item.Type.CSSClass()}>{item.Message}</li>
-                    }
-                </ul>
-                <button class="btn btn-sm btn-success closer">OK</button>
-            }
-        </div>
+    if data != nil {
+        @Navbar(data)
+        if len(data.Feedback.Items) > 0 {
+            <div class="b-container">
+                @Card("feedback-container", data.Feedback.CSSClass()) {
+                    <ul class="feedback-list">
+                        for _, item := range data.Feedback.Items {
+                            <li class={"feedback-item", item.Type.CSSClass()}>{item.Message}</li>
+                        }
+                    </ul>
+                    <button class="btn btn-sm btn-success closer">OK</button>
+                }
+            </div>
+        }
     }
     { children... }
-    @Footer(&data.User)
+    if data != nil {
+        @Footer(data.User)
+    }
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Hammersmith+One&family=Roboto:wght@100..900&display=swap" rel="stylesheet">
@@ -81,8 +97,8 @@ templ Navbar(data *CommonData) {
                 @NavbarPageLink(data.User.Language.AdminRoot, "/admin")
                 @FullTextSearch(data)
                 @LanguageSelect(data)
-                @SelfInfo(&data.User)
-                @AuthLogOut(&data.User)
+                @SelfInfo(data.User)
+                @AuthLogOut(data.User)
             </div>
         </div>
     </nav>

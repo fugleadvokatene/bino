@@ -44,12 +44,16 @@ func (server *Server) requireLogin(f http.Handler) http.Handler {
 		}
 
 		if val, ok := r.URL.Query()["_AL"]; ok && len(val) == 1 {
+			if val[0] == "LoggedOut" {
+				commonData.User = nil
+			}
 			if demotedAccessLevel, err := ParseAccessLevel(val[0]); err == nil && commonData.User.AccessLevel >= demotedAccessLevel {
 				commonData.User.AccessLevel = demotedAccessLevel
 			}
 		}
 
-		ctx := WithCommonData(r.Context(), &commonData)
+		ctx := r.Context()
+		ctx = WithCommonData(ctx, &commonData)
 		r = r.WithContext(ctx)
 
 		f.ServeHTTP(w, r)
@@ -112,7 +116,7 @@ func (server *Server) authenticate(w http.ResponseWriter, r *http.Request) (Comm
 	}
 
 	commonData := CommonData{
-		User:     userData,
+		User:     &userData,
 		BuildKey: server.BuildKey,
 	}
 

@@ -35,7 +35,7 @@ func MustLoadCommonData(ctx context.Context) *CommonData {
 
 type CommonData struct {
 	BuildKey string
-	User     UserData
+	User     *UserData
 	Subtitle string
 	// Cached result of queries that might be called more than once
 	QueryCache struct {

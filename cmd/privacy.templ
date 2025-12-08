@@ -4,6 +4,7 @@ import (
     "fmt"
 )
 
+// NOTE: must not assume data exists
 templ Privacy(data *CommonData, config PrivacyConfig) {
 	@Layout(data) {
         @Card() {
@@ -43,8 +44,8 @@ templ Privacy(data *CommonData, config PrivacyConfig) {
             <form action="/privacy" method="POST" class="form-control w-25">
                 <div class="form-group">
                     <label for="logging-consent">Tillat logging</label>
-                    <input id="logging-consent" name="logging-consent" type="checkbox" checked?={data.User.LoggingConsent}>
-                    <input type="submit" class="btn btn-warning" value="Oppdater">
+                    <input id="logging-consent" name="logging-consent" type="checkbox" checked?={data != nil && data.User.LoggingConsent} disabled?={data==nil}>
+                    <input type="submit" class="btn btn-warning" value="Oppdater" disabled?={data==nil}>
                 </div>
             </form>
 

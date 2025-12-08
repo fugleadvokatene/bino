@@ -12,6 +12,7 @@ import (
 	"fmt"
 )
 
+// NOTE: must not assume data exists
 func Privacy(data *CommonData, config PrivacyConfig) templ.Component {
 	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
 		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
@@ -64,7 +65,7 @@ func Privacy(data *CommonData, config PrivacyConfig) templ.Component {
 				var templ_7745c5c3_Var4 string
 				templ_7745c5c3_Var4, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("%d", config.RevokeConsentPolicy))
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `cmd/privacy.templ`, Line: 41, Col: 168}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `cmd/privacy.templ`, Line: 42, Col: 168}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var4))
 				if templ_7745c5c3_Err != nil {
@@ -74,13 +75,29 @@ func Privacy(data *CommonData, config PrivacyConfig) templ.Component {
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
-				if data.User.LoggingConsent {
+				if data != nil && data.User.LoggingConsent {
 					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 3, " checked")
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err
 					}
 				}
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 4, "> <input type=\"submit\" class=\"btn btn-warning\" value=\"Oppdater\"></div></form>    <h2>4. Sletting</h2><p>Når du forlater organisasjonen, kan du kreve at administrator innen rimelig tid sletter opplysninger om deg i henhold til <a href=\"https://www.datatilsynet.no/rettigheter-og-plikter/den-registrertes-rettigheter/rett-til-sletting/\">Personvernforordningen (GDPR) §17</a>. Bino har en slette-knapp som lar administrator slette så mye informasjon som mulig uten å forstyrre organisasjonens drift. Pasienter vil fortsatt være knyttet til en anonym ID, men visningsnavnet blir erstattet med \"Slettet bruker\".</p><p>Det er administrators plikt å sørge for at data generert av Bino (for eksempel loggene nevnt i seksjon) slettes.</p>")
+				if data == nil {
+					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 4, " disabled")
+					if templ_7745c5c3_Err != nil {
+						return templ_7745c5c3_Err
+					}
+				}
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 5, "> <input type=\"submit\" class=\"btn btn-warning\" value=\"Oppdater\"")
+				if templ_7745c5c3_Err != nil {
+					return templ_7745c5c3_Err
+				}
+				if data == nil {
+					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 6, " disabled")
+					if templ_7745c5c3_Err != nil {
+						return templ_7745c5c3_Err
+					}
+				}
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 7, "></div></form>    <h2>4. Sletting</h2><p>Når du forlater organisasjonen, kan du kreve at administrator innen rimelig tid sletter opplysninger om deg i henhold til <a href=\"https://www.datatilsynet.no/rettigheter-og-plikter/den-registrertes-rettigheter/rett-til-sletting/\">Personvernforordningen (GDPR) §17</a>. Bino har en slette-knapp som lar administrator slette så mye informasjon som mulig uten å forstyrre organisasjonens drift. Pasienter vil fortsatt være knyttet til en anonym ID, men visningsnavnet blir erstattet med \"Slettet bruker\".</p><p>Det er administrators plikt å sørge for at data generert av Bino (for eksempel loggene nevnt i seksjon) slettes.</p>")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}

@@ -57,6 +57,9 @@ func LogCtx(ctx context.Context, format string, args ...any) {
 
 // Log if the user has given explicit concent
 func (cd *CommonData) Log(format string, args ...any) {
+	if cd == nil {
+		return
+	}
 	if !cd.User.LoggingConsent {
 		return
 	}

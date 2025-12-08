@@ -36,6 +36,7 @@ func withRecover(next http.Handler) http.Handler {
 			if rec := recover(); rec != nil {
 				msg := fmt.Sprintf("runtime panic: %s\ntraceback: %s", rec, string(debug.Stack()))
 				http.Error(w, msg, http.StatusInternalServerError)
+				fmt.Println(msg)
 			}
 		}()
 		next.ServeHTTP(w, r)
