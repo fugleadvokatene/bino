@@ -44,6 +44,16 @@ func (server *Server) getSpeciesForUser(ctx context.Context, user int32) ([]Spec
 	return preferredSpecies, otherSpecies, nil
 }
 
+func (server *Server) mainHandler(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	commonData := MustLoadCommonData(ctx)
+	if commonData.User != nil {
+		server.dashboardHandler(w, r)
+	} else {
+		server.loginPageHandler(w, r)
+	}
+}
+
 func (server *Server) dashboardHandler(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	commonData := MustLoadCommonData(ctx)

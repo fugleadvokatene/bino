@@ -152,33 +152,39 @@ func startServer(
 	mux := http.NewServeMux()
 
 	// Set up auth middlewares
-	requiresLogin := []Middleware{server.requireLogin, withLogging, server.withFeedbackFromRedirects}
+	baseFlow := []Middleware{server.requireLogin, withLogging, server.withFeedbackFromRedirects}
 
-	requiresRehabber := slices.Clone(requiresLogin)
+	publicFlow := []Middleware{func(h http.Handler) http.Handler {
+		return server.tryLogin(h, server.requireLogin)
+	}}
+
+	requiresRehabber := slices.Clone(baseFlow)
 	requiresRehabber = append(requiresRehabber, server.requireAccessLevel(AccessLevelRehabber))
 
-	requiresCoordinator := slices.Clone(requiresLogin)
+	requiresCoordinator := slices.Clone(baseFlow)
 	requiresCoordinator = append(requiresCoordinator, server.requireAccessLevel(AccessLevelCoordinator))
 
-	requiresAdmin := slices.Clone(requiresLogin)
+	requiresAdmin := slices.Clone(baseFlow)
 	requiresAdmin = append(requiresAdmin, server.requireAccessLevel(AccessLevelAdmin))
 
 	loggedInHandler := func(handler http.HandlerFunc, cap Cap) http.Handler {
-		requirements := slices.Clone(requiresLogin)
+		requirements := slices.Clone(baseFlow)
 		requirements = append(requirements, server.requireCapability(cap))
 		return chainf(handler, requirements...)
 	}
 
 	//// PUBLIC
 	// Pages
-	mux.Handle("GET /{$}", chainf(server.dashboardHandler, requiresLogin...))   // TODO should show something public for logged-out
-	mux.Handle("GET /privacy", chainf(server.privacyHandler, requiresLogin...)) // TODO should be public
-	mux.Handle("GET /access", chainf(server.accessHandler, requiresLogin...))
+	mux.Handle("GET /{$}", chainf(server.mainHandler, publicFlow...))
+	mux.Handle("GET /privacy", chainf(server.privacyHandler, publicFlow...))
+	mux.Handle("GET /tos", chainf(server.tosHandler, publicFlow...))
+	mux.Handle("GET /access", chainf(server.accessHandler, baseFlow...))
 	// Static content
 	staticDir := fmt.Sprintf("/static/%s/", buildKey)
 	mux.Handle("GET "+staticDir, http.StripPrefix(staticDir, http.FileServer(http.Dir(config.HTTP.StaticDir))))
+
 	// User content
-	mux.Handle("GET /file/{id}/{filename}", chainf(server.fileHandler, requiresLogin...))
+	mux.Handle("GET /file/{id}/{filename}", chainf(server.fileHandler, baseFlow...))
 
 	//// LOGIN
 	mux.Handle("GET /login", chainf(server.loginHandler))
@@ -267,8 +273,8 @@ func startServer(
 
 	//// FALLBACK
 	// Pages
-	mux.Handle("GET /", chainf(server.fourOhFourHandler, requiresLogin...))  // TODO: should be public
-	mux.Handle("POST /", chainf(server.fourOhFourHandler, requiresLogin...)) // TODO: should be public
+	mux.Handle("GET /", chainf(server.fourOhFourHandler, baseFlow...))  // TODO: should be public
+	mux.Handle("POST /", chainf(server.fourOhFourHandler, baseFlow...)) // TODO: should be public
 
 	go func() {
 		handler := chain(mux, withRecover)

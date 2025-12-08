@@ -18,6 +18,19 @@ func (server *Server) privacyHandler(w http.ResponseWriter, r *http.Request) {
 	_ = Privacy(commonData, server.Config.Privacy).Render(ctx, w)
 }
 
+func (server *Server) tosHandler(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	commonData := MustLoadCommonData(ctx)
+	commonData.Subtitle = commonData.Language.FooterTOS
+	_ = TOS(commonData).Render(ctx, w)
+}
+
+func (server *Server) loginPageHandler(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	commonData := MustLoadCommonData(ctx)
+	_ = LoginPage(commonData).Render(ctx, w)
+}
+
 func (server *Server) postPrivacyHandler(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	commonData := MustLoadCommonData(ctx)

@@ -12,7 +12,7 @@ import (
 	"fmt"
 )
 
-// NOTE: must not assume data exists
+// NOTE: must not assume data.User exists
 func Privacy(data *CommonData, config PrivacyConfig) templ.Component {
 	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
 		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
@@ -58,48 +58,104 @@ func Privacy(data *CommonData, config PrivacyConfig) templ.Component {
 					}()
 				}
 				ctx = templ.InitializeContext(ctx)
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<h1>Personvern</h1><h2>1. Om Bino</h2><p>Bino er utviklet av idealistiske årsaker, og har derfor ingen insentiver til å lagre, behandle eller dele informasjon utover det som er nødvendig for nettsidens funksjon. Bino er fri programvare lisensiert under <a href=\"https://opensource.org/license/agpl-v3\">GNU Affero GPL V3</a>, som setter strenge føringer om at både den originale kildekoden og modifikasjoner av denne må være åpent tilgjengelig. Du kan lese <a href=\"https://github.com/fugleadvokatene/bino\">kildekoden til Bino på Github</a> og bekrefte på egenhånd at det som skjer når du interagerer med nettsiden, samsvarer med det som står i dette dokumentet.</p><h2>2. Personopplysninger som lagres</h2><p>Bino lagrer informasjon om deg utelukkende for å la deg ha en konto og for å organisere informasjon om pasienter:</p><ol><li>Eventuell informasjon du har oppgitt om deg selv, for eksempel navn og profilbilde.</li><li>Innstillinger for siden som må huskes mellom nettlesersesjoner, for eksempel foretrukket språk. Dette lagres i en database.</li><li>Informasjonskapsler i nettleseren brukes for at du ikke skal miste tekst i enkelte skjemaer.</li><li>Email-addressen din og en ID assosiert med Google-kontoen din. Dette brukes for å la deg logge inn. Det vises ikke til noen.</li><li>Innhold du har laget på siden, for eksempel tekst og bilder av pasienter, samt pasienthistorikk.</li></ol><p>Bino leverer ikke opplysninger til noen tredjeparter.</p><h2>3. Logging av aktivitet</h2><h3>3.a. Ingen samtykke = ingen logging</h3><p>Bino gjør ingen tracking eller fingerprinting, uansett hvilke personvernsinnstillinger du har satt. Bino gjør faktisk ingen logging av aktivitet din på nettsiden overhodet, med mindre du har gitt eksplisitt samtykke til dette på skjemaet under. Dersom du utfører en handling som er synlig for alle, kan dette bli logget. Det kan for eksempel være å sjekke inn en pasient, endre egen kapasitet, eller markere at du er utilgjengelig i en periode.</p><h3>3.b. Gi tidsbegrenset samtykke til logging</h3><p>For å hjelpe med å løse tekniske problemer kan du velge å la oss logge aktiviteten din på siden, f.eks når du klikker på lenker eller sender inn skjema, i en kort periode. Ikke slå på denne innstillingen med mindre administrator har bedt deg gjøre det for å løse et spesifikt problem. Du kan når som helst gå tilbake hit og fjerne tillatelsen, og tillatelsen blir automatisk fjernet etter ")
-				if templ_7745c5c3_Err != nil {
-					return templ_7745c5c3_Err
-				}
-				var templ_7745c5c3_Var4 string
-				templ_7745c5c3_Var4, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("%d", config.RevokeConsentPolicy))
-				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `cmd/privacy.templ`, Line: 42, Col: 168}
-				}
-				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var4))
-				if templ_7745c5c3_Err != nil {
-					return templ_7745c5c3_Err
-				}
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, " dager.</p><form action=\"/privacy\" method=\"POST\" class=\"form-control w-25\"><div class=\"form-group\"><label for=\"logging-consent\">Tillat logging</label> <input id=\"logging-consent\" name=\"logging-consent\" type=\"checkbox\"")
-				if templ_7745c5c3_Err != nil {
-					return templ_7745c5c3_Err
-				}
-				if data != nil && data.User.LoggingConsent {
-					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 3, " checked")
+				if data.Language.ID == LanguageIDEN {
+					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<h1>Privacy policy</h1><h2>1. About Bino</h2><p>Bino was developed for idealistic reasons, and has no incentive to store, process or share any informasjon except exactly what is required for the website to function. Bino is Free Software licensed under <a href=\"https://opensource.org/license/agpl-v3\">GNU Affero GPL V3</a>, which requires that the source code be freely available, both the original website and any modified works. You can read the <a href=\"https://github.com/fugleadvokatene/bino\">source code on Github</a> to verify for yourself that what happens when you interact with the site is in line with the privacy policy.</p><h2>2. What we store</h2><p>Bino only saves the information required for you to have an account and to organize information about patients:</p><ol><li>Information provided through your publicly accessible Google account: name, email and profile picture.</li><li>Settings that need to be stored between browser sessions, such as preferred language. This is stored in a database.</li><li>Cookies are stored in your browser to avoid losing text in certain forms.</li><li>Any content you have created on the site, such as pictures of patients and patient history.</li></ol><p>Bino does not share any information with third parties.</p><h2>3. Logging</h2><h3>3.a. No logging by default</h3><p>Bino does no tracking or fingerprinting, regardless of your privacy settings. There is no logging of your activity at all unless you have explicitly consented to this using the form below. Actions that are visible to all logged-in users may be logged, such as checking in a patient, editing the capacity settings for your home, or marking yourself as unavailable. </p><h3>3.b. Opt in to temporary logging</h3><p>To help solve certain technical issues, you can choose to let us log the activity on the site, for instance when you click on links or submit forms, for a short period of time. Do not enable this setting unless an administrator has requested it in order to solve a specific problem. You can revoke the consent at any time, and consent is automatically removed after ")
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err
 					}
-				}
-				if data == nil {
-					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 4, " disabled")
+					var templ_7745c5c3_Var4 string
+					templ_7745c5c3_Var4, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("%d", config.RevokeConsentPolicy))
+					if templ_7745c5c3_Err != nil {
+						return templ.Error{Err: templ_7745c5c3_Err, FileName: `cmd/privacy.templ`, Line: 42, Col: 149}
+					}
+					_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var4))
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err
 					}
-				}
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 5, "> <input type=\"submit\" class=\"btn btn-warning\" value=\"Oppdater\"")
-				if templ_7745c5c3_Err != nil {
-					return templ_7745c5c3_Err
-				}
-				if data == nil {
-					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 6, " disabled")
+					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, " days.</p><form action=\"/privacy\" method=\"POST\" class=\"form-control w-50\"><div class=\"form-group\"><label for=\"logging-consent\">Enable logging</label> <input id=\"logging-consent\" name=\"logging-consent\" type=\"checkbox\"")
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err
 					}
-				}
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 7, "></div></form>    <h2>4. Sletting</h2><p>Når du forlater organisasjonen, kan du kreve at administrator innen rimelig tid sletter opplysninger om deg i henhold til <a href=\"https://www.datatilsynet.no/rettigheter-og-plikter/den-registrertes-rettigheter/rett-til-sletting/\">Personvernforordningen (GDPR) §17</a>. Bino har en slette-knapp som lar administrator slette så mye informasjon som mulig uten å forstyrre organisasjonens drift. Pasienter vil fortsatt være knyttet til en anonym ID, men visningsnavnet blir erstattet med \"Slettet bruker\".</p><p>Det er administrators plikt å sørge for at data generert av Bino (for eksempel loggene nevnt i seksjon) slettes.</p>")
-				if templ_7745c5c3_Err != nil {
-					return templ_7745c5c3_Err
+					if data.User != nil && data.User.LoggingConsent {
+						templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 3, " checked")
+						if templ_7745c5c3_Err != nil {
+							return templ_7745c5c3_Err
+						}
+					}
+					if data.User == nil {
+						templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 4, " disabled")
+						if templ_7745c5c3_Err != nil {
+							return templ_7745c5c3_Err
+						}
+					}
+					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 5, "> ")
+					if templ_7745c5c3_Err != nil {
+						return templ_7745c5c3_Err
+					}
+					if data.User != nil {
+						templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 6, "<input type=\"submit\" class=\"btn btn-warning\" value=\"Update\">")
+						if templ_7745c5c3_Err != nil {
+							return templ_7745c5c3_Err
+						}
+					} else {
+						templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 7, "<input type=\"submit\" class=\"btn btn-warning\" value=\"You must log in to consent to logging.\" disabled>")
+						if templ_7745c5c3_Err != nil {
+							return templ_7745c5c3_Err
+						}
+					}
+					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 8, "</div></form><h2>4. Deletion</h2><p>When you leave the organization, you have the right to have your data deleted according to GDPR. There is a delete-button which lets the administrator delete as much information as possible; patients will be associated with an anonymous ID, but your profile will be marked as deleted.</p><p>It is the administrator's responsibility to ensure any additional data (such as logs generated according to 3.b.) are deleted.</p>")
+					if templ_7745c5c3_Err != nil {
+						return templ_7745c5c3_Err
+					}
+				} else {
+					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 9, "<h1>Personvern</h1><h2>1. Om Bino</h2><p>Bino er utviklet av idealistiske årsaker, og har derfor ingen insentiver til å lagre, behandle eller dele informasjon utover det som er nødvendig for nettsidens funksjon. Bino er fri programvare lisensiert under <a href=\"https://opensource.org/license/agpl-v3\">GNU Affero GPL V3</a>, som setter strenge føringer om at både den originale kildekoden og modifikasjoner av denne må være åpent tilgjengelig. Du kan lese <a href=\"https://github.com/fugleadvokatene/bino\">kildekoden til Bino på Github</a> og bekrefte på egenhånd at det som skjer når du interagerer med nettsiden, samsvarer med det som står i dette dokumentet.</p><h2>2. Personopplysninger som lagres</h2><p>Bino lagrer informasjon om deg utelukkende for å la deg ha en konto og for å organisere informasjon om pasienter:</p><ol><li>Eventuell informasjon du har oppgitt om deg selv, for eksempel navn og profilbilde.</li><li>Innstillinger for siden som må huskes mellom nettlesersesjoner, for eksempel foretrukket språk. Dette lagres i en database.</li><li>Informasjonskapsler i nettleseren brukes for at du ikke skal miste tekst i enkelte skjemaer.</li><li>Innhold du har laget på siden, for eksempel tekst og bilder av pasienter, samt pasienthistorikk.</li></ol><p>Bino leverer ikke opplysninger til noen tredjeparter.</p><h2>3. Logging av aktivitet</h2><h3>3.a. Ingen samtykke = ingen logging</h3><p>Bino gjør ingen tracking eller fingerprinting, uansett hvilke personvernsinnstillinger du har satt. Bino gjør faktisk ingen logging av aktivitet din på nettsiden overhodet, med mindre du har gitt eksplisitt samtykke til dette på skjemaet under. Dersom du utfører en handling som er synlig for alle, kan dette bli logget. Det kan for eksempel være å sjekke inn en pasient, endre egen kapasitet, eller markere at du er utilgjengelig i en periode.</p><h3>3.b. Gi tidsbegrenset samtykke til logging</h3><p>For å hjelpe med å løse tekniske problemer kan du velge å la oss logge aktiviteten din på siden, f.eks når du klikker på lenker eller sender inn skjema, i en kort periode. Ikke slå på denne innstillingen med mindre administrator har bedt deg gjøre det for å løse et spesifikt problem. Du kan når som helst gå tilbake hit og fjerne tillatelsen, og tillatelsen blir automatisk fjernet etter ")
+					if templ_7745c5c3_Err != nil {
+						return templ_7745c5c3_Err
+					}
+					var templ_7745c5c3_Var5 string
+					templ_7745c5c3_Var5, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("%d", config.RevokeConsentPolicy))
+					if templ_7745c5c3_Err != nil {
+						return templ.Error{Err: templ_7745c5c3_Err, FileName: `cmd/privacy.templ`, Line: 97, Col: 172}
+					}
+					_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var5))
+					if templ_7745c5c3_Err != nil {
+						return templ_7745c5c3_Err
+					}
+					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 10, " dager.</p><form action=\"/privacy\" method=\"POST\" class=\"form-control w-50\"><div class=\"form-group\"><label for=\"logging-consent\">Tillat logging</label> <input id=\"logging-consent\" name=\"logging-consent\" type=\"checkbox\"")
+					if templ_7745c5c3_Err != nil {
+						return templ_7745c5c3_Err
+					}
+					if data.User != nil && data.User.LoggingConsent {
+						templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 11, " checked")
+						if templ_7745c5c3_Err != nil {
+							return templ_7745c5c3_Err
+						}
+					}
+					if data.User == nil {
+						templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 12, " disabled")
+						if templ_7745c5c3_Err != nil {
+							return templ_7745c5c3_Err
+						}
+					}
+					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 13, "> ")
+					if templ_7745c5c3_Err != nil {
+						return templ_7745c5c3_Err
+					}
+					if data.User != nil {
+						templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 14, "<input type=\"submit\" class=\"btn btn-warning\" value=\"Oppdater\">")
+						if templ_7745c5c3_Err != nil {
+							return templ_7745c5c3_Err
+						}
+					} else {
+						templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 15, "<input type=\"submit\" class=\"btn btn-warning\" value=\"Du må logge inn for å tillate logging.\" disabled>")
+						if templ_7745c5c3_Err != nil {
+							return templ_7745c5c3_Err
+						}
+					}
+					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 16, "</div></form><h2>4. Sletting</h2><p>Når du forlater organisasjonen, kan du kreve at administrator innen rimelig tid sletter opplysninger om deg i henhold til <a href=\"https://www.datatilsynet.no/rettigheter-og-plikter/den-registrertes-rettigheter/rett-til-sletting/\">Personvernforordningen (GDPR) §17</a>. Bino har en slette-knapp som lar administrator slette så mye informasjon som mulig uten å forstyrre organisasjonens drift. Pasienter vil fortsatt være knyttet til en anonym ID, men visningsnavnet blir erstattet med \"Slettet bruker\".</p><p>Det er administrators plikt å sørge for at data generert av Bino (for eksempel loggene nevnt i seksjon 3.b) slettes.</p>")
+					if templ_7745c5c3_Err != nil {
+						return templ_7745c5c3_Err
+					}
 				}
 				return nil
 			})
@@ -110,6 +166,158 @@ func Privacy(data *CommonData, config PrivacyConfig) templ.Component {
 			return nil
 		})
 		templ_7745c5c3_Err = Layout(data).Render(templ.WithChildren(ctx, templ_7745c5c3_Var2), templ_7745c5c3_Buffer)
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		return nil
+	})
+}
+
+func TOS(data *CommonData) templ.Component {
+	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
+		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
+		if templ_7745c5c3_CtxErr := ctx.Err(); templ_7745c5c3_CtxErr != nil {
+			return templ_7745c5c3_CtxErr
+		}
+		templ_7745c5c3_Buffer, templ_7745c5c3_IsBuffer := templruntime.GetBuffer(templ_7745c5c3_W)
+		if !templ_7745c5c3_IsBuffer {
+			defer func() {
+				templ_7745c5c3_BufErr := templruntime.ReleaseBuffer(templ_7745c5c3_Buffer)
+				if templ_7745c5c3_Err == nil {
+					templ_7745c5c3_Err = templ_7745c5c3_BufErr
+				}
+			}()
+		}
+		ctx = templ.InitializeContext(ctx)
+		templ_7745c5c3_Var6 := templ.GetChildren(ctx)
+		if templ_7745c5c3_Var6 == nil {
+			templ_7745c5c3_Var6 = templ.NopComponent
+		}
+		ctx = templ.ClearChildren(ctx)
+		templ_7745c5c3_Var7 := templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
+			templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
+			templ_7745c5c3_Buffer, templ_7745c5c3_IsBuffer := templruntime.GetBuffer(templ_7745c5c3_W)
+			if !templ_7745c5c3_IsBuffer {
+				defer func() {
+					templ_7745c5c3_BufErr := templruntime.ReleaseBuffer(templ_7745c5c3_Buffer)
+					if templ_7745c5c3_Err == nil {
+						templ_7745c5c3_Err = templ_7745c5c3_BufErr
+					}
+				}()
+			}
+			ctx = templ.InitializeContext(ctx)
+			if data.Language.ID == LanguageIDEN {
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 17, "<h1>Terms of Service</h1>")
+				if templ_7745c5c3_Err != nil {
+					return templ_7745c5c3_Err
+				}
+			} else {
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 18, "<h1>Bruksvilkår</h1>")
+				if templ_7745c5c3_Err != nil {
+					return templ_7745c5c3_Err
+				}
+			}
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 19, " ")
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			templ_7745c5c3_Var8 := templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
+				templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
+				templ_7745c5c3_Buffer, templ_7745c5c3_IsBuffer := templruntime.GetBuffer(templ_7745c5c3_W)
+				if !templ_7745c5c3_IsBuffer {
+					defer func() {
+						templ_7745c5c3_BufErr := templruntime.ReleaseBuffer(templ_7745c5c3_Buffer)
+						if templ_7745c5c3_Err == nil {
+							templ_7745c5c3_Err = templ_7745c5c3_BufErr
+						}
+					}()
+				}
+				ctx = templ.InitializeContext(ctx)
+				if data.Language.ID == LanguageIDEN {
+					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 20, "<p>By logging into Bino, you agree to these terms of service:</p><p>1. The website is run according to Norwegian national law.</p><p>2. Your information is handled according to the <a href=\"/privacy\">privacy policy</a>.</p>")
+					if templ_7745c5c3_Err != nil {
+						return templ_7745c5c3_Err
+					}
+				} else {
+					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 21, "<h1>Bruksvilkår</h1><p>Ved å logge inn i Bino godtar du følgende vilkår for bruk:</p><p>1. Siden driftes i Norge, etter norske lover.</p><p>2. Opplysninger behandles i henhold til <a href=\"/privacy\">personsvernserklæringen</a>.</p>")
+					if templ_7745c5c3_Err != nil {
+						return templ_7745c5c3_Err
+					}
+				}
+				return nil
+			})
+			templ_7745c5c3_Err = Card().Render(templ.WithChildren(ctx, templ_7745c5c3_Var8), templ_7745c5c3_Buffer)
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			return nil
+		})
+		templ_7745c5c3_Err = Layout(data).Render(templ.WithChildren(ctx, templ_7745c5c3_Var7), templ_7745c5c3_Buffer)
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		return nil
+	})
+}
+
+func LoginPage(data *CommonData) templ.Component {
+	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
+		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
+		if templ_7745c5c3_CtxErr := ctx.Err(); templ_7745c5c3_CtxErr != nil {
+			return templ_7745c5c3_CtxErr
+		}
+		templ_7745c5c3_Buffer, templ_7745c5c3_IsBuffer := templruntime.GetBuffer(templ_7745c5c3_W)
+		if !templ_7745c5c3_IsBuffer {
+			defer func() {
+				templ_7745c5c3_BufErr := templruntime.ReleaseBuffer(templ_7745c5c3_Buffer)
+				if templ_7745c5c3_Err == nil {
+					templ_7745c5c3_Err = templ_7745c5c3_BufErr
+				}
+			}()
+		}
+		ctx = templ.InitializeContext(ctx)
+		templ_7745c5c3_Var9 := templ.GetChildren(ctx)
+		if templ_7745c5c3_Var9 == nil {
+			templ_7745c5c3_Var9 = templ.NopComponent
+		}
+		ctx = templ.ClearChildren(ctx)
+		templ_7745c5c3_Var10 := templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
+			templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
+			templ_7745c5c3_Buffer, templ_7745c5c3_IsBuffer := templruntime.GetBuffer(templ_7745c5c3_W)
+			if !templ_7745c5c3_IsBuffer {
+				defer func() {
+					templ_7745c5c3_BufErr := templruntime.ReleaseBuffer(templ_7745c5c3_Buffer)
+					if templ_7745c5c3_Err == nil {
+						templ_7745c5c3_Err = templ_7745c5c3_BufErr
+					}
+				}()
+			}
+			ctx = templ.InitializeContext(ctx)
+			templ_7745c5c3_Var11 := templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
+				templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
+				templ_7745c5c3_Buffer, templ_7745c5c3_IsBuffer := templruntime.GetBuffer(templ_7745c5c3_W)
+				if !templ_7745c5c3_IsBuffer {
+					defer func() {
+						templ_7745c5c3_BufErr := templruntime.ReleaseBuffer(templ_7745c5c3_Buffer)
+						if templ_7745c5c3_Err == nil {
+							templ_7745c5c3_Err = templ_7745c5c3_BufErr
+						}
+					}()
+				}
+				ctx = templ.InitializeContext(ctx)
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 22, "<p>Bino is a patient management system for distributed wildlife rescues.</p><p>You can log in using your Google account. Click the button below to sign in.</p><button class=\"gsi-material-button m-auto\"><div class=\"gsi-material-button-state\"></div><div class=\"gsi-material-button-content-wrapper\"><div class=\"gsi-material-button-icon\"><svg version=\"1.1\" xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 48 48\" xmlns:xlink=\"http://www.w3.org/1999/xlink\" style=\"display: block;\"><path fill=\"#EA4335\" d=\"M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z\"></path> <path fill=\"#4285F4\" d=\"M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z\"></path> <path fill=\"#FBBC05\" d=\"M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z\"></path> <path fill=\"#34A853\" d=\"M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z\"></path> <path fill=\"none\" d=\"M0 0h48v48H0z\"></path></svg></div><a href=\"/login\" style=\"color: black\">Sign in with Google</a></div></button>")
+				if templ_7745c5c3_Err != nil {
+					return templ_7745c5c3_Err
+				}
+				return nil
+			})
+			templ_7745c5c3_Err = Card().Render(templ.WithChildren(ctx, templ_7745c5c3_Var11), templ_7745c5c3_Buffer)
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			return nil
+		})
+		templ_7745c5c3_Err = Layout(data).Render(templ.WithChildren(ctx, templ_7745c5c3_Var10), templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

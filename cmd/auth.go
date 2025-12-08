@@ -43,17 +43,27 @@ func (server *Server) requireLogin(f http.Handler) http.Handler {
 			return
 		}
 
-		if val, ok := r.URL.Query()["_AL"]; ok && len(val) == 1 {
-			if val[0] == "LoggedOut" {
-				commonData.User = nil
-			}
-			if demotedAccessLevel, err := ParseAccessLevel(val[0]); err == nil && commonData.User.AccessLevel >= demotedAccessLevel {
-				commonData.User.AccessLevel = demotedAccessLevel
-			}
+		ctx := r.Context()
+		ctx = WithCommonData(ctx, &commonData)
+		r = r.WithContext(ctx)
+
+		f.ServeHTTP(w, r)
+	})
+}
+
+func (server *Server) tryLogin(f http.Handler, onLoggedIn func(f http.Handler) http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		_, err := server.getUser(r, w)
+		if err == nil {
+			onLoggedIn(f).ServeHTTP(w, r)
+			return
 		}
 
 		ctx := r.Context()
-		ctx = WithCommonData(ctx, &commonData)
+		ctx = WithCommonData(ctx, &CommonData{
+			BuildKey: server.BuildKey,
+			Language: EN,
+		})
 		r = r.WithContext(ctx)
 
 		f.ServeHTTP(w, r)
@@ -118,6 +128,15 @@ func (server *Server) authenticate(w http.ResponseWriter, r *http.Request) (Comm
 		User:     &userData,
 		BuildKey: server.BuildKey,
 		Language: GetLanguage(user.LanguageID),
+	}
+
+	if val, ok := r.URL.Query()["_AL"]; ok && len(val) == 1 {
+		if val[0] == "LoggedOut" {
+			commonData.User = nil
+		}
+		if demotedAccessLevel, err := ParseAccessLevel(val[0]); err == nil && commonData.User.AccessLevel >= demotedAccessLevel {
+			commonData.User.AccessLevel = demotedAccessLevel
+		}
 	}
 
 	return commonData, err

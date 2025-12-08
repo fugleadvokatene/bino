@@ -81,6 +81,7 @@ type Language struct {
 	FilesThatYouHaveUploaded string
 
 	FooterPrivacy    string
+	FooterTOS        string
 	FooterSourceCode string
 
 	FormerPatients string
@@ -367,6 +368,7 @@ var NO = &Language{
 	FilesThatYouHaveUploaded: "Filer du har lastet opp",
 
 	FooterPrivacy:    "Personvern",
+	FooterTOS:        "Bruksvilkår",
 	FooterSourceCode: "Kildekode",
 
 	FormerPatients: "Tidligere pasienter",
@@ -652,6 +654,7 @@ var EN = &Language{
 	FilesThatYouHaveUploaded: "Files you have uploaded",
 
 	FooterPrivacy:    "Privacy",
+	FooterTOS:        "Terms of Service",
 	FooterSourceCode: "Source code",
 
 	FormerPatients: "Former patients",

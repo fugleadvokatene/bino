@@ -36,25 +36,21 @@ templ Head(data *CommonData) {
 }
 
 templ Body(data *CommonData) {
-    if data != nil {
-        @Navbar(data)
-        if len(data.Feedback.Items) > 0 {
-            <div class="b-container">
-                @Card("feedback-container", data.Feedback.CSSClass()) {
-                    <ul class="feedback-list">
-                        for _, item := range data.Feedback.Items {
-                            <li class={"feedback-item", item.Type.CSSClass()}>{item.Message}</li>
-                        }
-                    </ul>
-                    <button class="btn btn-sm btn-success closer">OK</button>
-                }
-            </div>
-        }
+    @Navbar(data)
+    if len(data.Feedback.Items) > 0 {
+        <div class="b-container">
+            @Card("feedback-container", data.Feedback.CSSClass()) {
+                <ul class="feedback-list">
+                    for _, item := range data.Feedback.Items {
+                        <li class={"feedback-item", item.Type.CSSClass()}>{item.Message}</li>
+                    }
+                </ul>
+                <button class="btn btn-sm btn-success closer">OK</button>
+            }
+        </div>
     }
     { children... }
-    if data != nil {
-        @Footer(data)
-    }
+    @Footer(data)
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Hammersmith+One&family=Roboto:wght@100..900&display=swap" rel="stylesheet">
@@ -86,20 +82,22 @@ templ Navbar(data *CommonData) {
                 <span class="navbar-toggler-icon"></span>
             </button>
 
-            <div class="collapse navbar-collapse" id="navbarSupportedContent">
-                @NavbarPageLink(data.Language.NavbarDashboard, "/")
-                @NavbarPageLink(data.Language.Calendar, "/calendar")
-                @NavbarPageLink(data.Language.WikiHeader, "/wiki")
-                if false {
-                    // Not ready
-                    @NavbarPageLink(data.Language.FormerPatients, "/former-patients")
-                }
-                @NavbarPageLink(data.Language.AdminRoot, "/admin")
-                @FullTextSearch(data)
-                @LanguageSelect(data)
-                @SelfInfo(data.User)
-                @AuthLogOut(data)
-            </div>
+            if data.User != nil {
+                <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                    @NavbarPageLink(data.Language.NavbarDashboard, "/")
+                    @NavbarPageLink(data.Language.Calendar, "/calendar")
+                    @NavbarPageLink(data.Language.WikiHeader, "/wiki")
+                    if false {
+                        // Not ready
+                        @NavbarPageLink(data.Language.FormerPatients, "/former-patients")
+                    }
+                    @NavbarPageLink(data.Language.AdminRoot, "/admin")
+                    @FullTextSearch(data)
+                    @LanguageSelect(data)
+                    @SelfInfo(data.User)
+                    @AuthLogOut(data)
+                </div>
+            }
         </div>
     </nav>
 }
@@ -172,6 +170,9 @@ templ Footer(data *CommonData) {
             <div class="footer-layout d-flex justify-content-between">
                 <div class="left">
                     <a href="/privacy">{data.Language.FooterPrivacy}</a>
+                </div>
+                <div class="middle">
+                    <a href="/tos">{data.Language.FooterTOS}</a>
                 </div>
                 <div class="right">
                     <a href="https://github.com/fugleadvokatene/bino">{data.Language.FooterSourceCode}</a>
