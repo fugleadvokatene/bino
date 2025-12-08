@@ -36,6 +36,7 @@ func MustLoadCommonData(ctx context.Context) *CommonData {
 type CommonData struct {
 	BuildKey string
 	User     *UserData
+	Language *Language
 	Subtitle string
 	// Cached result of queries that might be called more than once
 	QueryCache struct {
@@ -107,11 +108,11 @@ func (cd *CommonData) StaticFile(name string) templ.SafeURL {
 }
 
 func (cd *CommonData) Lang() LanguageID {
-	return cd.User.Language.ID
+	return cd.Language.ID
 }
 
 func (cd *CommonData) Lang32() int32 {
-	return int32(cd.User.Language.ID)
+	return int32(cd.Language.ID)
 }
 
 type UserData struct {
@@ -120,7 +121,6 @@ type UserData struct {
 	PreferredHome   Home
 	Homes           []Home
 	Email           string
-	Language        *Language
 	LoggingConsent  bool
 	AvatarURL       string
 	HasAvatarURL    bool

@@ -98,14 +98,14 @@ func (server *Server) filePage(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	data := MustLoadCommonData(ctx)
 
-	data.Subtitle = data.User.Language.FilesUploadHeader
+	data.Subtitle = data.Language.FilesUploadHeader
 
 	files, err := server.Queries.GetFilesAccessibleByUser(ctx, GetFilesAccessibleByUserParams{
 		Creator:       data.User.AppuserID,
 		Accessibility: int32(FileAccessibilityPersonal),
 	})
 	if err != nil {
-		data.Error(data.User.Language.TODO("Failed to load files"), err)
+		data.Error(data.Language.TODO("Failed to load files"), err)
 		files = nil
 	}
 	fileViews := SliceToSlice(files, func(in File) FileView {
@@ -122,7 +122,7 @@ func (server *Server) filePage(w http.ResponseWriter, r *http.Request) {
 		Accessibility: int32(FileAccessibilityPersonal),
 	})
 	if err != nil {
-		data.Error(data.User.Language.TODO("Failed to get file wiki associations"), err)
+		data.Error(data.Language.TODO("Failed to get file wiki associations"), err)
 		fileWikiAssociations = nil
 	}
 	for _, fwa := range fileWikiAssociations {
@@ -137,7 +137,7 @@ func (server *Server) filePage(w http.ResponseWriter, r *http.Request) {
 		Accessibility: int32(FileAccessibilityPersonal),
 	})
 	if err != nil {
-		data.Error(data.User.Language.TODO("Failed to get file patient associations"), err)
+		data.Error(data.Language.TODO("Failed to get file patient associations"), err)
 		filePatientAssociations = nil
 	}
 	for _, fpa := range filePatientAssociations {
@@ -156,14 +156,14 @@ func (server *Server) filepondSubmit(w http.ResponseWriter, r *http.Request) {
 
 	uuids, err := server.getFormMultiValue(r, "filepond")
 	if err != nil {
-		data.Error(data.User.Language.GenericFailed, err)
+		data.Error(data.Language.GenericFailed, err)
 		server.redirect(w, r, "/file")
 		return
 	}
 
 	result := server.FileBackend.Commit(ctx, uuids)
 	if result.Error != nil {
-		data.Error(data.User.Language.GenericFailed, result.Error)
+		data.Error(data.Language.GenericFailed, result.Error)
 		server.redirect(w, r, "/file")
 		return
 	}
@@ -182,12 +182,12 @@ func (server *Server) filepondSubmit(w http.ResponseWriter, r *http.Request) {
 			})
 			if err != nil {
 				errs = append(errs, fmt.Errorf("committing %s: %w"))
-				data.Error(data.User.Language.GenericFailed, err)
+				data.Error(data.Language.GenericFailed, err)
 			}
 		}
 		return errors.Join(errs...)
 	}); err != nil {
-		data.Error(data.User.Language.GenericFailed, result.Error)
+		data.Error(data.Language.GenericFailed, result.Error)
 		server.redirect(w, r, "/file")
 		return
 	}
@@ -278,26 +278,26 @@ func (server *Server) fileDelete(w http.ResponseWriter, r *http.Request) {
 
 	id, err := server.getPathID(r, "id")
 	if err != nil {
-		data.Error(data.User.Language.GenericFailed, err)
+		data.Error(data.Language.GenericFailed, err)
 		server.redirectToReferer(w, r)
 		return
 	}
 
 	file, err := server.Queries.GetFileByID(ctx, id)
 	if err != nil {
-		data.Error(data.User.Language.GenericNotFound, err)
+		data.Error(data.Language.GenericNotFound, err)
 		server.redirectToReferer(w, r)
 		return
 	}
 
 	if file.Creator != data.User.AppuserID {
-		data.Error(data.User.Language.GenericUnauthorized, err)
+		data.Error(data.Language.GenericUnauthorized, err)
 		server.redirectToReferer(w, r)
 		return
 	}
 
 	if err := server.Queries.DeregisterFile(ctx, id); err != nil {
-		data.Error(data.User.Language.GenericFailed, err)
+		data.Error(data.Language.GenericFailed, err)
 		server.redirectToReferer(w, r)
 		return
 	}
@@ -307,6 +307,6 @@ func (server *Server) fileDelete(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	data.Success(data.User.Language.GenericSuccess)
+	data.Success(data.Language.GenericSuccess)
 	server.redirectToReferer(w, r)
 }

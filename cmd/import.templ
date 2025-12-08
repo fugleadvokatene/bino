@@ -2,7 +2,7 @@ package main
 
 templ ImportPage(data *CommonData, req ImportRequest) {
     @Layout(data) {
-        <h1>{data.User.Language.ImportHeader}</h1>
+        <h1>{data.Language.ImportHeader}</h1>
         <div class="card p-2">
             <p>This tool allows you to add many patients in one go.</p>
             <p>Each line in the textarea should have the following format: <code>Name, Species, Home, JournalURL</code></p>
@@ -42,7 +42,7 @@ templ ImportValidation(data *CommonData, req ImportRequest) {
                 }
             </ul>
             <div class="form-group">
-                <button type="submit" class="b-create-patient btn btn-primary">{data.User.Language.ImportPatients}</button>
+                <button type="submit" class="b-create-patient btn btn-primary">{data.Language.ImportPatients}</button>
             </div>
         </div>
     } else {

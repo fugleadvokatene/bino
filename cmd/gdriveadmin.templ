@@ -11,7 +11,7 @@ templ (server *Server) GDrivePage(
     info GDriveConfigInfo,
 ) {
     @Layout(data) {
-        <h1>{data.User.Language.AdminManageGoogleDrive}</h1>
+        <h1>{data.Language.AdminManageGoogleDrive}</h1>
         @server.GDrivePermissionOverview(ctx, data, info)
     }
 }
@@ -22,10 +22,10 @@ templ (server *Server) GDrivePermissionOverview(
     info GDriveConfigInfo,
 ) {
     @Card() {
-        <p>{data.User.Language.GDriveBaseDir} <a href={info.JournalFolder.FolderURL()}>{info.JournalFolder.Name}</a></p>
-        <p>{data.User.Language.GDriveTemplateFile} <a href={templ.URL(info.TemplateDoc.Item.DocumentURL())}>{info.TemplateDoc.Item.Name}</a></p>
+        <p>{data.Language.GDriveBaseDir} <a href={info.JournalFolder.FolderURL()}>{info.JournalFolder.Name}</a></p>
+        <p>{data.Language.GDriveTemplateFile} <a href={templ.URL(info.TemplateDoc.Item.DocumentURL())}>{info.TemplateDoc.Item.Name}</a></p>
         if len(info.ExtraFolders) > 0 {
-            <p>{data.User.Language.GDriveExtraDirs}</p>
+            <p>{data.Language.GDriveExtraDirs}</p>
             <ul>
             for _, item := range info.ExtraFolders {
                 <p><a href={item.FolderURL()}>{item.Name}</a></p>
@@ -35,15 +35,15 @@ templ (server *Server) GDrivePermissionOverview(
     }
 
     @Card() {
-        <h2>{data.User.Language.GDrivePermissionsForBaseDir}</h2>
-        <p>{data.User.Language.GDrivePermissionsForBaseDirInstruction}</p>
+        <h2>{data.Language.GDrivePermissionsForBaseDir}</h2>
+        <p>{data.Language.GDrivePermissionsForBaseDirInstruction}</p>
         <table class="table table-sm">
         <thead>
             <tr>
-                <th>{data.User.Language.GDriveDisplayName}</th>
-                <th>{data.User.Language.GDriveEmail}</th>
-                <th>{data.User.Language.GDriveRole}</th>
-                <th>{data.User.Language.GDriveFoundBinoUser}</th>
+                <th>{data.Language.GDriveDisplayName}</th>
+                <th>{data.Language.GDriveEmail}</th>
+                <th>{data.Language.GDriveRole}</th>
+                <th>{data.Language.GDriveFoundBinoUser}</th>
             </tr>
         </thead>
         <tbody>
@@ -56,14 +56,14 @@ templ (server *Server) GDrivePermissionOverview(
                     {p.Email}
                 </td>
                 <td>
-                    {p.Role} ({data.User.Language.GDriveRoles[p.Role]})
+                    {p.Role} ({data.Language.GDriveRoles[p.Role]})
                 </td>
                 <td>
                     if view := server.lookupUserByEmail(ctx, p.Email); view.Valid() {
                         @Avatar(view)
                     } else {
-                        <p>{data.User.Language.GenericNotFound}</p>
-                        @SingleButtonForm(fmt.Sprintf("/invite/%s", p.Email), data.User.Language.AdminInviteToBino, "POST", "btn-primary")
+                        <p>{data.Language.GenericNotFound}</p>
+                        @SingleButtonForm(fmt.Sprintf("/invite/%s", p.Email), data.Language.AdminInviteToBino, "POST", "btn-primary")
                     }
                 </td>
             </tr>
@@ -72,12 +72,12 @@ templ (server *Server) GDrivePermissionOverview(
         </table>
 
         if extraBinoUsers := server.getExtraBinoUsers(ctx, info.JournalFolder); len(extraBinoUsers) > 0 {
-            <p>{data.User.Language.GDriveBinoUsersMissingWritePermission}</p>
+            <p>{data.Language.GDriveBinoUsersMissingWritePermission}</p>
             <table class="table table-sm">
             <thead>
                 <tr>
-                    <th>{data.User.Language.GenericName}</th>
-                    <th>{data.User.Language.GDriveEmailInBino}</th>
+                    <th>{data.Language.GenericName}</th>
+                    <th>{data.Language.GDriveEmailInBino}</th>
                     <th></th>
                 </tr>
             </thead>
@@ -91,7 +91,7 @@ templ (server *Server) GDrivePermissionOverview(
                     
                     <td>
                     if server.LoggedInUserCanShare(ctx, info.JournalFolder) {
-                        @SingleButtonForm(fmt.Sprintf("/gdrive/invite/%s", user.Email), data.User.Language.GDriveGiveAccess, "POST", "btn-primary")
+                        @SingleButtonForm(fmt.Sprintf("/gdrive/invite/%s", user.Email), data.Language.GDriveGiveAccess, "POST", "btn-primary")
                     }
                     </td>
                 </tr>

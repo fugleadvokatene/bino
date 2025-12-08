@@ -42,9 +42,9 @@ func WikiPageTempl(data *CommonData, page WikiPageView, links []WikiLinkView) te
 			return templ_7745c5c3_Err
 		}
 		var templ_7745c5c3_Var2 string
-		templ_7745c5c3_Var2, templ_7745c5c3_Err = templ.JoinStringErrs(templ.JSONString(data.User.Language))
+		templ_7745c5c3_Var2, templ_7745c5c3_Err = templ.JoinStringErrs(templ.JSONString(data.Language))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `cmd/wiki.templ`, Line: 9, Col: 57}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `cmd/wiki.templ`, Line: 9, Col: 52}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var2))
 		if templ_7745c5c3_Err != nil {
@@ -174,7 +174,7 @@ func WikiPageTempl(data *CommonData, page WikiPageView, links []WikiLinkView) te
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
-				templ_7745c5c3_Err = Button("submit", "fa-file-circle-plus", data.User.Language.GenericAdd).Render(ctx, templ_7745c5c3_Buffer)
+				templ_7745c5c3_Err = Button("submit", "fa-file-circle-plus", data.Language.GenericAdd).Render(ctx, templ_7745c5c3_Buffer)
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}

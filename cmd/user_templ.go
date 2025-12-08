@@ -79,9 +79,9 @@ func UserPage(ctx context.Context, data *CommonData, user UserView) templ.Compon
 					return templ_7745c5c3_Err
 				}
 				var templ_7745c5c3_Var5 string
-				templ_7745c5c3_Var5, templ_7745c5c3_Err = templ.JoinStringErrs(data.User.Language.UserHomes)
+				templ_7745c5c3_Var5, templ_7745c5c3_Err = templ.JoinStringErrs(data.Language.UserHomes)
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `cmd/user.templ`, Line: 11, Col: 45}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `cmd/user.templ`, Line: 11, Col: 40}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var5))
 				if templ_7745c5c3_Err != nil {
@@ -133,9 +133,9 @@ func UserPage(ctx context.Context, data *CommonData, user UserView) templ.Compon
 						return templ_7745c5c3_Err
 					}
 					var templ_7745c5c3_Var8 string
-					templ_7745c5c3_Var8, templ_7745c5c3_Err = templ.JoinStringErrs(data.User.Language.UserIsHomeless)
+					templ_7745c5c3_Var8, templ_7745c5c3_Err = templ.JoinStringErrs(data.Language.UserIsHomeless)
 					if templ_7745c5c3_Err != nil {
-						return templ.Error{Err: templ_7745c5c3_Err, FileName: `cmd/user.templ`, Line: 18, Col: 67}
+						return templ.Error{Err: templ_7745c5c3_Err, FileName: `cmd/user.templ`, Line: 18, Col: 62}
 					}
 					_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var8))
 					if templ_7745c5c3_Err != nil {
@@ -151,9 +151,9 @@ func UserPage(ctx context.Context, data *CommonData, user UserView) templ.Compon
 					return templ_7745c5c3_Err
 				}
 				var templ_7745c5c3_Var9 string
-				templ_7745c5c3_Var9, templ_7745c5c3_Err = templ.JoinStringErrs(data.User.Language.AccessLevel)
+				templ_7745c5c3_Var9, templ_7745c5c3_Err = templ.JoinStringErrs(data.Language.AccessLevel)
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `cmd/user.templ`, Line: 20, Col: 47}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `cmd/user.templ`, Line: 20, Col: 42}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var9))
 				if templ_7745c5c3_Err != nil {
@@ -164,9 +164,9 @@ func UserPage(ctx context.Context, data *CommonData, user UserView) templ.Compon
 					return templ_7745c5c3_Err
 				}
 				var templ_7745c5c3_Var10 string
-				templ_7745c5c3_Var10, templ_7745c5c3_Err = templ.JoinStringErrs(data.User.Language.AccessLevels[user.AccessLevel])
+				templ_7745c5c3_Var10, templ_7745c5c3_Err = templ.JoinStringErrs(data.Language.AccessLevels[user.AccessLevel])
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `cmd/user.templ`, Line: 21, Col: 65}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `cmd/user.templ`, Line: 21, Col: 60}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var10))
 				if templ_7745c5c3_Err != nil {

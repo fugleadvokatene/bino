@@ -7,7 +7,7 @@ templ FullLayout(data *CommonData) {
         @Head(data)
     </head>
     if data != nil {
-        <body data-lang={templ.JSONString(data.User.Language)}>
+        <body data-lang={templ.JSONString(data.Language)}>
             @Body(data) {
                 { children... }
             }
@@ -53,7 +53,7 @@ templ Body(data *CommonData) {
     }
     { children... }
     if data != nil {
-        @Footer(data.User)
+        @Footer(data)
     }
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -87,18 +87,18 @@ templ Navbar(data *CommonData) {
             </button>
 
             <div class="collapse navbar-collapse" id="navbarSupportedContent">
-                @NavbarPageLink(data.User.Language.NavbarDashboard, "/")
-                @NavbarPageLink(data.User.Language.Calendar, "/calendar")
-                @NavbarPageLink(data.User.Language.WikiHeader, "/wiki")
+                @NavbarPageLink(data.Language.NavbarDashboard, "/")
+                @NavbarPageLink(data.Language.Calendar, "/calendar")
+                @NavbarPageLink(data.Language.WikiHeader, "/wiki")
                 if false {
                     // Not ready
-                    @NavbarPageLink(data.User.Language.FormerPatients, "/former-patients")
+                    @NavbarPageLink(data.Language.FormerPatients, "/former-patients")
                 }
-                @NavbarPageLink(data.User.Language.AdminRoot, "/admin")
+                @NavbarPageLink(data.Language.AdminRoot, "/admin")
                 @FullTextSearch(data)
                 @LanguageSelect(data)
                 @SelfInfo(data.User)
-                @AuthLogOut(data.User)
+                @AuthLogOut(data)
             </div>
         </div>
     </nav>
@@ -115,7 +115,7 @@ templ LanguageSelect(data *CommonData) {
         <form class="d-flex" action="/language" method="post">
             <select id="language-select" class="form-select" aria-label="Select language" name="language">
                 for _, language := range LanguageIDValues() {
-                    <option value={language} selected?={language == data.User.Language.ID}>{Languages[int32(language)].Emoji}</option>
+                    <option value={language} selected?={language == data.Language.ID}>{Languages[int32(language)].Emoji}</option>
                 }
             </select>
         </form>
@@ -130,7 +130,7 @@ templ FullTextSearch(data *CommonData) {
                     id="search-q"
                     class="form-input form-control"
                     name="q"
-                    placeholder={data.User.Language.GenericSearch}
+                    placeholder={data.Language.GenericSearch}
                     autocomplete="off"
                     autocorrect="off"
                     autocapitalize="off"
@@ -160,13 +160,13 @@ templ SelfInfo(data *UserData) {
     }
 }
 
-templ AuthLogOut(data *UserData) {
+templ AuthLogOut(data *CommonData) {
     <form class="d-flex" role="AuthLogOut" action="/AuthLogOut">
         <button class="btn btn-outline-warning" type="submit">{data.Language.AuthLogOut}</button>
     </form>
 }
 
-templ Footer(data *UserData) {
+templ Footer(data *CommonData) {
     <footer class="footer b-color-lightgray">
         <div class="container">
             <div class="footer-layout d-flex justify-content-between">

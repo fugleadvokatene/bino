@@ -233,14 +233,14 @@ func (server *Server) searchHandler(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	commonData := MustLoadCommonData(ctx)
 
-	commonData.Subtitle = commonData.User.Language.GenericSearch
+	commonData.Subtitle = commonData.Language.GenericSearch
 
 	result, err := server.doSearch(r)
 	if err != nil {
 		server.emptySearch(w, r, result, err.Error(), true)
 		return
 	}
-	_ = SearchPage(commonData, result, commonData.User.Language.GenericNotFound).Render(ctx, w)
+	_ = SearchPage(commonData, result, commonData.Language.GenericNotFound).Render(ctx, w)
 }
 
 func (server *Server) searchLiveHandler(w http.ResponseWriter, r *http.Request) {
@@ -252,5 +252,5 @@ func (server *Server) searchLiveHandler(w http.ResponseWriter, r *http.Request) 
 		server.emptySearch(w, r, result, err.Error(), false)
 		return
 	}
-	_ = SearchMatches(commonData, result, commonData.User.Language.GenericNotFound).Render(ctx, w)
+	_ = SearchMatches(commonData, result, commonData.Language.GenericNotFound).Render(ctx, w)
 }

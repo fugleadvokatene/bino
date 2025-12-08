@@ -47,9 +47,9 @@ func FullLayout(data *CommonData) templ.Component {
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var2 string
-			templ_7745c5c3_Var2, templ_7745c5c3_Err = templ.JoinStringErrs(templ.JSONString(data.User.Language))
+			templ_7745c5c3_Var2, templ_7745c5c3_Err = templ.JoinStringErrs(templ.JSONString(data.Language))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `cmd/layout.templ`, Line: 10, Col: 61}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `cmd/layout.templ`, Line: 10, Col: 56}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var2))
 			if templ_7745c5c3_Err != nil {
@@ -304,7 +304,7 @@ func Body(data *CommonData) templ.Component {
 			return templ_7745c5c3_Err
 		}
 		if data != nil {
-			templ_7745c5c3_Err = Footer(data.User).Render(ctx, templ_7745c5c3_Buffer)
+			templ_7745c5c3_Err = Footer(data).Render(ctx, templ_7745c5c3_Buffer)
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
@@ -483,15 +483,15 @@ func Navbar(data *CommonData) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = NavbarPageLink(data.User.Language.NavbarDashboard, "/").Render(ctx, templ_7745c5c3_Buffer)
+		templ_7745c5c3_Err = NavbarPageLink(data.Language.NavbarDashboard, "/").Render(ctx, templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = NavbarPageLink(data.User.Language.Calendar, "/calendar").Render(ctx, templ_7745c5c3_Buffer)
+		templ_7745c5c3_Err = NavbarPageLink(data.Language.Calendar, "/calendar").Render(ctx, templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = NavbarPageLink(data.User.Language.WikiHeader, "/wiki").Render(ctx, templ_7745c5c3_Buffer)
+		templ_7745c5c3_Err = NavbarPageLink(data.Language.WikiHeader, "/wiki").Render(ctx, templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -500,12 +500,12 @@ func Navbar(data *CommonData) templ.Component {
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = NavbarPageLink(data.User.Language.FormerPatients, "/former-patients").Render(ctx, templ_7745c5c3_Buffer)
+			templ_7745c5c3_Err = NavbarPageLink(data.Language.FormerPatients, "/former-patients").Render(ctx, templ_7745c5c3_Buffer)
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 		}
-		templ_7745c5c3_Err = NavbarPageLink(data.User.Language.AdminRoot, "/admin").Render(ctx, templ_7745c5c3_Buffer)
+		templ_7745c5c3_Err = NavbarPageLink(data.Language.AdminRoot, "/admin").Render(ctx, templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -521,7 +521,7 @@ func Navbar(data *CommonData) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = AuthLogOut(data.User).Render(ctx, templ_7745c5c3_Buffer)
+		templ_7745c5c3_Err = AuthLogOut(data).Render(ctx, templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -631,7 +631,7 @@ func LanguageSelect(data *CommonData) templ.Component {
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			if language == data.User.Language.ID {
+			if language == data.Language.ID {
 				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 40, " selected")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
@@ -644,7 +644,7 @@ func LanguageSelect(data *CommonData) templ.Component {
 			var templ_7745c5c3_Var27 string
 			templ_7745c5c3_Var27, templ_7745c5c3_Err = templ.JoinStringErrs(Languages[int32(language)].Emoji)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `cmd/layout.templ`, Line: 118, Col: 124}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `cmd/layout.templ`, Line: 118, Col: 119}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var27))
 			if templ_7745c5c3_Err != nil {
@@ -689,9 +689,9 @@ func FullTextSearch(data *CommonData) templ.Component {
 			return templ_7745c5c3_Err
 		}
 		var templ_7745c5c3_Var29 string
-		templ_7745c5c3_Var29, templ_7745c5c3_Err = templ.JoinStringErrs(data.User.Language.GenericSearch)
+		templ_7745c5c3_Var29, templ_7745c5c3_Err = templ.JoinStringErrs(data.Language.GenericSearch)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `cmd/layout.templ`, Line: 133, Col: 65}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `cmd/layout.templ`, Line: 133, Col: 60}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var29))
 		if templ_7745c5c3_Err != nil {
@@ -780,7 +780,7 @@ func SelfInfo(data *UserData) templ.Component {
 	})
 }
 
-func AuthLogOut(data *UserData) templ.Component {
+func AuthLogOut(data *CommonData) templ.Component {
 	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
 		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
 		if templ_7745c5c3_CtxErr := ctx.Err(); templ_7745c5c3_CtxErr != nil {
@@ -822,7 +822,7 @@ func AuthLogOut(data *UserData) templ.Component {
 	})
 }
 
-func Footer(data *UserData) templ.Component {
+func Footer(data *CommonData) templ.Component {
 	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
 		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
 		if templ_7745c5c3_CtxErr := ctx.Err(); templ_7745c5c3_CtxErr != nil {

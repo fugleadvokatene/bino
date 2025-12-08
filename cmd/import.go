@@ -28,7 +28,7 @@ func (server *Server) getImportHandler(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	commonData := MustLoadCommonData(ctx)
 
-	commonData.Subtitle = commonData.User.Language.ImportHeader
+	commonData.Subtitle = commonData.Language.ImportHeader
 
 	var ir ImportRequest
 	server.getCookie(w, r, "import-request", &ir)

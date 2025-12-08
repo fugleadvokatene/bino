@@ -103,7 +103,7 @@ func (server *Server) setCapacityHandler(w http.ResponseWriter, r *http.Request)
 		ID:       id,
 		Capacity: capacity,
 	}); err != nil {
-		commonData.Error(commonData.User.Language.GenericFailed, err)
+		commonData.Error(commonData.Language.GenericFailed, err)
 	}
 
 	server.redirectToReferer(w, r)
@@ -211,18 +211,18 @@ func (server *Server) addHomeUnavailablePeriodHandler(w http.ResponseWriter, r *
 	note, hasNote := values["unavailable-note"]
 
 	if n, err := fmt.Sscanf(values["unavailable-from"], "%d-%d-%d", &fromV.Year, &fromV.Month, &fromV.Day); err != nil || n != 3 {
-		commonData.Warning(commonData.User.Language.HomePeriodInvalid, err)
+		commonData.Warning(commonData.Language.HomePeriodInvalid, err)
 		server.redirectToReferer(w, r)
 		return
 	}
 	if n, err := fmt.Sscanf(values["unavailable-to"], "%d-%d-%d", &toV.Year, &toV.Month, &toV.Day); err != nil || n != 3 {
-		commonData.Warning(commonData.User.Language.HomePeriodInvalid, err)
+		commonData.Warning(commonData.Language.HomePeriodInvalid, err)
 		server.redirectToReferer(w, r)
 		return
 	}
 
 	if toV.Before(fromV) {
-		commonData.Warning(commonData.User.Language.HomePeriodInvalid, fmt.Errorf("to is before from: %+v < %+v", toV, fromV))
+		commonData.Warning(commonData.Language.HomePeriodInvalid, fmt.Errorf("to is before from: %+v < %+v", toV, fromV))
 		server.redirectToReferer(w, r)
 		return
 	}

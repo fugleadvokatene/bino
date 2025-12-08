@@ -46,9 +46,9 @@ func UserAdmin(data *CommonData, homes []HomeView, users []UserView, invitations
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var3 string
-			templ_7745c5c3_Var3, templ_7745c5c3_Err = templ.JoinStringErrs(data.User.Language.AdminManageUsers)
+			templ_7745c5c3_Var3, templ_7745c5c3_Err = templ.JoinStringErrs(data.Language.AdminManageUsers)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `cmd/useradmin.templ`, Line: 5, Col: 48}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `cmd/useradmin.templ`, Line: 5, Col: 43}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var3))
 			if templ_7745c5c3_Err != nil {
@@ -75,9 +75,9 @@ func UserAdmin(data *CommonData, homes []HomeView, users []UserView, invitations
 					return templ_7745c5c3_Err
 				}
 				var templ_7745c5c3_Var5 string
-				templ_7745c5c3_Var5, templ_7745c5c3_Err = templ.JoinStringErrs(data.User.Language.AdminInviteUsers)
+				templ_7745c5c3_Var5, templ_7745c5c3_Err = templ.JoinStringErrs(data.Language.AdminInviteUsers)
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `cmd/useradmin.templ`, Line: 7, Col: 52}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `cmd/useradmin.templ`, Line: 7, Col: 47}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var5))
 				if templ_7745c5c3_Err != nil {
@@ -104,9 +104,9 @@ func UserAdmin(data *CommonData, homes []HomeView, users []UserView, invitations
 						return templ_7745c5c3_Err
 					}
 					var templ_7745c5c3_Var7 string
-					templ_7745c5c3_Var7, templ_7745c5c3_Err = templ.JoinStringErrs(data.User.Language.GenericEmail)
+					templ_7745c5c3_Var7, templ_7745c5c3_Err = templ.JoinStringErrs(data.Language.GenericEmail)
 					if templ_7745c5c3_Err != nil {
-						return templ.Error{Err: templ_7745c5c3_Err, FileName: `cmd/useradmin.templ`, Line: 14, Col: 87}
+						return templ.Error{Err: templ_7745c5c3_Err, FileName: `cmd/useradmin.templ`, Line: 14, Col: 82}
 					}
 					_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var7))
 					if templ_7745c5c3_Err != nil {
@@ -117,9 +117,9 @@ func UserAdmin(data *CommonData, homes []HomeView, users []UserView, invitations
 						return templ_7745c5c3_Err
 					}
 					var templ_7745c5c3_Var8 string
-					templ_7745c5c3_Var8, templ_7745c5c3_Err = templ.JoinStringErrs(data.User.Language.AdminEmailAddress)
+					templ_7745c5c3_Var8, templ_7745c5c3_Err = templ.JoinStringErrs(data.Language.AdminEmailAddress)
 					if templ_7745c5c3_Err != nil {
-						return templ.Error{Err: templ_7745c5c3_Err, FileName: `cmd/useradmin.templ`, Line: 16, Col: 141}
+						return templ.Error{Err: templ_7745c5c3_Err, FileName: `cmd/useradmin.templ`, Line: 16, Col: 136}
 					}
 					_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var8))
 					if templ_7745c5c3_Err != nil {
@@ -130,9 +130,9 @@ func UserAdmin(data *CommonData, homes []HomeView, users []UserView, invitations
 						return templ_7745c5c3_Err
 					}
 					var templ_7745c5c3_Var9 string
-					templ_7745c5c3_Var9, templ_7745c5c3_Err = templ.JoinStringErrs(data.User.Language.GenericHome)
+					templ_7745c5c3_Var9, templ_7745c5c3_Err = templ.JoinStringErrs(data.Language.GenericHome)
 					if templ_7745c5c3_Err != nil {
-						return templ.Error{Err: templ_7745c5c3_Err, FileName: `cmd/useradmin.templ`, Line: 19, Col: 71}
+						return templ.Error{Err: templ_7745c5c3_Err, FileName: `cmd/useradmin.templ`, Line: 19, Col: 66}
 					}
 					_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var9))
 					if templ_7745c5c3_Err != nil {
@@ -143,9 +143,9 @@ func UserAdmin(data *CommonData, homes []HomeView, users []UserView, invitations
 						return templ_7745c5c3_Err
 					}
 					var templ_7745c5c3_Var10 string
-					templ_7745c5c3_Var10, templ_7745c5c3_Err = templ.JoinStringErrs(data.User.Language.DashboardSelectHome)
+					templ_7745c5c3_Var10, templ_7745c5c3_Err = templ.JoinStringErrs(data.Language.DashboardSelectHome)
 					if templ_7745c5c3_Err != nil {
-						return templ.Error{Err: templ_7745c5c3_Err, FileName: `cmd/useradmin.templ`, Line: 22, Col: 154}
+						return templ.Error{Err: templ_7745c5c3_Err, FileName: `cmd/useradmin.templ`, Line: 22, Col: 149}
 					}
 					_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var10))
 					if templ_7745c5c3_Err != nil {
@@ -156,9 +156,9 @@ func UserAdmin(data *CommonData, homes []HomeView, users []UserView, invitations
 						return templ_7745c5c3_Err
 					}
 					var templ_7745c5c3_Var11 string
-					templ_7745c5c3_Var11, templ_7745c5c3_Err = templ.JoinStringErrs(data.User.Language.GenericNone)
+					templ_7745c5c3_Var11, templ_7745c5c3_Err = templ.JoinStringErrs(data.Language.GenericNone)
 					if templ_7745c5c3_Err != nil {
-						return templ.Error{Err: templ_7745c5c3_Err, FileName: `cmd/useradmin.templ`, Line: 23, Col: 93}
+						return templ.Error{Err: templ_7745c5c3_Err, FileName: `cmd/useradmin.templ`, Line: 23, Col: 88}
 					}
 					_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var11))
 					if templ_7745c5c3_Err != nil {
@@ -205,9 +205,9 @@ func UserAdmin(data *CommonData, homes []HomeView, users []UserView, invitations
 						return templ_7745c5c3_Err
 					}
 					var templ_7745c5c3_Var14 string
-					templ_7745c5c3_Var14, templ_7745c5c3_Err = templ.JoinStringErrs(data.User.Language.AccessLevel)
+					templ_7745c5c3_Var14, templ_7745c5c3_Err = templ.JoinStringErrs(data.Language.AccessLevel)
 					if templ_7745c5c3_Err != nil {
-						return templ.Error{Err: templ_7745c5c3_Err, FileName: `cmd/useradmin.templ`, Line: 31, Col: 75}
+						return templ.Error{Err: templ_7745c5c3_Err, FileName: `cmd/useradmin.templ`, Line: 31, Col: 70}
 					}
 					_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var14))
 					if templ_7745c5c3_Err != nil {
@@ -259,9 +259,9 @@ func UserAdmin(data *CommonData, homes []HomeView, users []UserView, invitations
 							return templ_7745c5c3_Err
 						}
 						var templ_7745c5c3_Var17 string
-						templ_7745c5c3_Var17, templ_7745c5c3_Err = templ.JoinStringErrs(data.User.Language.AccessLevels[al])
+						templ_7745c5c3_Var17, templ_7745c5c3_Err = templ.JoinStringErrs(data.Language.AccessLevels[al])
 						if templ_7745c5c3_Err != nil {
-							return templ.Error{Err: templ_7745c5c3_Err, FileName: `cmd/useradmin.templ`, Line: 37, Col: 141}
+							return templ.Error{Err: templ_7745c5c3_Err, FileName: `cmd/useradmin.templ`, Line: 37, Col: 136}
 						}
 						_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var17))
 						if templ_7745c5c3_Err != nil {
@@ -277,9 +277,9 @@ func UserAdmin(data *CommonData, homes []HomeView, users []UserView, invitations
 						return templ_7745c5c3_Err
 					}
 					var templ_7745c5c3_Var18 string
-					templ_7745c5c3_Var18, templ_7745c5c3_Err = templ.JoinStringErrs(data.User.Language.AdminInviteToBino)
+					templ_7745c5c3_Var18, templ_7745c5c3_Err = templ.JoinStringErrs(data.Language.AdminInviteToBino)
 					if templ_7745c5c3_Err != nil {
-						return templ.Error{Err: templ_7745c5c3_Err, FileName: `cmd/useradmin.templ`, Line: 41, Col: 130}
+						return templ.Error{Err: templ_7745c5c3_Err, FileName: `cmd/useradmin.templ`, Line: 41, Col: 125}
 					}
 					_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var18))
 					if templ_7745c5c3_Err != nil {
@@ -305,9 +305,9 @@ func UserAdmin(data *CommonData, homes []HomeView, users []UserView, invitations
 						return templ_7745c5c3_Err
 					}
 					var templ_7745c5c3_Var19 string
-					templ_7745c5c3_Var19, templ_7745c5c3_Err = templ.JoinStringErrs(data.User.Language.AdminPendingInvitations)
+					templ_7745c5c3_Var19, templ_7745c5c3_Err = templ.JoinStringErrs(data.Language.AdminPendingInvitations)
 					if templ_7745c5c3_Err != nil {
-						return templ.Error{Err: templ_7745c5c3_Err, FileName: `cmd/useradmin.templ`, Line: 49, Col: 63}
+						return templ.Error{Err: templ_7745c5c3_Err, FileName: `cmd/useradmin.templ`, Line: 49, Col: 58}
 					}
 					_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var19))
 					if templ_7745c5c3_Err != nil {
@@ -318,9 +318,9 @@ func UserAdmin(data *CommonData, homes []HomeView, users []UserView, invitations
 						return templ_7745c5c3_Err
 					}
 					var templ_7745c5c3_Var20 string
-					templ_7745c5c3_Var20, templ_7745c5c3_Err = templ.JoinStringErrs(data.User.Language.AdminEmailAddress)
+					templ_7745c5c3_Var20, templ_7745c5c3_Err = templ.JoinStringErrs(data.Language.AdminEmailAddress)
 					if templ_7745c5c3_Err != nil {
-						return templ.Error{Err: templ_7745c5c3_Err, FileName: `cmd/useradmin.templ`, Line: 54, Col: 73}
+						return templ.Error{Err: templ_7745c5c3_Err, FileName: `cmd/useradmin.templ`, Line: 54, Col: 68}
 					}
 					_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var20))
 					if templ_7745c5c3_Err != nil {
@@ -331,9 +331,9 @@ func UserAdmin(data *CommonData, homes []HomeView, users []UserView, invitations
 						return templ_7745c5c3_Err
 					}
 					var templ_7745c5c3_Var21 string
-					templ_7745c5c3_Var21, templ_7745c5c3_Err = templ.JoinStringErrs(data.User.Language.AdminInviteExpires)
+					templ_7745c5c3_Var21, templ_7745c5c3_Err = templ.JoinStringErrs(data.Language.AdminInviteExpires)
 					if templ_7745c5c3_Err != nil {
-						return templ.Error{Err: templ_7745c5c3_Err, FileName: `cmd/useradmin.templ`, Line: 55, Col: 74}
+						return templ.Error{Err: templ_7745c5c3_Err, FileName: `cmd/useradmin.templ`, Line: 55, Col: 69}
 					}
 					_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var21))
 					if templ_7745c5c3_Err != nil {
@@ -344,9 +344,9 @@ func UserAdmin(data *CommonData, homes []HomeView, users []UserView, invitations
 						return templ_7745c5c3_Err
 					}
 					var templ_7745c5c3_Var22 string
-					templ_7745c5c3_Var22, templ_7745c5c3_Err = templ.JoinStringErrs(data.User.Language.AccessLevel)
+					templ_7745c5c3_Var22, templ_7745c5c3_Err = templ.JoinStringErrs(data.Language.AccessLevel)
 					if templ_7745c5c3_Err != nil {
-						return templ.Error{Err: templ_7745c5c3_Err, FileName: `cmd/useradmin.templ`, Line: 56, Col: 67}
+						return templ.Error{Err: templ_7745c5c3_Err, FileName: `cmd/useradmin.templ`, Line: 56, Col: 62}
 					}
 					_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var22))
 					if templ_7745c5c3_Err != nil {
@@ -357,9 +357,9 @@ func UserAdmin(data *CommonData, homes []HomeView, users []UserView, invitations
 						return templ_7745c5c3_Err
 					}
 					var templ_7745c5c3_Var23 string
-					templ_7745c5c3_Var23, templ_7745c5c3_Err = templ.JoinStringErrs(data.User.Language.GenericHome)
+					templ_7745c5c3_Var23, templ_7745c5c3_Err = templ.JoinStringErrs(data.Language.GenericHome)
 					if templ_7745c5c3_Err != nil {
-						return templ.Error{Err: templ_7745c5c3_Err, FileName: `cmd/useradmin.templ`, Line: 57, Col: 67}
+						return templ.Error{Err: templ_7745c5c3_Err, FileName: `cmd/useradmin.templ`, Line: 57, Col: 62}
 					}
 					_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var23))
 					if templ_7745c5c3_Err != nil {
@@ -388,9 +388,9 @@ func UserAdmin(data *CommonData, homes []HomeView, users []UserView, invitations
 							return templ_7745c5c3_Err
 						}
 						var templ_7745c5c3_Var25 string
-						templ_7745c5c3_Var25, templ_7745c5c3_Err = templ.JoinStringErrs(data.User.Language.FormatTimeAbsWithRelParen(inv.Expires))
+						templ_7745c5c3_Var25, templ_7745c5c3_Err = templ.JoinStringErrs(data.Language.FormatTimeAbsWithRelParen(inv.Expires))
 						if templ_7745c5c3_Err != nil {
-							return templ.Error{Err: templ_7745c5c3_Err, FileName: `cmd/useradmin.templ`, Line: 65, Col: 98}
+							return templ.Error{Err: templ_7745c5c3_Err, FileName: `cmd/useradmin.templ`, Line: 65, Col: 93}
 						}
 						_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var25))
 						if templ_7745c5c3_Err != nil {
@@ -414,9 +414,9 @@ func UserAdmin(data *CommonData, homes []HomeView, users []UserView, invitations
 							return templ_7745c5c3_Err
 						}
 						var templ_7745c5c3_Var27 string
-						templ_7745c5c3_Var27, templ_7745c5c3_Err = templ.JoinStringErrs(data.User.Language.AccessLevels[inv.AccessLevel])
+						templ_7745c5c3_Var27, templ_7745c5c3_Err = templ.JoinStringErrs(data.Language.AccessLevels[inv.AccessLevel])
 						if templ_7745c5c3_Err != nil {
-							return templ.Error{Err: templ_7745c5c3_Err, FileName: `cmd/useradmin.templ`, Line: 66, Col: 114}
+							return templ.Error{Err: templ_7745c5c3_Err, FileName: `cmd/useradmin.templ`, Line: 66, Col: 109}
 						}
 						_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var27))
 						if templ_7745c5c3_Err != nil {
@@ -459,9 +459,9 @@ func UserAdmin(data *CommonData, homes []HomeView, users []UserView, invitations
 							}
 						} else {
 							var templ_7745c5c3_Var30 string
-							templ_7745c5c3_Var30, templ_7745c5c3_Err = templ.JoinStringErrs(data.User.Language.GenericNone)
+							templ_7745c5c3_Var30, templ_7745c5c3_Err = templ.JoinStringErrs(data.Language.GenericNone)
 							if templ_7745c5c3_Err != nil {
-								return templ.Error{Err: templ_7745c5c3_Err, FileName: `cmd/useradmin.templ`, Line: 71, Col: 75}
+								return templ.Error{Err: templ_7745c5c3_Err, FileName: `cmd/useradmin.templ`, Line: 71, Col: 70}
 							}
 							_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var30))
 							if templ_7745c5c3_Err != nil {
@@ -472,7 +472,7 @@ func UserAdmin(data *CommonData, homes []HomeView, users []UserView, invitations
 						if templ_7745c5c3_Err != nil {
 							return templ_7745c5c3_Err
 						}
-						templ_7745c5c3_Err = SingleButtonForm(inv.DeleteURL(), data.User.Language.GenericDelete, "POST", "btn-danger").Render(ctx, templ_7745c5c3_Buffer)
+						templ_7745c5c3_Err = SingleButtonForm(inv.DeleteURL(), data.Language.GenericDelete, "POST", "btn-danger").Render(ctx, templ_7745c5c3_Buffer)
 						if templ_7745c5c3_Err != nil {
 							return templ_7745c5c3_Err
 						}
@@ -491,9 +491,9 @@ func UserAdmin(data *CommonData, homes []HomeView, users []UserView, invitations
 					return templ_7745c5c3_Err
 				}
 				var templ_7745c5c3_Var31 string
-				templ_7745c5c3_Var31, templ_7745c5c3_Err = templ.JoinStringErrs(data.User.Language.AdminExistingUsers)
+				templ_7745c5c3_Var31, templ_7745c5c3_Err = templ.JoinStringErrs(data.Language.AdminExistingUsers)
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `cmd/useradmin.templ`, Line: 82, Col: 54}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `cmd/useradmin.templ`, Line: 82, Col: 49}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var31))
 				if templ_7745c5c3_Err != nil {
@@ -504,9 +504,9 @@ func UserAdmin(data *CommonData, homes []HomeView, users []UserView, invitations
 					return templ_7745c5c3_Err
 				}
 				var templ_7745c5c3_Var32 string
-				templ_7745c5c3_Var32, templ_7745c5c3_Err = templ.JoinStringErrs(data.User.Language.GenericAvatar)
+				templ_7745c5c3_Var32, templ_7745c5c3_Err = templ.JoinStringErrs(data.Language.GenericAvatar)
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `cmd/useradmin.templ`, Line: 87, Col: 65}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `cmd/useradmin.templ`, Line: 87, Col: 60}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var32))
 				if templ_7745c5c3_Err != nil {
@@ -517,9 +517,9 @@ func UserAdmin(data *CommonData, homes []HomeView, users []UserView, invitations
 					return templ_7745c5c3_Err
 				}
 				var templ_7745c5c3_Var33 string
-				templ_7745c5c3_Var33, templ_7745c5c3_Err = templ.JoinStringErrs(data.User.Language.AdminDisplayName)
+				templ_7745c5c3_Var33, templ_7745c5c3_Err = templ.JoinStringErrs(data.Language.AdminDisplayName)
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `cmd/useradmin.templ`, Line: 88, Col: 68}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `cmd/useradmin.templ`, Line: 88, Col: 63}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var33))
 				if templ_7745c5c3_Err != nil {
@@ -530,9 +530,9 @@ func UserAdmin(data *CommonData, homes []HomeView, users []UserView, invitations
 					return templ_7745c5c3_Err
 				}
 				var templ_7745c5c3_Var34 string
-				templ_7745c5c3_Var34, templ_7745c5c3_Err = templ.JoinStringErrs(data.User.Language.AdminEmailAddress)
+				templ_7745c5c3_Var34, templ_7745c5c3_Err = templ.JoinStringErrs(data.Language.AdminEmailAddress)
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `cmd/useradmin.templ`, Line: 89, Col: 69}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `cmd/useradmin.templ`, Line: 89, Col: 64}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var34))
 				if templ_7745c5c3_Err != nil {
@@ -543,9 +543,9 @@ func UserAdmin(data *CommonData, homes []HomeView, users []UserView, invitations
 					return templ_7745c5c3_Err
 				}
 				var templ_7745c5c3_Var35 string
-				templ_7745c5c3_Var35, templ_7745c5c3_Err = templ.JoinStringErrs(data.User.Language.AccessLevel)
+				templ_7745c5c3_Var35, templ_7745c5c3_Err = templ.JoinStringErrs(data.Language.AccessLevel)
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `cmd/useradmin.templ`, Line: 90, Col: 63}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `cmd/useradmin.templ`, Line: 90, Col: 58}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var35))
 				if templ_7745c5c3_Err != nil {
@@ -556,9 +556,9 @@ func UserAdmin(data *CommonData, homes []HomeView, users []UserView, invitations
 					return templ_7745c5c3_Err
 				}
 				var templ_7745c5c3_Var36 string
-				templ_7745c5c3_Var36, templ_7745c5c3_Err = templ.JoinStringErrs(data.User.Language.GenericDelete)
+				templ_7745c5c3_Var36, templ_7745c5c3_Err = templ.JoinStringErrs(data.Language.GenericDelete)
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `cmd/useradmin.templ`, Line: 91, Col: 77}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `cmd/useradmin.templ`, Line: 91, Col: 72}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var36))
 				if templ_7745c5c3_Err != nil {
@@ -634,9 +634,9 @@ func UserAdmin(data *CommonData, homes []HomeView, users []UserView, invitations
 						return templ_7745c5c3_Err
 					}
 					var templ_7745c5c3_Var41 string
-					templ_7745c5c3_Var41, templ_7745c5c3_Err = templ.JoinStringErrs(data.User.Language.AccessLevels[u.AccessLevel])
+					templ_7745c5c3_Var41, templ_7745c5c3_Err = templ.JoinStringErrs(data.Language.AccessLevels[u.AccessLevel])
 					if templ_7745c5c3_Err != nil {
-						return templ.Error{Err: templ_7745c5c3_Err, FileName: `cmd/useradmin.templ`, Line: 100, Col: 106}
+						return templ.Error{Err: templ_7745c5c3_Err, FileName: `cmd/useradmin.templ`, Line: 100, Col: 101}
 					}
 					_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var41))
 					if templ_7745c5c3_Err != nil {
@@ -665,9 +665,9 @@ func UserAdmin(data *CommonData, homes []HomeView, users []UserView, invitations
 							return templ_7745c5c3_Err
 						}
 						var templ_7745c5c3_Var43 string
-						templ_7745c5c3_Var43, templ_7745c5c3_Err = templ.JoinStringErrs(data.User.Language.AdminScrubUserData)
+						templ_7745c5c3_Var43, templ_7745c5c3_Err = templ.JoinStringErrs(data.Language.AdminScrubUserData)
 						if templ_7745c5c3_Err != nil {
-							return templ.Error{Err: templ_7745c5c3_Err, FileName: `cmd/useradmin.templ`, Line: 104, Col: 82}
+							return templ.Error{Err: templ_7745c5c3_Err, FileName: `cmd/useradmin.templ`, Line: 104, Col: 77}
 						}
 						_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var43))
 						if templ_7745c5c3_Err != nil {
@@ -701,9 +701,9 @@ func UserAdmin(data *CommonData, homes []HomeView, users []UserView, invitations
 							return templ_7745c5c3_Err
 						}
 						var templ_7745c5c3_Var45 string
-						templ_7745c5c3_Var45, templ_7745c5c3_Err = templ.JoinStringErrs(data.User.Language.AdminNukeUser)
+						templ_7745c5c3_Var45, templ_7745c5c3_Err = templ.JoinStringErrs(data.Language.AdminNukeUser)
 						if templ_7745c5c3_Err != nil {
-							return templ.Error{Err: templ_7745c5c3_Err, FileName: `cmd/useradmin.templ`, Line: 111, Col: 77}
+							return templ.Error{Err: templ_7745c5c3_Err, FileName: `cmd/useradmin.templ`, Line: 111, Col: 72}
 						}
 						_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var45))
 						if templ_7745c5c3_Err != nil {
@@ -790,9 +790,9 @@ func UserConfirmScrubOrNuke(data *CommonData, user UserView, header, confirmMsg,
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var49 string
-			templ_7745c5c3_Var49, templ_7745c5c3_Err = templ.JoinStringErrs(data.User.Language.GenericGoBack)
+			templ_7745c5c3_Var49, templ_7745c5c3_Err = templ.JoinStringErrs(data.Language.GenericGoBack)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `cmd/useradmin.templ`, Line: 126, Col: 70}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `cmd/useradmin.templ`, Line: 126, Col: 65}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var49))
 			if templ_7745c5c3_Err != nil {
@@ -874,9 +874,9 @@ func UserConfirmScrubOrNuke(data *CommonData, user UserView, header, confirmMsg,
 						return templ_7745c5c3_Err
 					}
 					var templ_7745c5c3_Var55 string
-					templ_7745c5c3_Var55, templ_7745c5c3_Err = templ.JoinStringErrs(data.User.Language.GenericEmail)
+					templ_7745c5c3_Var55, templ_7745c5c3_Err = templ.JoinStringErrs(data.Language.GenericEmail)
 					if templ_7745c5c3_Err != nil {
-						return templ.Error{Err: templ_7745c5c3_Err, FileName: `cmd/useradmin.templ`, Line: 132, Col: 105}
+						return templ.Error{Err: templ_7745c5c3_Err, FileName: `cmd/useradmin.templ`, Line: 132, Col: 100}
 					}
 					_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var55))
 					if templ_7745c5c3_Err != nil {
@@ -887,9 +887,9 @@ func UserConfirmScrubOrNuke(data *CommonData, user UserView, header, confirmMsg,
 						return templ_7745c5c3_Err
 					}
 					var templ_7745c5c3_Var56 string
-					templ_7745c5c3_Var56, templ_7745c5c3_Err = templ.JoinStringErrs(data.User.Language.GenericConfirm)
+					templ_7745c5c3_Var56, templ_7745c5c3_Err = templ.JoinStringErrs(data.Language.GenericConfirm)
 					if templ_7745c5c3_Err != nil {
-						return templ.Error{Err: templ_7745c5c3_Err, FileName: `cmd/useradmin.templ`, Line: 133, Col: 104}
+						return templ.Error{Err: templ_7745c5c3_Err, FileName: `cmd/useradmin.templ`, Line: 133, Col: 99}
 					}
 					_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var56))
 					if templ_7745c5c3_Err != nil {

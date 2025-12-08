@@ -137,7 +137,7 @@ func (server *Server) wikiCreate(w http.ResponseWriter, r *http.Request) {
 
 	title, err := server.getFormValue(r, "title")
 	if err != nil {
-		data.Error(data.User.Language.GenericFailed, err)
+		data.Error(data.Language.GenericFailed, err)
 		server.redirectToReferer(w, r)
 		return
 	}
@@ -147,12 +147,12 @@ func (server *Server) wikiCreate(w http.ResponseWriter, r *http.Request) {
 		Creator: data.User.AppuserID,
 	})
 	if err != nil {
-		data.Error(data.User.Language.GenericFailed, err)
+		data.Error(data.Language.GenericFailed, err)
 		server.redirectToReferer(w, r)
 		return
 	}
 
-	data.Success(data.User.Language.GenericSuccess)
+	data.Success(data.Language.GenericSuccess)
 	server.redirect(w, r, fmt.Sprintf("/wiki/view/%d", result.PageID))
 }
 

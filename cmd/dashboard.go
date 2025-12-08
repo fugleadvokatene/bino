@@ -48,7 +48,7 @@ func (server *Server) dashboardHandler(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	commonData := MustLoadCommonData(ctx)
 
-	commonData.Subtitle = commonData.User.Language.NavbarDashboard
+	commonData.Subtitle = commonData.Language.NavbarDashboard
 
 	preferredSpecies, otherSpecies, err := server.getSpeciesForUser(ctx, commonData.User.PreferredHome.ID)
 	if err != nil {
@@ -199,13 +199,13 @@ func (server *Server) postCheckinHandler(w http.ResponseWriter, r *http.Request)
 			Species: systemSpeciesName,
 			BinoURL: server.Config.BinoURLForPatient(patientID),
 		}); err != nil {
-			commonData.Warning(commonData.User.Language.GDriveCreateJournalFailed, err)
+			commonData.Warning(commonData.Language.GDriveCreateJournalFailed, err)
 		} else {
 			if tag, err := server.Queries.SetPatientJournal(ctx, SetPatientJournalParams{
 				ID:         patientID,
 				JournalUrl: pgtype.Text{String: item.DocumentURL(), Valid: true},
 			}); err != nil || tag.RowsAffected() == 0 {
-				commonData.Warning(commonData.User.Language.GDriveCreateJournalFailed, err)
+				commonData.Warning(commonData.Language.GDriveCreateJournalFailed, err)
 			}
 		}
 	}

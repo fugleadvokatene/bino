@@ -92,9 +92,9 @@ func PatientPage(ctx context.Context, data *CommonData, view PatientPageView, se
 					return templ_7745c5c3_Err
 				}
 				var templ_7745c5c3_Var6 string
-				templ_7745c5c3_Var6, templ_7745c5c3_Err = templ.JoinStringErrs(data.User.Language.PatientRegisteredTime)
+				templ_7745c5c3_Var6, templ_7745c5c3_Err = templ.JoinStringErrs(data.Language.PatientRegisteredTime)
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `cmd/patient.templ`, Line: 15, Col: 65}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `cmd/patient.templ`, Line: 15, Col: 60}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var6))
 				if templ_7745c5c3_Err != nil {
@@ -104,7 +104,7 @@ func PatientPage(ctx context.Context, data *CommonData, view PatientPageView, se
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
-				templ_7745c5c3_Err = CalendarLinkAbs(data.User.Language, view.Patient.TimeCheckin, "listDay").Render(ctx, templ_7745c5c3_Buffer)
+				templ_7745c5c3_Err = CalendarLinkAbs(data.Language, view.Patient.TimeCheckin, "listDay").Render(ctx, templ_7745c5c3_Buffer)
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
@@ -113,9 +113,9 @@ func PatientPage(ctx context.Context, data *CommonData, view PatientPageView, se
 					return templ_7745c5c3_Err
 				}
 				var templ_7745c5c3_Var7 string
-				templ_7745c5c3_Var7, templ_7745c5c3_Err = templ.JoinStringErrs(data.User.Language.GenericStatus)
+				templ_7745c5c3_Var7, templ_7745c5c3_Err = templ.JoinStringErrs(data.Language.GenericStatus)
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `cmd/patient.templ`, Line: 19, Col: 57}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `cmd/patient.templ`, Line: 19, Col: 52}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var7))
 				if templ_7745c5c3_Err != nil {
@@ -126,9 +126,9 @@ func PatientPage(ctx context.Context, data *CommonData, view PatientPageView, se
 					return templ_7745c5c3_Err
 				}
 				var templ_7745c5c3_Var8 string
-				templ_7745c5c3_Var8, templ_7745c5c3_Err = templ.JoinStringErrs(data.User.Language.Status[Status(view.Patient.Status)])
+				templ_7745c5c3_Var8, templ_7745c5c3_Err = templ.JoinStringErrs(data.Language.Status[Status(view.Patient.Status)])
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `cmd/patient.templ`, Line: 20, Col: 79}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `cmd/patient.templ`, Line: 20, Col: 74}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var8))
 				if templ_7745c5c3_Err != nil {
@@ -139,9 +139,9 @@ func PatientPage(ctx context.Context, data *CommonData, view PatientPageView, se
 					return templ_7745c5c3_Err
 				}
 				var templ_7745c5c3_Var9 string
-				templ_7745c5c3_Var9, templ_7745c5c3_Err = templ.JoinStringErrs(data.User.Language.GenericSpecies)
+				templ_7745c5c3_Var9, templ_7745c5c3_Err = templ.JoinStringErrs(data.Language.GenericSpecies)
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `cmd/patient.templ`, Line: 23, Col: 58}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `cmd/patient.templ`, Line: 23, Col: 53}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var9))
 				if templ_7745c5c3_Err != nil {
@@ -170,9 +170,9 @@ func PatientPage(ctx context.Context, data *CommonData, view PatientPageView, se
 						return templ_7745c5c3_Err
 					}
 					var templ_7745c5c3_Var11 string
-					templ_7745c5c3_Var11, templ_7745c5c3_Err = templ.JoinStringErrs(data.User.Language.GenericHome)
+					templ_7745c5c3_Var11, templ_7745c5c3_Err = templ.JoinStringErrs(data.Language.GenericHome)
 					if templ_7745c5c3_Err != nil {
-						return templ.Error{Err: templ_7745c5c3_Err, FileName: `cmd/patient.templ`, Line: 28, Col: 59}
+						return templ.Error{Err: templ_7745c5c3_Err, FileName: `cmd/patient.templ`, Line: 28, Col: 54}
 					}
 					_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var11))
 					if templ_7745c5c3_Err != nil {
@@ -225,9 +225,9 @@ func PatientPage(ctx context.Context, data *CommonData, view PatientPageView, se
 					return templ_7745c5c3_Err
 				}
 				var templ_7745c5c3_Var13 string
-				templ_7745c5c3_Var13, templ_7745c5c3_Err = templ.JoinStringErrs(data.User.Language.PatientEventTime)
+				templ_7745c5c3_Var13, templ_7745c5c3_Err = templ.JoinStringErrs(data.Language.PatientEventTime)
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `cmd/patient.templ`, Line: 52, Col: 56}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `cmd/patient.templ`, Line: 52, Col: 51}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var13))
 				if templ_7745c5c3_Err != nil {
@@ -238,9 +238,9 @@ func PatientPage(ctx context.Context, data *CommonData, view PatientPageView, se
 					return templ_7745c5c3_Err
 				}
 				var templ_7745c5c3_Var14 string
-				templ_7745c5c3_Var14, templ_7745c5c3_Err = templ.JoinStringErrs(data.User.Language.PatientEventUser)
+				templ_7745c5c3_Var14, templ_7745c5c3_Err = templ.JoinStringErrs(data.Language.PatientEventUser)
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `cmd/patient.templ`, Line: 53, Col: 56}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `cmd/patient.templ`, Line: 53, Col: 51}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var14))
 				if templ_7745c5c3_Err != nil {
@@ -251,9 +251,9 @@ func PatientPage(ctx context.Context, data *CommonData, view PatientPageView, se
 					return templ_7745c5c3_Err
 				}
 				var templ_7745c5c3_Var15 string
-				templ_7745c5c3_Var15, templ_7745c5c3_Err = templ.JoinStringErrs(data.User.Language.PatientEventEvent)
+				templ_7745c5c3_Var15, templ_7745c5c3_Err = templ.JoinStringErrs(data.Language.PatientEventEvent)
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `cmd/patient.templ`, Line: 54, Col: 57}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `cmd/patient.templ`, Line: 54, Col: 52}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var15))
 				if templ_7745c5c3_Err != nil {
@@ -264,9 +264,9 @@ func PatientPage(ctx context.Context, data *CommonData, view PatientPageView, se
 					return templ_7745c5c3_Err
 				}
 				var templ_7745c5c3_Var16 string
-				templ_7745c5c3_Var16, templ_7745c5c3_Err = templ.JoinStringErrs(data.User.Language.PatientEventHome)
+				templ_7745c5c3_Var16, templ_7745c5c3_Err = templ.JoinStringErrs(data.Language.PatientEventHome)
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `cmd/patient.templ`, Line: 55, Col: 56}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `cmd/patient.templ`, Line: 55, Col: 51}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var16))
 				if templ_7745c5c3_Err != nil {
@@ -277,9 +277,9 @@ func PatientPage(ctx context.Context, data *CommonData, view PatientPageView, se
 					return templ_7745c5c3_Err
 				}
 				var templ_7745c5c3_Var17 string
-				templ_7745c5c3_Var17, templ_7745c5c3_Err = templ.JoinStringErrs(data.User.Language.PatientEventNote)
+				templ_7745c5c3_Var17, templ_7745c5c3_Err = templ.JoinStringErrs(data.Language.PatientEventNote)
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `cmd/patient.templ`, Line: 56, Col: 56}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `cmd/patient.templ`, Line: 56, Col: 51}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var17))
 				if templ_7745c5c3_Err != nil {
@@ -294,7 +294,7 @@ func PatientPage(ctx context.Context, data *CommonData, view PatientPageView, se
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err
 					}
-					templ_7745c5c3_Err = CalendarLinkAbs(data.User.Language, event.Time, "listDay").Render(ctx, templ_7745c5c3_Buffer)
+					templ_7745c5c3_Err = CalendarLinkAbs(data.Language, event.Time, "listDay").Render(ctx, templ_7745c5c3_Buffer)
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err
 					}
@@ -311,9 +311,9 @@ func PatientPage(ctx context.Context, data *CommonData, view PatientPageView, se
 						return templ_7745c5c3_Err
 					}
 					var templ_7745c5c3_Var18 string
-					templ_7745c5c3_Var18, templ_7745c5c3_Err = templ.JoinStringErrs(data.User.Language.FormatEvent(ctx, event.Row.EventID, event.Row.AssociatedID, server))
+					templ_7745c5c3_Var18, templ_7745c5c3_Err = templ.JoinStringErrs(data.Language.FormatEvent(ctx, event.Row.EventID, event.Row.AssociatedID, server))
 					if templ_7745c5c3_Err != nil {
-						return templ.Error{Err: templ_7745c5c3_Err, FileName: `cmd/patient.templ`, Line: 65, Col: 115}
+						return templ.Error{Err: templ_7745c5c3_Err, FileName: `cmd/patient.templ`, Line: 65, Col: 110}
 					}
 					_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var18))
 					if templ_7745c5c3_Err != nil {
@@ -422,9 +422,9 @@ func PatientCheckout(data *CommonData, patient PatientView) templ.Component {
 			return templ_7745c5c3_Err
 		}
 		var templ_7745c5c3_Var24 string
-		templ_7745c5c3_Var24, templ_7745c5c3_Err = templ.JoinStringErrs(data.User.Language.DashboardCheckOut)
+		templ_7745c5c3_Var24, templ_7745c5c3_Err = templ.JoinStringErrs(data.Language.DashboardCheckOut)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `cmd/patient.templ`, Line: 82, Col: 62}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `cmd/patient.templ`, Line: 82, Col: 57}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var24))
 		if templ_7745c5c3_Err != nil {
@@ -464,9 +464,9 @@ func PatientCheckout(data *CommonData, patient PatientView) templ.Component {
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var27 string
-			templ_7745c5c3_Var27, templ_7745c5c3_Err = templ.JoinStringErrs(data.User.Language.GenericStatus)
+			templ_7745c5c3_Var27, templ_7745c5c3_Err = templ.JoinStringErrs(data.Language.GenericStatus)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `cmd/patient.templ`, Line: 91, Col: 125}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `cmd/patient.templ`, Line: 91, Col: 120}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var27))
 			if templ_7745c5c3_Err != nil {
@@ -490,9 +490,9 @@ func PatientCheckout(data *CommonData, patient PatientView) templ.Component {
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var29 string
-			templ_7745c5c3_Var29, templ_7745c5c3_Err = templ.JoinStringErrs(data.User.Language.DashboardSelectCheckout)
+			templ_7745c5c3_Var29, templ_7745c5c3_Err = templ.JoinStringErrs(data.Language.DashboardSelectCheckout)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `cmd/patient.templ`, Line: 93, Col: 97}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `cmd/patient.templ`, Line: 93, Col: 92}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var29))
 			if templ_7745c5c3_Err != nil {
@@ -502,7 +502,7 @@ func PatientCheckout(data *CommonData, patient PatientView) templ.Component {
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			for statusID, status := range data.User.Language.Status {
+			for statusID, status := range data.Language.Status {
 				if IsCheckoutStatus[statusID] {
 					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 38, "<option value=\"")
 					if templ_7745c5c3_Err != nil {
@@ -554,9 +554,9 @@ func PatientCheckout(data *CommonData, patient PatientView) templ.Component {
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var33 string
-			templ_7745c5c3_Var33, templ_7745c5c3_Err = templ.JoinStringErrs(data.User.Language.GenericNote)
+			templ_7745c5c3_Var33, templ_7745c5c3_Err = templ.JoinStringErrs(data.Language.GenericNote)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `cmd/patient.templ`, Line: 102, Col: 121}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `cmd/patient.templ`, Line: 102, Col: 116}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var33))
 			if templ_7745c5c3_Err != nil {
@@ -579,7 +579,7 @@ func PatientCheckout(data *CommonData, patient PatientView) templ.Component {
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = Button("submit", "fa-dove", data.User.Language.DashboardCheckOut, "w-100").Render(ctx, templ_7745c5c3_Buffer)
+			templ_7745c5c3_Err = Button("submit", "fa-dove", data.Language.DashboardCheckOut, "w-100").Render(ctx, templ_7745c5c3_Buffer)
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
@@ -631,9 +631,9 @@ func PatientJournalUpdate(data *CommonData, patient PatientView, unconditionally
 			return templ_7745c5c3_Err
 		}
 		var templ_7745c5c3_Var36 string
-		templ_7745c5c3_Var36, templ_7745c5c3_Err = templ.JoinStringErrs(data.User.Language.GenericJournal)
+		templ_7745c5c3_Var36, templ_7745c5c3_Err = templ.JoinStringErrs(data.Language.GenericJournal)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `cmd/patient.templ`, Line: 114, Col: 59}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `cmd/patient.templ`, Line: 114, Col: 54}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var36))
 		if templ_7745c5c3_Err != nil {
@@ -662,9 +662,9 @@ func PatientJournalUpdate(data *CommonData, patient PatientView, unconditionally
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var38 string
-			templ_7745c5c3_Var38, templ_7745c5c3_Err = templ.JoinStringErrs(data.User.Language.DashboardGoToJournal)
+			templ_7745c5c3_Var38, templ_7745c5c3_Err = templ.JoinStringErrs(data.Language.DashboardGoToJournal)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `cmd/patient.templ`, Line: 118, Col: 60}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `cmd/patient.templ`, Line: 118, Col: 55}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var38))
 			if templ_7745c5c3_Err != nil {
@@ -680,9 +680,9 @@ func PatientJournalUpdate(data *CommonData, patient PatientView, unconditionally
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var39 string
-			templ_7745c5c3_Var39, templ_7745c5c3_Err = templ.JoinStringErrs(data.User.Language.GDriveNoJournalForPatient)
+			templ_7745c5c3_Var39, templ_7745c5c3_Err = templ.JoinStringErrs(data.Language.GDriveNoJournalForPatient)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `cmd/patient.templ`, Line: 121, Col: 83}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `cmd/patient.templ`, Line: 121, Col: 78}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var39))
 			if templ_7745c5c3_Err != nil {
@@ -692,7 +692,7 @@ func PatientJournalUpdate(data *CommonData, patient PatientView, unconditionally
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = SingleButtonForm(patient.URLSuffix("create-journal"), data.User.Language.GDriveCreateJournalForPatient, "POST", "btn-primary", "d-flex", "flex-column", "center", "mb-2").Render(ctx, templ_7745c5c3_Buffer)
+			templ_7745c5c3_Err = SingleButtonForm(patient.URLSuffix("create-journal"), data.Language.GDriveCreateJournalForPatient, "POST", "btn-primary", "d-flex", "flex-column", "center", "mb-2").Render(ctx, templ_7745c5c3_Buffer)
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
@@ -703,9 +703,9 @@ func PatientJournalUpdate(data *CommonData, patient PatientView, unconditionally
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var40 string
-			templ_7745c5c3_Var40, templ_7745c5c3_Err = templ.JoinStringErrs(data.User.Language.GDriveSelectExistingJournalInstruction)
+			templ_7745c5c3_Var40, templ_7745c5c3_Err = templ.JoinStringErrs(data.Language.GDriveSelectExistingJournalInstruction)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `cmd/patient.templ`, Line: 125, Col: 96}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `cmd/patient.templ`, Line: 125, Col: 91}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var40))
 			if templ_7745c5c3_Err != nil {
@@ -745,9 +745,9 @@ func PatientJournalUpdate(data *CommonData, patient PatientView, unconditionally
 					return templ_7745c5c3_Err
 				}
 				var templ_7745c5c3_Var43 string
-				templ_7745c5c3_Var43, templ_7745c5c3_Err = templ.JoinStringErrs(data.User.Language.GenericURL)
+				templ_7745c5c3_Var43, templ_7745c5c3_Err = templ.JoinStringErrs(data.Language.GenericURL)
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `cmd/patient.templ`, Line: 132, Col: 133}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `cmd/patient.templ`, Line: 132, Col: 128}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var43))
 				if templ_7745c5c3_Err != nil {
@@ -770,7 +770,7 @@ func PatientJournalUpdate(data *CommonData, patient PatientView, unconditionally
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
-				templ_7745c5c3_Err = Button("submit", "fa-link", data.User.Language.GenericUpdate).Render(ctx, templ_7745c5c3_Buffer)
+				templ_7745c5c3_Err = Button("submit", "fa-link", data.Language.GenericUpdate).Render(ctx, templ_7745c5c3_Buffer)
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}

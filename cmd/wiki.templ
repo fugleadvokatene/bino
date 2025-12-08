@@ -6,7 +6,7 @@ templ WikiPageTempl(data *CommonData, page WikiPageView, links []WikiLinkView) {
     <head>
         @Head(data)
     </head>
-    <body data-lang={templ.JSONString(data.User.Language)}>
+    <body data-lang={templ.JSONString(data.Language)}>
         @Body(data) {
             <div class="main b-container dashboard-container gap-2 justify-content-center">
                 <div class="card editor-container-outer shadow-lg">
@@ -32,7 +32,7 @@ templ WikiPageTempl(data *CommonData, page WikiPageView, links []WikiLinkView) {
                         @Form("/wiki/create", "POST") {
                             <div class="input-group">
                                 <input id="title" name="title" class="form-control"></input>
-                                @Button("submit", "fa-file-circle-plus", data.User.Language.GenericAdd)
+                                @Button("submit", "fa-file-circle-plus", data.Language.GenericAdd)
                             </div>
                         }
                     </div>

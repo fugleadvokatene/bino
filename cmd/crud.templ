@@ -43,7 +43,7 @@ templ UpdateRow(data *CommonData,  id int32, obj interface{Name(id LanguageID) (
         }
         <td>
             <button class="btn btn-outline-primary update-submit" data-id={fmt.Sprintf("%d", id)}>
-                {data.User.Language.GenericUpdate}
+                {data.Language.GenericUpdate}
             </button>
         </td>
     </tr>
@@ -60,7 +60,7 @@ templ CreateRow(data *CommonData) {
         }
         <td>
             <button class="btn btn-outline-success w-100" id="new-submit">
-                {data.User.Language.GenericAdd}
+                {data.Language.GenericAdd}
             </button>
         </td>
     </tr>

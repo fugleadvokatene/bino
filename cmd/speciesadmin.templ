@@ -2,8 +2,8 @@ package main
 
 templ SpeciesPage(data *CommonData, species []SpeciesLangs) {
     @CRUDPage{
-        Header: data.User.Language.AdminManageSpecies,
-        LangIndependent: []string{data.User.Language.GenericLatin},
+        Header: data.Language.AdminManageSpecies,
+        LangIndependent: []string{data.Language.GenericLatin},
     }.Component(data) {
         for _, species := range species {
             @UpdateRow(data, species.ID, species) {
@@ -11,7 +11,7 @@ templ SpeciesPage(data *CommonData, species []SpeciesLangs) {
             }
         }
         @CreateRow(data) {
-            <td><input class="form-control" value="" data-field="latin" placeholder={data.User.Language.GenericLatin}/></td>
+            <td><input class="form-control" value="" data-field="latin" placeholder={data.Language.GenericLatin}/></td>
         }
     }
     <script type="module" src={data.StaticFile("bundle/speciesadmin.js")}></script>

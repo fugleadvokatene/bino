@@ -58,12 +58,12 @@ func (server *Server) userConfirmScrubOrNukeHandler(w http.ResponseWriter, r *ht
 		return
 	}
 
-	header := data.User.Language.AdminScrubUserData
-	confirmMsg := data.User.Language.AdminScrubUserDataConfirm
+	header := data.Language.AdminScrubUserData
+	confirmMsg := data.Language.AdminScrubUserDataConfirm
 	dest := "scrub"
 	if nuke {
-		header = data.User.Language.AdminNukeUser
-		confirmMsg = data.User.Language.AdminNukeUserConfirm
+		header = data.Language.AdminNukeUser
+		confirmMsg = data.Language.AdminNukeUserConfirm
 		dest = "nuke"
 	}
 
@@ -112,12 +112,12 @@ func (server *Server) userDoScrubOrNukeHandler(w http.ResponseWriter, r *http.Re
 			err = server.DeleteUser(ctx, id)
 		}
 		if err != nil {
-			data.Error(data.User.Language.AdminUserDeletionFailed, err)
+			data.Error(data.Language.AdminUserDeletionFailed, err)
 		} else {
-			data.Success(data.User.Language.AdminUserWasDeleted)
+			data.Success(data.Language.AdminUserWasDeleted)
 		}
 	} else {
-		data.Error(data.User.Language.AdminAbortedDueToWrongEmail, nil)
+		data.Error(data.Language.AdminAbortedDueToWrongEmail, nil)
 	}
 	server.redirect(w, r, "/users")
 }
@@ -200,17 +200,17 @@ func (server *Server) inviteHandler(w http.ResponseWriter, r *http.Request) {
 				// Conflicting invite key
 				continue
 			} else {
-				data.Error(data.User.Language.AdminInvitationFailed, err)
+				data.Error(data.Language.AdminInvitationFailed, err)
 				return
 			}
 		} else {
-			data.Info(data.User.Language.AdminInvitationOKNoEmail)
+			data.Info(data.Language.AdminInvitationOKNoEmail)
 			server.redirect(w, r, "/users")
 			return
 		}
 	}
 
-	data.Error(data.User.Language.AdminInvitationFailed, fmt.Errorf("couldn't create code"))
+	data.Error(data.Language.AdminInvitationFailed, fmt.Errorf("couldn't create code"))
 	server.redirect(w, r, "/users")
 }
 
@@ -225,9 +225,9 @@ func (server *Server) inviteDeleteHandler(w http.ResponseWriter, r *http.Request
 	}
 
 	if err := server.Queries.DeleteInvitation(ctx, id); err != nil {
-		data.Error(data.User.Language.GenericFailed, err)
+		data.Error(data.Language.GenericFailed, err)
 	} else {
-		data.Success(data.User.Language.GenericSuccess)
+		data.Success(data.Language.GenericSuccess)
 	}
 
 	server.redirect(w, r, "/users")

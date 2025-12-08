@@ -58,8 +58,8 @@ func (server *Server) getPatientHandler(w http.ResponseWriter, r *http.Request) 
 	events := SliceToSlice(eventData, func(r GetEventsForPatientRow) EventView {
 		return EventView{
 			Row:     r,
-			TimeRel: commonData.User.Language.FormatTimeRel(r.Time.Time),
-			TimeAbs: commonData.User.Language.FormatTimeAbs(r.Time.Time),
+			TimeRel: commonData.Language.FormatTimeRel(r.Time.Time),
+			TimeAbs: commonData.Language.FormatTimeAbs(r.Time.Time),
 			Time:    r.Time.Time,
 			User: UserView{
 				ID:           r.AppuserID,
@@ -113,7 +113,7 @@ func (server *Server) createJournalHandler(w http.ResponseWriter, r *http.Reques
 	}
 
 	if patientData.JournalUrl.Valid {
-		commonData.Warning(commonData.User.Language.TODO("journal URL already exists"), nil)
+		commonData.Warning(commonData.Language.TODO("journal URL already exists"), nil)
 		server.redirectToReferer(w, r)
 		return
 	}
@@ -134,7 +134,7 @@ func (server *Server) createJournalHandler(w http.ResponseWriter, r *http.Reques
 		BinoURL: server.Config.BinoURLForPatient(patient),
 	})
 	if err != nil {
-		commonData.Error(commonData.User.Language.TODO("failed to create"), err)
+		commonData.Error(commonData.Language.TODO("failed to create"), err)
 		server.redirectToReferer(w, r)
 		return
 	}
@@ -146,7 +146,7 @@ func (server *Server) createJournalHandler(w http.ResponseWriter, r *http.Reques
 			Valid:  true,
 		},
 	}); err != nil || tag.RowsAffected() == 0 {
-		commonData.Error(commonData.User.Language.TODO("failed to set in DB"), err)
+		commonData.Error(commonData.Language.TODO("failed to set in DB"), err)
 		server.redirectToReferer(w, r)
 		return
 	}
@@ -158,10 +158,10 @@ func (server *Server) createJournalHandler(w http.ResponseWriter, r *http.Reques
 		AppuserID: commonData.User.AppuserID,
 		Time:      pgtype.Timestamptz{Time: time.Now(), Valid: true},
 	}); err != nil {
-		commonData.Warning(commonData.User.Language.TODO("failed to create event"), err)
+		commonData.Warning(commonData.Language.TODO("failed to create event"), err)
 	}
 
-	commonData.Success(commonData.User.Language.TODO("document created"))
+	commonData.Success(commonData.Language.TODO("document created"))
 	server.redirectToReferer(w, r)
 }
 
@@ -183,7 +183,7 @@ func (server *Server) attachJournalHandler(w http.ResponseWriter, r *http.Reques
 
 	baseURL := journalRegex.FindString(url)
 	if baseURL == "" {
-		commonData.Error(commonData.User.Language.TODO("bad URL"), err)
+		commonData.Error(commonData.Language.TODO("bad URL"), err)
 		server.redirectToReferer(w, r)
 		return
 	}
@@ -201,7 +201,7 @@ func (server *Server) attachJournalHandler(w http.ResponseWriter, r *http.Reques
 			Valid:  true,
 		},
 	}); err != nil || tag.RowsAffected() == 0 {
-		commonData.Error(commonData.User.Language.TODO("failed to set in DB"), err)
+		commonData.Error(commonData.Language.TODO("failed to set in DB"), err)
 		server.redirectToReferer(w, r)
 		return
 	}
@@ -213,9 +213,9 @@ func (server *Server) attachJournalHandler(w http.ResponseWriter, r *http.Reques
 		AppuserID: commonData.User.AppuserID,
 		Time:      pgtype.Timestamptz{Time: time.Now(), Valid: true},
 	}); err != nil {
-		commonData.Warning(commonData.User.Language.TODO("failed to create event"), err)
+		commonData.Warning(commonData.Language.TODO("failed to create event"), err)
 	}
 
-	commonData.Success(commonData.User.Language.TODO("journal attached"))
+	commonData.Success(commonData.Language.TODO("journal attached"))
 	server.redirectToReferer(w, r)
 }

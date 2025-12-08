@@ -2,25 +2,25 @@ package main
 
 templ UserAdmin(data *CommonData, homes []HomeView, users []UserView, invitations []InvitationView) {
 	@Layout(data) {
-        <h1>{data.User.Language.AdminManageUsers}</h1>
+        <h1>{data.Language.AdminManageUsers}</h1>
         @Card() {
-            <h2>{data.User.Language.AdminInviteUsers}</h2>
+            <h2>{data.Language.AdminInviteUsers}</h2>
             <div class="card">
                 <table class="table table-striped table-bordered m-0">
                     <tbody>
                         <tr>
                             <td colspan="2">
                                 @Form("/invite", "POST") {
-                                    <label for="email">{data.User.Language.GenericEmail}</label>
+                                    <label for="email">{data.Language.GenericEmail}</label>
                                     <div class="input-group">
-                                        <input id="email" class="form-control" name="email" placeholder={data.User.Language.AdminEmailAddress} autocomplete="off" data-1p-ignore data-lpignore="true" data-bwignore="true" data-protonpass-ignore="true"></input>
+                                        <input id="email" class="form-control" name="email" placeholder={data.Language.AdminEmailAddress} autocomplete="off" data-1p-ignore data-lpignore="true" data-bwignore="true" data-protonpass-ignore="true"></input>
                                     </div>
                                     <label for="home">
-                                        {data.User.Language.GenericHome}
+                                        {data.Language.GenericHome}
                                     </label>
                                     <div class="input-group">
-                                        <select class="form-control form-select" id="home" name="home" placeholder={data.User.Language.DashboardSelectHome}>
-                                            <option value="0">{data.User.Language.GenericNone}</option>
+                                        <select class="form-control form-select" id="home" name="home" placeholder={data.Language.DashboardSelectHome}>
+                                            <option value="0">{data.Language.GenericNone}</option>
                                             for _, home := range homes {
                                                 <option value={home.Home.ID}>{home.Home.Name}</option>
                                             }
@@ -28,17 +28,17 @@ templ UserAdmin(data *CommonData, homes []HomeView, users []UserView, invitation
                                     </div>
                                     <label for="access-level">
                                         <a href="/access">
-                                            {data.User.Language.AccessLevel}
+                                            {data.Language.AccessLevel}
                                         </a>
                                     </label>
                                     <div class="input-group">
                                         <select class="form-control form-select" id="access-level" name="access-level" placeholder={AccessLevelRehabber}>
                                             for _, al := range AccessLevelValues() {
-                                                <option value={al} selected?={al == AccessLevelRehabber}>{data.User.Language.AccessLevels[al]}</option>
+                                                <option value={al} selected?={al == AccessLevelRehabber}>{data.Language.AccessLevels[al]}</option>
                                             }
                                         </select>
                                     </div>
-                                    <button class="btn btn-primary mt-2 w-100" type="submit">{data.User.Language.AdminInviteToBino}</button>
+                                    <button class="btn btn-primary mt-2 w-100" type="submit">{data.Language.AdminInviteToBino}</button>
                                 }
                             </td>
                         </tr>
@@ -46,15 +46,15 @@ templ UserAdmin(data *CommonData, homes []HomeView, users []UserView, invitation
                 </table>
             </div>
             if len(invitations) > 0 {
-                <h2>{data.User.Language.AdminPendingInvitations}</h2>
+                <h2>{data.Language.AdminPendingInvitations}</h2>
                 <div class="card">
                     <table class="table table-striped table-bordered m-0">
                         <thead>
                             <tr>
-                                <th>{data.User.Language.AdminEmailAddress}</th>
-                                <th>{data.User.Language.AdminInviteExpires}</th>
-                                <th>{data.User.Language.AccessLevel}</th>
-                                <th>{data.User.Language.GenericHome}</th>
+                                <th>{data.Language.AdminEmailAddress}</th>
+                                <th>{data.Language.AdminInviteExpires}</th>
+                                <th>{data.Language.AccessLevel}</th>
+                                <th>{data.Language.GenericHome}</th>
                                 <th></th>
                             </tr>
                         </thead>
@@ -62,16 +62,16 @@ templ UserAdmin(data *CommonData, homes []HomeView, users []UserView, invitation
                             for _, inv := range invitations {
                                 <tr>
                                     <td>{inv.Email}</td>
-                                    <td>{data.User.Language.FormatTimeAbsWithRelParen(inv.Expires)}</td>
-                                    <td>{int(inv.AccessLevel)} - {data.User.Language.AccessLevels[inv.AccessLevel]}</td>
+                                    <td>{data.Language.FormatTimeAbsWithRelParen(inv.Expires)}</td>
+                                    <td>{int(inv.AccessLevel)} - {data.Language.AccessLevels[inv.AccessLevel]}</td>
                                     <td>
                                         if inv.HomeID != 0 {
                                             <a href={HomeURL(inv.HomeID)}>{inv.HomeName}</a>
                                         } else {
-                                            {data.User.Language.GenericNone}
+                                            {data.Language.GenericNone}
                                         }
                                     </td>
-                                    <td>@SingleButtonForm(inv.DeleteURL(), data.User.Language.GenericDelete, "POST", "btn-danger")</td>
+                                    <td>@SingleButtonForm(inv.DeleteURL(), data.Language.GenericDelete, "POST", "btn-danger")</td>
                                 </tr>
                             }
                         </tbody>
@@ -79,16 +79,16 @@ templ UserAdmin(data *CommonData, homes []HomeView, users []UserView, invitation
                 </div>
             }
 
-            <h2>{data.User.Language.AdminExistingUsers}</h2>
+            <h2>{data.Language.AdminExistingUsers}</h2>
             <div class="card">
                 <table class="table table-striped table-bordered m-0">
                     <thead>
                         <tr>
-                            <th>{data.User.Language.GenericAvatar}</th>
-                            <th>{data.User.Language.AdminDisplayName}</th>
-                            <th>{data.User.Language.AdminEmailAddress}</th>
-                            <th>{data.User.Language.AccessLevel}</th>
-                            <th colspan="2">{data.User.Language.GenericDelete}</th>
+                            <th>{data.Language.GenericAvatar}</th>
+                            <th>{data.Language.AdminDisplayName}</th>
+                            <th>{data.Language.AdminEmailAddress}</th>
+                            <th>{data.Language.AccessLevel}</th>
+                            <th colspan="2">{data.Language.GenericDelete}</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -97,18 +97,18 @@ templ UserAdmin(data *CommonData, homes []HomeView, users []UserView, invitation
                                 <td class="center">@Avatar(u)</td>
                                 <td><a href={templ.URL(u.URL())}>{u.Name}</a></td>
                                 <td>{u.Email}</td>
-                                <td>{int(u.AccessLevel)} - {data.User.Language.AccessLevels[u.AccessLevel]}</td>
+                                <td>{int(u.AccessLevel)} - {data.Language.AccessLevels[u.AccessLevel]}</td>
                                 <td>
                                     if u.ID != data.User.AppuserID && u.AccessLevel < AccessLevelAdmin{
                                         <a class="btn btn-danger" href={templ.URL(u.URLSuffix("confirm-scrub"))}>
-                                            {data.User.Language.AdminScrubUserData}
+                                            {data.Language.AdminScrubUserData}
                                         </a>
                                     }
                                 </td>
                                 <td>
                                     if u.ID != data.User.AppuserID && u.AccessLevel < AccessLevelAdmin {
                                         <a class="btn btn-danger"href={templ.URL(u.URLSuffix("confirm-nuke"))}>
-                                            {data.User.Language.AdminNukeUser}
+                                            {data.Language.AdminNukeUser}
                                         </a>
                                     }
                                 </td>
@@ -123,14 +123,14 @@ templ UserAdmin(data *CommonData, homes []HomeView, users []UserView, invitation
 
 templ UserConfirmScrubOrNuke(data *CommonData, user UserView, header, confirmMsg, dest, referer string) {
     @Layout(data) {
-        <a href={templ.URL(referer)}>{data.User.Language.GenericGoBack}</a>
+        <a href={templ.URL(referer)}>{data.Language.GenericGoBack}</a>
         <h1>{header}</h1>
         @Card() {
             <p>{confirmMsg} ({user.Email})</p>
             @Form(user.URLSuffix(dest), "POST", "form-control", "d-flex", "p-0") {
                 <div class="input-group">
-                    <input class="input w-75" name="confirm-email" value={data.User.Language.GenericEmail} autocomplete="off" data-1p-ignore data-lpignore="true" data-bwignore="true" data-protonpass-ignore="true"></input>
-                    <button type="submit" class="btn btn-danger w-25">{data.User.Language.GenericConfirm}</button>
+                    <input class="input w-75" name="confirm-email" value={data.Language.GenericEmail} autocomplete="off" data-1p-ignore data-lpignore="true" data-bwignore="true" data-protonpass-ignore="true"></input>
+                    <button type="submit" class="btn btn-danger w-25">{data.Language.GenericConfirm}</button>
                 </div>
             }
         }

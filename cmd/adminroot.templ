@@ -2,18 +2,18 @@ package main
 
 templ AdminRootPage(data *CommonData) {
 	@Layout(data) {
-        <h1>{data.User.Language.AdminRoot}</h1>
+        <h1>{data.Language.AdminRoot}</h1>
         // TODO: make these check for capabilities instead
-        <li class="card mb-1"><div class="card-header"><a href="/file">{data.User.Language.FilesUploadHeader}</a></div></li>
+        <li class="card mb-1"><div class="card-header"><a href="/file">{data.Language.FilesUploadHeader}</a></div></li>
         if data.User.AccessLevel >= AccessLevelCoordinator {
-            <li class="card mb-1"><div class="card-header"><a href="/species">{data.User.Language.AdminManageSpecies}</a></div></li>
-            <li class="card mb-1"><div class="card-header"><a href="/import">{data.User.Language.ImportHeader}</a></div></li>
+            <li class="card mb-1"><div class="card-header"><a href="/species">{data.Language.AdminManageSpecies}</a></div></li>
+            <li class="card mb-1"><div class="card-header"><a href="/import">{data.Language.ImportHeader}</a></div></li>
         }
         if data.User.AccessLevel >= AccessLevelAdmin {
-            <li class="card mb-1"><div class="card-header"><a href="/homes">{data.User.Language.AdminManageHomes}</a></div></li>
-            <li class="card mb-1"><div class="card-header"><a href="/users">{data.User.Language.AdminManageUsers}</a></div></li>
-            <li class="card mb-1"><div class="card-header"><a href="/gdrive">{data.User.Language.AdminManageGoogleDrive}</a></div></li>
-            <li class="card mb-1"><div class="card-header"><a href="/debug">{data.User.Language.AdminDebug}</a></div></li>
+            <li class="card mb-1"><div class="card-header"><a href="/homes">{data.Language.AdminManageHomes}</a></div></li>
+            <li class="card mb-1"><div class="card-header"><a href="/users">{data.Language.AdminManageUsers}</a></div></li>
+            <li class="card mb-1"><div class="card-header"><a href="/gdrive">{data.Language.AdminManageGoogleDrive}</a></div></li>
+            <li class="card mb-1"><div class="card-header"><a href="/debug">{data.Language.AdminDebug}</a></div></li>
         }
     }
 }

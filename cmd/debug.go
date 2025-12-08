@@ -83,7 +83,7 @@ func (server *Server) debugHandler(w http.ResponseWriter, r *http.Request) {
 				{Name: "Disk available (GB)", Value: toGB(u.Free)},
 				{Name: "Disk used (GB)", Value: toGB(u.Used)},
 				{Name: "Hostname", Value: h.Hostname},
-				{Name: "Uptime", Value: data.User.Language.FormatTimeAbsWithRelParen(time.Unix(int64(h.BootTime), 0))},
+				{Name: "Uptime", Value: data.Language.FormatTimeAbsWithRelParen(time.Unix(int64(h.BootTime), 0))},
 				{Name: "Public IP", Value: server.Runtime.PublicIP},
 				{Name: "Memory total (MB)", Value: toMB(mem.Total)},
 				{Name: "Memory available (MB)", Value: toMB(mem.Available)},
@@ -100,7 +100,7 @@ func (server *Server) debugHandler(w http.ResponseWriter, r *http.Request) {
 			Name: "Process",
 			Children: []DebugInfo{
 				{Name: "Goroutines", Value: runtime.NumGoroutine()},
-				{Name: "Started", Value: data.User.Language.FormatTimeAbsWithRelParen(server.Runtime.TimeStarted)},
+				{Name: "Started", Value: data.Language.FormatTimeAbsWithRelParen(server.Runtime.TimeStarted)},
 				{Name: "Alloc MB", Value: toMB(procMem.Alloc)},
 				{Name: "Total MB", Value: toMB(procMem.Sys)},
 				{Name: "Working directory", Value: cwd},

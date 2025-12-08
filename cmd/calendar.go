@@ -31,7 +31,7 @@ func (server *Server) calendarHandler(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	commonData := MustLoadCommonData(ctx)
 
-	commonData.Subtitle = commonData.User.Language.Calendar
+	commonData.Subtitle = commonData.Language.Calendar
 
 	initialtime := time.Now().Format(timeFormatFullCalendarNoTZ)
 	if altTime, err := server.getQueryValue(r, "t"); err == nil {
@@ -79,7 +79,7 @@ func (server *Server) ajaxCalendarAwayHandler(w http.ResponseWriter, r *http.Req
 		return
 	}
 	out := SliceToSlice(periods, func(in GetUnavailablePeriodsInRangeRow) FullCalendarEvent {
-		return in.ToFullCalendarEvent(commonData.User.Language)
+		return in.ToFullCalendarEvent(commonData.Language)
 	})
 	bin, err := json.Marshal(out)
 	if err != nil {
@@ -109,7 +109,7 @@ func (server *Server) ajaxCalendarPatientEventsHandler(w http.ResponseWriter, r 
 		return
 	}
 	out := SliceToSlice(periods, func(in GetEventsForCalendarRow) FullCalendarEvent {
-		return in.ToFullCalendarEvent(ctx, server, commonData.User.Language)
+		return in.ToFullCalendarEvent(ctx, server, commonData.Language)
 	})
 	bin, err := json.Marshal(out)
 	if err != nil {

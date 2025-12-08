@@ -26,7 +26,7 @@ templ DashboardPage(data *CommonData, dashboardData *DashboardData) {
 templ DashboardSearch(data *CommonData) {
     @Card("dashboard-search", "shadow-sm", "mb-2") {
         <fieldset>
-            <legend for="dashboard-search">{data.User.Language.DashboardSearch}</legend>
+            <legend for="dashboard-search">{data.Language.DashboardSearch}</legend>
             <form-group class="form-group">
                 <input autocomplete="off" class="form-control search" id="dashboard-search"></input>
             </form-group>
@@ -37,33 +37,33 @@ templ DashboardSearch(data *CommonData) {
     if false {
         @Card("dashboard-filter", "shadow-sm") {
             <fieldset>
-                <legend>{data.User.Language.DashboardSearchFilter}</legend>
+                <legend>{data.Language.DashboardSearchFilter}</legend>
                 @DashboardSearchCheckbox(
                     "ds-show-me",
-                    data.User.Language.DashboardSearchShowMine,
+                    data.Language.DashboardSearchShowMine,
                     true,
                 )
                 @DashboardSearchCheckbox(
                     "ds-show-full",
-                    data.User.Language.DashboardSearchShowFull,
+                    data.Language.DashboardSearchShowFull,
                     true,
                 )
                 @DashboardSearchCheckbox(
                     "ds-show-unavailable",
-                    data.User.Language.DashboardSearchShowUnavailable,
+                    data.Language.DashboardSearchShowUnavailable,
                     true,
                 )
             </fieldset>
 
             <fieldset>
-                <legend>{data.User.Language.HomeAvailability}</legend>
+                <legend>{data.Language.HomeAvailability}</legend>
                 <div>
                     <label for="ds-availability-from">
-                        {data.User.Language.GenericFrom}
+                        {data.Language.GenericFrom}
                     </label>
                     <input class="form-control" autocomplete="off" type="date" name="ds-availability-from" id="ds-availability-from">
                     <label for="ds-availability-to">
-                        {data.User.Language.GenericTo}
+                        {data.Language.GenericTo}
                     </label>
                     <input class="form-control" autocomplete="off" type="date" name="ds-availability-to" id="ds-availability-to">
                 </div>
@@ -88,20 +88,20 @@ templ DashboardForm(data *CommonData, dashboardData *DashboardData) {
     @Card("dashboard-form", "shadow-sm") {
         @Form("/checkin", "POST") {
             <div class="form-group">
-                <label>{data.User.Language.CheckinPatientName}</label>
+                <label>{data.Language.CheckinPatientName}</label>
                 <input class="form-control" name="name">
             </div>
             <div class="form-row d-flex justify-content-between gap-2 mb-2">
                 <div class="form-group">
-                    <label>{data.User.Language.GenericSpecies}</label>
+                    <label>{data.Language.GenericSpecies}</label>
                     <select autocomplete="off" class="form-control form-select" name="species">
-                        <option value="" disabled selected>{data.User.Language.DashboardSelectSpecies}</option>
-                        <optgroup label={data.User.Language.HomePreferredSpecies}>
+                        <option value="" disabled selected>{data.Language.DashboardSelectSpecies}</option>
+                        <optgroup label={data.Language.HomePreferredSpecies}>
                             for _, sp := range dashboardData.PreferredHomeView.PreferredSpecies {
                                 <option value={sp.ID} selected?={sp.ID == dashboardData.DefaultSelectedSpecies}>{sp.Name}</option>
                             }
                         </optgroup>
-                        <optgroup label={data.User.Language.DashboardNonPreferredSpecies}>
+                        <optgroup label={data.Language.DashboardNonPreferredSpecies}>
                             for _, sp := range dashboardData.NonPreferredSpecies {
                                 <option value={sp.ID} selected?={sp.ID == dashboardData.DefaultSelectedSpecies}>{sp.Name}</option>
                             }
@@ -109,13 +109,13 @@ templ DashboardForm(data *CommonData, dashboardData *DashboardData) {
                     </select>
                 </div>
                 <div class="form-group">
-                    <label for="patient-home">{data.User.Language.HomesHomeName}</label>
+                    <label for="patient-home">{data.Language.HomesHomeName}</label>
                     <select autocomplete="off" class="form-control form-select" name="home">
-                        <option value="" disabled selected>{data.User.Language.DashboardSelectHome}</option>
+                        <option value="" disabled selected>{data.Language.DashboardSelectHome}</option>
                         if data.User.PreferredHome.ID != 0 {
                             <option value={data.User.PreferredHome.ID} selected>{data.User.PreferredHome.Name}</option>
                         }
-                        <optgroup label={data.User.Language.DashboardOtherHome}>
+                        <optgroup label={data.Language.DashboardOtherHome}>
                             for _, home := range dashboardData.Homes {
                                 <option value={home.Home.ID}>{home.Home.Name}</option>
                             }
@@ -128,17 +128,17 @@ templ DashboardForm(data *CommonData, dashboardData *DashboardData) {
                 <div class="form-check-inline">
                     <input autocomplete="off" type="checkbox" name="create-journal" id="create-journal" checked>
                     <label for="create-journal">
-                        {data.User.Language.GDriveCreateJournalForPatient}
+                        {data.Language.GDriveCreateJournalForPatient}
                     </label>
                 </div>
             </div>
             
             <div class="form-group">
-                <button type="submit" disabled?={data.User.PreferredHome.ID == 0} class="b-create-patient btn btn-primary">{data.User.Language.CheckinCheckInPatient}</button>
+                <button type="submit" disabled?={data.User.PreferredHome.ID == 0} class="b-create-patient btn btn-primary">{data.Language.CheckinCheckInPatient}</button>
             </div>
 
             if data.User.PreferredHome.ID == 0 {
-                <p class="small m-0">{data.User.Language.CheckinYouAreHomeless}</p>
+                <p class="small m-0">{data.Language.CheckinYouAreHomeless}</p>
             }
         }
     }
@@ -186,7 +186,7 @@ templ DashboardHomeCard(data *CommonData, dashboardData *DashboardData, home *Ho
             }
         </div>
     </div>
-    if _, availability := home.AvailabilityString(data.User.Language); true {
+    if _, availability := home.AvailabilityString(data.Language); true {
         <div class="card-header small fw-normal">
             <p class="mb-0 filter-content">{availability}</p>
         </div>
@@ -225,7 +225,7 @@ templ DashboardPatientCard(data *CommonData, dashboardData *DashboardData, home 
             </div>
             <div>
                 <span class="patient-species-header filter-content">{patient.Species}</span>    
-                <button class="expander btn btn-sm btn-outline-success must-be-clickable" data-bs-toggle="collapse" data-bs-target={patient.CollapseID("#")}>{data.User.Language.GenericDetails}</button>
+                <button class="expander btn btn-sm btn-outline-success must-be-clickable" data-bs-toggle="collapse" data-bs-target={patient.CollapseID("#")}>{data.Language.GenericDetails}</button>
             </div>
         </div>
         <div class="card-content collapse" id={patient.CollapseID("")}>
@@ -254,7 +254,7 @@ templ DashboardPatientTable(
 
 templ DashboardMove(data *CommonData, homes []HomeView, home *HomeView, patient PatientView) {
     <tr>
-        <th class="w-25">{data.User.Language.GenericMoveTo}</th>
+        <th class="w-25">{data.Language.GenericMoveTo}</th>
         <td>
             <form
                 action={templ.URL(patient.URLSuffix("move"))}
@@ -262,14 +262,14 @@ templ DashboardMove(data *CommonData, homes []HomeView, home *HomeView, patient 
                 class="form-control-sm form-control-plaintext d-flex justify-content-between"
             >
                 <select autocomplete="off" class="form-control form-select form-select-sm" name="home">
-                    <option value="" disabled selected>{data.User.Language.DashboardSelectHome}</option>
+                    <option value="" disabled selected>{data.Language.DashboardSelectHome}</option>
                     for _, otherHome := range homes {
                         if home == nil || otherHome.Home.ID != home.Home.ID {
                             <option value={otherHome.Home.ID}>{otherHome.Home.Name}</option>
                         }
                     }
                 </select>
-                @Button("submit", "fa-angles-right", data.User.Language.GenericMove)
+                @Button("submit", "fa-angles-right", data.Language.GenericMove)
             </form>
         </td>
     </tr>
@@ -284,7 +284,7 @@ templ Button(typeAttr string, icon string, txt string, classes ...string) {
 
 templ DashboardCheckout(data *CommonData, patient PatientView) {
     <tr>
-        <th class="w-25">{data.User.Language.DashboardCheckOut}</th>
+        <th class="w-25">{data.Language.DashboardCheckOut}</th>
         <td>
             @Form(
                 patient.URLSuffix("checkout"),
@@ -292,10 +292,10 @@ templ DashboardCheckout(data *CommonData, patient PatientView) {
                 "form-control-sm", "form-control-plaintext",
             ) {
                 <form-group class="d-flex justify-content-between form-control-sm form-control-plaintext input-group-sm">
-                    <label for={patient.CheckoutStatusID("#")} class="input-group-text short-label">{data.User.Language.GenericStatus}</label>
+                    <label for={patient.CheckoutStatusID("#")} class="input-group-text short-label">{data.Language.GenericStatus}</label>
                     <select autocomplete="off" class="form-control form-select form-select-sm" id={patient.CheckoutStatusID("")} name="status">
-                        <option disabled selected>{data.User.Language.DashboardSelectCheckout}</option>
-                        for statusID, status := range data.User.Language.Status {
+                        <option disabled selected>{data.Language.DashboardSelectCheckout}</option>
+                        for statusID, status := range data.Language.Status {
                             if IsCheckoutStatus[statusID] {
                                 <option value={int32(statusID)}>{status}</option>
                             }
@@ -303,11 +303,11 @@ templ DashboardCheckout(data *CommonData, patient PatientView) {
                     </select>
                 </form-group>
                 <form-group class="d-flex justify-content-between form-control-sm form-control-plaintext input-group-sm">
-                    <label for={patient.CheckoutNoteID("#")} class="input-group-text short-label">{data.User.Language.GenericNote}</label>
+                    <label for={patient.CheckoutNoteID("#")} class="input-group-text short-label">{data.Language.GenericNote}</label>
                     <input autocomplete="off" type="text" class="form-control" id={patient.CheckoutNoteID("")} name="note"></input>
                 </form-group>
                 <form-group class="d-flex justify-content-between form-control-sm form-control-plaintext input-group-sm">
-                    @Button("submit", "fa-dove", data.User.Language.DashboardCheckOut, "w-100")
+                    @Button("submit", "fa-dove", data.Language.DashboardCheckOut, "w-100")
                 </form-group>
             }
         </td>
@@ -316,10 +316,10 @@ templ DashboardCheckout(data *CommonData, patient PatientView) {
 
 templ DashboardGoToPatientPage(data *CommonData, patient PatientView) {
     <tr>
-        <th class="w-25">{data.User.Language.GenericDetails}</th>
+        <th class="w-25">{data.Language.GenericDetails}</th>
         <td>
             <a href={templ.URL(patient.URL())}>
-                {data.User.Language.DashboardGoToPatientPage}
+                {data.Language.DashboardGoToPatientPage}
             </a>
         </td>
     </tr>

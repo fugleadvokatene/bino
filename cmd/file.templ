@@ -10,14 +10,14 @@ templ FileUploadPage(data *CommonData, files []FileView) {
     <head>
         @Head(data)
     </head>
-    <body data-lang={templ.JSONString(data.User.Language)}>
+    <body data-lang={templ.JSONString(data.Language)}>
         @Body(data) {
             <div class={"main b-container"}>
-                <h1>{data.User.Language.FilesUploadHeader}</h1>
+                <h1>{data.Language.FilesUploadHeader}</h1>
                 <div class="card p-2">
                     @FileUploader(data, "/file/submit")
                 </div>
-                <h1>{data.User.Language.FilesThatYouHaveUploaded}</h1>
+                <h1>{data.Language.FilesThatYouHaveUploaded}</h1>
                 <div class="file-list">
                     for _, file := range files {
                         @file.Component(data)
@@ -47,7 +47,7 @@ templ FileUploader(data *CommonData, url string) {
             type="submit"
             class="btn btn-success w-100"
             id="general-file-submit"
-        >{data.User.Language.GenericSave}</button>
+        >{data.Language.GenericSave}</button>
     </form>
 }
 
@@ -57,7 +57,7 @@ templ (file *FileView) Component(data *CommonData) {
             <div>
                 <div class="user-file-name editable"  data-action={file.EditPresentationFilenameURL()}>{file.PresentationFilename}</div>
                 <div class="user-metadata d-flex gap-2">
-                    <div class="user-file-accessibility small bg-gradient p-1 border border-black border-1 rounded-2">{data.User.Language.FileAccessibility[file.Accessibility]}</div>
+                    <div class="user-file-accessibility small bg-gradient p-1 border border-black border-1 rounded-2">{data.Language.FileAccessibility[file.Accessibility]}</div>
                     <div class="user-file-size small bg-gradient p-1 border border-black border-1 rounded-2">{file.FileSizeText()}</div>
                     for _, wl := range file.WikiLinks {
                         <div class="user-file-size small bg-gradient p-1 border border-black border-1 rounded-2">Used in Wiki page: <a href={wl.URL()}>{wl.Title}</a></div>

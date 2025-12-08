@@ -12,7 +12,7 @@ templ SearchPage(data *CommonData, result SearchResult, fallbackMsg string) {
                 hx-swap="outerHTML"
                 autocomplete="off"
             >
-                <label for="live-q">{data.User.Language.GenericSearch}</label>
+                <label for="live-q">{data.Language.GenericSearch}</label>
                 <input
                     class="form-control input"
                     type="search"
@@ -23,24 +23,24 @@ templ SearchPage(data *CommonData, result SearchResult, fallbackMsg string) {
                     value={result.Query.Query}
                 >
                 <div class="mt-2">
-                    <label><input type="radio" name="mode" value="basic" checked?={result.Query.Mode=="basic"}> {data.User.Language.SearchModeBasic}</label>
-                    <label><input type="radio" name="mode" value="advanced" checked?={result.Query.Mode=="advanced"}> {data.User.Language.SearchModeAdvanced}</label>
+                    <label><input type="radio" name="mode" value="basic" checked?={result.Query.Mode=="basic"}> {data.Language.SearchModeBasic}</label>
+                    <label><input type="radio" name="mode" value="advanced" checked?={result.Query.Mode=="advanced"}> {data.Language.SearchModeAdvanced}</label>
                 </div>
                 <div class="search-advanced-options" data-show={result.Query.Mode=="advanced"}>
                     <div class="d-flex justify-content-between form-control-sm form-control-plaintext">
-                        <label class="me-2 align-self-center">{data.User.Language.SearchFilterCreated}</label>
-                        <label for="created-from" class="input-group-text short-label">{data.User.Language.GenericFrom}</label>
+                        <label class="me-2 align-self-center">{data.Language.SearchFilterCreated}</label>
+                        <label for="created-from" class="input-group-text short-label">{data.Language.GenericFrom}</label>
                         <input autocomplete="off" type="date" class="form-control search-created-filter" id="created-from" name="created-from"></input>
-                        <label for="created-to" class="input-group-text short-label">{data.User.Language.GenericTo}</label>
+                        <label for="created-to" class="input-group-text short-label">{data.Language.GenericTo}</label>
                         <input autocomplete="off" type="date" class="form-control search-created-filter" id="created-to" name="created-to"></input>
-                        <button class="btn btn-secondary search-filter-clear-created" type="button">{data.User.Language.SearchFilterClear}</button>
+                        <button class="btn btn-secondary search-filter-clear-created" type="button">{data.Language.SearchFilterClear}</button>
                     </div>
 
                     <div class="mt-2">
-                        <label>{data.User.Language.SearchTimePreference}</label>
-                        <label><input type="radio" name="time-preference" value={TimePreferenceNone.String()} checked?={result.Query.TimePreference==TimePreferenceNone}> {data.User.Language.SearchTimePreferenceNone}</label>
-                        <label><input type="radio" name="time-preference" value={TimePreferenceNewer.String()} checked?={result.Query.TimePreference==TimePreferenceNewer}> {data.User.Language.SearchTimePreferenceNewer}</label>
-                        <label><input type="radio" name="time-preference" value={TimePreferenceOlder.String()} checked?={result.Query.TimePreference==TimePreferenceOlder}> {data.User.Language.SearchTimePreferenceOlder}</label>
+                        <label>{data.Language.SearchTimePreference}</label>
+                        <label><input type="radio" name="time-preference" value={TimePreferenceNone.String()} checked?={result.Query.TimePreference==TimePreferenceNone}> {data.Language.SearchTimePreferenceNone}</label>
+                        <label><input type="radio" name="time-preference" value={TimePreferenceNewer.String()} checked?={result.Query.TimePreference==TimePreferenceNewer}> {data.Language.SearchTimePreferenceNewer}</label>
+                        <label><input type="radio" name="time-preference" value={TimePreferenceOlder.String()} checked?={result.Query.TimePreference==TimePreferenceOlder}> {data.Language.SearchTimePreferenceOlder}</label>
                     </div>
                 </div>
             </form>
@@ -71,7 +71,7 @@ templ SearchMatches(data *CommonData, result SearchResult, fallbackMsg string) {
                         </div>
                         <div class="match-meta">
                             <div class="match-type d-flex justify-content-end">
-                                {data.User.Language.MatchType[match.Type]}
+                                {data.Language.MatchType[match.Type]}
                             </div>
                             <div class="match-extra-info">
                                 @match.ExtraInfo()

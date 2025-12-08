@@ -59,9 +59,9 @@ func NotFoundPage(data *CommonData, msg string, referer string) templ.Component 
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var4 string
-			templ_7745c5c3_Var4, templ_7745c5c3_Err = templ.JoinStringErrs(data.User.Language.GenericGoBack)
+			templ_7745c5c3_Var4, templ_7745c5c3_Err = templ.JoinStringErrs(data.Language.GenericGoBack)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `cmd/notfoundpage.templ`, Line: 5, Col: 70}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `cmd/notfoundpage.templ`, Line: 5, Col: 65}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var4))
 			if templ_7745c5c3_Err != nil {
@@ -72,9 +72,9 @@ func NotFoundPage(data *CommonData, msg string, referer string) templ.Component 
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var5 string
-			templ_7745c5c3_Var5, templ_7745c5c3_Err = templ.JoinStringErrs(data.User.Language.NotFoundPageHead)
+			templ_7745c5c3_Var5, templ_7745c5c3_Err = templ.JoinStringErrs(data.Language.NotFoundPageHead)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `cmd/notfoundpage.templ`, Line: 6, Col: 48}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `cmd/notfoundpage.templ`, Line: 6, Col: 43}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var5))
 			if templ_7745c5c3_Err != nil {
@@ -85,9 +85,9 @@ func NotFoundPage(data *CommonData, msg string, referer string) templ.Component 
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var6 string
-			templ_7745c5c3_Var6, templ_7745c5c3_Err = templ.JoinStringErrs(data.User.Language.NotFoundPageInstructions)
+			templ_7745c5c3_Var6, templ_7745c5c3_Err = templ.JoinStringErrs(data.Language.NotFoundPageInstructions)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `cmd/notfoundpage.templ`, Line: 8, Col: 59}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `cmd/notfoundpage.templ`, Line: 8, Col: 54}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var6))
 			if templ_7745c5c3_Err != nil {

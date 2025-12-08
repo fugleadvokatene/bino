@@ -26,11 +26,11 @@ func (server *Server) postLanguageHandler(w http.ResponseWriter, r *http.Request
 			AppuserID:  commonData.User.AppuserID,
 			LanguageID: int32(lang),
 		})
-		commonData.User.Language = Languages[int32(lang)]
+		commonData.Language = Languages[int32(lang)]
 	}
 
 	if err != nil {
-		commonData.Error(commonData.User.Language.LanguageUpdateFailed, err)
+		commonData.Error(commonData.Language.LanguageUpdateFailed, err)
 	}
 
 	server.redirectToReferer(w, r)
@@ -53,7 +53,7 @@ func (server *Server) lastGoodURL(r *http.Request) string {
 func (server *Server) renderError(w http.ResponseWriter, r *http.Request, commonData *CommonData, err error) {
 	ctx := r.Context()
 	w.WriteHeader(http.StatusInternalServerError)
-	commonData.Subtitle = commonData.User.Language.GenericFailed
+	commonData.Subtitle = commonData.Language.GenericFailed
 	_ = ErrorPage(commonData, err, server.lastGoodURL(r)).Render(ctx, w)
 	logError(r, err)
 }
@@ -78,7 +78,7 @@ func (server *Server) ensureAccess(w http.ResponseWriter, r *http.Request, al Ac
 	hasAccess := commonData.User.AccessLevel >= al
 	if !hasAccess {
 		w.WriteHeader(http.StatusUnauthorized)
-		err := errors.New(commonData.User.Language.AccessLevelBlocked(al))
+		err := errors.New(commonData.Language.AccessLevelBlocked(al))
 		_ = UnauthorizedPage(
 			commonData,
 			err,

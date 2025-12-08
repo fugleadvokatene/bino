@@ -46,7 +46,7 @@ func (s *Server) gdriveInviteUserHandler(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	commonData.Success(commonData.User.Language.GDriveUserInvited)
+	commonData.Success(commonData.Language.GDriveUserInvited)
 
 	s.redirect(w, r, "/gdrive")
 }

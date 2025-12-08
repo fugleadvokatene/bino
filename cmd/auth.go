@@ -67,7 +67,7 @@ func (server *Server) requireAccessLevel(al AccessLevel) Middleware {
 			data := MustLoadCommonData(ctx)
 
 			if data.User.AccessLevel < al {
-				server.renderUnauthorized(w, r, data, errors.New(data.User.Language.AccessLevelBlocked(al)))
+				server.renderUnauthorized(w, r, data, errors.New(data.Language.AccessLevelBlocked(al)))
 				return
 			}
 			f.ServeHTTP(w, r)
@@ -108,7 +108,6 @@ func (server *Server) authenticate(w http.ResponseWriter, r *http.Request) (Comm
 		AvatarURL:       user.AvatarUrl.String,
 		HasAvatarURL:    user.AvatarUrl.Valid,
 		HasGDriveAccess: user.HasGdriveAccess,
-		Language:        GetLanguage(user.LanguageID),
 		PreferredHome:   preferredHome,
 		Homes:           homes,
 		LoggingConsent:  loggingConsent,
@@ -118,6 +117,7 @@ func (server *Server) authenticate(w http.ResponseWriter, r *http.Request) (Comm
 	commonData := CommonData{
 		User:     &userData,
 		BuildKey: server.BuildKey,
+		Language: GetLanguage(user.LanguageID),
 	}
 
 	return commonData, err
