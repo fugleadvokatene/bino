@@ -85,7 +85,7 @@ templ Navbar(data *CommonData) {
             if data.User != nil {
                 <div class="collapse navbar-collapse" id="navbarSupportedContent">
                     @NavbarPageLink(data.Language.NavbarDashboard, "/")
-                    @NavbarPageLink(data.Language.Calendar, "/calendar")
+                    @NavbarPageLink(data.Language.Calendar, "/calendar", "hide-on-mobile")
                     @NavbarPageLink(data.Language.WikiHeader, "/wiki")
                     if false {
                         // Not ready
@@ -102,8 +102,8 @@ templ Navbar(data *CommonData) {
     </nav>
 }
 
-templ NavbarPageLink(text, loc string) {
-    <div class="b-navbar-item b-navbar-item-text">
+templ NavbarPageLink(text, loc string, classes ...string) {
+    <div class={"b-navbar-item", "b-navbar-item-text", classes}>
         <a href={templ.URL(loc)}>{text}</a>
     </div>
 }

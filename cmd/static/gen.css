@@ -11748,6 +11748,12 @@ body {
   }
 }
 
+@media (max-width: 1000px) {
+  .hide-on-mobile {
+    display: none;
+  }
+}
+
 .b-container.dashboard-container {
   cursor: grab;
 }

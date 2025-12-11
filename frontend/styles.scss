@@ -137,6 +137,12 @@ body {
     }
 }
 
+.hide-on-mobile {
+    @media (max-width: $mobilethreshold) {
+        display: none;
+    }
+}
+
 .b-container.dashboard-container {
     cursor: grab;
     :active {

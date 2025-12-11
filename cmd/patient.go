@@ -79,11 +79,13 @@ func (server *Server) getPatientHandler(w http.ResponseWriter, r *http.Request) 
 
 	PatientPage(ctx, commonData, PatientPageView{
 		Patient: PatientView{
-			ID:         patientData.ID,
-			Status:     patientData.Status,
-			Name:       patientData.Name,
-			Species:    patientData.SpeciesName,
-			JournalURL: patientData.JournalUrl.String,
+			ID:           patientData.ID,
+			Status:       patientData.Status,
+			Name:         patientData.Name,
+			Species:      patientData.SpeciesName,
+			JournalURL:   patientData.JournalUrl.String,
+			TimeCheckin:  patientData.TimeCheckin.Time,
+			TimeCheckout: patientData.TimeCheckout.Time,
 		},
 		Home: home,
 		Homes: SliceToSlice(homes, func(home Home) HomeView {
