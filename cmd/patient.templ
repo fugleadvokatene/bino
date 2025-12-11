@@ -128,7 +128,7 @@ templ PatientJournalUpdate(data *CommonData, patient PatientView, unconditionall
                     "POST",
                     "form-control-sm", "form-control-plaintext",
                 ) {
-                    <form-group class="d-flex justify-content-between form-control-sm form-control-plaintext">
+                    <form-group class="d-flex justify-content-between form-control-sm input-group-sm form-control-plaintext">
                         <label for={patient.AttachJournalID("#")} class="input-group-text short-label">{data.Language.GenericURL}</label>
                         <input autocomplete="off" type="text" class="form-control" id={patient.AttachJournalID("")} name="url"></input>
                         @Button("submit", "fa-link", data.Language.GenericUpdate)
