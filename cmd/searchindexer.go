@@ -112,7 +112,7 @@ func (w *GDriveWorker) searchIndexFile(ctx context.Context, folder, file GDriveI
 	}
 
 	// Read the document
-	journal, err := w.g.ReadDocument(file.ID)
+	journal, err := w.g.ExportDocument(file.ID)
 	if err != nil {
 		// On failure, create a skipped entry. It won't show up in search, but we also won't try to read the document later.
 		if err := w.g.Queries.UpsertSkippedSearchEntry(ctx, UpsertSkippedSearchEntryParams{

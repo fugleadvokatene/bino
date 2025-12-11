@@ -14,18 +14,21 @@ type GDriveJournal struct {
 	Content string
 }
 
+func (gdj *GDriveJournal) Validate() error {
+	errs := []error{}
+	for _, k := range TemplateValues() {
+		if !strings.Contains(gdj.Content, k.String()) {
+			errs = append(errs, fmt.Errorf("template is missing variable '%s'", k))
+		}
+	}
+	return errors.Join(errs...)
+}
+
 type GDriveTemplateVars struct {
 	Time    time.Time
 	Name    string
 	Species string
 	BinoURL string
-}
-
-func (vars *GDriveTemplateVars) ApplyToString(s string) string {
-	for _, t := range TemplateValues() {
-		s = strings.ReplaceAll(s, t.String(), vars.Replacement(t))
-	}
-	return s
 }
 
 func (vars *GDriveTemplateVars) Replacement(template Template) string {
@@ -48,27 +51,79 @@ func (vars *GDriveTemplateVars) Replacement(template Template) string {
 }
 
 func (vars *GDriveTemplateVars) ReplaceRequests() *docs.BatchUpdateDocumentRequest {
-	return &docs.BatchUpdateDocumentRequest{
-		Requests: SliceToSlice(TemplateValues(), func(t Template) *docs.Request {
-			return &docs.Request{
-				ReplaceAllText: &docs.ReplaceAllTextRequest{
-					ContainsText: &docs.SubstringMatchCriteria{
-						MatchCase: true,
-						Text:      t.String(),
-					},
-					ReplaceText: vars.Replacement(t),
+	requests := SliceToSlice(TemplateValues(), func(t Template) *docs.Request {
+		return &docs.Request{
+			ReplaceAllText: &docs.ReplaceAllTextRequest{
+				ContainsText: &docs.SubstringMatchCriteria{
+					MatchCase: true,
+					Text:      t.String(),
 				},
-			}
-		}),
+				ReplaceText: vars.Replacement(t),
+			},
+		}
+	})
+
+	return &docs.BatchUpdateDocumentRequest{
+		Requests: requests,
 	}
 }
 
-func (gdj *GDriveJournal) Validate() error {
-	errs := []error{}
-	for _, k := range TemplateValues() {
-		if !strings.Contains(gdj.Content, k.String()) {
-			errs = append(errs, fmt.Errorf("template is missing variable '%s'", k))
+func (vars *GDriveTemplateVars) ApplyToString(s string) string {
+	for _, t := range TemplateValues() {
+		s = strings.ReplaceAll(s, t.String(), vars.Replacement(t))
+	}
+	return s
+}
+
+type GDriveJournalUpdate struct {
+	Timestamp time.Time
+	Text      string
+}
+
+func findAppendIndex(doc []*docs.StructuralElement) int64 {
+	const (
+		stateFindSectionHeader = 0
+		stateFindNextHeader    = 1
+	)
+	state := stateFindSectionHeader
+	var finalIndex int64
+	for _, elem := range doc {
+		finalIndex = elem.EndIndex
+
+		// Skip if not a paragraph
+		if elem.Paragraph == nil {
+			continue
+		}
+		paragraph := elem.Paragraph
+
+		// Skip if not a heading
+		pStyle := paragraph.ParagraphStyle
+		if pStyle == nil || !strings.HasPrefix(pStyle.NamedStyleType, "HEADING") {
+			continue
+		}
+
+		// Skip if empty
+		if len(paragraph.Elements) == 0 {
+			continue
+		}
+		firstElem := paragraph.Elements[0]
+
+		// Skip if not a text run
+		if firstElem.TextRun == nil {
+			continue
+		}
+
+		// Get heading text
+		textRun := strings.TrimSpace(firstElem.TextRun.Content)
+
+		switch state {
+		case stateFindSectionHeader:
+			if textRun == updatesSectionHeader {
+				state = stateFindNextHeader
+			}
+		case stateFindNextHeader:
+			return elem.StartIndex - 1
 		}
 	}
-	return errors.Join(errs...)
+	return finalIndex
 }

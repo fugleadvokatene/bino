@@ -93,6 +93,7 @@ type FileAccessibility int32
 //	InviteUser,
 //	CreateJournal,
 //	ListFiles,
+//	UpdateJournal,
 //
 // )
 type GDriveTaskRequestID int

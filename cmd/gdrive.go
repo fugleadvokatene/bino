@@ -7,6 +7,7 @@ import (
 	"io"
 	"regexp"
 	"slices"
+	"strings"
 	"time"
 
 	"github.com/a-h/templ"
@@ -18,6 +19,10 @@ import (
 var (
 	reDeleteImages = regexp.MustCompile(`<data:image/[a-zA-Z]+;base64,[^>]+>`)
 	reUnbold       = regexp.MustCompile(`\*\*(.*?)\*\*`)
+)
+
+const (
+	updatesSectionHeader = "Bino"
 )
 
 type GDrive struct {
@@ -163,7 +168,7 @@ func (g *GDrive) GetFile(id string) (GDriveItem, error) {
 	return g.fileToItem(f)
 }
 
-func (g *GDrive) ReadDocument(id string) (GDriveJournal, error) {
+func (g *GDrive) ExportDocument(id string) (GDriveJournal, error) {
 	item, err := g.GetFile(id)
 	if err != nil {
 		return GDriveJournal{}, err
@@ -190,19 +195,19 @@ func (g *GDrive) ReadDocument(id string) (GDriveJournal, error) {
 }
 
 func (g *GDrive) CreateDocument(conf GDriveConfigInfo, vars GDriveTemplateVars) (GDriveItem, error) {
-	call := g.Drive.Files.Copy(conf.TemplateDoc.Item.ID, &drive.File{
+	copyCall := g.Drive.Files.Copy(conf.TemplateDoc.Item.ID, &drive.File{
 		Name:    vars.ApplyToString(conf.TemplateDoc.Item.Name),
 		Parents: []string{conf.JournalFolder.ID},
 	})
 
 	if g.DriveBase != "" {
-		call = call.
+		copyCall = copyCall.
 			SupportsAllDrives(true)
 	}
 
-	f, err := call.Do()
+	f, err := copyCall.Do()
 	if err != nil {
-		return GDriveItem{}, err
+		return GDriveItem{}, fmt.Errorf("creating copy: %w", err)
 	}
 
 	updateCall := g.Docs.Documents.BatchUpdate(f.Id, vars.ReplaceRequests())
@@ -224,4 +229,44 @@ func (g *GDrive) CreateDocument(conf GDriveConfigInfo, vars GDriveTemplateVars) 
 	}
 
 	return g.fileToItem(f)
+}
+
+func (g *GDrive) AppendUpdates(id string, updates []GDriveJournalUpdate) error {
+	insertedText := strings.Join(SliceToSlice(updates, func(in GDriveJournalUpdate) string {
+		return fmt.Sprintf("%s: %s", in.Timestamp.Format(time.DateOnly), in.Text)
+	}), "\n")
+
+	// Get it
+	getCall := g.Docs.Documents.Get(id)
+	doc, err := getCall.Do()
+	if err != nil {
+		return fmt.Errorf("reading doc: %w", err)
+	}
+
+	// Get the body contents
+	var body *docs.Body
+	if len(doc.Tabs) > 0 {
+		body = doc.Tabs[0].DocumentTab.Body
+	} else {
+		body = doc.Body
+	}
+	appendIndex := findAppendIndex(body.Content)
+
+	// Apply update
+	updateCall := g.Docs.Documents.BatchUpdate(id, &docs.BatchUpdateDocumentRequest{
+		Requests: []*docs.Request{
+			{
+				InsertText: &docs.InsertTextRequest{
+					Location: &docs.Location{
+						Index: appendIndex,
+					},
+					Text: insertedText,
+				},
+			},
+		},
+	})
+	if _, err := updateCall.Do(); err != nil {
+		return fmt.Errorf("updating docuemnt: %w", err)
+	}
+	return nil
 }

@@ -67,6 +67,21 @@ func newGDriveTaskRequestInviteUser(id, email, role string) GDriveTaskRequest {
 	return req
 }
 
+type payloadUpdateDocument struct {
+	ID      string
+	Updates []GDriveJournalUpdate
+}
+
+func newGDriveTaskRequestUpdateJournal(id string, updates []GDriveJournalUpdate) GDriveTaskRequest {
+	req := newGDriveTaskRequest()
+	req.Type = GDriveTaskRequestIDUpdateJournal
+	req.Payload = payloadUpdateDocument{
+		ID:      id,
+		Updates: updates,
+	}
+	return req
+}
+
 type ListFilesParams struct {
 	Parent         string
 	ModifiedAfter  time.Time
@@ -118,6 +133,14 @@ func (req GDriveTaskRequest) decodeCreateJournal() (GDriveTemplateVars, error) {
 	return vars, nil
 }
 
+func (req GDriveTaskRequest) decodeUpdateJournal() (payloadUpdateDocument, error) {
+	updates, ok := req.Payload.(payloadUpdateDocument)
+	if !ok {
+		return payloadUpdateDocument{}, fmt.Errorf("decodeUpdateJournal ")
+	}
+	return updates, nil
+}
+
 func (req GDriveTaskRequest) decodeListFiles() (ListFilesParams, error) {
 	payload, ok := req.Payload.(ListFilesParams)
 	if !ok {
@@ -153,6 +176,16 @@ func (resp GDriveTaskResponse) decodeInviteUser() error {
 	}
 	if resp.Type != GDriveTaskRequestIDInviteUser {
 		return fmt.Errorf("decodeInviteUser called on response of type %s", resp.Type.String())
+	}
+	return nil
+}
+
+func (resp GDriveTaskResponse) decodeAppendUpdates() error {
+	if err := resp.decodeError(); err != nil {
+		return err
+	}
+	if resp.Type != GDriveTaskRequestIDUpdateJournal {
+		return fmt.Errorf("decodeAppendUpdates called on response of type %s", resp.Type.String())
 	}
 	return nil
 }
@@ -235,7 +268,7 @@ func (w *GDriveWorker) GetGDriveConfigInfo() GDriveConfigInfo {
 		}
 		w.cachedInfo.JournalFolder = item
 
-		doc, err := w.g.ReadDocument(w.cfg.TemplateFile)
+		doc, err := w.g.ExportDocument(w.cfg.TemplateFile)
 		if err != nil {
 			panic(err)
 		}
@@ -283,6 +316,10 @@ func (w *GDriveWorker) ListFiles(params ListFilesParams) (ListFilesResult, error
 	return w.Exec(newGDriveTaskRequestListFiles(params)).decodeListFiles()
 }
 
+func (w *GDriveWorker) AppendUpdates(id string, updates []GDriveJournalUpdate) error {
+	return w.Exec(newGDriveTaskRequestUpdateJournal(id, updates)).decodeAppendUpdates()
+}
+
 func (w *GDriveWorker) worker(workerID int) {
 	for {
 		req := <-w.in
@@ -293,7 +330,13 @@ func (w *GDriveWorker) worker(workerID int) {
 	}
 }
 
-func (w *GDriveWorker) handleRequest(req GDriveTaskRequest) GDriveTaskResponse {
+func (w *GDriveWorker) handleRequest(req GDriveTaskRequest) (resp GDriveTaskResponse) {
+	defer func() {
+		if r := recover(); r != nil {
+			resp = w.errorResponse(req, fmt.Errorf("panicked in handler: %v", r))
+		}
+	}()
+
 	switch req.Type {
 	case GDriveTaskRequestIDGetFile:
 		return w.handleRequestGetFile(req)
@@ -303,6 +346,8 @@ func (w *GDriveWorker) handleRequest(req GDriveTaskRequest) GDriveTaskResponse {
 		return w.handleRequestCreateJournal(req)
 	case GDriveTaskRequestIDListFiles:
 		return w.handleRequestListFiles(req)
+	case GDriveTaskRequestIDUpdateJournal:
+		return w.handleRequestUpdateJournal(req)
 	}
 	return w.errorResponse(req, fmt.Errorf("unknown request type"))
 }
@@ -357,6 +402,17 @@ func (w *GDriveWorker) handleRequestCreateJournal(req GDriveTaskRequest) GDriveT
 		return w.errorResponse(req, err)
 	}
 	return w.successResponse(req, item)
+}
+
+func (w *GDriveWorker) handleRequestUpdateJournal(req GDriveTaskRequest) GDriveTaskResponse {
+	updates, err := req.decodeUpdateJournal()
+	if err != nil {
+		return w.errorResponse(req, err)
+	}
+	if err := w.g.AppendUpdates(updates.ID, updates.Updates); err != nil {
+		return w.errorResponse(req, err)
+	}
+	return w.successResponse(req, nil)
 }
 
 func (w *GDriveWorker) handleRequestListFiles(req GDriveTaskRequest) GDriveTaskResponse {

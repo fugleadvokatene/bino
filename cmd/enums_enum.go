@@ -537,11 +537,13 @@ const (
 	GDriveTaskRequestIDCreateJournal GDriveTaskRequestID = 2
 	// GDriveTaskRequestIDListFiles is a GDriveTaskRequestID of type ListFiles.
 	GDriveTaskRequestIDListFiles GDriveTaskRequestID = 3
+	// GDriveTaskRequestIDUpdateJournal is a GDriveTaskRequestID of type UpdateJournal.
+	GDriveTaskRequestIDUpdateJournal GDriveTaskRequestID = 4
 )
 
 var ErrInvalidGDriveTaskRequestID = errors.New("not a valid GDriveTaskRequestID")
 
-const _GDriveTaskRequestIDName = "GetFileInviteUserCreateJournalListFiles"
+const _GDriveTaskRequestIDName = "GetFileInviteUserCreateJournalListFilesUpdateJournal"
 
 // GDriveTaskRequestIDValues returns a list of the values for GDriveTaskRequestID
 func GDriveTaskRequestIDValues() []GDriveTaskRequestID {
@@ -550,6 +552,7 @@ func GDriveTaskRequestIDValues() []GDriveTaskRequestID {
 		GDriveTaskRequestIDInviteUser,
 		GDriveTaskRequestIDCreateJournal,
 		GDriveTaskRequestIDListFiles,
+		GDriveTaskRequestIDUpdateJournal,
 	}
 }
 
@@ -558,6 +561,7 @@ var _GDriveTaskRequestIDMap = map[GDriveTaskRequestID]string{
 	GDriveTaskRequestIDInviteUser:    _GDriveTaskRequestIDName[7:17],
 	GDriveTaskRequestIDCreateJournal: _GDriveTaskRequestIDName[17:30],
 	GDriveTaskRequestIDListFiles:     _GDriveTaskRequestIDName[30:39],
+	GDriveTaskRequestIDUpdateJournal: _GDriveTaskRequestIDName[39:52],
 }
 
 // String implements the Stringer interface.
@@ -580,6 +584,7 @@ var _GDriveTaskRequestIDValue = map[string]GDriveTaskRequestID{
 	_GDriveTaskRequestIDName[7:17]:  GDriveTaskRequestIDInviteUser,
 	_GDriveTaskRequestIDName[17:30]: GDriveTaskRequestIDCreateJournal,
 	_GDriveTaskRequestIDName[30:39]: GDriveTaskRequestIDListFiles,
+	_GDriveTaskRequestIDName[39:52]: GDriveTaskRequestIDUpdateJournal,
 }
 
 // ParseGDriveTaskRequestID attempts to convert a string to a GDriveTaskRequestID.
