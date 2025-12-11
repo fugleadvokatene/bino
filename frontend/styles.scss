@@ -109,17 +109,22 @@ body {
             cursor: grabbing;
         }
         overflow: hidden;
+        margin-bottom: 1rem;
     }
     @media (max-width: $mobilethreshold) {
         display: block;
     }
     border: 1px solid $slightdark;
-    margin-bottom: 1rem;
 }
 
 .dashboard.dashboard-self {
     min-width: min(100%, $dashboard-home-column);
-    margin-right: 0.5rem;
+    @media (min-width: $mobilethreshold) {
+        margin-right: 0.5em;
+    }
+    @media (max-width: $mobilethreshold) {
+        margin-bottom: 0.5em;
+    }
 }
 
 .break-on-mobile {
@@ -265,7 +270,7 @@ body {
 nav {
     background-color: $dark;
     padding: 0.5em !important;
-    margin-bottom: 1em;
+    margin-bottom: 0.5em;
     a {
         color: $text;
     }
@@ -307,6 +312,27 @@ h1, h2, h3, h4, h5, h6 {
     }
 }
 
+.dashboard-indicator {
+    min-width: 5px;
+    position: sticky;
+    top: 0;
+    margin-bottom: 1rem;
+
+    @media (max-width: $mobilethreshold)  {
+        display: none !important;
+    }
+}
+
+#dashboard-indicator-left {
+    background: linear-gradient(270deg, $slightdark, transparent);
+    left: 0;
+}
+
+#dashboard-indicator-right {
+    background: linear-gradient(90deg, $slightdark, transparent);
+    right: 0;
+}
+
 .home-note {
     margin: 0rem;
     margin-bottom: 0.5rem;
@@ -339,7 +365,7 @@ h1, h2, h3, h4, h5, h6 {
 
 .dashboard-form {
     min-width: min(100%, 450px);
-    background-color: $midgray;
+    background-color: rgba(25, 135, 24, 0.25);
     cursor: default;
     :active {
         cursor: default !important;
@@ -355,7 +381,6 @@ h1, h2, h3, h4, h5, h6 {
     min-width: min(100%, 450px);
     margin-top: 0 !important;
     margin-left: 0 !important;
-    margin-bottom: 1rem !important;
     flex: 1;  
     align-self: flex-start;
     display: flex;
@@ -363,6 +388,8 @@ h1, h2, h3, h4, h5, h6 {
     flex-grow: initial;
     @media (min-width: $mobilethreshold) {
         height: 100%;
+        margin-bottom: 1rem !important;
+        margin-right: 0.5em !important;
     }
 }
 
@@ -552,6 +579,7 @@ pre {
 legend {
     font-weight: bold;
     font-size: 1rem;
+    margin-bottom: 0;
 }
 
 #calendar {

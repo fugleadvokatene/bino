@@ -20,6 +20,7 @@ const captureScroll = (elem) => {
     const dx = ev.clientX - lastX;
     lastX = ev.clientX;
     elem.scrollLeft -= dx;
+    updateIndicators();
     ev.preventDefault();
   };
 
@@ -30,10 +31,27 @@ const captureScroll = (elem) => {
     pid = null;
   };
 
+  const updateIndicators = () => {
+    const atLeft = elem.scrollLeft <= 20;
+    const atRight = elem.scrollLeft + elem.clientWidth >= elem.scrollWidth - 20;
+
+    if (atLeft) {
+      document.getElementById("dashboard-indicator-left").classList.add("invisible");
+    } else {
+      document.getElementById("dashboard-indicator-left").classList.remove("invisible");
+    }
+    if (atRight) {
+      document.getElementById("dashboard-indicator-right").classList.add("invisible");
+    } else {
+      document.getElementById("dashboard-indicator-right").classList.remove("invisible");
+    }
+  }
+
   elem.addEventListener("pointerdown", down);
   elem.addEventListener("pointermove", move, { passive: false });
   elem.addEventListener("pointerup", up);
   elem.addEventListener("pointercancel", up);
+  updateIndicators();
 };
 
 // Remember position on the board after a form is submitted

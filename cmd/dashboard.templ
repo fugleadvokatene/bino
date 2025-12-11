@@ -6,7 +6,7 @@ import (
 
 templ DashboardPage(data *CommonData, dashboardData *DashboardData) {
 	@Layout(data, "dashboard-container") {
-        <div class="dashboard-left-sidebar m-2">
+        <div class="dashboard-left-sidebar">
             @DashboardForm(data, dashboardData)
             @DashboardSearch(data)
             <div class="mascot-container">
@@ -27,6 +27,7 @@ templ DashboardSearch(data *CommonData) {
     @Card("dashboard-search", "shadow-sm", "mb-2") {
         <fieldset>
             <legend for="dashboard-search">{data.Language.DashboardSearch}</legend>
+            <label class="small">{data.Language.DashboardSearchExplanation}</label>
             <form-group class="form-group">
                 <input autocomplete="off" class="form-control search" id="dashboard-search"></input>
             </form-group>
@@ -87,6 +88,7 @@ templ DashboardSearchCheckbox(id, text string, checked bool) {
 templ DashboardForm(data *CommonData, dashboardData *DashboardData) {
     @Card("dashboard-form", "shadow-sm") {
         @Form("/checkin", "POST") {
+            <legend for="dashboard-form">{data.Language.CheckinLegend}</legend>
             <div class="form-group">
                 <label>{data.Language.CheckinPatientName}</label>
                 <input class="form-control" name="name">
@@ -134,7 +136,7 @@ templ DashboardForm(data *CommonData, dashboardData *DashboardData) {
             </div>
             
             <div class="form-group">
-                <button type="submit" disabled?={data.User.PreferredHome.ID == 0} class="b-create-patient btn btn-primary">{data.Language.CheckinCheckInPatient}</button>
+                <button type="submit" disabled?={data.User.PreferredHome.ID == 0} class="b-create-patient btn btn-success">{data.Language.CheckinCheckInPatient}</button>
             </div>
 
             if data.User.PreferredHome.ID == 0 {
@@ -153,6 +155,7 @@ templ DashboardSelf(data *CommonData, dashboardData *DashboardData) {
 }
 
 templ DashboardHomes(data *CommonData, dashboardData *DashboardData) {
+    <div class="dashboard-indicator invisible" id="dashboard-indicator-left"></div>
     <div class="dashboard search-container">
         for _, home := range dashboardData.Homes {
             <div class="dashboard-home card filter-box"> 
@@ -161,6 +164,7 @@ templ DashboardHomes(data *CommonData, dashboardData *DashboardData) {
         }
         <div id="filter-none" hidden>No results found</div>
     </div>
+    <div class="dashboard-indicator invisible" id="dashboard-indicator-right"></div>
 }
 
 templ Avatar(u UserView) {
