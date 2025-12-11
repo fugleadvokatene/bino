@@ -215,6 +215,8 @@ func startServer(
 	mux.Handle("POST /patient/{patient}/set-name", loggedInHandler(server.postSetNameHandler, CapManageOwnPatients))
 	mux.Handle("POST /patient/{patient}/create-journal", loggedInHandler(server.createJournalHandler, CapCreatePatientJournal))
 	mux.Handle("POST /patient/{patient}/attach-journal", loggedInHandler(server.attachJournalHandler, CapManageOwnPatients))
+	mux.Handle("POST /patient/{patient}/accept-suggested-journal", loggedInHandler(server.acceptSuggestedJournalHandler, CapManageOwnPatients))
+	mux.Handle("POST /patient/{patient}/decline-suggested-journal", loggedInHandler(server.declineSuggestedJournalHandler, CapManageOwnPatients))
 	mux.Handle("POST /event/{event}/set-note", loggedInHandler(server.postEventSetNoteHandler, CapManageOwnPatients))
 	mux.Handle("POST /home/{home}/set-capacity", loggedInHandler(server.setCapacityHandler, CapManageOwnHomes))
 	mux.Handle("POST /home/{home}/add-unavailable", loggedInHandler(server.addHomeUnavailablePeriodHandler, CapManageOwnHomes))

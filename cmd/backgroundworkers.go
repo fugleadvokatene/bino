@@ -2,14 +2,16 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"time"
 )
 
-func backgroundDeleteExpiredItems(
+func background(
 	ctx context.Context,
 	queries *Queries,
 	fileBackend FileBackend,
+	systemLanguageID LanguageID,
 ) {
 	for {
 		log.Printf("running background job: delete expired sessions")
@@ -40,6 +42,13 @@ func backgroundDeleteExpiredItems(
 			log.Printf("removed false wiki file associations (%d)", tag.RowsAffected())
 		}
 
+		log.Printf("running background job: suggest journal URLs")
+		if n, err := suggestJournalURLs(ctx, queries, systemLanguageID); err != nil {
+			log.Printf("error suggesting journal URLs: %v", err)
+		} else {
+			log.Printf("suggested journal URLs (%d)", n)
+		}
+
 		time.Sleep(time.Hour)
 	}
 }
@@ -56,10 +65,30 @@ func deleteOldStagedFiles(ctx context.Context, fileBackend FileBackend) (int, er
 			if result := fileBackend.DeleteTemp(ctx, uuid); result.Error == nil {
 				n += 1
 			} else {
-				log.Printf("couldn't delete temp file %s: %w", uuid, result.Error)
+				log.Printf("couldn't delete temp file %s: %v", uuid, result.Error)
 			}
 		}
 	}
 
+	return n, nil
+}
+
+func suggestJournalURLs(ctx context.Context, queries *Queries, systemLanguage LanguageID) (int, error) {
+	missing, err := queries.GetActivePatientsMissingJournal(ctx, int32(systemLanguage))
+	if err != nil {
+		return 0, fmt.Errorf("looking up patients: %w", err)
+	}
+	log.Printf("there are %d active patients missing journals", len(missing))
+
+	n := 0
+	for _, row := range missing {
+		err := suggestJournalBasedOnSearch(ctx, queries, row.ID, row.Name, row.Species, row.CurrHomeID.Int32)
+		if err != nil {
+			log.Printf("couldn't suggest journal for %s: %v", row.Name, err)
+			continue
+		} else {
+			n += 1
+		}
+	}
 	return n, nil
 }

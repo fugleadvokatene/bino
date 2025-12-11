@@ -255,7 +255,7 @@ WITH q AS (
   SELECT websearch_to_tsquery($3::regconfig, $6::text) AS qry
 )
 SELECT
-  i.r_fts_header, i.r_fts_body, i.header_headline, i.body_headline, i.ns, i.associated_url, i.created, i.updated, i.extra_data,
+  i.r_fts_header, i.r_fts_body, i.header_headline, i.body_headline, i.header, i.ns, i.associated_url, i.created, i.updated, i.extra_data,
   (
       i.r_fts_header
     + i.r_fts_body
@@ -266,6 +266,7 @@ FROM (
     ($2::real     * ts_rank(s.fts_body,   q.qry))::real AS r_fts_body,
     ts_headline($3::regconfig, s.header, q.qry, 'StartSel=[START],StopSel=[STOP],HighlightAll=true')::text AS header_headline,
     ts_headline($3::regconfig, s.body,   q.qry, 'StartSel=[START],StopSel=[STOP],MaxFragments=5,MinWords=3,MaxWords=10,FragmentDelimiter=[CUT]')::text AS body_headline,
+    s.header,
     s.ns,
     s.associated_url,
     s.created,
@@ -294,6 +295,7 @@ type SearchBasicRow struct {
 	RFtsBody       float32
 	HeaderHeadline string
 	BodyHeadline   string
+	Header         pgtype.Text
 	Ns             string
 	AssociatedUrl  pgtype.Text
 	Created        pgtype.Timestamptz
@@ -323,6 +325,7 @@ func (q *Queries) SearchBasic(ctx context.Context, arg SearchBasicParams) ([]Sea
 			&i.RFtsBody,
 			&i.HeaderHeadline,
 			&i.BodyHeadline,
+			&i.Header,
 			&i.Ns,
 			&i.AssociatedUrl,
 			&i.Created,

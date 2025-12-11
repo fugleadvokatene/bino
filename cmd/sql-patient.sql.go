@@ -12,6 +12,18 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
+const acceptSuggestedJournal = `-- name: AcceptSuggestedJournal :exec
+UPDATE patient
+SET journal_url = suggested_journal_url, suggested_journal_title = '', suggested_journal_url = ''
+WHERE id = $1
+  AND suggested_journal_url IS NOT NULL
+`
+
+func (q *Queries) AcceptSuggestedJournal(ctx context.Context, id int32) error {
+	_, err := q.db.Exec(ctx, acceptSuggestedJournal, id)
+	return err
+}
+
 const addPatient = `-- name: AddPatient :one
 INSERT INTO patient (species_id, name, curr_home_id, status, time_checkin)
 VALUES ($1, $2, $3, $4, NOW())
@@ -113,6 +125,17 @@ func (q *Queries) CheckoutPatient(ctx context.Context, arg CheckoutPatientParams
 	return err
 }
 
+const declineSuggestedJournal = `-- name: DeclineSuggestedJournal :exec
+UPDATE patient
+SET suggested_journal_url = '', suggested_journal_title = ''
+WHERE id = $1
+`
+
+func (q *Queries) DeclineSuggestedJournal(ctx context.Context, id int32) error {
+	_, err := q.db.Exec(ctx, declineSuggestedJournal, id)
+	return err
+}
+
 const getActivePatients = `-- name: GetActivePatients :many
 SELECT
   p.id,
@@ -122,7 +145,9 @@ SELECT
   p.journal_url,
   p.time_checkin,
   p.time_checkout,
-  COALESCE(sl.name, '???') AS species
+  COALESCE(sl.name, '???') AS species,
+  p.suggested_journal_title,
+  p.suggested_journal_url
 FROM patient AS p
 LEFT JOIN species_language AS sl
     ON sl.species_id = p.species_id
@@ -132,14 +157,16 @@ ORDER BY p.curr_home_id, p.sort_order, p.id
 `
 
 type GetActivePatientsRow struct {
-	ID           int32
-	Name         string
-	CurrHomeID   pgtype.Int4
-	Status       int32
-	JournalUrl   pgtype.Text
-	TimeCheckin  pgtype.Timestamptz
-	TimeCheckout pgtype.Timestamptz
-	Species      string
+	ID                    int32
+	Name                  string
+	CurrHomeID            pgtype.Int4
+	Status                int32
+	JournalUrl            pgtype.Text
+	TimeCheckin           pgtype.Timestamptz
+	TimeCheckout          pgtype.Timestamptz
+	Species               string
+	SuggestedJournalTitle pgtype.Text
+	SuggestedJournalUrl   pgtype.Text
 }
 
 func (q *Queries) GetActivePatients(ctx context.Context, languageID int32) ([]GetActivePatientsRow, error) {
@@ -160,6 +187,74 @@ func (q *Queries) GetActivePatients(ctx context.Context, languageID int32) ([]Ge
 			&i.TimeCheckin,
 			&i.TimeCheckout,
 			&i.Species,
+			&i.SuggestedJournalTitle,
+			&i.SuggestedJournalUrl,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getActivePatientsMissingJournal = `-- name: GetActivePatientsMissingJournal :many
+SELECT 
+  p.id,
+  p.name,
+  p.curr_home_id,
+  p.status,
+  p.journal_url,
+  p.time_checkin,
+  p.time_checkout,
+  COALESCE(sl.name, '???') AS species,
+  p.suggested_journal_title,
+  p.suggested_journal_url
+FROM patient AS p
+LEFT JOIN species_language AS sl
+    ON sl.species_id = p.species_id
+WHERE curr_home_id IS NOT NULL
+  AND language_id = $1
+  AND (suggested_journal_title IS NULL OR suggested_journal_url IS NULL)
+  AND (journal_url IS NULL OR journal_url='') 
+ORDER BY p.curr_home_id, p.sort_order, p.id
+`
+
+type GetActivePatientsMissingJournalRow struct {
+	ID                    int32
+	Name                  string
+	CurrHomeID            pgtype.Int4
+	Status                int32
+	JournalUrl            pgtype.Text
+	TimeCheckin           pgtype.Timestamptz
+	TimeCheckout          pgtype.Timestamptz
+	Species               string
+	SuggestedJournalTitle pgtype.Text
+	SuggestedJournalUrl   pgtype.Text
+}
+
+func (q *Queries) GetActivePatientsMissingJournal(ctx context.Context, languageID int32) ([]GetActivePatientsMissingJournalRow, error) {
+	rows, err := q.db.Query(ctx, getActivePatientsMissingJournal, languageID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetActivePatientsMissingJournalRow
+	for rows.Next() {
+		var i GetActivePatientsMissingJournalRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.Name,
+			&i.CurrHomeID,
+			&i.Status,
+			&i.JournalUrl,
+			&i.TimeCheckin,
+			&i.TimeCheckout,
+			&i.Species,
+			&i.SuggestedJournalTitle,
+			&i.SuggestedJournalUrl,
 		); err != nil {
 			return nil, err
 		}
@@ -172,7 +267,7 @@ func (q *Queries) GetActivePatients(ctx context.Context, languageID int32) ([]Ge
 }
 
 const getCurrentPatientsForHome = `-- name: GetCurrentPatientsForHome :many
-SELECT p.id, p.species_id, p.curr_home_id, p.name, p.status, p.journal_url, p.sort_order, p.time_checkin, p.time_checkout, sl.name AS species_name FROM patient AS p
+SELECT p.id, p.species_id, p.curr_home_id, p.name, p.status, p.journal_url, p.sort_order, p.time_checkin, p.time_checkout, p.suggested_journal_url, p.suggested_journal_title, sl.name AS species_name FROM patient AS p
 JOIN species_language AS sl
   ON sl.species_id = p.species_id
 WHERE p.curr_home_id = $1
@@ -186,16 +281,18 @@ type GetCurrentPatientsForHomeParams struct {
 }
 
 type GetCurrentPatientsForHomeRow struct {
-	ID           int32
-	SpeciesID    int32
-	CurrHomeID   pgtype.Int4
-	Name         string
-	Status       int32
-	JournalUrl   pgtype.Text
-	SortOrder    int32
-	TimeCheckin  pgtype.Timestamptz
-	TimeCheckout pgtype.Timestamptz
-	SpeciesName  string
+	ID                    int32
+	SpeciesID             int32
+	CurrHomeID            pgtype.Int4
+	Name                  string
+	Status                int32
+	JournalUrl            pgtype.Text
+	SortOrder             int32
+	TimeCheckin           pgtype.Timestamptz
+	TimeCheckout          pgtype.Timestamptz
+	SuggestedJournalUrl   pgtype.Text
+	SuggestedJournalTitle pgtype.Text
+	SpeciesName           string
 }
 
 func (q *Queries) GetCurrentPatientsForHome(ctx context.Context, arg GetCurrentPatientsForHomeParams) ([]GetCurrentPatientsForHomeRow, error) {
@@ -217,6 +314,8 @@ func (q *Queries) GetCurrentPatientsForHome(ctx context.Context, arg GetCurrentP
 			&i.SortOrder,
 			&i.TimeCheckin,
 			&i.TimeCheckout,
+			&i.SuggestedJournalUrl,
+			&i.SuggestedJournalTitle,
 			&i.SpeciesName,
 		); err != nil {
 			return nil, err
@@ -238,7 +337,9 @@ SELECT
   p.journal_url,
   p.time_checkin,
   p.time_checkout,
-  COALESCE(sl.name, '???') AS species
+  COALESCE(sl.name, '???') AS species,
+  p.suggested_journal_title,
+  p.suggested_journal_url
 FROM patient AS p
 LEFT JOIN species_language AS sl
   ON sl.species_id = p.species_id
@@ -248,14 +349,16 @@ ORDER BY p.id DESC
 `
 
 type GetFormerPatientsRow struct {
-	ID           int32
-	Name         string
-	CurrHomeID   pgtype.Int4
-	Status       int32
-	JournalUrl   pgtype.Text
-	TimeCheckin  pgtype.Timestamptz
-	TimeCheckout pgtype.Timestamptz
-	Species      string
+	ID                    int32
+	Name                  string
+	CurrHomeID            pgtype.Int4
+	Status                int32
+	JournalUrl            pgtype.Text
+	TimeCheckin           pgtype.Timestamptz
+	TimeCheckout          pgtype.Timestamptz
+	Species               string
+	SuggestedJournalTitle pgtype.Text
+	SuggestedJournalUrl   pgtype.Text
 }
 
 func (q *Queries) GetFormerPatients(ctx context.Context, languageID int32) ([]GetFormerPatientsRow, error) {
@@ -276,6 +379,8 @@ func (q *Queries) GetFormerPatients(ctx context.Context, languageID int32) ([]Ge
 			&i.TimeCheckin,
 			&i.TimeCheckout,
 			&i.Species,
+			&i.SuggestedJournalTitle,
+			&i.SuggestedJournalUrl,
 		); err != nil {
 			return nil, err
 		}
@@ -288,7 +393,7 @@ func (q *Queries) GetFormerPatients(ctx context.Context, languageID int32) ([]Ge
 }
 
 const getPatient = `-- name: GetPatient :one
-SELECT id, species_id, curr_home_id, name, status, journal_url, sort_order, time_checkin, time_checkout FROM patient
+SELECT id, species_id, curr_home_id, name, status, journal_url, sort_order, time_checkin, time_checkout, suggested_journal_url, suggested_journal_title FROM patient
 WHERE id = $1
 `
 
@@ -305,12 +410,14 @@ func (q *Queries) GetPatient(ctx context.Context, id int32) (Patient, error) {
 		&i.SortOrder,
 		&i.TimeCheckin,
 		&i.TimeCheckout,
+		&i.SuggestedJournalUrl,
+		&i.SuggestedJournalTitle,
 	)
 	return i, err
 }
 
 const getPatientWithSpecies = `-- name: GetPatientWithSpecies :one
-SELECT p.id, p.species_id, p.curr_home_id, p.name, p.status, p.journal_url, p.sort_order, p.time_checkin, p.time_checkout, sl.name AS species_name FROM patient AS p
+SELECT p.id, p.species_id, p.curr_home_id, p.name, p.status, p.journal_url, p.sort_order, p.time_checkin, p.time_checkout, p.suggested_journal_url, p.suggested_journal_title, sl.name AS species_name FROM patient AS p
 JOIN species_language AS sl
   ON sl.species_id = p.species_id
 WHERE p.id = $1
@@ -323,16 +430,18 @@ type GetPatientWithSpeciesParams struct {
 }
 
 type GetPatientWithSpeciesRow struct {
-	ID           int32
-	SpeciesID    int32
-	CurrHomeID   pgtype.Int4
-	Name         string
-	Status       int32
-	JournalUrl   pgtype.Text
-	SortOrder    int32
-	TimeCheckin  pgtype.Timestamptz
-	TimeCheckout pgtype.Timestamptz
-	SpeciesName  string
+	ID                    int32
+	SpeciesID             int32
+	CurrHomeID            pgtype.Int4
+	Name                  string
+	Status                int32
+	JournalUrl            pgtype.Text
+	SortOrder             int32
+	TimeCheckin           pgtype.Timestamptz
+	TimeCheckout          pgtype.Timestamptz
+	SuggestedJournalUrl   pgtype.Text
+	SuggestedJournalTitle pgtype.Text
+	SpeciesName           string
 }
 
 func (q *Queries) GetPatientWithSpecies(ctx context.Context, arg GetPatientWithSpeciesParams) (GetPatientWithSpeciesRow, error) {
@@ -348,6 +457,8 @@ func (q *Queries) GetPatientWithSpecies(ctx context.Context, arg GetPatientWithS
 		&i.SortOrder,
 		&i.TimeCheckin,
 		&i.TimeCheckout,
+		&i.SuggestedJournalUrl,
+		&i.SuggestedJournalTitle,
 		&i.SpeciesName,
 	)
 	return i, err
@@ -440,6 +551,23 @@ type SetPatientStatusParams struct {
 
 func (q *Queries) SetPatientStatus(ctx context.Context, arg SetPatientStatusParams) error {
 	_, err := q.db.Exec(ctx, setPatientStatus, arg.ID, arg.Status)
+	return err
+}
+
+const suggestJournal = `-- name: SuggestJournal :exec
+UPDATE patient
+SET suggested_journal_url = $1, suggested_journal_title = $2
+WHERE id = $3
+`
+
+type SuggestJournalParams struct {
+	Url   pgtype.Text
+	Title pgtype.Text
+	ID    int32
+}
+
+func (q *Queries) SuggestJournal(ctx context.Context, arg SuggestJournalParams) error {
+	_, err := q.db.Exec(ctx, suggestJournal, arg.Url, arg.Title, arg.ID)
 	return err
 }
 

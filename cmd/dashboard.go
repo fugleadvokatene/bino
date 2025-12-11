@@ -96,13 +96,7 @@ func (server *Server) dashboardHandler(w http.ResponseWriter, r *http.Request) {
 			Patients: SliceToSlice(FilterSlice(patients, func(p GetActivePatientsRow) bool {
 				return p.CurrHomeID.Valid && p.CurrHomeID.Int32 == h.ID
 			}), func(p GetActivePatientsRow) PatientView {
-				return PatientView{
-					ID:         p.ID,
-					Species:    p.Species,
-					Name:       p.Name,
-					Status:     p.Status,
-					JournalURL: p.JournalUrl.String,
-				}
+				return p.ToPatientView()
 			}),
 			Users: SliceToSlice(FilterSlice(users, func(u GetAppusersRow) bool {
 				return u.HomeID.Valid && u.HomeID.Int32 == h.ID
@@ -153,8 +147,8 @@ func (server *Server) postCheckinHandler(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	var createJournal bool
-	if _, err := server.getFormValue(r, "create-journal"); err == nil {
+	createJournal := false
+	if _, err := server.getFormValue(r, "journal-action"); err == nil {
 		createJournal = true
 	}
 
@@ -202,6 +196,7 @@ func (server *Server) postCheckinHandler(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
+	suggestJournal := true
 	if createJournal {
 		if item, err := server.GDriveWorker.CreateJournal(GDriveTemplateVars{
 			Time:    time.Now(),
@@ -216,11 +211,40 @@ func (server *Server) postCheckinHandler(w http.ResponseWriter, r *http.Request)
 				JournalUrl: pgtype.Text{String: item.DocumentURL(), Valid: true},
 			}); err != nil || tag.RowsAffected() == 0 {
 				commonData.Warning(commonData.Language.GDriveCreateJournalFailed, err)
+			} else {
+				suggestJournal = false
 			}
 		}
 	}
-
+	if suggestJournal {
+		if err := suggestJournalBasedOnSearch(ctx, server.Queries, patientID, name, systemSpeciesName, fields["home"]); err != nil {
+			LogCtx(ctx, "suggesting journal: %v", err)
+		}
+	}
 	server.redirectToReferer(w, r)
+}
+
+func suggestJournalBasedOnSearch(ctx context.Context, queries *Queries, id int32, name, speciesName string, homeID int32) error {
+	searchQuery := name + " " + speciesName
+	if home, err := queries.GetHome(ctx, homeID); err != nil {
+		searchQuery += " " + home.Name
+	}
+	params := NewBasicSearchParams(SearchQuery{Query: searchQuery})
+	params.Limit = 1
+	results, err := queries.SearchBasic(ctx, params)
+	if err != nil {
+		return err
+	} else if len(results) == 0 {
+		return fmt.Errorf("no results")
+	} else if baseURL := journalRegex.FindString(results[0].AssociatedUrl.String); baseURL != "" {
+		return queries.SuggestJournal(ctx, SuggestJournalParams{
+			Url:   pgtype.Text{String: baseURL, Valid: true},
+			Title: pgtype.Text{String: results[0].Header.String, Valid: true},
+			ID:    id,
+		})
+	} else {
+		return fmt.Errorf("invalid journal URL")
+	}
 }
 
 func (server *Server) movePatientHandler(w http.ResponseWriter, r *http.Request) {

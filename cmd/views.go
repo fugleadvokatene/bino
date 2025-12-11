@@ -89,13 +89,15 @@ func (hv HomeView) AvailabilityString(language *Language) (Availability, string)
 // ---- Patient
 
 type PatientView struct {
-	ID           int32
-	Status       int32
-	Name         string
-	Species      string
-	JournalURL   string
-	TimeCheckin  time.Time
-	TimeCheckout time.Time
+	ID                    int32
+	Status                int32
+	Name                  string
+	Species               string
+	JournalURL            string
+	TimeCheckin           time.Time
+	TimeCheckout          time.Time
+	SuggestedJournalURL   string
+	SuggestedJournalTitle string
 }
 
 func PatientURL(id int32) string {
@@ -132,12 +134,42 @@ func (pv PatientView) URLSuffix(suffix string) string {
 
 func (in GetFormerPatientsRow) ToPatientView() PatientView {
 	return PatientView{
-		ID:           in.ID,
-		Status:       in.Status,
-		Name:         in.Name,
-		Species:      in.Species,
-		TimeCheckin:  in.TimeCheckin.Time,
-		TimeCheckout: in.TimeCheckout.Time,
+		ID:                    in.ID,
+		Status:                in.Status,
+		Name:                  in.Name,
+		Species:               in.Species,
+		TimeCheckin:           in.TimeCheckin.Time,
+		TimeCheckout:          in.TimeCheckout.Time,
+		SuggestedJournalURL:   in.SuggestedJournalUrl.String,
+		SuggestedJournalTitle: in.SuggestedJournalTitle.String,
+	}
+}
+
+func (in GetPatientWithSpeciesRow) ToPatientView() PatientView {
+	return PatientView{
+		ID:                    in.ID,
+		Status:                in.Status,
+		Name:                  in.Name,
+		Species:               in.SpeciesName,
+		JournalURL:            in.JournalUrl.String,
+		TimeCheckin:           in.TimeCheckin.Time,
+		TimeCheckout:          in.TimeCheckout.Time,
+		SuggestedJournalURL:   in.SuggestedJournalUrl.String,
+		SuggestedJournalTitle: in.SuggestedJournalTitle.String,
+	}
+}
+
+func (in GetActivePatientsRow) ToPatientView() PatientView {
+	return PatientView{
+		ID:                    in.ID,
+		Species:               in.Species,
+		Name:                  in.Name,
+		Status:                in.Status,
+		JournalURL:            in.JournalUrl.String,
+		TimeCheckin:           in.TimeCheckin.Time,
+		TimeCheckout:          in.TimeCheckout.Time,
+		SuggestedJournalURL:   in.SuggestedJournalUrl.String,
+		SuggestedJournalTitle: in.SuggestedJournalTitle.String,
 	}
 }
 

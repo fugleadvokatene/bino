@@ -87,6 +87,7 @@ FROM (
     (sqlc.arg('w_fts_body')::real     * ts_rank(s.fts_body,   q.qry))::real AS r_fts_body,
     ts_headline(sqlc.arg('lang')::regconfig, s.header, q.qry, 'StartSel=[START],StopSel=[STOP],HighlightAll=true')::text AS header_headline,
     ts_headline(sqlc.arg('lang')::regconfig, s.body,   q.qry, 'StartSel=[START],StopSel=[STOP],MaxFragments=5,MinWords=3,MaxWords=10,FragmentDelimiter=[CUT]')::text AS body_headline,
+    s.header,
     s.ns,
     s.associated_url,
     s.created,

@@ -88,15 +88,17 @@ type Invitation struct {
 
 // Each row represents a patient
 type Patient struct {
-	ID           int32
-	SpeciesID    int32
-	CurrHomeID   pgtype.Int4
-	Name         string
-	Status       int32
-	JournalUrl   pgtype.Text
-	SortOrder    int32
-	TimeCheckin  pgtype.Timestamptz
-	TimeCheckout pgtype.Timestamptz
+	ID                    int32
+	SpeciesID             int32
+	CurrHomeID            pgtype.Int4
+	Name                  string
+	Status                int32
+	JournalUrl            pgtype.Text
+	SortOrder             int32
+	TimeCheckin           pgtype.Timestamptz
+	TimeCheckout          pgtype.Timestamptz
+	SuggestedJournalUrl   pgtype.Text
+	SuggestedJournalTitle pgtype.Text
 }
 
 // Each row represents an event that has occurred to a specific patient

@@ -78,16 +78,8 @@ func (server *Server) getPatientHandler(w http.ResponseWriter, r *http.Request) 
 	})
 
 	PatientPage(ctx, commonData, PatientPageView{
-		Patient: PatientView{
-			ID:           patientData.ID,
-			Status:       patientData.Status,
-			Name:         patientData.Name,
-			Species:      patientData.SpeciesName,
-			JournalURL:   patientData.JournalUrl.String,
-			TimeCheckin:  patientData.TimeCheckin.Time,
-			TimeCheckout: patientData.TimeCheckout.Time,
-		},
-		Home: home,
+		Patient: patientData.ToPatientView(),
+		Home:    home,
 		Homes: SliceToSlice(homes, func(home Home) HomeView {
 			return HomeView{Home: home}
 		}),
@@ -219,5 +211,35 @@ func (server *Server) attachJournalHandler(w http.ResponseWriter, r *http.Reques
 	}
 
 	commonData.Success(commonData.Language.TODO("journal attached"))
+	server.redirectToReferer(w, r)
+}
+
+func (server *Server) acceptSuggestedJournalHandler(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	commonData := MustLoadCommonData(ctx)
+
+	patient, err := server.getPathID(r, "patient")
+	if err != nil {
+		server.renderError(w, r, commonData, err)
+		return
+	}
+	if err := server.Queries.AcceptSuggestedJournal(ctx, patient); err != nil {
+		commonData.Warning(commonData.Language.TODO("failed to accept suggested journal"), err)
+	}
+	server.redirectToReferer(w, r)
+}
+
+func (server *Server) declineSuggestedJournalHandler(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	commonData := MustLoadCommonData(ctx)
+
+	patient, err := server.getPathID(r, "patient")
+	if err != nil {
+		server.renderError(w, r, commonData, err)
+		return
+	}
+	if err := server.Queries.DeclineSuggestedJournal(ctx, patient); err != nil {
+		commonData.Warning(commonData.Language.TODO("failed to decline suggested journal"), err)
+	}
 	server.redirectToReferer(w, r)
 }

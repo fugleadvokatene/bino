@@ -108,11 +108,16 @@ type Language struct {
 	GDriveTemplateUpdated                  string
 	GDriveUserInvited                      string
 	GDriveCreateJournalForPatient          string
+	GDriveFindJournalForPatient            string
 	GDriveSelectExistingJournalInstruction string
 	GDriveNoJournalForPatient              string
 	GDriveCreateJournalFailed              string
+	GDriveJournalNotFound                  string
 	GDriveTemplateFile                     string
 	GDriveExtraDirs                        string
+	GDriveSuggestedJournal                 string
+	GDriveAcceptSuggestedJournal           string
+	GDriveDeclineSuggestedJournal          string
 
 	GenericAdd          string
 	GenericAge          string
@@ -393,13 +398,18 @@ var NO = &Language{
 	GDriveGiveAccess:                       "Gi skrivetilgang",
 	GDriveLoadFoldersFailed:                "Kunne ikke laste inn mapper fra Google Drive",
 	GDriveUserInvited:                      "Brukeren ble invitert til mappen",
-	GDriveCreateJournalForPatient:          "Opprett pasientjournal",
+	GDriveCreateJournalForPatient:          "Lag ny journal",
+	GDriveFindJournalForPatient:            "Finn eksisterende journal",
 	GDriveSelectExistingJournalInstruction: "Eller velg en eksisterende journal i Google Drive:",
 	GDriveNoJournalForPatient:              "Det er ikke koblet noen journal til pasienten.",
 	GDriveCreateJournalFailed:              "Pasienten ble lagt til, men kunne ikke opprette pasientjournal i Google Drive",
+	GDriveJournalNotFound:                  "Pasienten er lagt til, men kunne ikke finne matchende journal i Google Drive",
 	GDriveTemplateFile:                     "Nye journaler bruker denne malen:",
 	GDriveBaseDir:                          "Nye journaler vil bli opprettet i denne mappen:",
 	GDriveExtraDirs:                        "I tillegg er journaler i disse mappene inkludert i søk:",
+	GDriveSuggestedJournal:                 "Forslag",
+	GDriveAcceptSuggestedJournal:           "Bruk foreslått",
+	GDriveDeclineSuggestedJournal:          "Ikke bruk",
 
 	GenericAdd:          "Legg til",
 	GenericAge:          "Alder",
@@ -683,12 +693,17 @@ var EN = &Language{
 	GDriveBaseDirUpdated:                   "Google Drive journal folder was updated. Remember to also update the template.",
 	GDriveTemplateUpdated:                  "Template journal was updated",
 	GDriveUserInvited:                      "The user was invited to the journal folder",
-	GDriveCreateJournalForPatient:          "Create journal in Google Drive",
+	GDriveCreateJournalForPatient:          "Create journal",
+	GDriveFindJournalForPatient:            "Find existing journal",
 	GDriveSelectExistingJournalInstruction: "Or connect an existing journal in Google Drive:",
 	GDriveNoJournalForPatient:              "No journal found",
-	GDriveCreateJournalFailed:              "Patient was added, I couldn't create the journal in Google Drive",
+	GDriveCreateJournalFailed:              "Patient was added, but I couldn't create the journal in Google Drive",
+	GDriveJournalNotFound:                  "Patient was added, but I couldn't find the journal in Google Drive",
 	GDriveTemplateFile:                     "New files will be created based on this template:",
 	GDriveBaseDir:                          "New files will be created in this folder:",
+	GDriveSuggestedJournal:                 "Suggestion",
+	GDriveAcceptSuggestedJournal:           "Accept suggested journal",
+	GDriveDeclineSuggestedJournal:          "Decline",
 	GDriveExtraDirs:                        "In addition, these folders are included in the document search:",
 
 	GenericAdd:          "Add",

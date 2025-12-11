@@ -38,7 +38,7 @@ func main() {
 
 	fileBackend := NewLocalFileStorage(ctx, "file", "tmp")
 
-	go backgroundDeleteExpiredItems(ctx, queries, fileBackend)
+	go background(ctx, queries, fileBackend, config.SystemLanguage)
 
 	err = startServer(
 		ctx,

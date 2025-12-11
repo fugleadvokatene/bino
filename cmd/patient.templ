@@ -35,9 +35,7 @@ templ PatientPage(ctx context.Context, data *CommonData, view PatientPageView, s
             <h2>Oppdater</h2>
             <table class="patient-table table table-bordered mb-2">
                 <tbody>
-                    if data.User.HasGDriveAccess {
-                        @PatientJournalUpdate(data, view.Patient, true)
-                    }
+                    @PatientJournalUpdate(data, view.Patient, true)
 
                     if !IsCheckoutStatus[Status(view.Patient.Status)] {
                         @DashboardMove(data, view.Homes, view.Home, view.Patient)
@@ -133,6 +131,13 @@ templ PatientJournalUpdate(data *CommonData, patient PatientView, unconditionall
                         <input autocomplete="off" type="text" class="form-control" id={patient.AttachJournalID("")} name="url"></input>
                         @Button("submit", "fa-link", data.Language.GenericUpdate)
                     </form-group>
+                }
+                if patient.SuggestedJournalTitle != "" && patient.SuggestedJournalURL != "" {
+                    <p class="mb-0 small">{data.Language.GDriveSuggestedJournal}: <a href={templ.URL(patient.SuggestedJournalURL)}>{patient.SuggestedJournalTitle}</a></p>
+                    <div class="d-flex justify-content-evenly">
+                        @SingleButtonForm(patient.URLSuffix("accept-suggested-journal"), data.Language.GDriveAcceptSuggestedJournal, "POST", "btn-success", "d-flex", "flex-column", "center", "mb-2")
+                        @SingleButtonForm(patient.URLSuffix("decline-suggested-journal"), data.Language.GDriveDeclineSuggestedJournal, "POST", "btn-warning", "d-flex", "flex-column", "center", "mb-2")
+                    </div>
                 }
             }
         </td>
