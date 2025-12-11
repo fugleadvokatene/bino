@@ -15,56 +15,55 @@ import (
 
 func (w *GDriveWorker) searchIndexWorker(ctx context.Context) {
 	for {
-		if err := w.searchIndexAll(ctx); err != nil {
-			log.Printf("ERROR: %v", err)
-		}
+		w.searchIndexAll(ctx)
 		time.Sleep(time.Minute * 10)
 	}
 }
 
-func (w *GDriveWorker) searchIndexAll(ctx context.Context) error {
+func (w *GDriveWorker) searchIndexAll(ctx context.Context) {
 	w.searchIndexFolder(ctx, w.cfg.JournalFolder)
 	for _, folder := range w.cfg.ExtraJournalFolders {
 		w.searchIndexFolder(ctx, folder)
 	}
-	return nil
 }
 
-func (w *GDriveWorker) listFiles(ctx context.Context, folderID string) (ListFilesResult, error) {
+func (w *GDriveWorker) listFiles(ctx context.Context, folderID string, pageToken string) (ListFilesResult, error) {
 	res, err := w.ListFiles(ListFilesParams{
-		Parent: folderID,
+		Parent:    folderID,
+		PageToken: pageToken,
 	})
 	if err != nil {
 		return ListFilesResult{}, err
 	}
-	for res.NextPageToken != "" {
-		if page, err := w.ListFiles(ListFilesParams{
-			Parent:    folderID,
-			PageToken: res.NextPageToken,
-		}); err == nil {
-			res.Files = append(res.Files, page.Files...)
-			res.NextPageToken = page.NextPageToken
-		} else {
-			return res, err
-		}
-	}
-	return res, nil
+	return ListFilesResult{
+		Files:         res.Files,
+		Folder:        res.Folder,
+		NextPageToken: res.NextPageToken,
+	}, nil
 }
 
-func (w *GDriveWorker) searchIndexFolder(ctx context.Context, folderID string) error {
-	res, err := w.listFiles(ctx, folderID)
-	if err != nil {
-		return err
-	}
-
-	log.Printf("START: converting %d files for %s", len(res.Files), res.Folder.Name)
-	for _, file := range res.Files {
-		if err := w.searchIndexFile(ctx, res.Folder, file); err != nil {
-			log.Printf("ERROR (%s): %s", file.Name, err.Error())
+func (w *GDriveWorker) searchIndexFolder(ctx context.Context, folderID string) {
+	pageToken := ""
+	for {
+		res, err := w.listFiles(ctx, folderID, pageToken)
+		if err != nil {
+			log.Printf("ERROR listing files: %s", err)
+			return
 		}
+
+		log.Printf("START: converting %d files for %s", len(res.Files), res.Folder.Name)
+		for _, file := range res.Files {
+			if err := w.searchIndexFile(ctx, res.Folder, file); err != nil {
+				log.Printf("ERROR (%s): %s", file.Name, err.Error())
+			}
+		}
+		log.Printf("DONE: converting files for %s", res.Folder.Name)
+
+		if res.NextPageToken == "" {
+			break
+		}
+		pageToken = res.NextPageToken
 	}
-	log.Printf("DONE: converting files for %s", res.Folder.Name)
-	return nil
 }
 
 func (w *GDriveWorker) searchIndexFile(ctx context.Context, folder, file GDriveItem) error {
