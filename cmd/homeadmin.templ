@@ -2,12 +2,25 @@ package main
 
 templ HomesPage(data *CommonData, homes []HomeViewAdmin, homeless []UserView) {
     @Layout(data) {
-        <h1>{data.Language.HomesViewHomes}</h1>
+
+        // Create home-form
+        <h2>{data.Language.HomesCreateHome}</h2>
+        @Card() {
+            <p class="small">{data.Language.HomesCreateHomeNote}</p>
+            <form class="form-inline" action="/homes" method="POST">
+                <label for="name">{data.Language.HomesHomeName}</label>
+                <input type="text" id="created-home" name="name">
+                <button type="submit" class="btn btn-primary mb-2">{data.Language.GenericAdd}</button>
+                <input type="hidden" name="form-id" value="create-home">
+            </form>
+        }
+
+        <h2>{data.Language.HomesViewHomes}</h2>
 
         // Unassigned users
         if len(homeless) > 0 {
+            <h2>{data.Language.HomesUnassignedUsers}</h2>
             @Card() {
-                <h2>{data.Language.HomesUnassignedUsers}</h2>
                 for _, user := range homeless {
                     @user.Component(data) {
                         <form class="form-inline" action="/homes" method="POST">
@@ -85,18 +98,6 @@ templ HomesPage(data *CommonData, homes []HomeViewAdmin, homeless []UserView) {
                     </form>
                 }
             }
-        }
-
-        // Create home-form
-        @Card() {
-            <h2>{data.Language.HomesCreateHome}</h2>
-            <p class="small">{data.Language.HomesCreateHomeNote}</p>
-            <form class="form-inline" action="/homes" method="POST">
-                <label for="name">{data.Language.HomesHomeName}</label>
-                <input type="text" id="created-home" name="name">
-                <button type="submit" class="btn btn-primary mb-2">{data.Language.GenericAdd}</button>
-                <input type="hidden" name="form-id" value="create-home">
-            </form>
         }
     }
     <script type="module" src={data.StaticFile("dashboard.js")}></script>
