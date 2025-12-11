@@ -1,51 +1,39 @@
 // Click-and-drag behaviour similar to Kanban and diagramming software
 const captureScroll = (elem) => {
-  let dragging = false, lastX = 0;
+  let dragging = false, lastX = 0, pid = null;
 
   const isInteractive = (el) =>
-    el.closest('a,button,input,select,textarea,label,summary,[contenteditable],form,.editable,::before,::after,.dashboard-patient-card');
+    el.closest('a,button,input,select,textarea,label,summary,[contenteditable],form,.editable,.dashboard-patient-card');
 
   const down = (ev) => {
-    // Don't fuck with right click
-    if (ev.button !== 0) {
-      return;
-    }
-    
-    // Don't fuck with interactive elements
-    if (isInteractive(ev.target)) {
-      return;
-    }
+    if (ev.button !== 0) return;
+    if (isInteractive(ev.target)) return;
 
-    // Begin dragging
     dragging = true;
     lastX = ev.clientX;
-    elem.setPointerCapture(ev.pointerId);
+    pid = ev.pointerId;
+    elem.setPointerCapture(pid);
   };
 
   const move = (ev) => {
-    if (!dragging || !elem.hasPointerCapture(ev.pointerId)) {
-      return;
-    }
-
-    // Manually move the scroll-x-position
+    if (!dragging || ev.pointerId !== pid) return;
     const dx = ev.clientX - lastX;
     lastX = ev.clientX;
     elem.scrollLeft -= dx;
-    
-    // Prevents text selection
     ev.preventDefault();
   };
 
   const up = (ev) => {
-    // Stop dragging
+    if (ev.pointerId !== pid) return;
     dragging = false;
-    elem.releasePointerCapture(ev.pointerId);
+    elem.releasePointerCapture(pid);
+    pid = null;
   };
 
-  elem.addEventListener("mousedown", down);
-  elem.addEventListener("mousemove", move, { passive: false });
-  elem.addEventListener("mouseup", up);
-  elem.addEventListener("mousecancel", up);
+  elem.addEventListener("pointerdown", down);
+  elem.addEventListener("pointermove", move, { passive: false });
+  elem.addEventListener("pointerup", up);
+  elem.addEventListener("pointercancel", up);
 };
 
 // Remember position on the board after a form is submitted

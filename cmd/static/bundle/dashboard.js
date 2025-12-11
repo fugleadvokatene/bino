@@ -1,35 +1,32 @@
 // dashboard.js
 var captureScroll = (elem) => {
-  let dragging = false, lastX = 0;
-  const isInteractive = (el) => el.closest("a,button,input,select,textarea,label,summary,[contenteditable],form,.editable,::before,::after,.dashboard-patient-card");
+  let dragging = false, lastX = 0, pid = null;
+  const isInteractive = (el) => el.closest("a,button,input,select,textarea,label,summary,[contenteditable],form,.editable,.dashboard-patient-card");
   const down = (ev) => {
-    if (ev.button !== 0) {
-      return;
-    }
-    if (isInteractive(ev.target)) {
-      return;
-    }
+    if (ev.button !== 0) return;
+    if (isInteractive(ev.target)) return;
     dragging = true;
     lastX = ev.clientX;
-    elem.setPointerCapture(ev.pointerId);
+    pid = ev.pointerId;
+    elem.setPointerCapture(pid);
   };
   const move = (ev) => {
-    if (!dragging || !elem.hasPointerCapture(ev.pointerId)) {
-      return;
-    }
+    if (!dragging || ev.pointerId !== pid) return;
     const dx = ev.clientX - lastX;
     lastX = ev.clientX;
     elem.scrollLeft -= dx;
     ev.preventDefault();
   };
   const up = (ev) => {
+    if (ev.pointerId !== pid) return;
     dragging = false;
-    elem.releasePointerCapture(ev.pointerId);
+    elem.releasePointerCapture(pid);
+    pid = null;
   };
-  elem.addEventListener("mousedown", down);
-  elem.addEventListener("mousemove", move, { passive: false });
-  elem.addEventListener("mouseup", up);
-  elem.addEventListener("mousecancel", up);
+  elem.addEventListener("pointerdown", down);
+  elem.addEventListener("pointermove", move, { passive: false });
+  elem.addEventListener("pointerup", up);
+  elem.addEventListener("pointercancel", up);
 };
 var setupBoard = (elem) => {
   captureScroll(elem);
