@@ -55,6 +55,7 @@ type Language struct {
 	CheckinCheckInPatient  string
 	CheckinIHaveThePatient string
 	CheckinPatientName     string
+	CheckinLegend          string
 	CheckinYouAreHomeless  string
 
 	DashboardNoPatientsInHome      string
@@ -62,6 +63,7 @@ type Language struct {
 	DashboardGoToPatientPage       string
 	DashboardCheckOut              string
 	DashboardSearch                string
+	DashboardSearchExplanation     string
 	DashboardSearchFilter          string
 	DashboardSearchShowMine        string
 	DashboardSearchShowFull        string
@@ -342,13 +344,15 @@ var NO = &Language{
 	CheckinCheckInPatient:  "Sjekk inn pasient",
 	CheckinIHaveThePatient: "Pasienten er her",
 	CheckinPatientName:     "Pasientens navn",
+	CheckinLegend:          "Ny pasient",
 	CheckinYouAreHomeless:  "Du kan ikke sjekke inn pasienter ennå fordi du ikke er koblet til et rehabhjem.",
 
 	DashboardNoPatientsInHome:      "Ingen pasienter",
 	DashboardGoToJournal:           "Gå til pasientjournal i Google Drive",
 	DashboardGoToPatientPage:       "Gå til pasientside",
 	DashboardCheckOut:              "Sjekk ut",
-	DashboardSearch:                "Søk i rehabhjem og pasienter",
+	DashboardSearch:                "Søk på pasienter",
+	DashboardSearchExplanation:     "Skriv i tekstboksten under for å finne pasienter basert på navn eller art.",
 	DashboardSearchFilter:          "Filtrer rehabhjem",
 	DashboardSearchShowMine:        "Vis mitt rehabhjem",
 	DashboardSearchShowFull:        "Vis fulle rehabhjem",
@@ -389,7 +393,7 @@ var NO = &Language{
 	GDriveGiveAccess:                       "Gi skrivetilgang",
 	GDriveLoadFoldersFailed:                "Kunne ikke laste inn mapper fra Google Drive",
 	GDriveUserInvited:                      "Brukeren ble invitert til mappen",
-	GDriveCreateJournalForPatient:          "Opprett pasientjournal i Google Drive",
+	GDriveCreateJournalForPatient:          "Opprett pasientjournal",
 	GDriveSelectExistingJournalInstruction: "Eller velg en eksisterende journal i Google Drive:",
 	GDriveNoJournalForPatient:              "Det er ikke koblet noen journal til pasienten.",
 	GDriveCreateJournalFailed:              "Pasienten ble lagt til, men kunne ikke opprette pasientjournal i Google Drive",
@@ -433,7 +437,7 @@ var NO = &Language{
 	HomesAddToHome:                 "Legg til",
 	HomesArchiveHome:               "Arkiver rehabhjem",
 	HomesCreateHome:                "Opprett nytt rehabhjem",
-	HomesCreateHomeNote:            "Navnet er som regel navnet på en person, men det kan være flere personer i ett rehabhjem, og en person kan være del av flere rehabhjem.",
+	HomesCreateHomeNote:            "Navnet er som regel navnet på en person, men det kan være flere personer i ett rehabhjem.",
 	HomesEmptyHome:                 "Det er ingen brukere i dette rehabhjemmet.",
 	HomesHomeName:                  "Rehabhjem",
 	HomesRemoveFromCurrent:         "Fjern fra dette rehabhjemmet",
@@ -628,13 +632,15 @@ var EN = &Language{
 	CheckinCheckInPatient:  "Check in",
 	CheckinIHaveThePatient: "The patient is here",
 	CheckinPatientName:     "Name of the patient",
+	CheckinLegend:          "New patient",
 	CheckinYouAreHomeless:  "You can't check in patients yet because you're not connected to a rehab home.",
 
 	DashboardNoPatientsInHome:      "No patients",
 	DashboardGoToJournal:           "Go to patient journal in Google Drive",
 	DashboardGoToPatientPage:       "Go to patient page",
 	DashboardCheckOut:              "Checkout",
-	DashboardSearch:                "Search in homes and patients",
+	DashboardSearch:                "Search for patients",
+	DashboardSearchExplanation:     "Write in the text box below to find patients based on name or species.",
 	DashboardSearchFilter:          "Filter homes",
 	DashboardSearchShowMine:        "Show my home",
 	DashboardSearchShowFull:        "Show full homes",
@@ -721,7 +727,7 @@ var EN = &Language{
 	HomesAddToHome:                 "Add",
 	HomesArchiveHome:               "Archive rehab home",
 	HomesCreateHome:                "Create new rehab home",
-	HomesCreateHomeNote:            "The name is usually that of a person, but there can be multiple people in a rehab home, and one person can be associated with several rehab homes.",
+	HomesCreateHomeNote:            "The name is usually that of a person, but there can be multiple people in a rehab home.",
 	HomesEmptyHome:                 "There are no users in this rehab home.",
 	HomesHomeName:                  "Name",
 	HomesRemoveFromCurrent:         "Remove from this rehab home",
