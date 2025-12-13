@@ -3660,32 +3660,36 @@ var htmx2 = (function() {
 })();
 var htmx_esm_default = htmx2;
 
-// search.js
-function setupSearchForm(target) {
-  let isAdvancedChecked = false;
-  target.querySelectorAll("[name='mode']").forEach((elem) => {
-    if (elem.checked && elem.value === "advanced") {
-      isAdvancedChecked = true;
-    }
-  });
-  if (isAdvancedChecked) {
-    target.querySelector(".search-advanced-options").dataset.show = "true";
-  } else {
-    target.querySelector(".search-advanced-options").dataset.show = "false";
-  }
-}
-document.body.addEventListener("htmx:beforeSend", function(evt) {
-  const target = evt.target;
+// dom.ts
+var QuerySelector = (sel, root = document) => root.querySelector(sel);
+var QuerySelectorAll = (sel, root = document) => Array.from(root.querySelectorAll(sel));
+
+// search.ts
+var setupSearchForm = (form) => {
+  const advanced = QuerySelectorAll("[name='mode']", form).some((el) => el.checked && el.value === "advanced");
+  const opts = QuerySelector(".search-advanced-options", form);
+  if (opts) opts.dataset.show = advanced ? "true" : "false";
+};
+document.body.addEventListener("htmx:beforeSend", (e) => {
+  const target = e.target;
+  if (!(target instanceof HTMLFormElement)) return;
   setupSearchForm(target);
-  const params = new URLSearchParams(new FormData(target));
-  const url = location.pathname + "?" + params.toString();
-  history.replaceState(null, "", url);
+  const params = new URLSearchParams(
+    new FormData(target)
+  );
+  history.replaceState(null, "", `${location.pathname}?${params}`);
 });
-var searchForm = document.getElementById("search-form");
+var searchForm = QuerySelector("#search-form");
+if (!searchForm) throw new Error("search-form not found");
 setupSearchForm(searchForm);
-searchForm.querySelector(".search-filter-clear-created").addEventListener("click", (e) => {
-  searchForm.querySelectorAll(".search-created-filter").forEach((el) => {
-    el.value = "";
-  });
-  htmx.trigger(searchForm, "submit");
-}, { capture: true });
+QuerySelector(".search-filter-clear-created", searchForm)?.addEventListener(
+  "click",
+  () => {
+    QuerySelectorAll(
+      ".search-created-filter",
+      searchForm
+    ).forEach((el) => el.value = "");
+    htmx.trigger(searchForm, "submit");
+  },
+  { capture: true }
+);

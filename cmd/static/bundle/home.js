@@ -2205,11 +2205,17 @@ var sortable_esm_default = Sortable;
 
 // dom.ts
 var QuerySelector = (sel, root = document) => root.querySelector(sel);
+var MustQuerySelector = (sel, root = document) => {
+  const v = QuerySelector(sel, root);
+  if (!v) {
+    throw new Error(`${sel} not found on ${root.nodeName}`);
+  }
+  return v;
+};
 var QuerySelectorAll = (sel, root = document) => Array.from(root.querySelectorAll(sel));
 
 // home.ts
-var table = QuerySelector("#species-list");
-if (!table) throw new Error("species-list not found");
+var table = MustQuerySelector("#species-list");
 var home = Number(table.dataset.home);
 if (Number.isNaN(home)) throw new Error("invalid home id");
 var reorder = async () => {

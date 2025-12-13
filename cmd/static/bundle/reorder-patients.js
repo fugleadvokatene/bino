@@ -2203,41 +2203,41 @@ Sortable.mount(new AutoScrollPlugin());
 Sortable.mount(Remove, Revert);
 var sortable_esm_default = Sortable;
 
-// reorder-patients.js
+// dom.ts
+var QuerySelectorAll = (sel, root = document) => Array.from(root.querySelectorAll(sel));
+
+// reorder-patients.ts
 if (matchMedia("(width >= 1000px)").matches) {
-  let reordered = function(home) {
-    const req = {
+  const lists = QuerySelectorAll(".dashboard-patient-list");
+  const reordered = (home) => {
+    const list = lists.find((l) => Number(l.dataset.home) === home);
+    if (!list) return;
+    const body = {
       Id: home,
-      Order: []
+      Order: QuerySelectorAll("[data-patient-id]", list).map(
+        (item) => Number(item.dataset.patientId)
+      )
     };
-    document.querySelectorAll(".dashboard-patient-list").forEach((list) => {
-      if (parseInt(list.dataset.home) === home) {
-        req.Order = Array.from(list.children).map(
-          (item) => parseInt(item.dataset.patientId)
-        );
-      }
-    });
     fetch("/ajaxreorder", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(req)
+      body: JSON.stringify(body)
     });
   };
-  document.addEventListener("DOMContentLoaded", () => {
-    document.querySelectorAll(".dashboard-patient-list").forEach((list) => {
-      new sortable_esm_default(list, {
-        handle: ".card-gripper",
-        animation: 0,
-        forceFallback: true,
-        fallbackClass: "sortable-fallback",
-        ghostClass: "drop-target",
-        chosenClass: "chosen",
-        dragClass: "dragging",
-        filter: ".must-be-clickable",
-        onUpdate: (evt) => {
-          reordered(parseInt(evt.to.dataset.home));
-        }
-      });
+  lists.forEach((list) => {
+    new sortable_esm_default(list, {
+      handle: ".card-gripper",
+      animation: 0,
+      forceFallback: true,
+      fallbackClass: "sortable-fallback",
+      ghostClass: "drop-target",
+      chosenClass: "chosen",
+      dragClass: "dragging",
+      filter: ".must-be-clickable",
+      onUpdate: (evt) => {
+        const home = Number(evt.to.dataset.home);
+        if (!Number.isNaN(home)) reordered(home);
+      }
     });
   });
 }

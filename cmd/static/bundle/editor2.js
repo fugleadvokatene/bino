@@ -1,4 +1,4 @@
-// ../node_modules/orderedmap/dist/index.js
+// node_modules/orderedmap/dist/index.js
 function OrderedMap(content) {
   this.content = content;
 }
@@ -117,7 +117,7 @@ OrderedMap.from = function(value) {
 };
 var dist_default = OrderedMap;
 
-// ../node_modules/prosemirror-model/dist/index.js
+// node_modules/prosemirror-model/dist/index.js
 function findDiffStart(a, b, pos) {
   for (let i = 0; ; i++) {
     if (i == a.childCount || i == b.childCount)
@@ -3314,7 +3314,7 @@ function renderSpec(doc3, structure, xmlNS, blockArraysIn) {
   return { dom, contentDOM };
 }
 
-// ../node_modules/prosemirror-transform/dist/index.js
+// node_modules/prosemirror-transform/dist/index.js
 var lower16 = 65535;
 var factor16 = Math.pow(2, 16);
 function makeRecover(index, offset) {
@@ -5133,7 +5133,7 @@ var Transform = class {
   }
 };
 
-// ../node_modules/prosemirror-state/dist/index.js
+// node_modules/prosemirror-state/dist/index.js
 var classesById = /* @__PURE__ */ Object.create(null);
 var Selection = class {
   /**
@@ -6059,7 +6059,7 @@ var PluginKey = class {
   }
 };
 
-// ../node_modules/prosemirror-commands/dist/index.js
+// node_modules/prosemirror-commands/dist/index.js
 var deleteSelection = (state, dispatch) => {
   if (state.selection.empty)
     return false;
@@ -6585,7 +6585,7 @@ for (let key in pcBaseKeymap)
   macBaseKeymap[key] = pcBaseKeymap[key];
 var mac = typeof navigator != "undefined" ? /Mac|iP(hone|[oa]d)/.test(navigator.platform) : typeof os != "undefined" && os.platform ? os.platform() == "darwin" : false;
 
-// ../node_modules/prosemirror-schema-list/dist/index.js
+// node_modules/prosemirror-schema-list/dist/index.js
 function wrapInList(listType, attrs = null) {
   return function(state, dispatch) {
     let { $from, $to } = state.selection;
@@ -6709,7 +6709,7 @@ function sinkListItem(itemType) {
   };
 }
 
-// ../node_modules/prosemirror-view/dist/index.js
+// node_modules/prosemirror-view/dist/index.js
 var domIndex = function(node) {
   for (var index = 0; ; index++) {
     node = node.previousSibling;
@@ -7046,17 +7046,20 @@ function findOffsetInNode(node, coords) {
 }
 function findOffsetInText(node, coords) {
   let len = node.nodeValue.length;
-  let range = document.createRange();
+  let range = document.createRange(), result;
   for (let i = 0; i < len; i++) {
     range.setEnd(node, i + 1);
     range.setStart(node, i);
     let rect = singleRect(range, 1);
     if (rect.top == rect.bottom)
       continue;
-    if (inRect(coords, rect))
-      return { node, offset: i + (coords.left >= (rect.left + rect.right) / 2 ? 1 : 0) };
+    if (inRect(coords, rect)) {
+      result = { node, offset: i + (coords.left >= (rect.left + rect.right) / 2 ? 1 : 0) };
+      break;
+    }
   }
-  return { node, offset: 0 };
+  range.detach();
+  return result || { node, offset: 0 };
 }
 function inRect(coords, rect) {
   return coords.left >= rect.left - 1 && coords.left <= rect.right + 1 && coords.top >= rect.top - 1 && coords.top <= rect.bottom + 1;
@@ -9807,7 +9810,7 @@ editHandlers.compositionstart = editHandlers.compositionupdate = (view) => {
   if (!view.composing) {
     view.domObserver.flush();
     let { state } = view, $pos = state.selection.$to;
-    if (state.selection instanceof TextSelection && (state.storedMarks || !$pos.textOffset && $pos.parentOffset && $pos.nodeBefore.marks.some((m) => m.type.spec.inclusive === false))) {
+    if (state.selection instanceof TextSelection && (state.storedMarks || !$pos.textOffset && $pos.parentOffset && $pos.nodeBefore.marks.some((m) => m.type.spec.inclusive === false) || chrome && windows && selectionBeforeUneditable(view))) {
       view.markCursor = view.state.storedMarks || $pos.marks();
       endComposition(view, true);
       view.markCursor = null;
@@ -9835,6 +9838,13 @@ editHandlers.compositionstart = editHandlers.compositionupdate = (view) => {
   }
   scheduleComposeEnd(view, timeoutComposition);
 };
+function selectionBeforeUneditable(view) {
+  let { focusNode, focusOffset } = view.domSelectionRange();
+  if (!focusNode || focusNode.nodeType != 1 || focusOffset >= focusNode.childNodes.length)
+    return false;
+  let next = focusNode.childNodes[focusOffset];
+  return next.nodeType == 1 && next.contentEditable == "false";
+}
 editHandlers.compositionend = (view, event) => {
   if (view.composing) {
     view.input.composing = false;
@@ -10038,10 +10048,14 @@ handlers.dragend = (view) => {
   }, 50);
 };
 editHandlers.dragover = editHandlers.dragenter = (_, e) => e.preventDefault();
-editHandlers.drop = (view, _event) => {
-  let event = _event;
-  let dragging = view.dragging;
-  view.dragging = null;
+editHandlers.drop = (view, event) => {
+  try {
+    handleDrop(view, event, view.dragging);
+  } finally {
+    view.dragging = null;
+  }
+};
+function handleDrop(view, event, dragging) {
   if (!event.dataTransfer)
     return;
   let eventPos = view.posAtCoords(eventCoords(event));
@@ -10094,7 +10108,7 @@ editHandlers.drop = (view, _event) => {
   }
   view.focus();
   view.dispatch(tr2.setMeta("uiEvent", "drop"));
-};
+}
 handlers.focus = (view) => {
   view.input.lastFocus = Date.now();
   if (!view.focused) {
@@ -10945,6 +10959,13 @@ var DOMObserver = class {
             br.remove();
         }
       }
+    } else if ((chrome || safari) && added.some((n) => n.nodeName == "BR") && (view.input.lastKeyCode == 8 || view.input.lastKeyCode == 46)) {
+      for (let node of added)
+        if (node.nodeName == "BR" && node.parentNode) {
+          let after = node.nextSibling;
+          if (after && after.nodeType == 1 && after.contentEditable == "false")
+            node.parentNode.removeChild(node);
+        }
     }
     let readSel = null;
     if (from2 < 0 && newSel && view.input.lastFocus > Date.now() - 200 && Math.max(view.input.lastTouch, view.input.lastClick.time) < Date.now() - 300 && selectionCollapsed(sel) && (readSel = selectionFromDOM(view)) && readSel.eq(Selection.near(view.state.doc.resolve(0), 1))) {
@@ -11872,7 +11893,7 @@ function checkStateComponent(plugin) {
     throw new RangeError("Plugins passed directly to the view must not have a state component");
 }
 
-// ../node_modules/w3c-keyname/index.js
+// node_modules/w3c-keyname/index.js
 var base = {
   8: "Backspace",
   9: "Tab",
@@ -11978,7 +11999,7 @@ function keyName(event) {
   return name;
 }
 
-// ../node_modules/prosemirror-keymap/dist/index.js
+// node_modules/prosemirror-keymap/dist/index.js
 var mac4 = typeof navigator != "undefined" && /Mac|iP(hone|[oa]d)/.test(navigator.platform);
 var windows2 = typeof navigator != "undefined" && /Win/.test(navigator.platform);
 function normalizeKeyName(name) {
@@ -12057,7 +12078,7 @@ function keydownHandler(bindings) {
   };
 }
 
-// ../node_modules/@tiptap/core/dist/index.js
+// node_modules/@tiptap/core/dist/index.js
 var __defProp = Object.defineProperty;
 var __export = (target, all) => {
   for (var name in all)
@@ -13838,6 +13859,35 @@ function isNodeEmpty(node, {
 }
 function isNodeSelection(value) {
   return value instanceof NodeSelection;
+}
+var MappablePosition = class _MappablePosition {
+  constructor(position) {
+    this.position = position;
+  }
+  /**
+   * Creates a MappablePosition from a JSON object.
+   */
+  static fromJSON(json) {
+    return new _MappablePosition(json.position);
+  }
+  /**
+   * Converts the MappablePosition to a JSON object.
+   */
+  toJSON() {
+    return {
+      position: this.position
+    };
+  }
+};
+function getUpdatedPosition(position, transaction) {
+  const mapResult = transaction.mapping.mapResult(position.position);
+  return {
+    position: new MappablePosition(mapResult.pos),
+    mapResult
+  };
+}
+function createMappablePosition(position) {
+  return new MappablePosition(position);
 }
 function canSetMark(state, tr2, newMarkType) {
   var _a;
@@ -15968,6 +16018,10 @@ var Editor = class extends EventEmitter {
     };
     this.isCapturingTransaction = false;
     this.capturedTransaction = null;
+    this.utils = {
+      getUpdatedPosition,
+      createMappablePosition
+    };
     this.setOptions(options);
     this.createExtensionManager();
     this.createCommandManager();
@@ -16907,9 +16961,15 @@ function createInlineMarkdownSpec(options) {
       return attrs;
     }
     const filtered = {};
-    allowedAttributes.forEach((key) => {
-      if (key in attrs) {
-        filtered[key] = attrs[key];
+    allowedAttributes.forEach((attr) => {
+      const attrName = typeof attr === "string" ? attr : attr.name;
+      const skipIfDefault = typeof attr === "string" ? void 0 : attr.skipIfDefault;
+      if (attrName in attrs) {
+        const value = attrs[attrName];
+        if (skipIfDefault !== void 0 && value === skipIfDefault) {
+          return;
+        }
+        filtered[attrName] = value;
       }
     });
     return filtered;
@@ -17171,7 +17231,7 @@ function markPasteRule(config) {
   });
 }
 
-// ../node_modules/@tiptap/core/dist/jsx-runtime/jsx-runtime.js
+// node_modules/@tiptap/core/dist/jsx-runtime/jsx-runtime.js
 var h = (tag, attributes) => {
   if (tag === "slot") {
     return 0;
@@ -17186,7 +17246,7 @@ var h = (tag, attributes) => {
   return [tag, rest, children];
 };
 
-// ../node_modules/@tiptap/extension-blockquote/dist/index.js
+// node_modules/@tiptap/extension-blockquote/dist/index.js
 var inputRegex = /^\s*>\s$/;
 var Blockquote = Node3.create({
   name: "blockquote",
@@ -17256,7 +17316,7 @@ ${prefix}
   }
 });
 
-// ../node_modules/@tiptap/extension-bold/dist/index.js
+// node_modules/@tiptap/extension-bold/dist/index.js
 var starInputRegex = /(?:^|\s)(\*\*(?!\s+\*\*)((?:[^*]+))\*\*(?!\s+\*\*))$/;
 var starPasteRegex = /(?:^|\s)(\*\*(?!\s+\*\*)((?:[^*]+))\*\*(?!\s+\*\*))/g;
 var underscoreInputRegex = /(?:^|\s)(__(?!\s+__)((?:[^_]+))__(?!\s+__))$/;
@@ -17342,7 +17402,7 @@ var Bold = Mark2.create({
   }
 });
 
-// ../node_modules/@tiptap/extension-code/dist/index.js
+// node_modules/@tiptap/extension-code/dist/index.js
 var inputRegex2 = /(^|[^`])`([^`]+)`(?!`)$/;
 var pasteRegex = /(^|[^`])`([^`]+)`(?!`)/g;
 var Code = Mark2.create({
@@ -17407,7 +17467,7 @@ var Code = Mark2.create({
   }
 });
 
-// ../node_modules/@tiptap/extension-code-block/dist/index.js
+// node_modules/@tiptap/extension-code-block/dist/index.js
 var DEFAULT_TAB_SIZE = 4;
 var backtickInputRegex = /^```([a-z]+)?[\s\n]$/;
 var tildeInputRegex = /^~~~([a-z]+)?[\s\n]$/;
@@ -17718,7 +17778,7 @@ var CodeBlock = Node3.create({
   }
 });
 
-// ../node_modules/@tiptap/extension-document/dist/index.js
+// node_modules/@tiptap/extension-document/dist/index.js
 var Document = Node3.create({
   name: "doc",
   topNode: true,
@@ -17731,7 +17791,7 @@ var Document = Node3.create({
   }
 });
 
-// ../node_modules/@tiptap/extension-hard-break/dist/index.js
+// node_modules/@tiptap/extension-hard-break/dist/index.js
 var HardBreak = Node3.create({
   name: "hardBreak",
   markdownTokenName: "br",
@@ -17794,7 +17854,7 @@ var HardBreak = Node3.create({
   }
 });
 
-// ../node_modules/@tiptap/extension-heading/dist/index.js
+// node_modules/@tiptap/extension-heading/dist/index.js
 var Heading = Node3.create({
   name: "heading",
   addOptions() {
@@ -17877,7 +17937,7 @@ var Heading = Node3.create({
   }
 });
 
-// ../node_modules/@tiptap/extension-horizontal-rule/dist/index.js
+// node_modules/@tiptap/extension-horizontal-rule/dist/index.js
 var HorizontalRule = Node3.create({
   name: "horizontalRule",
   addOptions() {
@@ -17953,7 +18013,7 @@ var HorizontalRule = Node3.create({
   }
 });
 
-// ../node_modules/@tiptap/extension-italic/dist/index.js
+// node_modules/@tiptap/extension-italic/dist/index.js
 var starInputRegex2 = /(?:^|\s)(\*(?!\s+\*)((?:[^*]+))\*(?!\s+\*))$/;
 var starPasteRegex2 = /(?:^|\s)(\*(?!\s+\*)((?:[^*]+))\*(?!\s+\*))/g;
 var underscoreInputRegex2 = /(?:^|\s)(_(?!\s+_)((?:[^_]+))_(?!\s+_))$/;
@@ -18038,7 +18098,7 @@ var Italic = Mark2.create({
   }
 });
 
-// ../node_modules/linkifyjs/dist/linkify.mjs
+// node_modules/linkifyjs/dist/linkify.mjs
 var encodedTlds = "aaa1rp3bb0ott3vie4c1le2ogado5udhabi7c0ademy5centure6ountant0s9o1tor4d0s1ult4e0g1ro2tna4f0l1rica5g0akhan5ency5i0g1rbus3force5tel5kdn3l0ibaba4pay4lfinanz6state5y2sace3tom5m0azon4ericanexpress7family11x2fam3ica3sterdam8nalytics7droid5quan4z2o0l2partments8p0le4q0uarelle8r0ab1mco4chi3my2pa2t0e3s0da2ia2sociates9t0hleta5torney7u0ction5di0ble3o3spost5thor3o0s4w0s2x0a2z0ure5ba0by2idu3namex4d1k2r0celona5laycard4s5efoot5gains6seball5ketball8uhaus5yern5b0c1t1va3cg1n2d1e0ats2uty4er2rlin4st0buy5t2f1g1h0arti5i0ble3d1ke2ng0o3o1z2j1lack0friday9ockbuster8g1omberg7ue3m0s1w2n0pparibas9o0ats3ehringer8fa2m1nd2o0k0ing5sch2tik2on4t1utique6x2r0adesco6idgestone9oadway5ker3ther5ussels7s1t1uild0ers6siness6y1zz3v1w1y1z0h3ca0b1fe2l0l1vinklein9m0era3p2non3petown5ital0one8r0avan4ds2e0er0s4s2sa1e1h1ino4t0ering5holic7ba1n1re3c1d1enter4o1rn3f0a1d2g1h0anel2nel4rity4se2t2eap3intai5ristmas6ome4urch5i0priani6rcle4sco3tadel4i0c2y3k1l0aims4eaning6ick2nic1que6othing5ud3ub0med6m1n1o0ach3des3ffee4llege4ogne5m0mbank4unity6pany2re3uter5sec4ndos3struction8ulting7tact3ractors9oking4l1p2rsica5untry4pon0s4rses6pa2r0edit0card4union9icket5own3s1uise0s6u0isinella9v1w1x1y0mru3ou3z2dad1nce3ta1e1ing3sun4y2clk3ds2e0al0er2s3gree4livery5l1oitte5ta3mocrat6ntal2ist5si0gn4v2hl2iamonds6et2gital5rect0ory7scount3ver5h2y2j1k1m1np2o0cs1tor4g1mains5t1wnload7rive4tv2ubai3nlop4pont4rban5vag2r2z2earth3t2c0o2deka3u0cation8e1g1mail3erck5nergy4gineer0ing9terprises10pson4quipment8r0icsson6ni3s0q1tate5t1u0rovision8s2vents5xchange6pert3osed4ress5traspace10fage2il1rwinds6th3mily4n0s2rm0ers5shion4t3edex3edback6rrari3ero6i0delity5o2lm2nal1nce1ial7re0stone6mdale6sh0ing5t0ness6j1k1lickr3ghts4r2orist4wers5y2m1o0o0d1tball6rd1ex2sale4um3undation8x2r0ee1senius7l1ogans4ntier7tr2ujitsu5n0d2rniture7tbol5yi3ga0l0lery3o1up4me0s3p1rden4y2b0iz3d0n2e0a1nt0ing5orge5f1g0ee3h1i0ft0s3ves2ing5l0ass3e1obal2o4m0ail3bh2o1x2n1odaddy5ld0point6f2o0dyear5g0le4p1t1v2p1q1r0ainger5phics5tis4een3ipe3ocery4up4s1t1u0cci3ge2ide2tars5ru3w1y2hair2mburg5ngout5us3bo2dfc0bank7ealth0care8lp1sinki6re1mes5iphop4samitsu7tachi5v2k0t2m1n1ockey4ldings5iday5medepot5goods5s0ense7nda3rse3spital5t0ing5t0els3mail5use3w2r1sbc3t1u0ghes5yatt3undai7ibm2cbc2e1u2d1e0ee3fm2kano4l1m0amat4db2mo0bilien9n0c1dustries8finiti5o2g1k1stitute6urance4e4t0ernational10uit4vestments10o1piranga7q1r0ish4s0maili5t0anbul7t0au2v3jaguar4va3cb2e0ep2tzt3welry6io2ll2m0p2nj2o0bs1urg4t1y2p0morgan6rs3uegos4niper7kaufen5ddi3e0rryhotels6properties14fh2g1h1i0a1ds2m1ndle4tchen5wi3m1n1oeln3matsu5sher5p0mg2n2r0d1ed3uokgroup8w1y0oto4z2la0caixa5mborghini8er3nd0rover6xess5salle5t0ino3robe5w0yer5b1c1ds2ease3clerc5frak4gal2o2xus4gbt3i0dl2fe0insurance9style7ghting6ke2lly3mited4o2ncoln4k2ve1ing5k1lc1p2oan0s3cker3us3l1ndon4tte1o3ve3pl0financial11r1s1t0d0a3u0ndbeck6xe1ury5v1y2ma0drid4if1son4keup4n0agement7go3p1rket0ing3s4riott5shalls7ttel5ba2c0kinsey7d1e0d0ia3et2lbourne7me1orial6n0u2rckmsd7g1h1iami3crosoft7l1ni1t2t0subishi9k1l0b1s2m0a2n1o0bi0le4da2e1i1m1nash3ey2ster5rmon3tgage6scow4to0rcycles9v0ie4p1q1r1s0d2t0n1r2u0seum3ic4v1w1x1y1z2na0b1goya4me2vy3ba2c1e0c1t0bank4flix4work5ustar5w0s2xt0direct7us4f0l2g0o2hk2i0co2ke1on3nja3ssan1y5l1o0kia3rton4w0ruz3tv4p1r0a1w2tt2u1yc2z2obi1server7ffice5kinawa6layan0group9lo3m0ega4ne1g1l0ine5oo2pen3racle3nge4g0anic5igins6saka4tsuka4t2vh3pa0ge2nasonic7ris2s1tners4s1y3y2ccw3e0t2f0izer5g1h0armacy6d1ilips5one2to0graphy6s4ysio5ics1tet2ures6d1n0g1k2oneer5zza4k1l0ace2y0station9umbing5s3m1n0c2ohl2ker3litie5rn2st3r0axi3ess3ime3o0d0uctions8f1gressive8mo2perties3y5tection8u0dential9s1t1ub2w0c2y2qa1pon3uebec3st5racing4dio4e0ad1lestate6tor2y4cipes5d0stone5umbrella9hab3ise0n3t2liance6n0t0als5pair3ort3ublican8st0aurant8view0s5xroth6ich0ardli6oh3l1o1p2o0cks3deo3gers4om3s0vp3u0gby3hr2n2w0e2yukyu6sa0arland6fe0ty4kura4le1on3msclub4ung5ndvik0coromant12ofi4p1rl2s1ve2xo3b0i1s2c0b1haeffler7midt4olarships8ol3ule3warz5ience5ot3d1e0arch3t2cure1ity6ek2lect4ner3rvices6ven3w1x0y3fr2g1h0angrila6rp3ell3ia1ksha5oes2p0ping5uji3w3i0lk2na1gles5te3j1k0i0n2y0pe4l0ing4m0art3ile4n0cf3o0ccer3ial4ftbank4ware6hu2lar2utions7ng1y2y2pa0ce3ort2t3r0l2s1t0ada2ples4r1tebank4farm7c0group6ockholm6rage3e3ream4udio2y3yle4u0cks3pplies3y2ort5rf1gery5zuki5v1watch4iss4x1y0dney4stems6z2tab1ipei4lk2obao4rget4tamotors6r2too4x0i3c0i2d0k2eam2ch0nology8l1masek5nnis4va3f1g1h0d1eater2re6iaa2ckets5enda4ps2res2ol4j0maxx4x2k0maxx5l1m0all4n1o0day3kyo3ols3p1ray3shiba5tal3urs3wn2yota3s3r0ade1ing4ining5vel0ers0insurance16ust3v2t1ube2i1nes3shu4v0s2w1z2ua1bank3s2g1k1nicom3versity8o2ol2ps2s1y1z2va0cations7na1guard7c1e0gas3ntures6risign5m\xF6gensberater2ung14sicherung10t2g1i0ajes4deo3g1king4llas4n1p1rgin4sa1ion4va1o3laanderen9n1odka3lvo3te1ing3o2yage5u2wales2mart4ter4ng0gou5tch0es6eather0channel12bcam3er2site5d0ding5ibo2r3f1hoswho6ien2ki2lliamhill9n0dows4e1ners6me2olterskluwer11odside6rk0s2ld3w2s1tc1f3xbox3erox4ihuan4n2xx2yz3yachts4hoo3maxun5ndex5e1odobashi7ga2kohama6u0tube6t1un3za0ppos4ra3ero3ip2m1one3uerich6w2";
 var encodedUtlds = "\u03B5\u03BB1\u03C52\u0431\u04331\u0435\u043B3\u0434\u0435\u0442\u04384\u0435\u044E2\u043A\u0430\u0442\u043E\u043B\u0438\u043A6\u043E\u043C3\u043C\u043A\u04342\u043E\u043D1\u0441\u043A\u0432\u04306\u043E\u043D\u043B\u0430\u0439\u043D5\u0440\u04333\u0440\u0443\u04412\u04442\u0441\u0430\u0439\u04423\u0440\u04313\u0443\u043A\u04403\u049B\u0430\u04373\u0570\u0561\u05753\u05D9\u05E9\u05E8\u05D0\u05DC5\u05E7\u05D5\u05DD3\u0627\u0628\u0648\u0638\u0628\u064A5\u0631\u0627\u0645\u0643\u06485\u0644\u0627\u0631\u062F\u06464\u0628\u062D\u0631\u064A\u06465\u062C\u0632\u0627\u0626\u06315\u0633\u0639\u0648\u062F\u064A\u06296\u0639\u0644\u064A\u0627\u06465\u0645\u063A\u0631\u06285\u0645\u0627\u0631\u0627\u062A5\u06CC\u0631\u0627\u06465\u0628\u0627\u0631\u062A2\u0632\u0627\u06314\u064A\u062A\u06433\u06BE\u0627\u0631\u062A5\u062A\u0648\u0646\u06334\u0633\u0648\u062F\u0627\u06463\u0631\u064A\u06295\u0634\u0628\u0643\u06294\u0639\u0631\u0627\u06422\u06282\u0645\u0627\u06464\u0641\u0644\u0633\u0637\u064A\u06466\u0642\u0637\u06313\u0643\u0627\u062B\u0648\u0644\u064A\u06436\u0648\u06453\u0645\u0635\u06312\u0644\u064A\u0633\u064A\u06275\u0648\u0631\u064A\u062A\u0627\u0646\u064A\u06277\u0642\u06394\u0647\u0645\u0631\u0627\u06475\u067E\u0627\u06A9\u0633\u062A\u0627\u06467\u0680\u0627\u0631\u062A4\u0915\u0949\u092E3\u0928\u0947\u091F3\u092D\u093E\u0930\u09240\u092E\u094D3\u094B\u09245\u0938\u0902\u0917\u0920\u09285\u09AC\u09BE\u0982\u09B2\u09BE5\u09AD\u09BE\u09B0\u09A42\u09F0\u09A44\u0A2D\u0A3E\u0A30\u0A244\u0AAD\u0ABE\u0AB0\u0AA44\u0B2D\u0B3E\u0B30\u0B244\u0B87\u0BA8\u0BCD\u0BA4\u0BBF\u0BAF\u0BBE6\u0BB2\u0B99\u0BCD\u0B95\u0BC86\u0B9A\u0BBF\u0B99\u0BCD\u0B95\u0BAA\u0BCD\u0BAA\u0BC2\u0BB0\u0BCD11\u0C2D\u0C3E\u0C30\u0C24\u0C4D5\u0CAD\u0CBE\u0CB0\u0CA44\u0D2D\u0D3E\u0D30\u0D24\u0D025\u0DBD\u0D82\u0D9A\u0DCF4\u0E04\u0E2D\u0E213\u0E44\u0E17\u0E223\u0EA5\u0EB2\u0EA73\u10D2\u10D42\u307F\u3093\u306A3\u30A2\u30DE\u30BE\u30F34\u30AF\u30E9\u30A6\u30C94\u30B0\u30FC\u30B0\u30EB4\u30B3\u30E02\u30B9\u30C8\u30A23\u30BB\u30FC\u30EB3\u30D5\u30A1\u30C3\u30B7\u30E7\u30F36\u30DD\u30A4\u30F3\u30C84\u4E16\u754C2\u4E2D\u4FE11\u56FD1\u570B1\u6587\u7F513\u4E9A\u9A6C\u900A3\u4F01\u4E1A2\u4F5B\u5C712\u4FE1\u606F2\u5065\u5EB72\u516B\u53662\u516C\u53F81\u76CA2\u53F0\u6E7E1\u70632\u5546\u57CE1\u5E971\u68072\u5609\u91CC0\u5927\u9152\u5E975\u5728\u7EBF2\u5927\u62FF2\u5929\u4E3B\u65593\u5A31\u4E502\u5BB6\u96FB2\u5E7F\u4E1C2\u5FAE\u535A2\u6148\u55842\u6211\u7231\u4F603\u624B\u673A2\u62DB\u80582\u653F\u52A11\u5E9C2\u65B0\u52A0\u57612\u95FB2\u65F6\u5C1A2\u66F8\u7C4D2\u673A\u67842\u6DE1\u9A6C\u95213\u6E38\u620F2\u6FB3\u95802\u70B9\u770B2\u79FB\u52A82\u7EC4\u7EC7\u673A\u67844\u7F51\u57401\u5E971\u7AD91\u7EDC2\u8054\u901A2\u8C37\u6B4C2\u8D2D\u72692\u901A\u8CA92\u96C6\u56E22\u96FB\u8A0A\u76C8\u79D14\u98DE\u5229\u6D663\u98DF\u54C12\u9910\u53852\u9999\u683C\u91CC\u62C93\u6E2F2\uB2F7\uB1371\uCEF42\uC0BC\uC1312\uD55C\uAD6D2";
 var numeric = "numeric";
@@ -19187,7 +19247,7 @@ function find(str, type = null, opts = null) {
   return filtered;
 }
 
-// ../node_modules/@tiptap/extension-link/dist/index.js
+// node_modules/@tiptap/extension-link/dist/index.js
 var UNICODE_WHITESPACE_PATTERN = "[\0- \xA0\u1680\u180E\u2000-\u2029\u205F\u3000]";
 var UNICODE_WHITESPACE_REGEX = new RegExp(UNICODE_WHITESPACE_PATTERN);
 var UNICODE_WHITESPACE_REGEX_END = new RegExp(`${UNICODE_WHITESPACE_PATTERN}$`);
@@ -19289,32 +19349,36 @@ function clickHandler(options) {
         if (!view.editable) {
           return false;
         }
-        let link = null;
-        if (event.target instanceof HTMLAnchorElement) {
-          link = event.target;
-        } else {
-          let a = event.target;
-          const els = [];
-          while (a.nodeName !== "DIV") {
-            els.push(a);
-            a = a.parentNode;
-          }
-          link = els.find((value) => value.nodeName === "A");
-        }
-        if (!link) {
-          return false;
-        }
-        const attrs = getAttributes(view.state, options.type.name);
-        const href = (_a = link == null ? void 0 : link.href) != null ? _a : attrs.href;
-        const target = (_b = link == null ? void 0 : link.target) != null ? _b : attrs.target;
+        let handled = false;
         if (options.enableClickSelection) {
-          options.editor.commands.extendMarkRange(options.type.name);
+          const commandResult = options.editor.commands.extendMarkRange(options.type.name);
+          handled = commandResult;
         }
-        if (link && href) {
-          window.open(href, target);
-          return true;
+        if (options.openOnClick) {
+          let link = null;
+          if (event.target instanceof HTMLAnchorElement) {
+            link = event.target;
+          } else {
+            let a = event.target;
+            const els = [];
+            while (a.nodeName !== "DIV") {
+              els.push(a);
+              a = a.parentNode;
+            }
+            link = els.find((value) => value.nodeName === "A");
+          }
+          if (!link) {
+            return handled;
+          }
+          const attrs = getAttributes(view.state, options.type.name);
+          const href = (_a = link == null ? void 0 : link.href) != null ? _a : attrs.href;
+          const target = (_b = link == null ? void 0 : link.target) != null ? _b : attrs.target;
+          if (link && href) {
+            window.open(href, target);
+            handled = true;
+          }
         }
-        return false;
+        return handled;
       }
     }
   });
@@ -19555,15 +19619,14 @@ var Link = Mark2.create({
         })
       );
     }
-    if (this.options.openOnClick === true) {
-      plugins.push(
-        clickHandler({
-          type: this.type,
-          editor: this.editor,
-          enableClickSelection: this.options.enableClickSelection
-        })
-      );
-    }
+    plugins.push(
+      clickHandler({
+        type: this.type,
+        editor: this.editor,
+        openOnClick: this.options.openOnClick === "whenNotEditable" ? true : this.options.openOnClick,
+        enableClickSelection: this.options.enableClickSelection
+      })
+    );
     if (this.options.linkOnPaste) {
       plugins.push(
         pasteHandler({
@@ -19578,7 +19641,7 @@ var Link = Mark2.create({
   }
 });
 
-// ../node_modules/@tiptap/extension-list/dist/index.js
+// node_modules/@tiptap/extension-list/dist/index.js
 var __defProp2 = Object.defineProperty;
 var __export2 = (target, all) => {
   for (var name in all)
@@ -20575,7 +20638,7 @@ var ListKit = Extension.create({
   }
 });
 
-// ../node_modules/@tiptap/extension-paragraph/dist/index.js
+// node_modules/@tiptap/extension-paragraph/dist/index.js
 var Paragraph = Node3.create({
   name: "paragraph",
   priority: 1e3,
@@ -20624,7 +20687,7 @@ var Paragraph = Node3.create({
   }
 });
 
-// ../node_modules/@tiptap/extension-strike/dist/index.js
+// node_modules/@tiptap/extension-strike/dist/index.js
 var inputRegex4 = /(?:^|\s)(~~(?!\s+~~)((?:[^~]+))~~(?!\s+~~))$/;
 var pasteRegex2 = /(?:^|\s)(~~(?!\s+~~)((?:[^~]+))~~(?!\s+~~))/g;
 var Strike = Mark2.create({
@@ -20698,7 +20761,7 @@ var Strike = Mark2.create({
   }
 });
 
-// ../node_modules/@tiptap/extension-text/dist/index.js
+// node_modules/@tiptap/extension-text/dist/index.js
 var Text2 = Node3.create({
   name: "text",
   group: "inline",
@@ -20711,7 +20774,7 @@ var Text2 = Node3.create({
   renderMarkdown: (node) => node.text || ""
 });
 
-// ../node_modules/@tiptap/extension-underline/dist/index.js
+// node_modules/@tiptap/extension-underline/dist/index.js
 var Underline = Mark2.create({
   name: "underline",
   addOptions() {
@@ -20782,7 +20845,7 @@ var Underline = Mark2.create({
   }
 });
 
-// ../node_modules/prosemirror-dropcursor/dist/index.js
+// node_modules/prosemirror-dropcursor/dist/index.js
 function dropCursor(options = {}) {
   return new Plugin({
     view(editorView) {
@@ -20915,7 +20978,7 @@ var DropCursorView = class {
   }
 };
 
-// ../node_modules/prosemirror-gapcursor/dist/index.js
+// node_modules/prosemirror-gapcursor/dist/index.js
 var GapCursor = class _GapCursor extends Selection {
   /**
   Create a gap cursor.
@@ -21129,7 +21192,7 @@ function drawGapCursor(state) {
   return DecorationSet.create(state.doc, [Decoration.widget(state.selection.head, node, { key: "gapcursor" })]);
 }
 
-// ../node_modules/rope-sequence/dist/index.js
+// node_modules/rope-sequence/dist/index.js
 var GOOD_LEAF_SIZE = 200;
 var RopeSequence = function RopeSequence2() {
 };
@@ -21312,7 +21375,7 @@ var Append = /* @__PURE__ */ (function(RopeSequence3) {
 })(RopeSequence);
 var dist_default2 = RopeSequence;
 
-// ../node_modules/prosemirror-history/dist/index.js
+// node_modules/prosemirror-history/dist/index.js
 var max_empty_items = 500;
 var Branch = class _Branch {
   constructor(items, eventCount) {
@@ -21665,7 +21728,7 @@ var redo = buildCommand(true, true);
 var undoNoScroll = buildCommand(false, false);
 var redoNoScroll = buildCommand(true, false);
 
-// ../node_modules/@tiptap/extensions/dist/index.js
+// node_modules/@tiptap/extensions/dist/index.js
 var CharacterCount = Extension.create({
   name: "characterCount",
   addOptions() {
@@ -21946,7 +22009,7 @@ var TrailingNode = Extension.create({
   addProseMirrorPlugins() {
     var _a;
     const plugin = new PluginKey(this.name);
-    const defaultNode = ((_a = this.editor.schema.topNodeType.contentMatch.defaultType) == null ? void 0 : _a.name) || this.options.node || "paragraph";
+    const defaultNode = this.options.node || ((_a = this.editor.schema.topNodeType.contentMatch.defaultType) == null ? void 0 : _a.name) || "paragraph";
     const disabledNodes = Object.entries(this.editor.schema.nodes).map(([, value]) => value).filter((node) => (this.options.notAfter || []).concat(defaultNode).includes(node.name));
     return [
       new Plugin({
@@ -22014,7 +22077,7 @@ var UndoRedo = Extension.create({
   }
 });
 
-// ../node_modules/@tiptap/starter-kit/dist/index.js
+// node_modules/@tiptap/starter-kit/dist/index.js
 var StarterKit = Extension.create({
   name: "starterKit",
   addExtensions() {
@@ -22091,93 +22154,75 @@ var StarterKit = Extension.create({
 });
 var index_default = StarterKit;
 
-// editor2.js
-var raw = document.getElementById("editorjs").dataset.content;
+// dom.ts
+var QuerySelector = (sel, root = document) => root.querySelector(sel);
+var MustQuerySelector = (sel, root = document) => {
+  const v = QuerySelector(sel, root);
+  if (!v) {
+    throw new Error(`${sel} not found on ${root.nodeName}`);
+  }
+  return v;
+};
+
+// editor2.ts
+var host = MustQuerySelector("#editorjs");
+var raw = host.dataset.content ?? "";
+var pageID = host.dataset.pageId;
+if (!pageID) throw new Error("pageId missing");
 var initial = "";
 try {
   const parsed = JSON.parse(raw);
-  initial = parsed.content;
-} catch (_) {
-  initial = "";
+  initial = parsed.content ?? "";
+} catch {
 }
-var pageID = document.getElementById("editorjs").dataset.pageId;
 var editor = new Editor({
-  element: document.getElementById("editorjs"),
-  extensions: [
-    index_default
-  ],
+  element: host,
+  extensions: [index_default],
   autofocus: true,
-  content: initial || "",
+  content: initial,
   editorProps: {
     attributes: {
       spellcheck: "false"
     }
   }
 });
-var buttonContainer = document.querySelector(".editor-toolbar-buttons");
-function addButton(iconClass, isActive2, action) {
-  const b = document.createElement("button");
-  const i = document.createElement("i");
-  i.className = iconClass;
-  b.appendChild(i);
-  b.addEventListener("click", action);
+var buttonContainer = MustQuerySelector(".editor-toolbar-buttons");
+var addButton = (iconClass, isActive2, action) => {
+  const button = document.createElement("button");
+  const icon = document.createElement("i");
+  icon.className = iconClass;
+  button.appendChild(icon);
+  button.addEventListener("click", action);
   editor.on("selectionUpdate", () => {
-    if (isActive2()) b.classList.add("active");
-    else b.classList.remove("active");
+    button.classList.toggle("active", isActive2());
   });
-  buttonContainer.appendChild(b);
-}
-function printDocument() {
+  buttonContainer.appendChild(button);
+};
+var printDocument = () => {
   const html = editor.getHTML();
   const win = window.open("", "_blank");
+  if (!win) return;
   win.document.write(`
     <html>
       <head>
         <title>Document</title>
         <style>
-
-          @page {
-            margin: 1.5cm;
-          }
-
+          @page { margin: 1.5cm; }
           body {
             font-family: "Helvetica Neue", Arial, sans-serif;
             font-size: 12.5px;
             line-height: 1.45;
             color: #222;
-            padding: 0;
             margin: 0;
           }
-
-          h1, h2, h3, h4 {
-            font-weight: 600;
-            margin: 0 0 10px;
-            color: #111;
-          }
-
-          h1 { font-size: 22px; margin-top: 4px; }
-          h2 { font-size: 17px; margin-top: 12px; }
-          h3 { font-size: 15px; margin-top: 12px; }
-          h4 { font-size: 13px; margin-top: 10px; }
-
-          p {
-            margin: 0 0 8px;
-          }
-
-          ul, ol {
-            margin: 0 0 8px 18px;
-            padding: 0;
-          }
-
-          li {
-            margin: 2px 0;
-          }
-
-          hr {
-            border: none;
-            border-top: 1px solid #ccc;
-            margin: 14px 0;
-          }
+          h1,h2,h3,h4 { font-weight: 600; margin: 0 0 10px; }
+          h1 { font-size: 22px }
+          h2 { font-size: 17px }
+          h3 { font-size: 15px }
+          h4 { font-size: 13px }
+          p { margin: 0 0 8px }
+          ul,ol { margin: 0 0 8px 18px }
+          hr { border: none; border-top: 1px solid #ccc; margin: 14px 0 }
         </style>
       </head>
       <body>${html}</body>
@@ -22186,35 +22231,54 @@ function printDocument() {
   win.document.close();
   win.focus();
   win.print();
-}
-addButton("fa-solid fa-bold", () => editor.isActive("bold"), () => editor.chain().focus().toggleBold().run());
-addButton("fa-solid fa-italic", () => editor.isActive("italic"), () => editor.chain().focus().toggleItalic().run());
-addButton("fa-solid fa-heading", () => editor.isActive("heading", { level: 1 }), () => editor.chain().focus().toggleHeading({ level: 1 }).run());
-addButton("fa-solid fa-list-ul", () => editor.isActive("bulletList"), () => editor.chain().focus().toggleBulletList().run());
-addButton("fa-solid fa-list-ol", () => editor.isActive("orderedList"), () => editor.chain().focus().toggleOrderedList().run());
+};
+addButton(
+  "fa-solid fa-bold",
+  () => editor.isActive("bold"),
+  () => editor.chain().focus().toggleBold().run()
+);
+addButton(
+  "fa-solid fa-italic",
+  () => editor.isActive("italic"),
+  () => editor.chain().focus().toggleItalic().run()
+);
+addButton(
+  "fa-solid fa-heading",
+  () => editor.isActive("heading", { level: 1 }),
+  () => editor.chain().focus().toggleHeading({ level: 1 }).run()
+);
+addButton(
+  "fa-solid fa-list-ul",
+  () => editor.isActive("bulletList"),
+  () => editor.chain().focus().toggleBulletList().run()
+);
+addButton(
+  "fa-solid fa-list-ol",
+  () => editor.isActive("orderedList"),
+  () => editor.chain().focus().toggleOrderedList().run()
+);
 addButton("fa-solid fa-file-pdf", () => false, printDocument);
-var statusEl = document.getElementById("editor-status");
+var statusEl = MustQuerySelector("#editor-status");
 var saveTimer = null;
-function showEllipsis() {
+var showEllipsis = () => {
   statusEl.className = "editor-status editor-status-ellipsis";
   statusEl.innerHTML = "";
-}
-function showCheckmark() {
+};
+var showCheckmark = () => {
   statusEl.className = "editor-status";
   statusEl.innerHTML = '<i class="fa-solid fa-check"></i>';
-}
-async function saveContent() {
+};
+var saveContent = async () => {
   showEllipsis();
-  const json = editor.getJSON();
   await fetch(`/wiki/save/${pageID}`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ content: json })
+    body: JSON.stringify({ content: editor.getJSON() })
   });
   showCheckmark();
-}
+};
 editor.on("update", () => {
   showEllipsis();
-  if (saveTimer) clearTimeout(saveTimer);
-  saveTimer = setTimeout(saveContent, 750);
+  if (saveTimer !== null) clearTimeout(saveTimer);
+  saveTimer = window.setTimeout(saveContent, 750);
 });

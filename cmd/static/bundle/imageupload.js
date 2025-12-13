@@ -17999,7 +17999,7 @@ var require_filepond_plugin_image_transform = __commonJS({
       var REACT_ELEMENT_TYPE;
       function _jsx(type, props, key, children) {
         if (!REACT_ELEMENT_TYPE) {
-          REACT_ELEMENT_TYPE = typeof Symbol === "function" && Symbol.for && Symbol.for("react.element") || 60103;
+          REACT_ELEMENT_TYPE = typeof Symbol === "function" && Symbol.for && /* @__PURE__ */ Symbol.for("react.element") || 60103;
         }
         var defaultProps = type && type.defaultProps;
         var childrenLength = arguments.length - 3;
@@ -19523,7 +19523,7 @@ var require_filepond_plugin_image_preview = __commonJS({
       var REACT_ELEMENT_TYPE;
       function _jsx(type, props, key, children) {
         if (!REACT_ELEMENT_TYPE) {
-          REACT_ELEMENT_TYPE = typeof Symbol === "function" && Symbol.for && Symbol.for("react.element") || 60103;
+          REACT_ELEMENT_TYPE = typeof Symbol === "function" && Symbol.for && /* @__PURE__ */ Symbol.for("react.element") || 60103;
         }
         var defaultProps = type && type.defaultProps;
         var childrenLength = arguments.length - 3;
