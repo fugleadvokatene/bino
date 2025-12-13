@@ -14,6 +14,7 @@ build({
     'home.js',
     'reorder-patients.js',
     'dashboard.js',
+    'formerpatients.js',
   ],
   outdir: '../cmd/static/bundle',
   bundle: true,

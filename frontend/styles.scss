@@ -1018,3 +1018,34 @@ mark.hl {
 }
 
 // GOOGLE LOGIN BUTTON END
+
+th.sortable {
+  cursor: pointer;
+}
+
+th.sortable .sort-icon {
+  float: right;
+  width: 0;
+  height: 0;
+  margin-top: 6px;
+  border-left: 4px solid transparent;
+  border-right: 4px solid transparent;
+  border-top: 6px solid #999;
+  opacity: 0.25;
+}
+
+th.sortable:hover .sort-icon {
+  opacity: 0.6;
+}
+
+th.sort-asc .sort-icon {
+  border-top: 0;
+  border-bottom: 6px solid #000;
+  opacity: 1;
+}
+
+th.sort-desc .sort-icon {
+  border-bottom: 0;
+  border-top: 6px solid #000;
+  opacity: 1;
+}

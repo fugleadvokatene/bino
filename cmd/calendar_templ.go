@@ -222,7 +222,7 @@ func CalendarLinkAbs(lang *Language, t time.Time, v string) templ.Component {
 			templ_7745c5c3_Var12 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Err = CalendarLink(lang.FormatTimeAbs, t, v).Render(ctx, templ_7745c5c3_Buffer)
+		templ_7745c5c3_Err = CalendarLink(lang.FormatDateAbs, t, v).Render(ctx, templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

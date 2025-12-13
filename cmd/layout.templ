@@ -87,10 +87,7 @@ templ Navbar(data *CommonData) {
                     @NavbarPageLink(data.Language.NavbarDashboard, "/")
                     @NavbarPageLink(data.Language.Calendar, "/calendar", "hide-on-mobile")
                     @NavbarPageLink(data.Language.WikiHeader, "/wiki")
-                    if false {
-                        // Not ready
-                        @NavbarPageLink(data.Language.FormerPatients, "/former-patients")
-                    }
+                    @NavbarPageLink(data.Language.FormerPatients, "/former-patients")
                     @NavbarPageLink(data.Language.AdminRoot, "/admin")
                     @FullTextSearch(data)
                     @LanguageSelect(data)

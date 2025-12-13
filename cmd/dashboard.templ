@@ -31,6 +31,12 @@ templ DashboardSearch(data *CommonData) {
             <form-group class="form-group">
                 <input autocomplete="off" class="form-control search" id="dashboard-search"></input>
             </form-group>
+            <label class="small suggestion">
+                {data.Language.YouCanAlso}
+                <a href="/former-patients">{data.Language.ViewFormerPatients}</a>
+                {data.Language.Or}
+                <a href="/search">{data.Language.SearchInJournals}</a>.
+            </label>
         </fieldset>
     }
 

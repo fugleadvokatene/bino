@@ -74,6 +74,11 @@ type Language struct {
 	DashboardNonPreferredSpecies   string
 	DashboardOtherHome             string
 
+	YouCanAlso         string
+	ViewFormerPatients string
+	Or                 string
+	SearchInJournals   string
+
 	ErrorPageHead         string
 	ErrorPageInstructions string
 	ErrorSettingLanguage  string
@@ -368,6 +373,11 @@ var NO = &Language{
 	DashboardNonPreferredSpecies:   "Andre arter",
 	DashboardOtherHome:             "Andre rehabhjem",
 
+	YouCanAlso:         "Du kan også",
+	ViewFormerPatients: "se tidligere pasienter",
+	Or:                 "eller",
+	SearchInJournals:   "søke i journaler",
+
 	ErrorPageHead:         "Feilmelding",
 	ErrorPageInstructions: "Det skjedde noe feil under lasting av siden. Feilen har blitt logget og vil bli undersøkt. Send melding til administrator for hjelp. Den tekniske feilmeldingen følger under.",
 	ErrorSettingLanguage:  "Kunne ikke oppdatere språk",
@@ -661,6 +671,11 @@ var EN = &Language{
 	DashboardNonPreferredSpecies:   "Other species",
 	DashboardOtherHome:             "Other homes",
 
+	YouCanAlso:         "You can also",
+	ViewFormerPatients: "view former patients",
+	Or:                 "or",
+	SearchInJournals:   "search in journals",
+
 	ErrorPageHead:         "Error",
 	ErrorPageInstructions: "An error occurred while loading the page. The error has been logged and will be investigated. Send a message to the site admin for help. The technical error message is as follows.",
 	ErrorSettingLanguage:  "Failed to update language",
@@ -933,6 +948,36 @@ func (l *Language) FormatTimeAbsWithRelParen(t time.Time) string {
 	return fmt.Sprintf("%s (%s)", abs, rel)
 }
 
+func (l *Language) FormatDateAbs(t time.Time) string {
+	if t.IsZero() {
+		return l.GenericNever
+	}
+
+	switch l.ID {
+	case LanguageIDNO:
+		if t.Year() == time.Now().Year() {
+			return fmt.Sprintf("%d. %s",
+				t.Day(),
+				l.Months[t.Month()],
+			)
+		} else {
+			return fmt.Sprintf("%d. %s %d",
+				t.Day(),
+				l.Months[t.Month()],
+				t.Year(),
+			)
+		}
+	case LanguageIDEN:
+		if t.Year() == time.Now().Year() {
+			return t.Format("January 2")
+		} else {
+			return t.Format("January 2, 2006")
+		}
+	default:
+		return t.String()
+	}
+}
+
 func (l *Language) FormatTimeAbs(t time.Time) string {
 	if t.IsZero() {
 		return l.GenericNever
@@ -940,15 +985,28 @@ func (l *Language) FormatTimeAbs(t time.Time) string {
 
 	switch l.ID {
 	case LanguageIDNO:
-		return fmt.Sprintf("%d. %s %d kl. %02d:%02d",
-			t.Day(),
-			l.Months[t.Month()],
-			t.Year(),
-			t.Hour(),
-			t.Minute(),
-		)
+		if t.Year() == time.Now().Year() {
+			return fmt.Sprintf("%d. %s kl. %02d:%02d",
+				t.Day(),
+				l.Months[t.Month()],
+				t.Hour(),
+				t.Minute(),
+			)
+		} else {
+			return fmt.Sprintf("%d. %s %d kl. %02d:%02d",
+				t.Day(),
+				l.Months[t.Month()],
+				t.Year(),
+				t.Hour(),
+				t.Minute(),
+			)
+		}
 	case LanguageIDEN:
-		return t.Format("January 2, 2006 at 3:04 PM")
+		if t.Year() == time.Now().Year() {
+			return t.Format("January 2, 2006 at 3:04 PM")
+		} else {
+			return t.Format("January 2 at 3:04 PM")
+		}
 	default:
 		return t.String()
 	}

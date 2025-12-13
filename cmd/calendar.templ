@@ -35,7 +35,7 @@ templ CalendarLink(formatter func(t time.Time) string, t time.Time, v string) {
 }
 
 templ CalendarLinkAbs(lang *Language, t time.Time, v string) {
-    @CalendarLink(lang.FormatTimeAbs, t, v)
+    @CalendarLink(lang.FormatDateAbs, t, v)
 }
 
 templ CalendarLinkRel(lang *Language, t time.Time, v string) {
