@@ -5,7 +5,11 @@ import (
 	"net/http"
 
 	"github.com/fugleadvokatene/bino/internal/db"
+	"github.com/fugleadvokatene/bino/internal/generic"
+	"github.com/fugleadvokatene/bino/internal/handlers/handlererror"
+	"github.com/fugleadvokatene/bino/internal/handlers/handlerjson"
 	"github.com/fugleadvokatene/bino/internal/request"
+	"github.com/fugleadvokatene/bino/internal/sql"
 	"github.com/fugleadvokatene/bino/internal/view"
 	"github.com/jackc/pgx/v5/pgtype"
 )
@@ -14,56 +18,56 @@ func (server *Server) getHomeHandler(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	commonData := request.MustLoadCommonData(ctx)
 
-	id, err := server.getPathID(r, "home")
+	id, err := request.GetPathID(r, "home")
 	if err != nil {
-		server.renderError(w, r, commonData, err)
+		handlererror.Error(w, r, err)
 		return
 	}
 
-	homeData, err := server.Queries.GetHome(ctx, id)
+	homeData, err := server.DB.Q.GetHome(ctx, id)
 	if err != nil {
-		server.renderError(w, r, commonData, err)
+		handlererror.Error(w, r, err)
 		return
 	}
 
 	commonData.Subtitle = homeData.Name
 
-	users, err := server.Queries.GetAppusersForHome(ctx, id)
+	users, err := server.DB.Q.GetAppusersForHome(ctx, id)
 	if err != nil {
-		server.renderError(w, r, commonData, err)
+		handlererror.Error(w, r, err)
 		return
 	}
 
-	patients, err := server.Queries.GetCurrentPatientsForHome(ctx, db.GetCurrentPatientsForHomeParams{
+	patients, err := server.DB.Q.GetCurrentPatientsForHome(ctx, sql.GetCurrentPatientsForHomeParams{
 		CurrHomeID: pgtype.Int4{Int32: id, Valid: true},
 		LanguageID: commonData.Lang32(),
 	})
 	if err != nil {
-		server.renderError(w, r, commonData, err)
+		handlererror.Error(w, r, err)
 		return
 	}
 
-	homes, err := server.Queries.GetHomes(ctx)
+	homes, err := server.DB.Q.GetHomes(ctx)
 	if err != nil {
-		server.renderError(w, r, commonData, err)
+		handlererror.Error(w, r, err)
 		return
 	}
 
 	preferredSpecies, otherSpecies, err := server.getSpeciesForUser(ctx, homeData.ID)
 	if err != nil {
-		server.renderError(w, r, commonData, err)
+		handlererror.Error(w, r, err)
 		return
 	}
 
-	unavailablePeriods, err := server.Queries.GetHomeUnavailablePeriods(ctx, id)
+	unavailablePeriods, err := server.DB.Q.GetHomeUnavailablePeriods(ctx, id)
 	if err != nil {
-		server.renderError(w, r, commonData, err)
+		handlererror.Error(w, r, err)
 		return
 	}
 
 	HomePage(ctx, commonData, &DashboardData{
 		NonPreferredSpecies: otherSpecies,
-		Homes: SliceToSlice(homes, func(h db.Home) view.Home {
+		Homes: generic.SliceToSlice(homes, func(h sql.Home) view.Home {
 			return h.ToHomeView()
 		}),
 	}, &view.Home{
@@ -71,14 +75,14 @@ func (server *Server) getHomeHandler(w http.ResponseWriter, r *http.Request) {
 		Name:     homeData.Name,
 		Note:     homeData.Note,
 		Capacity: homeData.Capacity,
-		Users: SliceToSlice(users, func(u db.Appuser) view.User {
+		Users: generic.SliceToSlice(users, func(u sql.Appuser) view.User {
 			return u.ToUserView()
 		}),
-		Patients: SliceToSlice(patients, func(p db.GetCurrentPatientsForHomeRow) view.Patient {
+		Patients: generic.SliceToSlice(patients, func(p sql.GetCurrentPatientsForHomeRow) view.Patient {
 			return p.ToPatientView()
 		}),
 		PreferredSpecies: preferredSpecies,
-		UnavailablePeriods: SliceToSlice(unavailablePeriods, func(in db.HomeUnavailable) view.Period {
+		UnavailablePeriods: generic.SliceToSlice(unavailablePeriods, func(in sql.HomeUnavailable) view.Period {
 			return in.ToPeriodView()
 		}),
 	}).Render(r.Context(), w)
@@ -88,92 +92,89 @@ func (server *Server) setCapacityHandler(w http.ResponseWriter, r *http.Request)
 	ctx := r.Context()
 	commonData := request.MustLoadCommonData(ctx)
 
-	id, err := server.getPathID(r, "home")
+	id, err := request.GetPathID(r, "home")
 	if err != nil {
-		server.renderError(w, r, commonData, err)
+		handlererror.Error(w, r, err)
 		return
 	}
 
-	capacity, err := server.getFormID(r, "capacity")
+	capacity, err := request.GetFormID(r, "capacity")
 	if err != nil {
-		server.renderError(w, r, commonData, err)
+		handlererror.Error(w, r, err)
 		return
 	}
 
-	if err := server.Queries.SetHomeCapacity(ctx, db.SetHomeCapacityParams{
+	if err := server.DB.Q.SetHomeCapacity(ctx, sql.SetHomeCapacityParams{
 		ID:       id,
 		Capacity: capacity,
 	}); err != nil {
 		commonData.Error(commonData.Language.GenericFailed, err)
 	}
 
-	server.redirectToReferer(w, r)
+	request.RedirectToReferer(w, r)
 }
 
 func (server *Server) addPreferredSpeciesHandler(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-	commonData := request.MustLoadCommonData(ctx)
 
-	id, err := server.getPathID(r, "home")
+	id, err := request.GetPathID(r, "home")
 	if err != nil {
-		server.renderError(w, r, commonData, err)
+		handlererror.Error(w, r, err)
 		return
 	}
 
-	species, err := server.getFormID(r, "species")
+	species, err := request.GetFormID(r, "species")
 	if err != nil {
-		server.renderError(w, r, commonData, err)
+		handlererror.Error(w, r, err)
 		return
 	}
 
-	if err := server.Queries.AddPreferredSpecies(ctx, db.AddPreferredSpeciesParams{
+	if err := server.DB.Q.AddPreferredSpecies(ctx, sql.AddPreferredSpeciesParams{
 		HomeID:    id,
 		SpeciesID: species,
 	}); err != nil {
-		server.renderError(w, r, commonData, err)
+		handlererror.Error(w, r, err)
 		return
 	}
 
-	server.redirectToReferer(w, r)
+	request.RedirectToReferer(w, r)
 }
 
 func (server *Server) deletePreferredSpeciesHandler(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-	commonData := request.MustLoadCommonData(ctx)
 
-	id, err := server.getPathID(r, "home")
+	id, err := request.GetPathID(r, "home")
 	if err != nil {
-		server.renderError(w, r, commonData, err)
+		handlererror.Error(w, r, err)
 		return
 	}
 
-	species, err := server.getPathID(r, "species")
+	species, err := request.GetPathID(r, "species")
 	if err != nil {
-		server.renderError(w, r, commonData, err)
+		handlererror.Error(w, r, err)
 		return
 	}
 
-	if err := server.Queries.DeletePreferredSpecies(ctx, db.DeletePreferredSpeciesParams{
+	if err := server.DB.Q.DeletePreferredSpecies(ctx, sql.DeletePreferredSpeciesParams{
 		HomeID:    id,
 		SpeciesID: species,
 	}); err != nil {
-		server.renderError(w, r, commonData, err)
+		handlererror.Error(w, r, err)
 		return
 	}
 
-	server.redirectToReferer(w, r)
+	request.RedirectToReferer(w, r)
 }
 
 func (server *Server) reorderSpeciesHandler(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-	commonData := request.MustLoadCommonData(ctx)
 
-	id, err := server.getPathID(r, "home")
+	id, err := request.GetPathID(r, "home")
 	if err != nil {
-		server.renderError(w, r, commonData, err)
+		handlererror.Error(w, r, err)
 		return
 	}
-	jsonHandler(server, w, r, func(q *db.Queries, req AJAXReorderRequest) error {
+	handlerjson.Handler(server.DB, w, r, func(db *db.Database, req ReorderRequest) error {
 		if req.ID != id {
 			return fmt.Errorf("mismatched ID between request data and URL (URL=%d, req=%d)", id, req.ID)
 		}
@@ -183,7 +184,7 @@ func (server *Server) reorderSpeciesHandler(w http.ResponseWriter, r *http.Reque
 			ids = append(ids, id)
 			orders = append(orders, int32(idx))
 		}
-		return q.UpdatePreferredSpeciesSortOrder(ctx, db.UpdatePreferredSpeciesSortOrderParams{
+		return db.Q.UpdatePreferredSpeciesSortOrder(ctx, sql.UpdatePreferredSpeciesSortOrderParams{
 			HomeID:    id,
 			SpeciesID: ids,
 			Orders:    orders,
@@ -195,15 +196,15 @@ func (server *Server) addHomeUnavailablePeriodHandler(w http.ResponseWriter, r *
 	ctx := r.Context()
 	commonData := request.MustLoadCommonData(ctx)
 
-	homeID, err := server.getPathID(r, "home")
+	homeID, err := request.GetPathID(r, "home")
 	if err != nil {
-		server.renderError(w, r, commonData, err)
+		handlererror.Error(w, r, err)
 		return
 	}
 
-	values, err := server.getFormValues(r, "unavailable-from", "unavailable-to", "unavailable-note")
+	values, err := request.GetFormValues(r, "unavailable-from", "unavailable-to", "unavailable-note")
 	if err != nil {
-		server.renderError(w, r, commonData, err)
+		handlererror.Error(w, r, err)
 		return
 	}
 
@@ -213,74 +214,72 @@ func (server *Server) addHomeUnavailablePeriodHandler(w http.ResponseWriter, r *
 
 	if n, err := fmt.Sscanf(values["unavailable-from"], "%d-%d-%d", &fromV.Year, &fromV.Month, &fromV.Day); err != nil || n != 3 {
 		commonData.Warning(commonData.Language.HomePeriodInvalid, err)
-		server.redirectToReferer(w, r)
+		request.RedirectToReferer(w, r)
 		return
 	}
 	if n, err := fmt.Sscanf(values["unavailable-to"], "%d-%d-%d", &toV.Year, &toV.Month, &toV.Day); err != nil || n != 3 {
 		commonData.Warning(commonData.Language.HomePeriodInvalid, err)
-		server.redirectToReferer(w, r)
+		request.RedirectToReferer(w, r)
 		return
 	}
 
 	if toV.Before(fromV) {
 		commonData.Warning(commonData.Language.HomePeriodInvalid, fmt.Errorf("to is before from: %+v < %+v", toV, fromV))
-		server.redirectToReferer(w, r)
+		request.RedirectToReferer(w, r)
 		return
 	}
-	if _, err := server.Queries.AddHomeUnavailablePeriod(ctx, db.AddHomeUnavailablePeriodParams{
+	if _, err := server.DB.Q.AddHomeUnavailablePeriod(ctx, sql.AddHomeUnavailablePeriodParams{
 		HomeID:   homeID,
 		FromDate: fromV.ToPGDate(),
 		ToDate:   toV.ToPGDate(),
 		Note:     pgtype.Text{String: note, Valid: hasNote && note != ""},
 	}); err != nil {
-		server.renderError(w, r, commonData, err)
+		handlererror.Error(w, r, err)
 		return
 	}
 
-	server.redirectToReferer(w, r)
+	request.RedirectToReferer(w, r)
 }
 
 func (server *Server) deleteHomeUnavailableHandler(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-	commonData := request.MustLoadCommonData(ctx)
 
-	periodID, err := server.getPathID(r, "period")
+	periodID, err := request.GetPathID(r, "period")
 	if err != nil {
-		server.renderError(w, r, commonData, err)
+		handlererror.Error(w, r, err)
 		return
 	}
 
-	if err := server.Queries.DeleteHomeUnavailablePeriod(ctx, periodID); err != nil {
-		server.renderError(w, r, commonData, err)
+	if err := server.DB.Q.DeleteHomeUnavailablePeriod(ctx, periodID); err != nil {
+		handlererror.Error(w, r, err)
 		return
 	}
 
-	server.redirectToReferer(w, r)
+	request.RedirectToReferer(w, r)
 }
 
 func (server *Server) homeSetNoteHandler(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-	commonData := request.MustLoadCommonData(ctx)
 
-	homeID, err := server.getPathID(r, "home")
+	homeID, err := request.GetPathID(r, "home")
 	if err != nil {
-		server.renderError(w, r, commonData, err)
+		handlererror.Error(w, r, err)
 		return
 	}
 
-	note, err := server.getFormValue(r, "value")
+	note, err := request.GetFormValue(r, "value")
 	if err != nil {
-		server.renderError(w, r, commonData, err)
+		handlererror.Error(w, r, err)
 		return
 	}
 
-	if err := server.Queries.SetHomeNote(ctx, db.SetHomeNoteParams{
+	if err := server.DB.Q.SetHomeNote(ctx, sql.SetHomeNoteParams{
 		ID:   homeID,
 		Note: note,
 	}); err != nil {
-		server.renderError(w, r, commonData, err)
+		handlererror.Error(w, r, err)
 		return
 	}
 
-	server.redirectToReferer(w, r)
+	request.RedirectToReferer(w, r)
 }

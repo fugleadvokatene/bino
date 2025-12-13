@@ -6,12 +6,13 @@ import (
 	"os"
 
 	"github.com/fugleadvokatene/bino/internal/enums"
+	"github.com/fugleadvokatene/bino/internal/privacy"
 )
 
 var BuildKey string
 
 type Config struct {
-	Privacy        PrivacyConfig
+	Privacy        privacy.Config
 	Auth           AuthConfig
 	HTTP           HTTPConfig
 	GoogleDrive    GDriveConfig

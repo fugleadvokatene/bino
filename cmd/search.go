@@ -2,7 +2,6 @@ package main
 
 import (
 	"errors"
-	"fmt"
 	"net/http"
 	"strconv"
 	"strings"
@@ -10,113 +9,21 @@ import (
 
 	"github.com/fugleadvokatene/bino/internal/db"
 	"github.com/fugleadvokatene/bino/internal/enums"
+	"github.com/fugleadvokatene/bino/internal/generic"
 	"github.com/fugleadvokatene/bino/internal/request"
+	"github.com/fugleadvokatene/bino/internal/sql"
 	"github.com/fugleadvokatene/bino/internal/view"
-	"github.com/jackc/pgx/v5/pgtype"
 )
 
-const (
-	pageSize = int32(20)
-)
-
-type SearchQuery struct {
-	Mode           string
-	Query          string
-	TimePreference enums.TimePreference
-	Page           int32
-	MinCreated     int64
-	MaxCreated     int64
-	MinUpdated     int64
-	MaxUpdated     int64
-	DebugRank      bool
-}
-
-type SearchSkipInfo struct {
-	Reason string
-}
-
-type SearchJournalInfo struct {
-	FolderURL  string
-	FolderName string
-}
-
-func (sji *SearchJournalInfo) IndexableText() string {
-	return fmt.Sprintf(`
-
-FolderName = %s
-
-`, sji.FolderName)
-}
-
-type SearchPatientInfo struct {
-	JournalInfo SearchJournalInfo
-	JournalURL  string
-}
-
-func (spi *SearchPatientInfo) IndexableText() string {
-	return spi.JournalInfo.IndexableText()
-}
-
-func NewBasicSearchParams(q SearchQuery) db.SearchBasicParams {
-	return db.SearchBasicParams{
-		WFtsHeader: 1.0,
-		WFtsBody:   1.0,
-		Lang:       "norwegian",
-		Offset:     q.Page * pageSize,
-		Limit:      pageSize,
-		Query:      q.Query,
-	}
-}
-
-func NewSearchAdvancedParams(q SearchQuery) db.SearchAdvancedParams {
-	wRecency := float32(0.0)
-	switch q.TimePreference {
-	case enums.TimePreferenceNewer:
-		wRecency = 3.0
-	case enums.TimePreferenceOlder:
-		wRecency = -3.0
-	case enums.TimePreferenceNone:
-		wRecency = 0.0
-	}
-
-	return db.SearchAdvancedParams{
-		Lang:                "norwegian",
-		Query:               q.Query,
-		WFtsHeader:          10.0,
-		WFtsBody:            10.0,
-		WSimHeader:          0.4,
-		WSimBody:            20.2,
-		WIlikeHeader:        3,
-		WIlikeBody:          1,
-		WRecency:            wRecency,
-		Simthreshold:        0.1,
-		RecencyHalfLifeDays: 60,
-		Offset:              q.Page * pageSize,
-		Limit:               pageSize,
-		MinCreated:          pgtype.Timestamptz{Time: time.Unix(q.MinCreated, 0), Valid: q.MinCreated > 0},
-		MaxCreated:          pgtype.Timestamptz{Time: time.Unix(q.MaxCreated, 0), Valid: q.MaxCreated > 0},
-		MinUpdated:          pgtype.Timestamptz{Time: time.Unix(q.MinUpdated, 0), Valid: q.MinUpdated > 0},
-		MaxUpdated:          pgtype.Timestamptz{Time: time.Unix(q.MaxUpdated, 0), Valid: q.MaxUpdated > 0},
-	}
-}
-
-type SearchResult struct {
-	Query        SearchQuery
-	PageMatches  []view.Match
-	Offset       int32
-	TotalMatches int32
-	Milliseconds int
-}
-
-func (server *Server) doSearch(r *http.Request) (SearchResult, error) {
-	q, err := server.getFormValue(r, "q")
+func (server *Server) doSearch(r *http.Request) (db.SearchResult, error) {
+	q, err := request.GetFormValue(r, "q")
 	if err != nil {
-		return SearchResult{}, err
+		return db.SearchResult{}, err
 	}
 	if len(q) < 3 {
-		return SearchResult{}, errors.New("too short")
+		return db.SearchResult{}, errors.New("too short")
 	}
-	formValues := server.getOptionalFormValues(
+	formValues := request.GetOptionalFormValues(
 		r,
 		"mode",
 		"page",
@@ -150,7 +57,7 @@ func (server *Server) doSearch(r *http.Request) (SearchResult, error) {
 		maxUpdated = t.Unix()
 	}
 	timePref, _ := enums.ParseTimePreference(strings.TrimSpace(formValues["time-preference"]))
-	query := SearchQuery{
+	query := db.SearchQuery{
 		Query:          q,
 		Mode:           mode,
 		Page:           int32(page),
@@ -167,16 +74,16 @@ func (server *Server) doSearch(r *http.Request) (SearchResult, error) {
 	var offset int32
 	t0 := time.Now()
 	if mode == "advanced" {
-		searchParams := NewSearchAdvancedParams(query)
-		rows, err := server.Queries.SearchAdvanced(r.Context(), searchParams)
+		searchParams := db.NewSearchAdvancedParams(query)
+		rows, err := server.DB.Q.SearchAdvanced(r.Context(), searchParams)
 		if err != nil {
-			return SearchResult{Query: query}, err
+			return db.SearchResult{Query: query}, err
 		}
-		matches = SliceToSlice(rows, func(in db.SearchAdvancedRow) view.Match {
+		matches = generic.SliceToSlice(rows, func(in sql.SearchAdvancedRow) view.Match {
 			return in.ToMatchView(q)
 		})
 		if searchParams.Offset > 0 || len(matches) >= int(searchParams.Limit) {
-			totalMatches, err = server.Queries.SearchAdvancedCount(r.Context(), db.SearchAdvancedCountParams{
+			totalMatches, err = server.DB.Q.SearchAdvancedCount(r.Context(), sql.SearchAdvancedCountParams{
 				Query:        query.Query,
 				Simthreshold: searchParams.Simthreshold,
 				Lang:         searchParams.Lang,
@@ -190,16 +97,16 @@ func (server *Server) doSearch(r *http.Request) (SearchResult, error) {
 		}
 		offset = searchParams.Offset
 	} else {
-		searchParams := NewBasicSearchParams(query)
-		rows, err := server.Queries.SearchBasic(r.Context(), searchParams)
+		searchParams := db.NewBasicSearchParams(query)
+		rows, err := server.DB.Q.SearchBasic(r.Context(), searchParams)
 		if err != nil {
-			return SearchResult{Query: query}, err
+			return db.SearchResult{Query: query}, err
 		}
-		matches = SliceToSlice(rows, func(in db.SearchBasicRow) view.Match {
+		matches = generic.SliceToSlice(rows, func(in sql.SearchBasicRow) view.Match {
 			return in.ToMatchView()
 		})
 		if searchParams.Offset > 0 || len(matches) >= int(searchParams.Limit) {
-			totalMatches, err = server.Queries.SearchBasicCount(r.Context(), db.SearchBasicCountParams{
+			totalMatches, err = server.DB.Q.SearchBasicCount(r.Context(), sql.SearchBasicCountParams{
 				Query: query.Query,
 				Lang:  searchParams.Lang,
 			})
@@ -214,7 +121,7 @@ func (server *Server) doSearch(r *http.Request) (SearchResult, error) {
 	}
 	elapsed := time.Since(t0)
 
-	return SearchResult{
+	return db.SearchResult{
 		Query:        query,
 		PageMatches:  matches,
 		TotalMatches: totalMatches,
@@ -223,7 +130,7 @@ func (server *Server) doSearch(r *http.Request) (SearchResult, error) {
 	}, nil
 }
 
-func (server *Server) emptySearch(w http.ResponseWriter, r *http.Request, result SearchResult, msg string, fullPage bool) {
+func (server *Server) emptySearch(w http.ResponseWriter, r *http.Request, result db.SearchResult, msg string, fullPage bool) {
 	ctx := r.Context()
 	commonData := request.MustLoadCommonData(ctx)
 	if fullPage {

@@ -1,7 +1,6 @@
 package language
 
 import (
-	"context"
 	"fmt"
 	"time"
 
@@ -893,7 +892,7 @@ func (l *Language) AccessLevelBlocked(al enums.AccessLevel) string {
 	}
 }
 
-func (l *Language) FormatEvent(ctx context.Context, e int32, assocID pgtype.Int4) string {
+func (l *Language) FormatEvent(e int32, assocID pgtype.Int4) string {
 	event := enums.Event(e)
 
 	switch event {

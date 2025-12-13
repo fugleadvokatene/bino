@@ -1,7 +1,6 @@
 package request
 
 import (
-	"context"
 	"fmt"
 	"log"
 
@@ -10,32 +9,6 @@ import (
 	"github.com/fugleadvokatene/bino/internal/language"
 	"github.com/fugleadvokatene/bino/internal/view"
 )
-
-type ctxKey int32
-
-const (
-	ctxKeyCommonData ctxKey = iota
-)
-
-func WithCommonData(ctx context.Context, cd *CommonData) context.Context {
-	return context.WithValue(ctx, ctxKeyCommonData, cd)
-}
-
-func LoadCommonData(ctx context.Context) (*CommonData, error) {
-	cd, ok := ctx.Value(ctxKeyCommonData).(*CommonData)
-	if !ok {
-		return nil, fmt.Errorf("no CommonData in ctx")
-	}
-	return cd, nil
-}
-
-func MustLoadCommonData(ctx context.Context) *CommonData {
-	cd, err := LoadCommonData(ctx)
-	if err != nil {
-		panic(err)
-	}
-	return cd
-}
 
 type CommonData struct {
 	BuildKey string
@@ -51,6 +24,8 @@ type CommonData struct {
 		EmailToUser map[string]view.User
 	}
 	Feedback Feedback
+
+	Cookies UserCookies
 }
 
 func (cd *CommonData) Error(msg string, err error) {
@@ -107,6 +82,9 @@ func (cd *CommonData) Log(format string, args ...any) {
 	if cd == nil {
 		return
 	}
+	if cd.User == nil {
+		return
+	}
 	if !cd.User.LoggingConsent {
 		return
 	}
@@ -133,4 +111,11 @@ func (u *UserData) HasHomeOrAccess(homeID int32, al enums.AccessLevel) bool {
 		return true
 	}
 	return false
+}
+
+func (cd *CommonData) SaveFeedback() {
+	if err := cd.Cookies.Set("feedback", "json", cd.Feedback); err != nil {
+		cd.Log("%v", err)
+		return
+	}
 }

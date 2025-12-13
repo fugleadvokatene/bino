@@ -1,12 +1,12 @@
 version: "2"
 sql:
   - engine: "postgresql"
-    queries: "sql"
-    schema: "cmd/migrations"
+    queries: "internal/sql/queries"
+    schema: "internal/sql/migrations"
     gen:
       go:
-        package: "db"
-        out: "internal/db"
+        package: "sql"
+        out: "internal/internal/sql"
         sql_package: "pgx/v5"
         overrides:
           - db_type: regconfig

@@ -66,7 +66,7 @@ templ PatientPage(ctx context.Context, data *request.CommonData, view view.Patie
                         <td class="center">
                             @Avatar(event.User)
                         </td>
-                        <td>{data.Language.FormatEvent(ctx, event.EventID, event.AssociatedID)}</td>
+                        <td>{data.Language.FormatEvent(event.EventID, event.AssociatedID)}</td>
                         <td><a href={event.Home.URL()}>{event.Home.Name}</a></td>
                         <td>
                             <span class="editable editable-end" data-action={event.SetNoteURL()}>

@@ -7,7 +7,9 @@ import (
 	"strconv"
 
 	"github.com/fugleadvokatene/bino/internal/db"
+	"github.com/fugleadvokatene/bino/internal/handlers/handlererror"
 	"github.com/fugleadvokatene/bino/internal/request"
+	"github.com/fugleadvokatene/bino/internal/sql"
 	"github.com/fugleadvokatene/bino/internal/view"
 )
 
@@ -25,15 +27,15 @@ func (server *Server) getHomesHandler(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	commonData := request.MustLoadCommonData(ctx)
 
-	homesDB, err := server.Queries.GetHomes(ctx)
+	homesDB, err := server.DB.Q.GetHomes(ctx)
 	if err != nil {
-		server.renderError(w, r, commonData, err)
+		handlererror.Error(w, r, err)
 		return
 	}
 
-	usersDB, err := server.Queries.GetAppusers(ctx)
+	usersDB, err := server.DB.Q.GetAppusers(ctx)
 	if err != nil {
-		server.renderError(w, r, commonData, err)
+		handlererror.Error(w, r, err)
 		return
 	}
 
@@ -72,9 +74,9 @@ func (server *Server) postHomeHandler(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	commonData := request.MustLoadCommonData(ctx)
 
-	formID, err := server.getFormValue(r, "form-id")
+	formID, err := request.GetFormValue(r, "form-id")
 	if err != nil {
-		server.renderError(w, r, commonData, err)
+		handlererror.Error(w, r, err)
 		return
 	}
 
@@ -84,74 +86,73 @@ func (server *Server) postHomeHandler(w http.ResponseWriter, r *http.Request) {
 	case "add-user":
 		server.postHomeAddUser(w, r, commonData)
 	default:
-		server.renderError(w, r, commonData, fmt.Errorf("unknown form ID: '%s'", formID))
+		handlererror.Error(w, r, fmt.Errorf("unknown form ID: '%s'", formID))
 	}
 }
 
 func (server *Server) postHomeSetName(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-	commonData := request.MustLoadCommonData(ctx)
 
-	home, err := server.getPathID(r, "home")
+	home, err := request.GetPathID(r, "home")
 	if err != nil {
-		server.renderError(w, r, commonData, err)
+		handlererror.Error(w, r, err)
 		return
 	}
 
-	newName, err := server.getFormValue(r, "value")
+	newName, err := request.GetFormValue(r, "value")
 	if err != nil {
-		server.renderError(w, r, commonData, err)
+		handlererror.Error(w, r, err)
 		return
 	}
 
-	err = server.Queries.UpdateHomeName(ctx, db.UpdateHomeNameParams{
+	err = server.DB.Q.UpdateHomeName(ctx, sql.UpdateHomeNameParams{
 		ID:   home,
 		Name: newName,
 	})
 	if err != nil {
-		server.renderError(w, r, commonData, err)
+		handlererror.Error(w, r, err)
 		return
 	}
 
-	server.redirectToReferer(w, r)
+	request.RedirectToReferer(w, r)
 }
 
 func (server *Server) postHomeCreateHome(w http.ResponseWriter, r *http.Request, commonData *request.CommonData) {
 	ctx := r.Context()
 
-	name, err := server.getFormValue(r, "name")
+	name, err := request.GetFormValue(r, "name")
 	if err != nil {
-		server.renderError(w, r, commonData, err)
+		handlererror.Error(w, r, err)
 		return
 	}
 
-	err = server.Queries.InsertHome(ctx, name)
+	err = server.DB.Q.InsertHome(ctx, name)
 	if err != nil {
-		server.renderError(w, r, commonData, err)
+		handlererror.Error(w, r, err)
 		return
 	}
 
-	server.redirectToReferer(w, r)
+	request.RedirectToReferer(w, r)
 }
 
 func (server *Server) postHomeAddUser(w http.ResponseWriter, r *http.Request, commonData *request.CommonData) {
 	ctx := r.Context()
 
-	optionalFields, _ := server.getFormValues(r, "remove-from-current", "curr-home-id")
+	optionalFields, _ := request.GetFormValues(r, "remove-from-current", "curr-home-id")
 	currentStr := optionalFields["curr-home-id"]
 	currentHomeID, err := strconv.ParseInt(currentStr, 10, 32)
 	removeFromCurrent := err == nil && optionalFields["remove-from-current"] == "on"
 
-	fields, err := server.getFormIDs(r, "home-id", "user-id")
+	fields, err := request.GetFormIDs(r, "home-id", "user-id")
 	if err != nil {
-		server.renderError(w, r, commonData, err)
+		handlererror.Error(w, r, err)
 		return
 	}
 	userID, homeID := fields["user-id"], fields["home-id"]
 
-	if server.Transaction(ctx, func(ctx context.Context, q *db.Queries) error {
+	if server.Transaction(ctx, func(ctx context.Context, db *db.Database) error {
 		if homeID > 0 {
-			if err := server.Queries.AddUserToHome(ctx, db.AddUserToHomeParams{
+			if err := server.DB.Q.AddUserToHome(ctx, sql.AddUserToHomeParams{
 				HomeID:    int32(homeID),
 				AppuserID: int32(userID),
 			}); err != nil {
@@ -159,7 +160,7 @@ func (server *Server) postHomeAddUser(w http.ResponseWriter, r *http.Request, co
 			}
 		}
 		if removeFromCurrent {
-			if err := server.Queries.RemoveUserFromHome(ctx, db.RemoveUserFromHomeParams{
+			if err := server.DB.Q.RemoveUserFromHome(ctx, sql.RemoveUserFromHomeParams{
 				HomeID:    int32(currentHomeID),
 				AppuserID: int32(userID),
 			}); err != nil {
@@ -168,19 +169,9 @@ func (server *Server) postHomeAddUser(w http.ResponseWriter, r *http.Request, co
 		}
 		return nil
 	}); err != nil {
-		server.renderError(w, r, commonData, fmt.Errorf("failed to add user: %w", err))
+		handlererror.Error(w, r, fmt.Errorf("failed to add user: %w", err))
 		return
 	}
 
-	server.redirectToReferer(w, r)
-}
-
-func stringsToIDs(in map[string]string) (map[string]int32, error) {
-	return MapToMapErr(in, func(str string) (int32, error) {
-		v, err := strconv.ParseInt(str, 10, 32)
-		if err != nil {
-			return 0, err
-		}
-		return int32(v), nil
-	})
+	request.RedirectToReferer(w, r)
 }

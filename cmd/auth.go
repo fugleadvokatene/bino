@@ -14,9 +14,10 @@ import (
 	"github.com/fugleadvokatene/bino/internal/capabilities"
 	"github.com/fugleadvokatene/bino/internal/db"
 	"github.com/fugleadvokatene/bino/internal/enums"
+	"github.com/fugleadvokatene/bino/internal/handlers/handleraccess"
 	"github.com/fugleadvokatene/bino/internal/language"
 	"github.com/fugleadvokatene/bino/internal/request"
-	"github.com/gorilla/sessions"
+	"github.com/fugleadvokatene/bino/internal/sql"
 	"github.com/jackc/pgx/v5/pgtype"
 	"golang.org/x/oauth2"
 )
@@ -49,7 +50,7 @@ func (server *Server) requireLogin(f http.Handler) http.Handler {
 		}
 
 		ctx := r.Context()
-		ctx = request.WithCommonData(ctx, &commonData)
+		ctx = request.WithCommonData(ctx, &commonData, &server.Cookies, w, r)
 		r = r.WithContext(ctx)
 
 		f.ServeHTTP(w, r)
@@ -68,7 +69,7 @@ func (server *Server) tryLogin(f http.Handler, onLoggedIn func(f http.Handler) h
 		ctx = request.WithCommonData(ctx, &request.CommonData{
 			BuildKey: server.BuildKey,
 			Language: language.EN,
-		})
+		}, &server.Cookies, w, r)
 		r = r.WithContext(ctx)
 
 		f.ServeHTTP(w, r)
@@ -82,7 +83,7 @@ func (server *Server) requireAccessLevel(al enums.AccessLevel) Middleware {
 			data := request.MustLoadCommonData(ctx)
 
 			if data.User.AccessLevel < al {
-				server.renderUnauthorized(w, r, data, errors.New(data.Language.AccessLevelBlocked(al)))
+				handleraccess.Unauthorized(w, r, errors.New(data.Language.AccessLevelBlocked(al)))
 				return
 			}
 			f.ServeHTTP(w, r)
@@ -108,8 +109,8 @@ func (server *Server) authenticate(w http.ResponseWriter, r *http.Request) (requ
 		return request.CommonData{}, err
 	}
 
-	homes, err := server.Queries.GetHomesForUser(ctx, user.ID)
-	var preferredHome db.Home
+	homes, err := server.DB.Q.GetHomesForUser(ctx, user.ID)
+	var preferredHome sql.Home
 	if len(homes) > 0 {
 		preferredHome = homes[0]
 	}
@@ -146,30 +147,31 @@ func (server *Server) authenticate(w http.ResponseWriter, r *http.Request) (requ
 	return commonData, err
 }
 
-func (server *Server) getUser(r *http.Request, w http.ResponseWriter) (db.GetUserRow, error) {
+func (server *Server) getUser(r *http.Request, w http.ResponseWriter) (sql.GetUserRow, error) {
 	// Get the encrypted auth cookie
 	ctx := r.Context()
-	sess, _ := server.Cookies.Get(r, "auth")
+
+	sess, _ := server.Cookies.Backend.Get(r, "auth")
 
 	// OAuth token data must be valid
 	tokenData, ok := sess.Values["oauth_token"].(string)
 	if !ok {
-		return db.GetUserRow{}, fmt.Errorf("no OAuth token in session")
+		return sql.GetUserRow{}, fmt.Errorf("no OAuth token in session")
 	}
 	var token oauth2.Token
 	if err := json.Unmarshal([]byte(tokenData), &token); err != nil {
-		return db.GetUserRow{}, fmt.Errorf("correpted OAuth token in session")
+		return sql.GetUserRow{}, fmt.Errorf("correpted OAuth token in session")
 	}
 
 	ts := oauth2.ReuseTokenSource(&token, server.OAuthConfig.TokenSource(ctx, &token))
 	newTok, err := ts.Token()
 	if err != nil {
-		return db.GetUserRow{}, fmt.Errorf("unable to refresh token: %w", err)
+		return sql.GetUserRow{}, fmt.Errorf("unable to refresh token: %w", err)
 	}
 	if newTok.AccessToken != token.AccessToken || newTok.Expiry != token.Expiry {
 		b, err := json.Marshal(newTok)
 		if err != nil {
-			return db.GetUserRow{}, fmt.Errorf("unable to marshal new token: %w", err)
+			return sql.GetUserRow{}, fmt.Errorf("unable to marshal new token: %w", err)
 		}
 		sess.Values["oauth_token"] = string(b)
 		_ = sess.Save(r, w)
@@ -178,27 +180,27 @@ func (server *Server) getUser(r *http.Request, w http.ResponseWriter) (db.GetUse
 	// Look up session
 	sessionIDIF, ok := sess.Values["session_id"]
 	if !ok {
-		return db.GetUserRow{}, ErrUnauthorized
+		return sql.GetUserRow{}, ErrUnauthorized
 	}
 	sessionID, ok := sessionIDIF.(string)
 	if !ok {
-		return db.GetUserRow{}, fmt.Errorf("%w: session_id is %T", ErrInternalServerError, sessionID)
+		return sql.GetUserRow{}, fmt.Errorf("%w: session_id is %T", ErrInternalServerError, sessionID)
 	}
-	session, err := server.Queries.GetSession(ctx, sessionID)
+	session, err := server.DB.Q.GetSession(ctx, sessionID)
 	if err != nil {
-		return db.GetUserRow{}, fmt.Errorf("%w: no such session %s", err, sessionID)
+		return sql.GetUserRow{}, fmt.Errorf("%w: no such session %s", err, sessionID)
 	}
 	if time.Now().After(session.Expires.Time) {
-		return db.GetUserRow{}, fmt.Errorf("session expired")
+		return sql.GetUserRow{}, fmt.Errorf("session expired")
 	}
-	if err := server.Queries.UpdateSessionLastSeen(ctx, sessionID); err != nil {
-		return db.GetUserRow{}, fmt.Errorf("updating session-last-seen failed")
+	if err := server.DB.Q.UpdateSessionLastSeen(ctx, sessionID); err != nil {
+		return sql.GetUserRow{}, fmt.Errorf("updating session-last-seen failed")
 	}
 
 	// Look up user
-	user, err := server.Queries.GetUser(ctx, session.AppuserID)
+	user, err := server.DB.Q.GetUser(ctx, session.AppuserID)
 	if err != nil {
-		return db.GetUserRow{}, fmt.Errorf("%w: database error", ErrInternalServerError)
+		return sql.GetUserRow{}, fmt.Errorf("%w: database error", ErrInternalServerError)
 	}
 
 	return user, nil
@@ -212,7 +214,7 @@ func randState() string {
 
 func (server *Server) loginHandler(w http.ResponseWriter, r *http.Request) {
 	state := randState()
-	session, _ := server.Cookies.Get(r, "auth")
+	session, _ := server.Cookies.Backend.Get(r, "auth")
 	session.Values["state"] = state
 	if err := session.Save(r, w); err != nil {
 		fmt.Fprintf(os.Stderr, "saving cookie: %v", err)
@@ -230,7 +232,7 @@ func (server *Server) loginHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func (server *Server) AuthLogOutHandler(w http.ResponseWriter, r *http.Request) {
-	sess, _ := server.Cookies.Get(r, "auth")
+	sess, _ := server.Cookies.Backend.Get(r, "auth")
 	sess.Options.MaxAge = -1
 	_ = sess.Save(r, w)
 
@@ -244,7 +246,7 @@ func (server *Server) callbackHandler(
 	ctx := r.Context()
 
 	// Get OAuth token
-	sess, _ := server.Cookies.Get(r, "auth")
+	sess, _ := server.Cookies.Backend.Get(r, "auth")
 	code := r.URL.Query().Get("code")
 	token, err := server.OAuthConfig.Exchange(ctx, code)
 	if err != nil {
@@ -293,10 +295,10 @@ func (server *Server) callbackHandler(
 	}
 
 	// User must exist or be invited
-	userID, err := server.Queries.GetUserIDByEmail(ctx, claims.Email)
+	userID, err := server.DB.Q.GetUserIDByEmail(ctx, claims.Email)
 	if err == nil {
 		// User exists; update personal data
-		if err := server.Queries.UpdateUser(ctx, db.UpdateUserParams{
+		if err := server.DB.Q.UpdateUser(ctx, sql.UpdateUserParams{
 			ID:          userID,
 			GoogleSub:   claims.Sub,
 			Email:       claims.Email,
@@ -306,10 +308,10 @@ func (server *Server) callbackHandler(
 			http.Error(w, "creating user failed", http.StatusInternalServerError)
 			return
 		}
-	} else if invitation, err := server.Queries.GetInvitation(ctx, pgtype.Text{String: claims.Email, Valid: true}); err == nil {
+	} else if invitation, err := server.DB.Q.GetInvitation(ctx, pgtype.Text{String: claims.Email, Valid: true}); err == nil {
 		// User has been invited; create user
-		if server.Transaction(ctx, func(ctx context.Context, q *db.Queries) error {
-			if createdUserID, err := server.Queries.CreateUser(ctx, db.CreateUserParams{
+		if server.Transaction(ctx, func(ctx context.Context, db *db.Database) error {
+			if createdUserID, err := server.DB.Q.CreateUser(ctx, sql.CreateUserParams{
 				DisplayName: claims.Name,
 				Email:       claims.Email,
 				GoogleSub:   claims.Sub,
@@ -320,7 +322,7 @@ func (server *Server) callbackHandler(
 			} else {
 				userID = createdUserID
 			}
-			if err := server.Queries.DeleteInvitation(ctx, invitation); err != nil {
+			if err := server.DB.Q.DeleteInvitation(ctx, invitation); err != nil {
 				return err
 			}
 			return nil
@@ -336,7 +338,7 @@ func (server *Server) callbackHandler(
 
 	// Create session
 	sessionID := rand.Text()
-	if err := server.Queries.InsertSession(ctx, db.InsertSessionParams{
+	if err := server.DB.Q.InsertSession(ctx, sql.InsertSessionParams{
 		ID:        sessionID,
 		AppuserID: userID,
 		Expires:   pgtype.Timestamptz{Time: time.Now().AddDate(0, 1, 0), Valid: true},
@@ -352,23 +354,4 @@ func (server *Server) callbackHandler(
 	_ = sess.Save(r, w)
 
 	http.Redirect(w, r, "/", http.StatusFound)
-}
-
-func (server *Server) getTokenFromSession(sess *sessions.Session) (*oauth2.Token, error) {
-	tokenData, ok := sess.Values["oauth_token"].(string)
-	if !ok {
-		return nil, fmt.Errorf("no oauth token in session")
-	}
-
-	var token oauth2.Token
-	if err := json.Unmarshal([]byte(tokenData), &token); err != nil {
-		return nil, err
-	}
-
-	return &token, nil
-}
-
-func (server *Server) getTokenFromRequest(r *http.Request) (*oauth2.Token, error) {
-	sess, _ := server.Cookies.Get(r, "auth")
-	return server.getTokenFromSession(sess)
 }

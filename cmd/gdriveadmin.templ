@@ -61,7 +61,7 @@ templ (server *Server) GDrivePermissionOverview(
                     {p.Role} ({data.Language.GDriveRoles[p.Role]})
                 </td>
                 <td>
-                    if view := server.lookupUserByEmail(ctx, p.Email); view.Valid() {
+                    if view := request.LookupUserByEmail(ctx, server.DB, p.Email); view.Valid() {
                         @Avatar(view)
                     } else {
                         <p>{data.Language.GenericNotFound}</p>

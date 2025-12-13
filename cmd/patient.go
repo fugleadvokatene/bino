@@ -2,34 +2,34 @@ package main
 
 import (
 	"net/http"
-	"regexp"
 	"time"
 
-	"github.com/fugleadvokatene/bino/internal/db"
 	"github.com/fugleadvokatene/bino/internal/enums"
+	"github.com/fugleadvokatene/bino/internal/gdrive"
+	"github.com/fugleadvokatene/bino/internal/generic"
+	"github.com/fugleadvokatene/bino/internal/handlers/handlererror"
 	"github.com/fugleadvokatene/bino/internal/request"
+	"github.com/fugleadvokatene/bino/internal/sql"
 	"github.com/fugleadvokatene/bino/internal/view"
 	"github.com/jackc/pgx/v5/pgtype"
 )
-
-var journalRegex = regexp.MustCompile(`(https:\/\/docs\.google\.com\/document\/d\/[^\/?#\n]+)`)
 
 func (server *Server) getPatientHandler(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	commonData := request.MustLoadCommonData(ctx)
 
-	id, err := server.getPathID(r, "patient")
+	id, err := request.GetPathID(r, "patient")
 	if err != nil {
-		server.renderError(w, r, commonData, err)
+		handlererror.Error(w, r, err)
 		return
 	}
 
-	patientData, err := server.Queries.GetPatientWithSpecies(ctx, db.GetPatientWithSpeciesParams{
+	patientData, err := server.DB.Q.GetPatientWithSpecies(ctx, sql.GetPatientWithSpeciesParams{
 		ID:         id,
 		LanguageID: commonData.Lang32(),
 	})
 	if err != nil {
-		server.renderError(w, r, commonData, err)
+		handlererror.Error(w, r, err)
 		return
 	}
 
@@ -37,28 +37,28 @@ func (server *Server) getPatientHandler(w http.ResponseWriter, r *http.Request) 
 
 	var home *view.Home
 	if patientData.CurrHomeID.Valid {
-		homeResult, err := server.Queries.GetHome(ctx, patientData.CurrHomeID.Int32)
+		homeResult, err := server.DB.Q.GetHome(ctx, patientData.CurrHomeID.Int32)
 		if err != nil {
-			server.renderError(w, r, commonData, err)
+			handlererror.Error(w, r, err)
 			return
 		}
 		h := homeResult.ToHomeView()
 		home = &h
 	}
 
-	homes, err := server.Queries.GetHomes(ctx)
+	homes, err := server.DB.Q.GetHomes(ctx)
 	if err != nil {
-		server.renderError(w, r, commonData, err)
+		handlererror.Error(w, r, err)
 		return
 	}
 
-	eventData, err := server.Queries.GetEventsForPatient(ctx, patientData.ID)
+	eventData, err := server.DB.Q.GetEventsForPatient(ctx, patientData.ID)
 	if err != nil {
-		server.renderError(w, r, commonData, err)
+		handlererror.Error(w, r, err)
 		return
 	}
 
-	events := SliceToSlice(eventData, func(r db.GetEventsForPatientRow) view.Event {
+	events := generic.SliceToSlice(eventData, func(r sql.GetEventsForPatientRow) view.Event {
 		return view.Event{
 			ID:           r.ID,
 			PatientID:    r.PatientID,
@@ -90,7 +90,7 @@ func (server *Server) getPatientHandler(w http.ResponseWriter, r *http.Request) 
 	PatientPage(ctx, commonData, view.PatientPage{
 		Patient: patientData.ToPatientView(),
 		Home:    home,
-		Homes: SliceToSlice(homes, func(home db.Home) view.Home {
+		Homes: generic.SliceToSlice(homes, func(home sql.Home) view.Home {
 			return home.ToHomeView()
 		}),
 		Events: events,
@@ -101,28 +101,28 @@ func (server *Server) createJournalHandler(w http.ResponseWriter, r *http.Reques
 	ctx := r.Context()
 	commonData := request.MustLoadCommonData(ctx)
 
-	patient, err := server.getPathID(r, "patient")
+	patient, err := request.GetPathID(r, "patient")
 	if err != nil {
-		server.renderError(w, r, commonData, err)
+		handlererror.Error(w, r, err)
 		return
 	}
 
-	patientData, err := server.Queries.GetPatientWithSpecies(ctx, db.GetPatientWithSpeciesParams{
+	patientData, err := server.DB.Q.GetPatientWithSpecies(ctx, sql.GetPatientWithSpeciesParams{
 		ID:         patient,
 		LanguageID: int32(server.Config.SystemLanguage),
 	})
 	if err != nil {
-		server.renderError(w, r, commonData, err)
+		handlererror.Error(w, r, err)
 		return
 	}
 
 	if patientData.JournalUrl.Valid {
 		commonData.Warning(commonData.Language.TODO("journal URL already exists"), nil)
-		server.redirectToReferer(w, r)
+		request.RedirectToReferer(w, r)
 		return
 	}
 
-	created, err := server.Queries.GetFirstEventOfTypeForPatient(ctx, db.GetFirstEventOfTypeForPatientParams{
+	created, err := server.DB.Q.GetFirstEventOfTypeForPatient(ctx, sql.GetFirstEventOfTypeForPatientParams{
 		PatientID: patient,
 		EventID:   int32(enums.EventRegistered),
 	})
@@ -139,11 +139,11 @@ func (server *Server) createJournalHandler(w http.ResponseWriter, r *http.Reques
 	})
 	if err != nil {
 		commonData.Error(commonData.Language.TODO("failed to create"), err)
-		server.redirectToReferer(w, r)
+		request.RedirectToReferer(w, r)
 		return
 	}
 
-	if tag, err := server.Queries.SetPatientJournal(ctx, db.SetPatientJournalParams{
+	if tag, err := server.DB.Q.SetPatientJournal(ctx, sql.SetPatientJournalParams{
 		ID: patient,
 		JournalUrl: pgtype.Text{
 			String: item.DocumentURL(),
@@ -151,11 +151,11 @@ func (server *Server) createJournalHandler(w http.ResponseWriter, r *http.Reques
 		},
 	}); err != nil || tag.RowsAffected() == 0 {
 		commonData.Error(commonData.Language.TODO("failed to set in DB"), err)
-		server.redirectToReferer(w, r)
+		request.RedirectToReferer(w, r)
 		return
 	}
 
-	if _, err := server.Queries.AddPatientEvent(ctx, db.AddPatientEventParams{
+	if _, err := server.DB.Q.AddPatientEvent(ctx, sql.AddPatientEventParams{
 		PatientID: patient,
 		HomeID:    patientData.CurrHomeID.Int32,
 		EventID:   int32(enums.EventJournalCreated),
@@ -166,39 +166,39 @@ func (server *Server) createJournalHandler(w http.ResponseWriter, r *http.Reques
 	}
 
 	commonData.Success(commonData.Language.TODO("document created"))
-	server.redirectToReferer(w, r)
+	request.RedirectToReferer(w, r)
 }
 
 func (server *Server) attachJournalHandler(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	commonData := request.MustLoadCommonData(ctx)
 
-	patient, err := server.getPathID(r, "patient")
+	patient, err := request.GetPathID(r, "patient")
 	if err != nil {
-		server.renderError(w, r, commonData, err)
+		handlererror.Error(w, r, err)
 		return
 	}
 
-	url, err := server.getFormValue(r, "url")
+	url, err := request.GetFormValue(r, "url")
 	if err != nil {
-		server.renderError(w, r, commonData, err)
+		handlererror.Error(w, r, err)
 		return
 	}
 
-	baseURL := journalRegex.FindString(url)
+	baseURL := gdrive.JournalRegex.FindString(url)
 	if baseURL == "" {
 		commonData.Error(commonData.Language.TODO("bad URL"), err)
-		server.redirectToReferer(w, r)
+		request.RedirectToReferer(w, r)
 		return
 	}
 
-	patientData, err := server.Queries.GetPatient(ctx, patient)
+	patientData, err := server.DB.Q.GetPatient(ctx, patient)
 	if err != nil {
-		server.renderError(w, r, commonData, err)
+		handlererror.Error(w, r, err)
 		return
 	}
 
-	if tag, err := server.Queries.SetPatientJournal(ctx, db.SetPatientJournalParams{
+	if tag, err := server.DB.Q.SetPatientJournal(ctx, sql.SetPatientJournalParams{
 		ID: patient,
 		JournalUrl: pgtype.Text{
 			String: baseURL,
@@ -206,11 +206,11 @@ func (server *Server) attachJournalHandler(w http.ResponseWriter, r *http.Reques
 		},
 	}); err != nil || tag.RowsAffected() == 0 {
 		commonData.Error(commonData.Language.TODO("failed to set in DB"), err)
-		server.redirectToReferer(w, r)
+		request.RedirectToReferer(w, r)
 		return
 	}
 
-	if _, err := server.Queries.AddPatientEvent(ctx, db.AddPatientEventParams{
+	if _, err := server.DB.Q.AddPatientEvent(ctx, sql.AddPatientEventParams{
 		PatientID: patient,
 		HomeID:    patientData.CurrHomeID.Int32,
 		EventID:   int32(enums.EventJournalAttached),
@@ -221,35 +221,35 @@ func (server *Server) attachJournalHandler(w http.ResponseWriter, r *http.Reques
 	}
 
 	commonData.Success(commonData.Language.TODO("journal attached"))
-	server.redirectToReferer(w, r)
+	request.RedirectToReferer(w, r)
 }
 
 func (server *Server) acceptSuggestedJournalHandler(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	commonData := request.MustLoadCommonData(ctx)
 
-	patient, err := server.getPathID(r, "patient")
+	patient, err := request.GetPathID(r, "patient")
 	if err != nil {
-		server.renderError(w, r, commonData, err)
+		handlererror.Error(w, r, err)
 		return
 	}
-	if err := server.Queries.AcceptSuggestedJournal(ctx, patient); err != nil {
+	if err := server.DB.Q.AcceptSuggestedJournal(ctx, patient); err != nil {
 		commonData.Warning(commonData.Language.TODO("failed to accept suggested journal"), err)
 	}
-	server.redirectToReferer(w, r)
+	request.RedirectToReferer(w, r)
 }
 
 func (server *Server) declineSuggestedJournalHandler(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	commonData := request.MustLoadCommonData(ctx)
 
-	patient, err := server.getPathID(r, "patient")
+	patient, err := request.GetPathID(r, "patient")
 	if err != nil {
-		server.renderError(w, r, commonData, err)
+		handlererror.Error(w, r, err)
 		return
 	}
-	if err := server.Queries.DeclineSuggestedJournal(ctx, patient); err != nil {
+	if err := server.DB.Q.DeclineSuggestedJournal(ctx, patient); err != nil {
 		commonData.Warning(commonData.Language.TODO("failed to decline suggested journal"), err)
 	}
-	server.redirectToReferer(w, r)
+	request.RedirectToReferer(w, r)
 }

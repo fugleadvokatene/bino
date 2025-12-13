@@ -11,6 +11,7 @@ import (
 
 	"github.com/fugleadvokatene/bino/internal/db"
 	"github.com/fugleadvokatene/bino/internal/gdrive"
+	"github.com/fugleadvokatene/bino/internal/generic"
 	"github.com/fugleadvokatene/bino/internal/request"
 	"google.golang.org/api/docs/v1"
 	"google.golang.org/api/drive/v3"
@@ -29,7 +30,7 @@ const (
 type GDrive struct {
 	Drive     *drive.Service
 	Docs      *docs.Service
-	Queries   *db.Queries
+	DB        *db.Database
 	DriveBase string
 }
 
@@ -41,7 +42,7 @@ type GDriveConfig struct {
 	ExtraJournalFolders       []string
 }
 
-func NewGDriveWithServiceAccount(ctx context.Context, config GDriveConfig, queries *db.Queries) (*GDrive, error) {
+func NewGDriveWithServiceAccount(ctx context.Context, config GDriveConfig, db *db.Database) (*GDrive, error) {
 	drive, err := drive.NewService(ctx, option.WithCredentialsFile(config.ServiceAccountKeyLocation))
 	if err != nil {
 		return nil, fmt.Errorf("creating Drive service: %w", err)
@@ -55,7 +56,7 @@ func NewGDriveWithServiceAccount(ctx context.Context, config GDriveConfig, queri
 	return &GDrive{
 		Drive:     drive,
 		Docs:      docs,
-		Queries:   queries,
+		DB:        db,
 		DriveBase: config.DriveBase,
 	}, nil
 }
@@ -78,7 +79,7 @@ func GDriveItemFromFile(f *drive.File, p *drive.PermissionList) gdrive.Item {
 	}
 	var permissions []gdrive.Permission
 	if p != nil {
-		permissions = SliceToSlice(p.Permissions, func(p *drive.Permission) gdrive.Permission {
+		permissions = generic.SliceToSlice(p.Permissions, func(p *drive.Permission) gdrive.Permission {
 			return gdrive.Permission{
 				DisplayName: p.DisplayName,
 				Email:       p.EmailAddress,
@@ -199,7 +200,7 @@ func (g *GDrive) CreateDocument(conf GDriveConfigInfo, vars GDriveTemplateVars) 
 }
 
 func (g *GDrive) AppendUpdates(id string, updates []GDriveJournalUpdate) error {
-	insertedText := strings.Join(SliceToSlice(updates, func(in GDriveJournalUpdate) string {
+	insertedText := strings.Join(generic.SliceToSlice(updates, func(in GDriveJournalUpdate) string {
 		return fmt.Sprintf("%s: %s", in.Timestamp.Format(time.DateOnly), in.Text)
 	}), "\n")
 

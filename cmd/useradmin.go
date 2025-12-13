@@ -8,7 +8,10 @@ import (
 	"time"
 
 	"github.com/fugleadvokatene/bino/internal/db"
+	"github.com/fugleadvokatene/bino/internal/generic"
+	"github.com/fugleadvokatene/bino/internal/handlers/handlererror"
 	"github.com/fugleadvokatene/bino/internal/request"
+	"github.com/fugleadvokatene/bino/internal/sql"
 	"github.com/fugleadvokatene/bino/internal/view"
 	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/jackc/pgx/v5/pgtype"
@@ -18,29 +21,29 @@ func (server *Server) userAdminHandler(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	data := request.MustLoadCommonData(ctx)
 
-	users, err := server.Queries.GetAppusers(ctx)
+	users, err := server.DB.Q.GetAppusers(ctx)
 	if err != nil {
-		server.renderError(w, r, data, err)
+		handlererror.Error(w, r, err)
 		return
 	}
 
-	invitations, err := server.Queries.GetInvitations(ctx)
+	invitations, err := server.DB.Q.GetInvitations(ctx)
 	if err != nil {
-		server.renderError(w, r, data, err)
+		handlererror.Error(w, r, err)
 		return
 	}
 
-	homes, err := server.Queries.GetHomes(ctx)
+	homes, err := server.DB.Q.GetHomes(ctx)
 	if err != nil {
-		server.renderError(w, r, data, err)
+		handlererror.Error(w, r, err)
 		return
 	}
 
-	UserAdmin(data, SliceToSlice(homes, func(in db.Home) view.Home {
+	UserAdmin(data, generic.SliceToSlice(homes, func(in sql.Home) view.Home {
 		return in.ToHomeView()
-	}), SliceToSlice(users, func(in db.GetAppusersRow) view.User {
+	}), generic.SliceToSlice(users, func(in sql.GetAppusersRow) view.User {
 		return in.ToUserView()
-	}), SliceToSlice(invitations, func(in db.GetInvitationsRow) view.Invitation {
+	}), generic.SliceToSlice(invitations, func(in sql.GetInvitationsRow) view.Invitation {
 		return in.ToInvitationView()
 	})).Render(ctx, w)
 }
@@ -49,15 +52,15 @@ func (server *Server) userConfirmScrubOrNukeHandler(w http.ResponseWriter, r *ht
 	ctx := r.Context()
 	data := request.MustLoadCommonData(ctx)
 
-	id, err := server.getPathID(r, "user")
+	id, err := request.GetPathID(r, "user")
 	if err != nil {
-		server.renderError(w, r, data, err)
+		handlererror.Error(w, r, err)
 		return
 	}
 
-	user, err := server.Queries.GetUser(ctx, id)
+	user, err := server.DB.Q.GetUser(ctx, id)
 	if err != nil {
-		server.renderError(w, r, data, err)
+		handlererror.Error(w, r, err)
 		return
 	}
 
@@ -85,26 +88,26 @@ func (server *Server) userDoScrubOrNukeHandler(w http.ResponseWriter, r *http.Re
 	ctx := r.Context()
 	data := request.MustLoadCommonData(ctx)
 
-	id, err := server.getPathID(r, "user")
+	id, err := request.GetPathID(r, "user")
 	if err != nil {
-		server.renderError(w, r, data, err)
+		handlererror.Error(w, r, err)
 		return
 	}
 
 	if id == data.User.AppuserID {
-		server.renderError(w, r, data, fmt.Errorf("noo ur so pretty don't delete yourself"))
+		handlererror.Error(w, r, fmt.Errorf("noo ur so pretty don't delete yourself"))
 		return
 	}
 
-	email, err := server.getFormValue(r, "confirm-email")
+	email, err := request.GetFormValue(r, "confirm-email")
 	if err != nil {
-		server.renderError(w, r, data, err)
+		handlererror.Error(w, r, err)
 		return
 	}
 
-	user, err := server.Queries.GetUser(ctx, id)
+	user, err := server.DB.Q.GetUser(ctx, id)
 	if err != nil {
-		server.renderError(w, r, data, err)
+		handlererror.Error(w, r, err)
 		return
 	}
 
@@ -122,7 +125,7 @@ func (server *Server) userDoScrubOrNukeHandler(w http.ResponseWriter, r *http.Re
 	} else {
 		data.Error(data.Language.AdminAbortedDueToWrongEmail, nil)
 	}
-	server.redirect(w, r, "/users")
+	request.Redirect(w, r, "/users")
 }
 
 func (server *Server) userDoScrubHandler(w http.ResponseWriter, r *http.Request) {
@@ -135,14 +138,14 @@ func (server *Server) userDoNukeHandler(w http.ResponseWriter, r *http.Request) 
 
 // Delete information associated with user
 func (server *Server) DeleteUser(ctx context.Context, id int32) error {
-	return server.Transaction(ctx, func(ctx context.Context, q *db.Queries) error {
-		if err := q.RemoveHomesForAppuser(ctx, id); err != nil {
+	return server.Transaction(ctx, func(ctx context.Context, db *db.Database) error {
+		if err := db.Q.RemoveHomesForAppuser(ctx, id); err != nil {
 			return fmt.Errorf("removing homes: %w", err)
 		}
-		if err := q.DeleteSessionsForUser(ctx, id); err != nil {
+		if err := db.Q.DeleteSessionsForUser(ctx, id); err != nil {
 			return fmt.Errorf("deleting sessions: %w", err)
 		}
-		if err := q.ScrubAppuser(ctx, id); err != nil {
+		if err := db.Q.ScrubAppuser(ctx, id); err != nil {
 			return fmt.Errorf("scrubbing user: %w", err)
 		}
 		return nil
@@ -154,14 +157,14 @@ func (server *Server) NukeUser(ctx context.Context, id int32) error {
 	if err := server.DeleteUser(ctx, id); err != nil {
 		return fmt.Errorf("deleting user: %w", err)
 	}
-	return server.Transaction(ctx, func(ctx context.Context, q *db.Queries) error {
-		if err := q.DeleteEventsCreatedByUser(ctx, id); err != nil {
+	return server.Transaction(ctx, func(ctx context.Context, db *db.Database) error {
+		if err := db.Q.DeleteEventsCreatedByUser(ctx, id); err != nil {
 			return fmt.Errorf("deleting events created by user: %w", err)
 		}
-		if err := q.DeleteAppuserLanguage(ctx, id); err != nil {
+		if err := db.Q.DeleteAppuserLanguage(ctx, id); err != nil {
 			return fmt.Errorf("deleting appuser language: %w", err)
 		}
-		if err := q.DeleteAppuser(ctx, id); err != nil {
+		if err := db.Q.DeleteAppuser(ctx, id); err != nil {
 			return fmt.Errorf("deleting appuser: %w", err)
 		}
 		return nil
@@ -172,13 +175,13 @@ func (server *Server) inviteHandler(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	data := request.MustLoadCommonData(ctx)
 
-	email, err := server.getPathValue(r, "email")
+	email, err := request.GetPathValue(r, "email")
 	if err != nil {
-		email, err = server.getFormValue(r, "email")
+		email, err = request.GetFormValue(r, "email")
 	}
 
 	if err != nil {
-		server.renderError(w, r, data, err)
+		handlererror.Error(w, r, err)
 		return
 	}
 
@@ -193,7 +196,7 @@ func (server *Server) inviteHandler(w http.ResponseWriter, r *http.Request) {
 		code := inviteCodes[i*8 : (i+1)*8]
 
 		// Try to insert
-		if err := server.Queries.InsertInvitation(ctx, db.InsertInvitationParams{
+		if err := server.DB.Q.InsertInvitation(ctx, sql.InsertInvitationParams{
 			ID:      code,
 			Email:   pgtype.Text{String: email, Valid: true},
 			Created: pgtype.Timestamptz{Time: now, Valid: true},
@@ -208,31 +211,31 @@ func (server *Server) inviteHandler(w http.ResponseWriter, r *http.Request) {
 			}
 		} else {
 			data.Info(data.Language.AdminInvitationOKNoEmail)
-			server.redirect(w, r, "/users")
+			request.Redirect(w, r, "/users")
 			return
 		}
 	}
 
 	data.Error(data.Language.AdminInvitationFailed, fmt.Errorf("couldn't create code"))
-	server.redirect(w, r, "/users")
+	request.Redirect(w, r, "/users")
 }
 
 func (server *Server) inviteDeleteHandler(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	data := request.MustLoadCommonData(ctx)
 
-	id, err := server.getPathValue(r, "id")
+	id, err := request.GetPathValue(r, "id")
 	if err != nil {
-		server.renderError(w, r, data, err)
+		handlererror.Error(w, r, err)
 		return
 	}
 
-	if err := server.Queries.DeleteInvitation(ctx, id); err != nil {
+	if err := server.DB.Q.DeleteInvitation(ctx, id); err != nil {
 		data.Error(data.Language.GenericFailed, err)
 	} else {
 		data.Success(data.Language.GenericSuccess)
 	}
 
-	server.redirect(w, r, "/users")
+	request.Redirect(w, r, "/users")
 	return
 }

@@ -7,15 +7,16 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"net/url"
 	"path"
-	"strconv"
 	"strings"
 	"time"
 
-	"github.com/fugleadvokatene/bino/internal/db"
 	"github.com/fugleadvokatene/bino/internal/enums"
+	"github.com/fugleadvokatene/bino/internal/fs"
+	"github.com/fugleadvokatene/bino/internal/generic"
+	"github.com/fugleadvokatene/bino/internal/handlers/handlererror"
 	"github.com/fugleadvokatene/bino/internal/request"
+	"github.com/fugleadvokatene/bino/internal/sql"
 	"github.com/fugleadvokatene/bino/internal/view"
 	"github.com/jackc/pgx/v5/pgtype"
 )
@@ -24,15 +25,15 @@ func (server *Server) wikiMain(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	data := request.MustLoadCommonData(ctx)
 
-	pages, err := server.Queries.GetWikiPages(ctx)
+	pages, err := server.DB.Q.GetWikiPages(ctx)
 	if err != nil {
-		server.renderError(w, r, data, err)
+		handlererror.Error(w, r, err)
 		return
 	}
 
-	mainPage, err := server.Queries.GetWikiMainPage(ctx)
+	mainPage, err := server.DB.Q.GetWikiMainPage(ctx)
 	if err != nil {
-		server.renderError(w, r, data, err)
+		handlererror.Error(w, r, err)
 		return
 	}
 
@@ -41,7 +42,7 @@ func (server *Server) wikiMain(w http.ResponseWriter, r *http.Request) {
 	_ = WikiPageTempl(
 		data,
 		mainPage.ToWikiPageView(),
-		SliceToSlice(pages, func(in db.WikiPage) view.WikiLink {
+		generic.SliceToSlice(pages, func(in sql.WikiPage) view.WikiLink {
 			return in.ToWikiLinkView()
 		}),
 	).Render(ctx, w)
@@ -51,21 +52,21 @@ func (server *Server) wikiPage(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	data := request.MustLoadCommonData(ctx)
 
-	id, err := server.getPathID(r, "id")
+	id, err := request.GetPathID(r, "id")
 	if err != nil {
-		server.render404(w, r, data, err)
+		handlererror.NotFound(w, r, err)
 		return
 	}
 
-	pages, err := server.Queries.GetWikiPages(ctx)
+	pages, err := server.DB.Q.GetWikiPages(ctx)
 	if err != nil {
-		server.renderError(w, r, data, err)
+		handlererror.Error(w, r, err)
 		return
 	}
 
-	page, err := server.Queries.GetLastWikiRevision(ctx, id)
+	page, err := server.DB.Q.GetLastWikiRevision(ctx, id)
 	if err != nil {
-		server.renderError(w, r, data, err)
+		handlererror.Error(w, r, err)
 		return
 	}
 
@@ -74,7 +75,7 @@ func (server *Server) wikiPage(w http.ResponseWriter, r *http.Request) {
 	_ = WikiPageTempl(
 		data,
 		page.ToWikiPageView(),
-		SliceToSlice(pages, func(in db.WikiPage) view.WikiLink {
+		generic.SliceToSlice(pages, func(in sql.WikiPage) view.WikiLink {
 			return in.ToWikiLinkView()
 		}),
 	).Render(ctx, w)
@@ -84,24 +85,24 @@ func (server *Server) wikiSave(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	data := request.MustLoadCommonData(ctx)
 
-	id, err := server.getPathID(r, "id")
+	id, err := request.GetPathID(r, "id")
 	if err != nil {
-		ajaxError(w, r, err, http.StatusBadRequest)
+		request.AjaxError(w, r, err, http.StatusBadRequest)
 		return
 	}
 
 	bytes, err := io.ReadAll(r.Body)
 	if err != nil {
-		ajaxError(w, r, err, http.StatusBadRequest)
+		request.AjaxError(w, r, err, http.StatusBadRequest)
 		return
 	}
 
-	if _, err := server.Queries.SaveWikiPage(ctx, db.SaveWikiPageParams{
+	if _, err := server.DB.Q.SaveWikiPage(ctx, sql.SaveWikiPageParams{
 		PageID:  id,
 		Content: bytes,
 		Editor:  data.User.AppuserID,
 	}); err != nil {
-		ajaxError(w, r, err, http.StatusBadRequest)
+		request.AjaxError(w, r, err, http.StatusBadRequest)
 		return
 	}
 
@@ -110,54 +111,53 @@ func (server *Server) wikiSave(w http.ResponseWriter, r *http.Request) {
 
 func (server *Server) wikiSetTitle(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-	data := request.MustLoadCommonData(ctx)
 
-	id, err := server.getPathID(r, "id")
+	id, err := request.GetPathID(r, "id")
 	if err != nil {
-		server.renderError(w, r, data, err)
+		handlererror.Error(w, r, err)
 		return
 	}
 
-	title, err := server.getFormValue(r, "value")
+	title, err := request.GetFormValue(r, "value")
 	if err != nil {
-		server.renderError(w, r, data, err)
+		handlererror.Error(w, r, err)
 		return
 	}
 
-	if err := server.Queries.SetWikiPageTitle(ctx, db.SetWikiPageTitleParams{
+	if err := server.DB.Q.SetWikiPageTitle(ctx, sql.SetWikiPageTitleParams{
 		ID:    id,
 		Title: title,
 	}); err != nil {
-		server.renderError(w, r, data, err)
+		handlererror.Error(w, r, err)
 		return
 	}
 
-	server.redirect(w, r, fmt.Sprintf("/wiki/view/%d", id))
+	request.Redirect(w, r, fmt.Sprintf("/wiki/view/%d", id))
 }
 
 func (server *Server) wikiCreate(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	data := request.MustLoadCommonData(ctx)
 
-	title, err := server.getFormValue(r, "title")
+	title, err := request.GetFormValue(r, "title")
 	if err != nil {
 		data.Error(data.Language.GenericFailed, err)
-		server.redirectToReferer(w, r)
+		request.RedirectToReferer(w, r)
 		return
 	}
 
-	result, err := server.Queries.AddWikiPage(ctx, db.AddWikiPageParams{
+	result, err := server.DB.Q.AddWikiPage(ctx, sql.AddWikiPageParams{
 		Title:   title,
 		Creator: data.User.AppuserID,
 	})
 	if err != nil {
 		data.Error(data.Language.GenericFailed, err)
-		server.redirectToReferer(w, r)
+		request.RedirectToReferer(w, r)
 		return
 	}
 
 	data.Success(data.Language.GenericSuccess)
-	server.redirect(w, r, fmt.Sprintf("/wiki/view/%d", result.PageID))
+	request.Redirect(w, r, fmt.Sprintf("/wiki/view/%d", result.PageID))
 }
 
 type WikiFetchImageRequest struct {
@@ -183,7 +183,7 @@ func (server *Server) wikiUploadImage(w http.ResponseWriter, r *http.Request) {
 		}
 	}()
 
-	wikiID, err := server.getPathID(r, "id")
+	wikiID, err := request.GetPathID(r, "id")
 	if err != nil {
 		request.LogError(r, fmt.Errorf("getting ID from path: %w", err))
 		w.WriteHeader(http.StatusBadRequest)
@@ -191,7 +191,7 @@ func (server *Server) wikiUploadImage(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Parse multipart form with reasonable max memory
-	if err := r.ParseMultipartForm(MaxImageSize); err != nil {
+	if err := r.ParseMultipartForm(fs.MaxImageSize); err != nil {
 		request.LogError(r, fmt.Errorf("reading request body: %w", err))
 		w.WriteHeader(http.StatusRequestEntityTooLarge)
 		return
@@ -226,7 +226,7 @@ func (server *Server) wikiUploadImage(w http.ResponseWriter, r *http.Request) {
 	}
 
 	fileInfo := commitResult.Commited[uploadResult.UniqueID]
-	fileID, err := server.Queries.RegisterFile(ctx, db.RegisterFileParams{
+	fileID, err := server.DB.Q.RegisterFile(ctx, sql.RegisterFileParams{
 		Uuid:          uploadResult.UniqueID,
 		Creator:       request.MustLoadCommonData(ctx).User.AppuserID,
 		Created:       pgtype.Timestamptz{Time: time.Now(), Valid: true},
@@ -244,7 +244,7 @@ func (server *Server) wikiUploadImage(w http.ResponseWriter, r *http.Request) {
 		resp.File.URL = view.FileURL(fileID, fileInfo.FileName)
 	}
 
-	if err := server.Queries.AssociateFileWithWikiPage(ctx, db.AssociateFileWithWikiPageParams{
+	if err := server.DB.Q.AssociateFileWithWikiPage(ctx, sql.AssociateFileWithWikiPageParams{
 		FileID: fileID,
 		WikiID: wikiID,
 	}); err != nil {
@@ -264,7 +264,7 @@ func (server *Server) wikiFetchImage(w http.ResponseWriter, r *http.Request) {
 		}
 	}()
 
-	wikiID, err := server.getPathID(r, "id")
+	wikiID, err := request.GetPathID(r, "id")
 	if err != nil {
 		request.LogError(r, fmt.Errorf("getting ID from path: %w", err))
 		w.WriteHeader(http.StatusBadRequest)
@@ -285,8 +285,8 @@ func (server *Server) wikiFetchImage(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var fileID int32
-	if fileID, err = parseFileURLFromSameSite(r, req.URL); err == nil {
-		if file, err := server.Queries.GetFileByID(ctx, fileID); err == nil {
+	if fileID, err = request.ParseFileURLFromSameSite(r, req.URL); err == nil {
+		if file, err := server.DB.Q.GetFileByID(ctx, fileID); err == nil {
 			resp.Success = 1
 			resp.File.URL = view.FileURL(fileID, file.PresentationFilename)
 		} else {
@@ -310,7 +310,7 @@ func (server *Server) wikiFetchImage(w http.ResponseWriter, r *http.Request) {
 		}
 
 		fileInfo := commitResult.Commited[uploadResult.UniqueID]
-		fileID, err = server.Queries.RegisterFile(ctx, db.RegisterFileParams{
+		fileID, err = server.DB.Q.RegisterFile(ctx, sql.RegisterFileParams{
 			Uuid:          uploadResult.UniqueID,
 			Creator:       request.MustLoadCommonData(ctx).User.AppuserID,
 			Created:       pgtype.Timestamptz{Time: time.Now(), Valid: true},
@@ -329,7 +329,7 @@ func (server *Server) wikiFetchImage(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	if err := server.Queries.AssociateFileWithWikiPage(ctx, db.AssociateFileWithWikiPageParams{
+	if err := server.DB.Q.AssociateFileWithWikiPage(ctx, sql.AssociateFileWithWikiPageParams{
 		FileID: fileID,
 		WikiID: wikiID,
 	}); err != nil {
@@ -339,63 +339,30 @@ func (server *Server) wikiFetchImage(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 }
 
-func parseFileURLFromSameSite(r *http.Request, raw string) (int32, error) {
-	ref := r.Referer()
-	if ref == "" {
-		return 0, fmt.Errorf("no referer")
-	}
-
-	refURL, err := url.Parse(ref)
-	if err != nil {
-		return 0, err
-	}
-
-	rawURL, err := url.Parse(raw)
-	if err != nil {
-		return 0, err
-	}
-
-	if rawURL.Host != "" && rawURL.Host != refURL.Host {
-		return 0, fmt.Errorf("not same site")
-	}
-
-	parts := strings.Split(strings.Trim(rawURL.Path, "/"), "/")
-	if len(parts) != 3 || parts[0] != "file" {
-		return 0, fmt.Errorf("invalid path")
-	}
-
-	id64, err := strconv.ParseInt(parts[1], 10, 32)
-	if err != nil {
-		return 0, err
-	}
-
-	return int32(id64), nil
-}
-
-func (server *Server) uploadImageFromURL(ctx context.Context, url string) UploadResult {
+func (server *Server) uploadImageFromURL(ctx context.Context, url string) fs.UploadResult {
 	data := request.MustLoadCommonData(ctx)
 
 	resp, err := http.Get(url)
 	if err != nil {
-		return UploadResult{Error: err}
+		return fs.UploadResult{Error: err}
 	}
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
-		return UploadResult{Error: fmt.Errorf("server response: %w", resp.StatusCode)}
+		return fs.UploadResult{Error: fmt.Errorf("server response: %w", resp.StatusCode)}
 	}
 
 	imgBin, err := io.ReadAll(resp.Body)
 	if err != nil {
-		return UploadResult{Error: err}
+		return fs.UploadResult{Error: err}
 	}
 
 	ct := resp.Header.Get("Content-Type")
 	if ct == "" {
-		return UploadResult{Error: fmt.Errorf("missing content type")}
+		return fs.UploadResult{Error: fmt.Errorf("missing content type")}
 	}
 	if !strings.HasPrefix(ct, "image/") {
-		return UploadResult{Error: fmt.Errorf("not an image: %s", ct)}
+		return fs.UploadResult{Error: fmt.Errorf("not an image: %s", ct)}
 	}
 
 	name := path.Base(resp.Request.URL.Path)

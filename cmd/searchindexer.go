@@ -11,6 +11,7 @@ import (
 
 	"github.com/fugleadvokatene/bino/internal/db"
 	"github.com/fugleadvokatene/bino/internal/gdrive"
+	"github.com/fugleadvokatene/bino/internal/sql"
 	"github.com/fugleadvokatene/bino/internal/view"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgtype"
@@ -71,7 +72,7 @@ func (w *GDriveWorker) searchIndexFolder(ctx context.Context, folderID string) {
 
 func (w *GDriveWorker) searchIndexFile(ctx context.Context, folder, file gdrive.Item) error {
 	// Initialize to be used in the extraData field
-	journalInfo := SearchJournalInfo{
+	journalInfo := db.SearchJournalInfo{
 		FolderURL:  string(folder.FolderURL()),
 		FolderName: folder.Name,
 	}
@@ -85,7 +86,7 @@ func (w *GDriveWorker) searchIndexFile(ctx context.Context, folder, file gdrive.
 	// Delete trashed files
 	if file.Trashed {
 		if info.didSearchEntryExist() {
-			if err := w.g.Queries.DeleteSearchEntry(ctx, db.DeleteSearchEntryParams{
+			if err := w.g.DB.Q.DeleteSearchEntry(ctx, sql.DeleteSearchEntryParams{
 				Namespace:     info.namespace,
 				AssociatedUrl: info.urlField,
 			}); err != nil {
@@ -98,7 +99,7 @@ func (w *GDriveWorker) searchIndexFile(ctx context.Context, folder, file gdrive.
 	// If search-entry is synced, only update extra-data
 	if info.didSearchEntryExist() && !file.ModifiedTime.After(info.dbUpdatedField.Time) {
 		if info.extraDataField.Valid {
-			tag, err := w.g.Queries.UpdateSearchMetadata(ctx, db.UpdateSearchMetadataParams{
+			tag, err := w.g.DB.Q.UpdateSearchMetadata(ctx, sql.UpdateSearchMetadataParams{
 				Namespace:     info.namespace,
 				AssociatedUrl: info.urlField,
 				ExtraData:     info.extraDataField,
@@ -117,7 +118,7 @@ func (w *GDriveWorker) searchIndexFile(ctx context.Context, folder, file gdrive.
 	journal, err := w.g.ExportDocument(file.ID)
 	if err != nil {
 		// On failure, create a skipped entry. It won't show up in search, but we also won't try to read the document later.
-		if err := w.g.Queries.UpsertSkippedSearchEntry(ctx, db.UpsertSkippedSearchEntryParams{
+		if err := w.g.DB.Q.UpsertSkippedSearchEntry(ctx, sql.UpsertSkippedSearchEntryParams{
 			Namespace:     info.namespace,
 			AssociatedUrl: info.urlField,
 			Updated:       info.fileUpdatedField,
@@ -134,7 +135,7 @@ func (w *GDriveWorker) searchIndexFile(ctx context.Context, folder, file gdrive.
 	}
 
 	// Create valid search entry
-	if err := w.g.Queries.UpsertSearchEntry(ctx, db.UpsertSearchEntryParams{
+	if err := w.g.DB.Q.UpsertSearchEntry(ctx, sql.UpsertSearchEntryParams{
 		Namespace:     info.namespace,
 		AssociatedUrl: info.urlField,
 		Updated:       info.fileUpdatedField,
@@ -167,11 +168,11 @@ func (sii *searchIndexInfo) didSearchEntryExist() bool {
 	return sii.dbUpdatedField.Valid
 }
 
-func (w *GDriveWorker) getSearchIndexInfo(ctx context.Context, file gdrive.Item, journalInfo SearchJournalInfo) (searchIndexInfo, error) {
+func (w *GDriveWorker) getSearchIndexInfo(ctx context.Context, file gdrive.Item, journalInfo db.SearchJournalInfo) (searchIndexInfo, error) {
 	var out searchIndexInfo
 
 	// See if there are existing patients
-	ids, err := w.g.Queries.GetPatientsByJournalURL(ctx, file.ID)
+	ids, err := w.g.DB.Q.GetPatientsByJournalURL(ctx, file.ID)
 	if err != nil {
 		return searchIndexInfo{}, fmt.Errorf("querying patients by journal URL: %w", err)
 	}
@@ -185,7 +186,7 @@ func (w *GDriveWorker) getSearchIndexInfo(ctx context.Context, file gdrive.Item,
 	if len(ids) == 1 {
 		out.namespace = "patient"
 		out.urlField.String = view.PatientURL(ids[0])
-		extraData = &SearchPatientInfo{
+		extraData = &db.SearchPatientInfo{
 			JournalInfo: journalInfo,
 			JournalURL:  file.DocumentURL(),
 		}
@@ -200,7 +201,7 @@ func (w *GDriveWorker) getSearchIndexInfo(ctx context.Context, file gdrive.Item,
 	}
 
 	// Get updated-time
-	if updatedField, err := w.g.Queries.GetSearchUpdatedTime(ctx, db.GetSearchUpdatedTimeParams{
+	if updatedField, err := w.g.DB.Q.GetSearchUpdatedTime(ctx, sql.GetSearchUpdatedTimeParams{
 		Namespace:     out.namespace,
 		AssociatedUrl: out.urlField,
 	}); err == nil {

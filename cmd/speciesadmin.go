@@ -4,7 +4,10 @@ import (
 	"net/http"
 
 	"github.com/fugleadvokatene/bino/internal/db"
+	"github.com/fugleadvokatene/bino/internal/handlers/handlererror"
+	"github.com/fugleadvokatene/bino/internal/handlers/handlerjson"
 	"github.com/fugleadvokatene/bino/internal/request"
+	"github.com/fugleadvokatene/bino/internal/sql"
 )
 
 type SpeciesLangs struct {
@@ -18,14 +21,14 @@ func (server *Server) postSpeciesHandler(w http.ResponseWriter, r *http.Request)
 		Latin     string
 		Languages map[int32]string
 	}
-	jsonHandler(server, w, r, func(q *db.Queries, req reqT) error {
+	handlerjson.Handler(server.DB, w, r, func(db *db.Database, req reqT) error {
 		ctx := r.Context()
-		id, err := q.AddSpecies(ctx, req.Latin)
+		id, err := db.Q.AddSpecies(ctx, req.Latin)
 		if err != nil {
 			return err
 		}
 		for langID, name := range req.Languages {
-			if err := q.UpsertSpeciesLanguage(ctx, db.UpsertSpeciesLanguageParams{
+			if err := db.Q.UpsertSpeciesLanguage(ctx, sql.UpsertSpeciesLanguageParams{
 				SpeciesID:  id,
 				LanguageID: langID,
 				Name:       name,
@@ -43,10 +46,10 @@ func (server *Server) putSpeciesHandler(w http.ResponseWriter, r *http.Request) 
 		Latin     string
 		Languages map[int32]string
 	}
-	jsonHandler(server, w, r, func(q *db.Queries, req reqT) error {
+	handlerjson.Handler(server.DB, w, r, func(db *db.Database, req reqT) error {
 		ctx := r.Context()
 		for langID, name := range req.Languages {
-			if err := q.UpsertSpeciesLanguage(ctx, db.UpsertSpeciesLanguageParams{
+			if err := db.Q.UpsertSpeciesLanguage(ctx, sql.UpsertSpeciesLanguageParams{
 				SpeciesID:  req.ID,
 				LanguageID: langID,
 				Name:       name,
@@ -62,15 +65,15 @@ func (server *Server) getSpeciesHandler(w http.ResponseWriter, r *http.Request) 
 	ctx := r.Context()
 	commonData := request.MustLoadCommonData(ctx)
 
-	rows, err := server.Queries.GetSpecies(ctx)
+	rows, err := server.DB.Q.GetSpecies(ctx)
 	if err != nil {
-		server.renderError(w, r, commonData, err)
+		handlererror.Error(w, r, err)
 		return
 	}
 
-	langRows, err := server.Queries.GetSpeciesLanguage(ctx)
+	langRows, err := server.DB.Q.GetSpeciesLanguage(ctx)
 	if err != nil {
-		server.renderError(w, r, commonData, err)
+		handlererror.Error(w, r, err)
 		return
 	}
 

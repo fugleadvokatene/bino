@@ -1,0 +1,29 @@
+package handlerdebug
+
+import (
+    "fmt"
+	"github.com/fugleadvokatene/bino/internal/debug"
+	"github.com/fugleadvokatene/bino/internal/request"
+    "github.com/fugleadvokatene/bino/internal/templbase"
+)
+
+templ DebugPage(data *request.CommonData, info []debug.DebugInfo) {
+	@templbase.Layout(data) {
+        <div class="card p-2">
+            <ul class="debug-top">
+                @DebugItems(data, info)
+            </ul>
+        </div>
+    }
+}
+
+templ DebugItems(data *request.CommonData, info []debug.DebugInfo) {
+    for _, child := range info {
+        <li class="debug-item">
+        <span class="debug-name">{child.Name}</span>: {fmt.Sprintf("%v", child.Value)}
+        <ul class="debug-list">
+            @DebugItems(data, child.Children)
+        </ul>
+        </li>
+    }
+}

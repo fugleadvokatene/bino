@@ -10,6 +10,7 @@ import (
 
 	"github.com/fugleadvokatene/bino/internal/enums"
 	"github.com/fugleadvokatene/bino/internal/gdrive"
+	"github.com/fugleadvokatene/bino/internal/generic"
 	"google.golang.org/api/drive/v3"
 )
 
@@ -469,7 +470,7 @@ func (w *GDriveWorker) handleRequestListFiles(req GDriveTaskRequest) GDriveTaskR
 		Type: enums.GDriveTaskRequestIDListFiles,
 		Payload: ListFilesResult{
 			Folder: folderItem,
-			Files: SliceToSlice(fileList.Files, func(in *drive.File) gdrive.Item {
+			Files: generic.SliceToSlice(fileList.Files, func(in *drive.File) gdrive.Item {
 				return GDriveItemFromFile(in, nil)
 			}),
 			NextPageToken: fileList.NextPageToken,

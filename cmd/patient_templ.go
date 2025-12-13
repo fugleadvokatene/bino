@@ -315,9 +315,9 @@ func PatientPage(ctx context.Context, data *request.CommonData, view view.Patien
 						return templ_7745c5c3_Err
 					}
 					var templ_7745c5c3_Var18 string
-					templ_7745c5c3_Var18, templ_7745c5c3_Err = templ.JoinStringErrs(data.Language.FormatEvent(ctx, event.EventID, event.AssociatedID))
+					templ_7745c5c3_Var18, templ_7745c5c3_Err = templ.JoinStringErrs(data.Language.FormatEvent(event.EventID, event.AssociatedID))
 					if templ_7745c5c3_Err != nil {
-						return templ.Error{Err: templ_7745c5c3_Err, FileName: `cmd/patient.templ`, Line: 69, Col: 94}
+						return templ.Error{Err: templ_7745c5c3_Err, FileName: `cmd/patient.templ`, Line: 69, Col: 89}
 					}
 					_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var18))
 					if templ_7745c5c3_Err != nil {

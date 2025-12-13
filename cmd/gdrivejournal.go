@@ -8,6 +8,7 @@ import (
 
 	"github.com/fugleadvokatene/bino/internal/enums"
 	"github.com/fugleadvokatene/bino/internal/gdrive"
+	"github.com/fugleadvokatene/bino/internal/generic"
 	"google.golang.org/api/docs/v1"
 )
 
@@ -53,7 +54,7 @@ func (vars *GDriveTemplateVars) Replacement(template enums.Template) string {
 }
 
 func (vars *GDriveTemplateVars) ReplaceRequests() *docs.BatchUpdateDocumentRequest {
-	requests := SliceToSlice(enums.TemplateValues(), func(t enums.Template) *docs.Request {
+	requests := generic.SliceToSlice(enums.TemplateValues(), func(t enums.Template) *docs.Request {
 		return &docs.Request{
 			ReplaceAllText: &docs.ReplaceAllTextRequest{
 				ContainsText: &docs.SubstringMatchCriteria{

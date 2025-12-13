@@ -4,7 +4,10 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/fugleadvokatene/bino/internal/background"
 	"github.com/fugleadvokatene/bino/internal/db"
+	"github.com/fugleadvokatene/bino/internal/fs"
+	"github.com/fugleadvokatene/bino/internal/sql"
 	"github.com/joho/godotenv"
 )
 
@@ -23,28 +26,28 @@ func main() {
 		panic(err)
 	}
 
-	conn, err := dbSetup(ctx)
+	conn, err := sql.Setup(ctx)
 	if err != nil {
 		panic(err)
 	}
 	defer conn.Close()
 
-	queries := db.New(conn)
+	db := &db.Database{Q: sql.New(conn)}
 
-	gdriveSA, err := NewGDriveWithServiceAccount(ctx, config.GoogleDrive, queries)
+	gdriveSA, err := NewGDriveWithServiceAccount(ctx, config.GoogleDrive, db)
 	if err != nil {
 		panic(err)
 	}
 	worker := NewGDriveWorker(ctx, config.GoogleDrive, gdriveSA)
 
-	fileBackend := NewLocalFileStorage(ctx, "file", "tmp")
+	fileBackend := fs.NewLocalFileStorage(ctx, "file", "tmp")
 
-	go background(ctx, queries, fileBackend, config.SystemLanguage)
+	background.StartJobs(ctx, db, fileBackend, config.SystemLanguage)
 
 	err = startServer(
 		ctx,
 		conn,
-		queries,
+		db,
 		worker,
 		fileBackend,
 		config,

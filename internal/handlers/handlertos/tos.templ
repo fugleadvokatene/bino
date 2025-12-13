@@ -1,0 +1,27 @@
+package handlertos
+
+import "github.com/fugleadvokatene/bino/internal/enums"
+import "github.com/fugleadvokatene/bino/internal/request"
+import "github.com/fugleadvokatene/bino/internal/templbase"
+
+templ TOS(data *request.CommonData) {
+    @templbase.Layout(data) {
+        if data.Language.ID == enums.LanguageIDEN {
+            <h1>Terms of Service</h1>
+        } else {
+            <h1>Bruksvilkår</h1>
+        }
+        @templbase.Card() {
+            if data.Language.ID == enums.LanguageIDEN {
+                <p>By logging into Bino, you agree to these terms of service:</p>
+                <p>1. The website is run according to Norwegian national law.</p>
+                <p>2. Your information is handled according to the <a href="/privacy">privacy policy</a>.</p>
+            } else {
+                <p>Ved å logge inn i Bino godtar du følgende vilkår for bruk:</p>
+                <p>1. Siden driftes i Norge, etter norske lover.</p>
+                <p>2. Opplysninger behandles i henhold til <a href="/privacy">personsvernserklæringen</a>.</p>
+            }
+        }
+    }
+}
+

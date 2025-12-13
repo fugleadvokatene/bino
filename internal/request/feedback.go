@@ -1,6 +1,8 @@
 package request
 
-import "github.com/fugleadvokatene/bino/internal/enums"
+import (
+	"github.com/fugleadvokatene/bino/internal/enums"
+)
 
 type Feedback struct {
 	Items    []FeedbackItem

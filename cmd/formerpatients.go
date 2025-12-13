@@ -3,8 +3,10 @@ package main
 import (
 	"net/http"
 
-	"github.com/fugleadvokatene/bino/internal/db"
+	"github.com/fugleadvokatene/bino/internal/generic"
+	"github.com/fugleadvokatene/bino/internal/handlers/handlererror"
 	"github.com/fugleadvokatene/bino/internal/request"
+	"github.com/fugleadvokatene/bino/internal/sql"
 	"github.com/fugleadvokatene/bino/internal/view"
 )
 
@@ -12,15 +14,15 @@ func (server *Server) formerPatientsHandler(w http.ResponseWriter, r *http.Reque
 	ctx := r.Context()
 	commonData := request.MustLoadCommonData(ctx)
 
-	patients, err := server.Queries.GetFormerPatients(ctx, commonData.Lang32())
+	patients, err := server.DB.Q.GetFormerPatients(ctx, commonData.Lang32())
 	if err != nil {
-		server.renderError(w, r, commonData, err)
+		handlererror.Error(w, r, err)
 		return
 	}
 
 	commonData.Subtitle = commonData.Language.FormerPatients
 
-	FormerPatients(commonData, SliceToSlice(patients, func(in db.GetFormerPatientsRow) view.Patient {
+	FormerPatients(commonData, generic.SliceToSlice(patients, func(in sql.GetFormerPatientsRow) view.Patient {
 		return in.ToPatientView()
 	})).Render(ctx, w)
 }

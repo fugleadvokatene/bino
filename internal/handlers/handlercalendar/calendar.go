@@ -8,14 +8,11 @@ import (
 	"time"
 
 	"github.com/fugleadvokatene/bino/internal/calendar"
+	"github.com/fugleadvokatene/bino/internal/language"
 	"github.com/fugleadvokatene/bino/internal/request"
 )
 
-type Backend interface {
-	GetUnavailablePeriodsInRange(ctx context.Context, start, end time.Time) ([]calendar.Event, error)
-}
-
-func Handler(w http.ResponseWriter, r *http.Request) {
+func Page(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	commonData := request.MustLoadCommonData(ctx)
 
@@ -33,14 +30,54 @@ func Handler(w http.ResponseWriter, r *http.Request) {
 	_ = CalendarPage(commonData, initialtime, initialview).Render(ctx, w)
 }
 
-func AjaxCalendarAway(w http.ResponseWriter, r *http.Request, backend Backend) {
+type AjaxCalendarAway struct {
+	Backend interface {
+		GetUnavailablePeriodsInRange(ctx context.Context, start, end time.Time, lang *language.Language) ([]calendar.Event, error)
+	}
+}
+
+func (h *AjaxCalendarAway) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	commonData := request.MustLoadCommonData(ctx)
+
 	start, end, err := CalendarRange(r)
 	if err != nil {
 		request.LogError(r, err)
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
-	out, err := backend.GetUnavailablePeriodsInRange(r.Context(), start, end)
+	out, err := h.Backend.GetUnavailablePeriodsInRange(r.Context(), start, end, commonData.Language)
+	if err != nil {
+		request.LogError(r, err)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+	bin, err := json.Marshal(out)
+	if err != nil {
+		request.LogError(r, err)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+	w.Write(bin)
+}
+
+type AjaxCalendarPatientEvents struct {
+	Backend interface {
+		GetEventsForCalendar(ctx context.Context, start, end time.Time, lang *language.Language) ([]calendar.Event, error)
+	}
+}
+
+func (h *AjaxCalendarPatientEvents) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	commonData := request.MustLoadCommonData(ctx)
+
+	start, end, err := CalendarRange(r)
+	if err != nil {
+		request.LogError(r, err)
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+	out, err := h.Backend.GetEventsForCalendar(ctx, start, end, commonData.Language)
 	if err != nil {
 		request.LogError(r, err)
 		w.WriteHeader(http.StatusInternalServerError)

@@ -7,6 +7,7 @@ import (
 	"net/http"
 
 	"github.com/fugleadvokatene/bino/internal/gdrive"
+	"github.com/fugleadvokatene/bino/internal/handlers/handlererror"
 	"github.com/fugleadvokatene/bino/internal/request"
 	"github.com/fugleadvokatene/bino/internal/view"
 )
@@ -20,7 +21,7 @@ func (s *Server) getGDriveHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) getExtraBinoUsers(ctx context.Context, selectedDir gdrive.Item) map[string]view.User {
-	users := s.getUserViews(ctx)
+	users := request.EmailToUserMapping(ctx, s.DB)
 	extraUsers := maps.Clone(users)
 	for _, perm := range selectedDir.Permissions {
 		if !perm.CanWrite() {
@@ -35,22 +36,22 @@ func (s *Server) getExtraBinoUsers(ctx context.Context, selectedDir gdrive.Item)
 	return extraUsers
 }
 
-func (s *Server) gdriveInviteUserHandler(w http.ResponseWriter, r *http.Request) {
+func (server *Server) gdriveInviteUserHandler(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	commonData := request.MustLoadCommonData(ctx)
 
-	email, err := s.getPathValue(r, "email")
+	email, err := request.GetPathValue(r, "email")
 	if err != nil {
-		s.renderError(w, r, commonData, err)
+		handlererror.Error(w, r, err)
 		return
 	}
 
-	if err := s.GDriveWorker.InviteUser(s.Config.GoogleDrive.JournalFolder, email, "writer"); err != nil {
-		s.renderError(w, r, commonData, fmt.Errorf("inviting user: %w", err))
+	if err := server.GDriveWorker.InviteUser(server.Config.GoogleDrive.JournalFolder, email, "writer"); err != nil {
+		handlererror.Error(w, r, fmt.Errorf("inviting user: %w", err))
 		return
 	}
 
 	commonData.Success(commonData.Language.GDriveUserInvited)
 
-	s.redirect(w, r, "/gdrive")
+	request.Redirect(w, r, "/gdrive")
 }

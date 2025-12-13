@@ -8,7 +8,10 @@ import (
 
 	"github.com/fugleadvokatene/bino/internal/db"
 	"github.com/fugleadvokatene/bino/internal/enums"
+	"github.com/fugleadvokatene/bino/internal/gdrive"
+	"github.com/fugleadvokatene/bino/internal/generic"
 	"github.com/fugleadvokatene/bino/internal/request"
+	"github.com/fugleadvokatene/bino/internal/sql"
 	"github.com/fugleadvokatene/bino/internal/view"
 	"github.com/jackc/pgx/v5/pgtype"
 )
@@ -35,7 +38,7 @@ func (server *Server) getImportHandler(w http.ResponseWriter, r *http.Request) {
 	commonData.Subtitle = commonData.Language.ImportHeader
 
 	var ir ImportRequest
-	server.getCookie(w, r, "import-request", &ir)
+	server.Cookies.Get(r, "import-request", "json", &ir)
 
 	_ = ImportPage(commonData, ir).Render(ctx, w)
 }
@@ -47,9 +50,8 @@ func (server *Server) postImportHandler(w http.ResponseWriter, r *http.Request) 
 	result := server.parseImportForm(r)
 	if result.OK {
 		var patientsRequiringJournal []int32
-
-		if err := server.Transaction(ctx, func(ctx context.Context, q *db.Queries) error {
-			addPatientParams := db.AddPatientsParams{}
+		_ = server.Transaction(ctx, func(ctx context.Context, db *db.Database) error {
+			addPatientParams := sql.AddPatientsParams{}
 			for _, patient := range result.Patients {
 				addPatientParams.CurrHomeID = append(addPatientParams.CurrHomeID, patient.HomeID)
 				addPatientParams.Species = append(addPatientParams.Species, patient.SpeciesID)
@@ -59,12 +61,12 @@ func (server *Server) postImportHandler(w http.ResponseWriter, r *http.Request) 
 
 			}
 
-			if ids, err := q.AddPatients(ctx, addPatientParams); err != nil {
+			if ids, err := db.Q.AddPatients(ctx, addPatientParams); err != nil {
 				result.Notes = []string{fmt.Sprintf("Error adding patients: %v", err)}
 				return err
 			} else {
 				result.Notes = []string{fmt.Sprintf("Added %d patients", len(ids))}
-				addPatientRegisteredEventsParams := db.AddPatientRegisteredEventsParams{
+				addPatientRegisteredEventsParams := sql.AddPatientRegisteredEventsParams{
 					EventID:   int32(enums.EventRegistered),
 					AppuserID: commonData.User.AppuserID,
 				}
@@ -76,28 +78,20 @@ func (server *Server) postImportHandler(w http.ResponseWriter, r *http.Request) 
 						patientsRequiringJournal = append(patientsRequiringJournal, id)
 					}
 				}
-				if err := q.AddPatientRegisteredEvents(ctx, addPatientRegisteredEventsParams); err != nil {
+				if err := db.Q.AddPatientRegisteredEvents(ctx, addPatientRegisteredEventsParams); err != nil {
 					result.Notes = []string{fmt.Sprintf("Error adding registration events for patients: %v", err)}
 					return err
 				}
 			}
 			return nil
-		}); err == nil {
-			if len(patientsRequiringJournal) > 0 {
-				result.Notes = append(result.Notes, fmt.Sprintf("Creating %d journals in the background...", len(patientsRequiringJournal)))
-				go server.tryCreateJournals(patientsRequiringJournal)
-			}
-		}
+		})
 	}
 
-	if err := server.setCookie(w, r, "import-request", &result); err != nil {
+	if err := server.Cookies.Set(w, r, "import-request", "json", &result); err != nil {
 		request.LogR(r, "setting import-request cookie: %w")
 	}
 
-	server.redirect(w, r, "/import")
-}
-
-func (server *Server) tryCreateJournals(ids []int32) {
+	request.Redirect(w, r, "/import")
 }
 
 func (server *Server) ajaxImportValidateHandler(w http.ResponseWriter, r *http.Request) {
@@ -105,7 +99,7 @@ func (server *Server) ajaxImportValidateHandler(w http.ResponseWriter, r *http.R
 	commonData := request.MustLoadCommonData(ctx)
 
 	result := server.parseImportForm(r)
-	if err := server.setCookie(w, r, "import-request", &result); err != nil {
+	if err := server.Cookies.Set(w, r, "import-request", "json", &result); err != nil {
 		request.LogR(r, "setting import-request cookie from AJAX: %w")
 	}
 
@@ -118,16 +112,16 @@ func (server *Server) parseImportForm(r *http.Request) ImportRequest {
 
 	out := ImportRequest{}
 
-	txt, err := server.getFormValue(r, "txt")
+	txt, err := request.GetFormValue(r, "txt")
 	if err != nil {
 		out.Notes = append(out.Notes, err.Error())
 		return out
 	}
 	out.Txt = txt
 
-	lines := SliceToSlice(strings.Split(strings.TrimSpace(txt), "\n"), strings.TrimSpace)
+	lines := generic.SliceToSlice(strings.Split(strings.TrimSpace(txt), "\n"), strings.TrimSpace)
 	for i, line := range lines {
-		fields := SliceToSlice(strings.Split(line, ","), strings.TrimSpace)
+		fields := generic.SliceToSlice(strings.Split(line, ","), strings.TrimSpace)
 		if n := len(fields); n < 2 || n > 4 {
 			out.Notes = append(out.Notes, fmt.Sprintf("line %d: expect 2-4 fields, have %d", i, n))
 			return out
@@ -154,13 +148,13 @@ func (server *Server) parseImportForm(r *http.Request) ImportRequest {
 		}
 		url := ""
 		if len(fields) >= 4 {
-			url = journalRegex.FindString(fields[3])
+			url = gdrive.JournalRegex.FindString(fields[3])
 			if url == "" {
 				out.Notes = append(out.Notes, fmt.Sprintf("line %d: '%s' doesn't seem like a journal URL", i, fields[3]))
 			}
 		}
 
-		homes, err := server.Queries.GetHomeByName(ctx, homeName)
+		homes, err := server.DB.Q.GetHomeByName(ctx, homeName)
 		if err != nil {
 			out.Notes = append(out.Notes, fmt.Sprintf("line %d: no home named '%s'", i, homeName))
 			return out
@@ -170,7 +164,7 @@ func (server *Server) parseImportForm(r *http.Request) ImportRequest {
 			return out
 		}
 		homeID := homes[0].ID
-		species, err := server.Queries.GetSpeciesByName(ctx, speciesName)
+		species, err := server.DB.Q.GetSpeciesByName(ctx, speciesName)
 		if err != nil {
 			out.Notes = append(out.Notes, fmt.Sprintf("line %d: no species named '%s'", i, speciesName))
 			return out
@@ -182,7 +176,7 @@ func (server *Server) parseImportForm(r *http.Request) ImportRequest {
 		}
 		speciesID := species[0]
 
-		if rows, err := server.Queries.GetCurrentPatientsForHome(ctx, db.GetCurrentPatientsForHomeParams{
+		if rows, err := server.DB.Q.GetCurrentPatientsForHome(ctx, sql.GetCurrentPatientsForHomeParams{
 			CurrHomeID: pgtype.Int4{Int32: homeID, Valid: true},
 			LanguageID: commonData.Lang32(),
 		}); err == nil {
@@ -197,7 +191,7 @@ func (server *Server) parseImportForm(r *http.Request) ImportRequest {
 		if url == "" {
 			out.Notes = append(out.Notes, fmt.Sprintf("line %d: will create a new journal for %s", i, patientName))
 		} else {
-			if patients, err := server.Queries.GetPatientsByJournalURL(ctx, url); err == nil && len(patients) > 0 {
+			if patients, err := server.DB.Q.GetPatientsByJournalURL(ctx, url); err == nil && len(patients) > 0 {
 				out.Notes = append(out.Notes, fmt.Sprintf("line %d: there is already a registered patient with this journal URL: %s", i, view.PatientURL(patients[0])))
 				return out
 			}

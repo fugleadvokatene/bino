@@ -414,7 +414,7 @@ func (server *Server) GDrivePermissionOverview(
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
-				if view := server.lookupUserByEmail(ctx, p.Email); view.Valid() {
+				if view := request.LookupUserByEmail(ctx, server.DB, p.Email); view.Valid() {
 					templ_7745c5c3_Err = Avatar(view).Render(ctx, templ_7745c5c3_Buffer)
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err
