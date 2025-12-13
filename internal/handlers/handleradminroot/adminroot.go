@@ -6,7 +6,10 @@ import (
 	"github.com/fugleadvokatene/bino/internal/request"
 )
 
-func Handler(w http.ResponseWriter, r *http.Request) {
+type Handler struct {
+}
+
+func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	commonData := request.MustLoadCommonData(ctx)
 

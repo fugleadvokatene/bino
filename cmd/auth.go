@@ -13,9 +13,9 @@ import (
 
 	"github.com/fugleadvokatene/bino/internal/capabilities"
 	"github.com/fugleadvokatene/bino/internal/db"
-	"github.com/fugleadvokatene/bino/internal/enums"
 	"github.com/fugleadvokatene/bino/internal/handlers/handleraccess"
 	"github.com/fugleadvokatene/bino/internal/language"
+	"github.com/fugleadvokatene/bino/internal/model"
 	"github.com/fugleadvokatene/bino/internal/request"
 	"github.com/fugleadvokatene/bino/internal/sql"
 	"github.com/jackc/pgx/v5/pgtype"
@@ -76,7 +76,7 @@ func (server *Server) tryLogin(f http.Handler, onLoggedIn func(f http.Handler) h
 	})
 }
 
-func (server *Server) requireAccessLevel(al enums.AccessLevel) Middleware {
+func (server *Server) requireAccessLevel(al model.AccessLevel) Middleware {
 	return func(f http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			ctx := r.Context()
@@ -91,7 +91,7 @@ func (server *Server) requireAccessLevel(al enums.AccessLevel) Middleware {
 	}
 }
 
-func (server *Server) requireCapability(cap enums.Cap) Middleware {
+func (server *Server) requireCapability(cap model.Cap) Middleware {
 	al, ok := capabilities.RequiredAccessLevel[cap]
 	if !ok {
 		panic(fmt.Errorf("no access level for %s", cap.String()))
@@ -126,7 +126,7 @@ func (server *Server) authenticate(w http.ResponseWriter, r *http.Request) (requ
 		HasGDriveAccess: user.HasGdriveAccess,
 		PreferredHome:   preferredHome.ToHomeView(),
 		LoggingConsent:  loggingConsent,
-		AccessLevel:     enums.AccessLevel(user.AccessLevel),
+		AccessLevel:     model.AccessLevel(user.AccessLevel),
 	}
 
 	commonData := request.CommonData{
@@ -139,7 +139,7 @@ func (server *Server) authenticate(w http.ResponseWriter, r *http.Request) (requ
 		if val[0] == "LoggedOut" {
 			commonData.User = nil
 		}
-		if demotedAccessLevel, err := enums.ParseAccessLevel(val[0]); err == nil && commonData.User.AccessLevel >= demotedAccessLevel {
+		if demotedAccessLevel, err := model.ParseAccessLevel(val[0]); err == nil && commonData.User.AccessLevel >= demotedAccessLevel {
 			commonData.User.AccessLevel = demotedAccessLevel
 		}
 	}
@@ -310,13 +310,13 @@ func (server *Server) callbackHandler(
 		}
 	} else if invitation, err := server.DB.Q.GetInvitation(ctx, pgtype.Text{String: claims.Email, Valid: true}); err == nil {
 		// User has been invited; create user
-		if server.Transaction(ctx, func(ctx context.Context, db *db.Database) error {
+		if server.DB.Transaction(ctx, func(ctx context.Context, db *db.Database) error {
 			if createdUserID, err := server.DB.Q.CreateUser(ctx, sql.CreateUserParams{
 				DisplayName: claims.Name,
 				Email:       claims.Email,
 				GoogleSub:   claims.Sub,
 				AvatarUrl:   pgtype.Text{String: claims.Picture, Valid: claims.Picture != ""},
-				AccessLevel: int32(enums.AccessLevelCoordinator),
+				AccessLevel: int32(model.AccessLevelCoordinator),
 			}); err != nil {
 				return err
 			} else {

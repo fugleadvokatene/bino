@@ -8,7 +8,7 @@ package handlertos
 import "github.com/a-h/templ"
 import templruntime "github.com/a-h/templ/runtime"
 
-import "github.com/fugleadvokatene/bino/internal/enums"
+import "github.com/fugleadvokatene/bino/internal/model"
 import "github.com/fugleadvokatene/bino/internal/request"
 import "github.com/fugleadvokatene/bino/internal/templbase"
 
@@ -45,7 +45,7 @@ func TOS(data *request.CommonData) templ.Component {
 				}()
 			}
 			ctx = templ.InitializeContext(ctx)
-			if data.Language.ID == enums.LanguageIDEN {
+			if data.Language.ID == model.LanguageIDEN {
 				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<h1>Terms of Service</h1>")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
@@ -72,7 +72,7 @@ func TOS(data *request.CommonData) templ.Component {
 					}()
 				}
 				ctx = templ.InitializeContext(ctx)
-				if data.Language.ID == enums.LanguageIDEN {
+				if data.Language.ID == model.LanguageIDEN {
 					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 4, "<p>By logging into Bino, you agree to these terms of service:</p><p>1. The website is run according to Norwegian national law.</p><p>2. Your information is handled according to the <a href=\"/privacy\">privacy policy</a>.</p>")
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err

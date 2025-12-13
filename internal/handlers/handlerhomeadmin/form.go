@@ -1,0 +1,93 @@
+package handlerhomeadmin
+
+import (
+	"context"
+	"fmt"
+	"net/http"
+	"strconv"
+
+	"github.com/fugleadvokatene/bino/internal/db"
+	"github.com/fugleadvokatene/bino/internal/handlers/handlererror"
+	"github.com/fugleadvokatene/bino/internal/request"
+	"github.com/fugleadvokatene/bino/internal/sql"
+)
+
+type Form struct {
+	DB *db.Database
+}
+
+func (h *Form) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	formID, err := request.GetFormValue(r, "form-id")
+	if err != nil {
+		handlererror.Error(w, r, err)
+		return
+	}
+
+	switch formID {
+	case "create-home":
+		h.postHomeCreateHome(w, r)
+	case "add-user":
+		h.postHomeAddUser(w, r)
+	default:
+		handlererror.Error(w, r, fmt.Errorf("unknown form ID: '%s'", formID))
+	}
+}
+
+func (h *Form) postHomeCreateHome(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
+	name, err := request.GetFormValue(r, "name")
+	if err != nil {
+		handlererror.Error(w, r, err)
+		return
+	}
+
+	err = h.DB.Q.InsertHome(ctx, name)
+	if err != nil {
+		handlererror.Error(w, r, err)
+		return
+	}
+
+	request.RedirectToReferer(w, r)
+}
+
+func (h *Form) postHomeAddUser(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
+	optionalFields, _ := request.GetFormValues(r, "remove-from-current", "curr-home-id")
+	currentStr := optionalFields["curr-home-id"]
+	currentHomeID, err := strconv.ParseInt(currentStr, 10, 32)
+	removeFromCurrent := err == nil && optionalFields["remove-from-current"] == "on"
+
+	fields, err := request.GetFormIDs(r, "home-id", "user-id")
+	if err != nil {
+		handlererror.Error(w, r, err)
+		return
+	}
+	userID, homeID := fields["user-id"], fields["home-id"]
+
+	if err := h.DB.Transaction(ctx, func(ctx context.Context, db *db.Database) error {
+		if homeID > 0 {
+			if err := h.DB.Q.AddUserToHome(ctx, sql.AddUserToHomeParams{
+				HomeID:    int32(homeID),
+				AppuserID: int32(userID),
+			}); err != nil {
+				return fmt.Errorf("adding user to home: %w", err)
+			}
+		}
+		if removeFromCurrent {
+			if err := h.DB.Q.RemoveUserFromHome(ctx, sql.RemoveUserFromHomeParams{
+				HomeID:    int32(currentHomeID),
+				AppuserID: int32(userID),
+			}); err != nil {
+				return fmt.Errorf("removing user from home: %w", err)
+			}
+		}
+		return nil
+	}); err != nil {
+		handlererror.Error(w, r, fmt.Errorf("failed to add user: %w", err))
+		return
+	}
+
+	request.RedirectToReferer(w, r)
+}

@@ -1,6 +1,6 @@
 package handleraccess
 
-import "github.com/fugleadvokatene/bino/internal/enums"
+import "github.com/fugleadvokatene/bino/internal/model"
 import "github.com/fugleadvokatene/bino/internal/request"
 import "github.com/fugleadvokatene/bino/internal/capabilities"
 import "github.com/fugleadvokatene/bino/internal/templbase"
@@ -10,25 +10,25 @@ templ AccessLevelPage(data *request.CommonData) {
         <div class="card p-2">
             <p>{data.Language.CapabilitiesYourAccessLevelIs} <strong>{int(data.User.AccessLevel)} - {data.Language.AccessLevels[data.User.AccessLevel]}</strong></p>
             <p>{data.Language.CapabilitiesExplanation}</p>
-            <h3>{data.Language.AccessLevels[enums.AccessLevelNone]}</h3>
+            <h3>{data.Language.AccessLevels[model.AccessLevelNone]}</h3>
             <ul>
                 for _, cap := range capabilities.AccessLevelToCapabilities.None {
                     <li>{data.Language.Capabilities[cap]}</li>
                 }
             </ul>
-            <h3>{data.Language.AccessLevels[enums.AccessLevelRehabber]}</h3>
+            <h3>{data.Language.AccessLevels[model.AccessLevelRehabber]}</h3>
             <ul>
                 for _, cap := range capabilities.AccessLevelToCapabilities.Rehabber {
                     <li>{data.Language.Capabilities[cap]}</li>
                 }
             </ul>
-            <h3>{data.Language.AccessLevels[enums.AccessLevelCoordinator]}</h3>
+            <h3>{data.Language.AccessLevels[model.AccessLevelCoordinator]}</h3>
             <ul>
                 for _, cap := range capabilities.AccessLevelToCapabilities.Coordinator {
                     <li>{data.Language.Capabilities[cap]}</li>
                 }
             </ul>
-            <h3>{data.Language.AccessLevels[enums.AccessLevelAdmin]}</h3>
+            <h3>{data.Language.AccessLevels[model.AccessLevelAdmin]}</h3>
             <ul>
                 for _, cap := range capabilities.AccessLevelToCapabilities.Admin {
                     <li>{data.Language.Capabilities[cap]}</li>

@@ -1,9 +1,9 @@
 package handlerprivacy
 
 import (
-	"context"
 	"net/http"
 
+	"github.com/fugleadvokatene/bino/internal/db"
 	"github.com/fugleadvokatene/bino/internal/handlers/handlererror"
 	"github.com/fugleadvokatene/bino/internal/privacy"
 	"github.com/fugleadvokatene/bino/internal/request"
@@ -21,10 +21,8 @@ func (h *Page) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 }
 
 type Form struct {
-	Config  privacy.Config
-	Backend interface {
-		SetLoggingConsent(ctx context.Context, user int32, consented bool, days int32) error
-	}
+	Config privacy.Config
+	DB     *db.Database
 }
 
 func (h *Form) ServeHTTP(w http.ResponseWriter, r *http.Request) {
@@ -33,7 +31,7 @@ func (h *Form) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	consent := request.GetCheckboxValue(r, "logging-consent")
 
-	err := h.Backend.SetLoggingConsent(ctx, commonData.User.AppuserID, consent, h.Config.RevokeConsentPolicy)
+	err := h.DB.SetLoggingConsent(ctx, commonData.User.AppuserID, consent, h.Config.RevokeConsentPolicy)
 
 	if err != nil {
 		handlererror.Error(w, r, err)

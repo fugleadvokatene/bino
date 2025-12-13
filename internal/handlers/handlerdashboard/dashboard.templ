@@ -1,0 +1,227 @@
+package handlerdashboard
+
+import (
+    "strings"
+	"github.com/fugleadvokatene/bino/internal/model"
+	"github.com/fugleadvokatene/bino/internal/request"
+    "github.com/fugleadvokatene/bino/internal/templbase"
+	"github.com/fugleadvokatene/bino/internal/handlers/handlerpatient"
+	"github.com/fugleadvokatene/bino/internal/handlers/handlerhome"
+)
+
+templ DashboardPage(
+    data *request.CommonData,
+    defaultSelectedSpecies int32,
+    selfHome *model.Home,
+    homes []model.Home,
+) {
+	@templbase.Layout(data, "dashboard-container") {
+        <div class="dashboard-left-sidebar">
+            @DashboardForm(data, defaultSelectedSpecies, selfHome, homes)
+            @DashboardSearch(data)
+            <div class="mascot-container">
+                <img class="mascot shadow-sm" src={data.StaticFile("mascot.jpg")}>
+            </div>
+        </div>
+        if selfHome.ID != 0 {
+            @DashboardSelf(data, selfHome, homes)
+        }
+        @DashboardHomes(data, homes)
+    }
+
+    @templbase.JSModule(data, "dashboard")
+    @templbase.JSModule(data, "reorder-patients")
+}
+
+templ DashboardSearch(data *request.CommonData) {
+    @templbase.Card("dashboard-search", "shadow-sm", "mb-2") {
+        <fieldset>
+            <legend for="dashboard-search">{data.Language.DashboardSearch}</legend>
+            <label class="small">{data.Language.DashboardSearchExplanation}</label>
+            <form-group class="form-group">
+                <input autocomplete="off" class="form-control search" id="dashboard-search"></input>
+            </form-group>
+            <label class="small suggestion">
+                {data.Language.YouCanAlso}
+                <a href="/former-patients">{data.Language.ViewFormerPatients}</a>
+                {data.Language.Or}
+                <a href="/search">{data.Language.SearchInJournals}</a>.
+            </label>
+        </fieldset>
+    }
+
+    // not ready
+    if false {
+        @templbase.Card("dashboard-filter", "shadow-sm") {
+            <fieldset>
+                <legend>{data.Language.DashboardSearchFilter}</legend>
+                @DashboardSearchCheckbox(
+                    "ds-show-me",
+                    data.Language.DashboardSearchShowMine,
+                    true,
+                )
+                @DashboardSearchCheckbox(
+                    "ds-show-full",
+                    data.Language.DashboardSearchShowFull,
+                    true,
+                )
+                @DashboardSearchCheckbox(
+                    "ds-show-unavailable",
+                    data.Language.DashboardSearchShowUnavailable,
+                    true,
+                )
+            </fieldset>
+
+            <fieldset>
+                <legend>{data.Language.HomeAvailability}</legend>
+                <div>
+                    <label for="ds-availability-from">
+                        {data.Language.GenericFrom}
+                    </label>
+                    <input class="form-control" autocomplete="off" type="date" name="ds-availability-from" id="ds-availability-from">
+                    <label for="ds-availability-to">
+                        {data.Language.GenericTo}
+                    </label>
+                    <input class="form-control" autocomplete="off" type="date" name="ds-availability-to" id="ds-availability-to">
+                </div>
+            </fieldset>
+        }
+    }
+  
+}
+
+templ DashboardSearchCheckbox(id, text string, checked bool) {
+    <div class="form-group">
+        <div class="form-check-inline">
+            <input autocomplete="off" type="checkbox" name={id} id={id} checked?={checked}>
+            <label for={id}>
+                {text}
+            </label>
+        </div>
+    </div>
+}
+
+templ DashboardForm(
+    data *request.CommonData,
+    defaultSelectedSpecies int32,
+    selfHome *model.Home,
+    homes []model.Home,
+) {
+    @templbase.Card("dashboard-form", "shadow-sm") {
+        @templbase.Form("/checkin", "POST") {
+            <legend for="dashboard-form">{data.Language.CheckinLegend}</legend>
+            <div class="form-group">
+                <label>{data.Language.CheckinPatientName}</label>
+                <input class="form-control" name="name">
+            </div>
+            <div class="form-row d-flex justify-content-between gap-2 mb-2">
+                <div class="form-group">
+                    <label>{data.Language.GenericSpecies}</label>
+                    <select autocomplete="off" class="form-control form-select" name="species">
+                        <option value="" disabled selected>{data.Language.DashboardSelectSpecies}</option>
+                        <optgroup label={data.Language.HomePreferredSpecies}>
+                            for _, sp := range selfHome.PreferredSpecies {
+                                <option value={sp.ID} selected?={sp.ID == defaultSelectedSpecies}>{sp.Name}</option>
+                            }
+                        </optgroup>
+                        <optgroup label={data.Language.DashboardNonPreferredSpecies}>
+                            for _, sp := range selfHome.NonPreferredSpecies {
+                                <option value={sp.ID} selected?={sp.ID == defaultSelectedSpecies}>{sp.Name}</option>
+                            }
+                        </optgroup>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="patient-home">{data.Language.HomesHomeName}</label>
+                    <select autocomplete="off" class="form-control form-select" name="home">
+                        <option value="" disabled selected>{data.Language.DashboardSelectHome}</option>
+                        if data.User.PreferredHome.ID != 0 {
+                            <option value={data.User.PreferredHome.ID} selected>{data.User.PreferredHome.Name}</option>
+                        }
+                        <optgroup label={data.Language.DashboardOtherHome}>
+                            for _, home := range homes {
+                                <option value={home.ID}>{home.Name}</option>
+                            }
+                        </optgroup>
+                    </select>
+                </div>
+            </div>
+           
+            <div class="form-group">
+                <div class="form-check-inline">
+                    <input autocomplete="off" type="checkbox" name="create-journal" id="create-journal" checked>
+                    <label for="create-journal">
+                        {data.Language.GDriveCreateJournalForPatient}
+                    </label>
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <button type="submit" disabled?={data.User.PreferredHome.ID == 0} class="b-create-patient btn btn-success">{data.Language.CheckinCheckInPatient}</button>
+            </div>
+
+            if data.User.PreferredHome.ID == 0 {
+                <p class="small m-0">{data.Language.CheckinYouAreHomeless}</p>
+            }
+        }
+    }
+}
+
+templ DashboardSelf(data *request.CommonData,selfHome *model.Home, homes []model.Home) {
+    <div class="dashboard dashboard-self shadow-sm">
+        <div class="dashboard-home card">
+            @DashboardHomeCard(data, homes, selfHome)
+        </div>
+    </div>
+}
+
+templ DashboardHomes(data *request.CommonData, homes []model.Home) {
+    <div class="dashboard-indicator invisible" id="dashboard-indicator-left"></div>
+    <div class="dashboard search-container">
+        for _, home := range homes {
+            <div class="dashboard-home card filter-box"> 
+                @DashboardHomeCard(data, homes, &home)
+            </div>
+        }
+        <div id="filter-none" hidden>No results found</div>
+    </div>
+    <div class="dashboard-indicator invisible" id="dashboard-indicator-right"></div>
+}
+
+
+templ DashboardHomeCard(data *request.CommonData, homes []model.Home, home *model.Home) {
+    <div class="card-header d-flex justify-content-between">
+        <a href={home.URL()} class="filter-content">{home.Name} — <span class={"occupancy", home.OccupancyClass()}>{len(home.Patients)} / {home.Capacity}</span></a>
+        <div>
+            for _, u := range home.Users {
+                @templbase.Avatar(u)
+            }
+        </div>
+    </div>
+    if _, availability := data.Language.AvailabilityString(home.UnavailablePeriods); true {
+        <div class="card-header small fw-normal">
+            <p class="mb-0 filter-content">{availability}</p>
+        </div>
+    }
+    if data.User.PreferredHome.ID == home.ID || data.User.AccessLevel >= model.AccessLevelCoordinator {
+        <div class="card-header d-flex justify-content-between">
+                @handlerhome.CapacityForm(data, home)
+        </div>
+    }
+    <div class="card-header small fw-normal">
+        <div class={"mb-0", "filter-content", templbase.ClassIf(data.User.HasHomeOrAccess(home.ID, model.AccessLevelCoordinator), "editable", "editable-lg")} data-action={home.URLSuffix("set-note")}>
+            <div class="d-block">
+                for _, p := range strings.Split(home.Note, "\n") {
+                    <p class="home-note">{p}</p>
+                }
+            </div>
+        </div>
+    </div>
+    <div class="card-content dashboard-patient-list" data-home={home.ID}>
+        if len(home.Patients) > 0 {
+            for _, patient := range home.Patients {
+                @handlerpatient.PatientCard(data, homes, home, patient)
+            }
+        }
+    </div>
+}

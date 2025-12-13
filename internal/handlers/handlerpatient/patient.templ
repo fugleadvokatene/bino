@@ -1,0 +1,257 @@
+package handlerpatient
+
+import (
+    "context"
+
+	"github.com/fugleadvokatene/bino/internal/model"
+	"github.com/fugleadvokatene/bino/internal/request"
+	"github.com/fugleadvokatene/bino/internal/templbase"
+	"github.com/fugleadvokatene/bino/internal/handlers/handlercalendar"
+)
+
+templ PatientPage(ctx context.Context, data *request.CommonData, page model.PatientPage) {
+	@templbase.Layout(data, "patient-page") {
+        <h1 class="editable" data-action={page.Patient.URLSuffix("set-name")}>{page.Patient.Name}</h1>
+        @templbase.Card() {
+            <h2>Personalia</h2>
+            <table class="table table-bordered mb-2">
+            <tbody>
+                <tr>
+                    <th>{data.Language.PatientRegisteredTime}</th>
+                    <td>@handlercalendar.CalendarLinkAbs(data.Language, page.Patient.TimeCheckin, "listDay")</td>
+                </tr>
+                <tr>
+                    <th>{data.Language.GenericStatus}</th>
+                    <td>{data.Language.Status[model.Status(page.Patient.Status)]}</td>
+                </tr>
+                <tr>
+                    <th>{data.Language.GenericSpecies}</th>
+                    <td>{page.Patient.Species}</td>
+                </tr>
+                if page.Home != nil {
+                    <tr>
+                        <th>{data.Language.GenericHome}</th>
+                        <td>{page.Home.Name}</td>
+                    </tr>
+                }
+            </tbody>
+            </table>
+
+            <h2>Oppdater</h2>
+            <table class="patient-table table table-bordered mb-2">
+                <tbody>
+                    @PatientJournalUpdate(data, page.Patient, true)
+
+                    if !model.IsCheckoutStatus[model.Status(page.Patient.Status)] {
+                        @PatientMove(data, page.Homes, page.Home, page.Patient)
+                        @PatientCheckout(data, page.Patient)
+                    }
+                </tbody>
+            </table>
+
+            <h2>Historikk</h2>
+            <table class="table table-bordered table-sm table-striped">
+            <thead>
+                <th>{data.Language.PatientEventTime}</th>
+                <th>{data.Language.PatientEventUser}</th>
+                <th>{data.Language.PatientEventEvent}</th>
+                <th>{data.Language.PatientEventHome}</th>
+                <th>{data.Language.PatientEventNote}</th>
+            </thead>
+            <tbody>
+                for _, event := range page.Events {
+                    <tr>
+                        <td>@handlercalendar.CalendarLinkAbs(data.Language, event.Time, "listDay")</td>
+                        <td class="center">
+                            @templbase.Avatar(event.User)
+                        </td>
+                        <td>{data.Language.FormatEvent(event.EventID, event.AssociatedID)}</td>
+                        <td><a href={event.Home.URL()}>{event.Home.Name}</a></td>
+                        <td>
+                            <span class="editable editable-end" data-action={event.SetNoteURL()}>
+                                {event.Note}
+                            </span>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+            </table>
+        }
+    }
+}
+
+templ PatientCheckout(data *request.CommonData, patient model.Patient) {
+    <tr>
+        <th class="w-25">{data.Language.DashboardCheckOut}</th>
+        <td>
+            @templbase.Form(
+                patient.URLSuffix("checkout"),
+                "POST",
+                "form-control-sm", "form-control-plaintext",
+            ) {
+                <div class="justify-content-between form-control-sm form-control-plaintext input-group-sm">
+                    <div class="form-group">
+                        <label for={patient.CheckoutStatusID("#")} class="input-group-text">{data.Language.GenericStatus}</label>
+                        <select autocomplete="off" class="form-control form-select form-select-sm" id={patient.CheckoutStatusID("")} name="status">
+                            <option disabled selected>{data.Language.DashboardSelectCheckout}</option>
+                            for statusID, status := range data.Language.Status {
+                                if model.IsCheckoutStatus[statusID] {
+                                    <option value={int32(statusID)}>{status}</option>
+                                }
+                            }
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for={patient.CheckoutNoteID("#")} class="input-group-text">{data.Language.GenericNote}</label>
+                        <input autocomplete="off" type="text" class="form-control" id={patient.CheckoutNoteID("")} name="note"></input>
+                    </div>
+                    @templbase.Button("submit", "fa-dove", data.Language.DashboardCheckOut, "w-100")
+                </div>
+            }
+        </td>
+    </tr>
+}
+
+templ PatientJournalUpdate(data *request.CommonData, patient model.Patient, unconditionallyShowAttachForm bool) {
+    <tr>
+        <th class="w-25">{data.Language.GenericJournal}</th>
+        <td>
+            if patient.JournalURL != "" {
+                <a href={templ.URL(patient.JournalURL)}>
+                    {data.Language.DashboardGoToJournal}
+                </a>
+            } else {
+                <p class="mb-0 small">{data.Language.GDriveNoJournalForPatient}</p>
+                @templbase.SingleButtonForm(patient.URLSuffix("create-journal"), data.Language.GDriveCreateJournalForPatient, "POST", "btn-primary", "d-flex", "flex-column", "center", "mb-2")
+            }
+            if patient.JournalURL == "" || unconditionallyShowAttachForm  {
+                <p class="mb-0 small">{data.Language.GDriveSelectExistingJournalInstruction}</p>
+                @templbase.Form(
+                    patient.URLSuffix("attach-journal"),
+                    "POST",
+                    "form-control-sm", "form-control-plaintext",
+                ) {
+                    <form-group class="d-flex justify-content-between form-control-sm input-group-sm form-control-plaintext">
+                        <label for={patient.AttachJournalID("#")} class="input-group-text short-label">{data.Language.GenericURL}</label>
+                        <input autocomplete="off" type="text" class="form-control" id={patient.AttachJournalID("")} name="url"></input>
+                        @templbase.Button("submit", "fa-link", data.Language.GenericUpdate)
+                    </form-group>
+                }
+                if patient.SuggestedJournalTitle != "" && patient.SuggestedJournalURL != "" {
+                    <p class="mb-0 small">{data.Language.GDriveSuggestedJournal}: <a href={templ.URL(patient.SuggestedJournalURL)}>{patient.SuggestedJournalTitle}</a></p>
+                    <div class="d-flex justify-content-evenly">
+                        @templbase.SingleButtonForm(patient.URLSuffix("accept-suggested-journal"), data.Language.GDriveAcceptSuggestedJournal, "POST", "btn-success", "d-flex", "flex-column", "center", "mb-2")
+                        @templbase.SingleButtonForm(patient.URLSuffix("decline-suggested-journal"), data.Language.GDriveDeclineSuggestedJournal, "POST", "btn-warning", "d-flex", "flex-column", "center", "mb-2")
+                    </div>
+                }
+            }
+        </td>
+    </tr>
+}
+
+templ PatientMove(data *request.CommonData, homes []model.Home, home *model.Home, patient model.Patient) {
+    <tr>
+        <th class="w-25">{data.Language.GenericMoveTo}</th>
+        <td>
+            <form
+                action={templ.URL(patient.URLSuffix("move"))}
+                method="POST"
+                class="form-control-sm form-control-plaintext d-flex justify-content-between"
+            >
+                <select autocomplete="off" class="form-control form-select form-select-sm" name="home">
+                    <option value="" disabled selected>{data.Language.DashboardSelectHome}</option>
+                    for _, otherHome := range homes {
+                        if home == nil || otherHome.ID != home.ID {
+                            <option value={otherHome.ID}>{otherHome.Name}</option>
+                        }
+                    }
+                </select>
+                @templbase.Button("submit", "fa-angles-right", data.Language.GenericMove)
+            </form>
+        </td>
+    </tr>
+}
+
+
+templ PatientCard(data *request.CommonData, homes []model.Home, home *model.Home, patient model.Patient) {
+    <div class="card b-card dashboard-patient-card m-2 filter-box shadow-sm" id={patient.CardID("#")} data-patient-id={patient.ID}>
+        <div class="card-header card-header-patient d-flex justify-content-between">
+            <div>
+                if data.User.HasHomeOrAccess(home.ID, model.AccessLevelCoordinator) {
+                    <i class="fa-solid fa-grip-vertical card-gripper dark-on-hover"></i>
+                }
+                <a href={templ.URL(patient.URL())} class="filter-content must-be-clickable">{patient.Name}</a>
+            </div>
+            <div>
+                <span class="patient-species-header filter-content">{patient.Species}</span>    
+                <button class="expander btn btn-sm btn-outline-success must-be-clickable" data-bs-toggle="collapse" data-bs-target={patient.CollapseID("#")}>{data.Language.GenericDetails}</button>
+            </div>
+        </div>
+        <div class="card-content collapse" id={patient.CollapseID("")}>
+            @PatientTable(data, homes, home, patient)
+        </div>
+    </div>
+}
+
+templ PatientTable(
+    data *request.CommonData,
+    homes []model.Home,
+    home *model.Home,
+    patient model.Patient,
+) {
+    <table class="patient-table table table-bordered">
+        <tbody>
+            @GoToPatientPage(data, patient)
+            if data.User.HasGDriveAccess {
+                @PatientJournalUpdate(data, patient, false)
+            }
+            @PatientMove(data, homes, home, patient)
+            @CheckoutForm(data, patient)
+        </tbody>
+    </table>
+}
+
+
+templ GoToPatientPage(data *request.CommonData, patient model.Patient) {
+    <tr>
+        <th class="w-25">{data.Language.GenericDetails}</th>
+        <td>
+            <a href={templ.URL(patient.URL())}>
+                {data.Language.DashboardGoToPatientPage}
+            </a>
+        </td>
+    </tr>
+}
+
+
+templ CheckoutForm(data *request.CommonData, patient model.Patient) {
+    <tr>
+        <th class="w-25">{data.Language.DashboardCheckOut}</th>
+        <td>
+            @templbase.Form(
+                patient.URLSuffix("checkout"),
+                "POST",
+                "form-control-sm", "form-control-plaintext",
+            ) {
+                <form-group class="d-flex justify-content-between form-control-sm form-control-plaintext input-group-sm">
+                    <label for={patient.CheckoutStatusID("#")} class="input-group-text short-label">{data.Language.GenericStatus}</label>
+                    <select autocomplete="off" class="form-control form-select form-select-sm" id={patient.CheckoutStatusID("")} name="status">
+                        <option disabled selected>{data.Language.DashboardSelectCheckout}</option>
+                        for statusID, status := range data.Language.Status {
+                            if model.IsCheckoutStatus[statusID] {
+                                <option value={int32(statusID)}>{status}</option>
+                            }
+                        }
+                    </select>
+                </form-group>
+                <form-group class="d-flex justify-content-between form-control-sm form-control-plaintext input-group-sm">
+                    <label for={patient.CheckoutNoteID("#")} class="input-group-text short-label">{data.Language.GenericNote}</label>
+                    <input autocomplete="off" type="text" class="form-control" id={patient.CheckoutNoteID("")} name="note"></input>
+                </form-group>
+                <form-group class="d-flex justify-content-between form-control-sm form-control-plaintext input-group-sm">
+                    @templbase.Button("submit", "fa-dove", data.Language.DashboardCheckOut, "w-100")
+                </form-group>
+            }
+        </td>
+    </tr>
+}

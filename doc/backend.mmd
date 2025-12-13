@@ -1,0 +1,36 @@
+flowchart-elk TD;
+    background(background: Periodic background jobs)
+    db(db: High-level database operations)
+    fs(fs: File operations)
+    gdrive(gdrive: Google Drive interface)
+    handlers(handlers: HTTP handlers)
+    language(language: Internationalization)
+    model(model: Data model)
+    request(request: Per-request handling)
+    sql(sql: SQLC-generated types)
+    templbase(templbase: Shared templ code)
+
+    background-->fs;
+    db-->language;
+    db-->model;
+    db-->sql;
+    fs-->model;
+    gdrive-->db;
+    gdrive-->model;
+    handlers-->db;
+    handlers-->language;
+    handlers-->request;
+    handlers-->templbase;
+    handlers-->gdrive;
+    handlers-->fs;
+    language-->model;
+    main-->background;
+    main-->gdrive;
+    main-->handlers;
+    main-->model;
+    background-->gdrive;
+    request-->language;
+    request-->model;
+    sql-->model;
+    templbase-->language;
+    templbase-->request;

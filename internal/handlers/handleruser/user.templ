@@ -1,0 +1,27 @@
+package handleruser
+
+import (
+    "context"
+    "github.com/fugleadvokatene/bino/internal/model"
+	"github.com/fugleadvokatene/bino/internal/request"
+	"github.com/fugleadvokatene/bino/internal/templbase"
+)
+
+templ UserPage(ctx context.Context, data *request.CommonData, user model.User) {
+    @templbase.Layout(data, "user-page") {
+        <h1>{user.Name}</h1>
+        @templbase.Card() {
+            <h2>{data.Language.UserHomes}</h2>
+            <ul>
+                for _, home := range user.Homes {
+                    <li><a href={home.URL()}>{home.Name}</a></li>
+                }
+            </ul>
+            if len(user.Homes) == 0 {
+                <p class="small">{data.Language.UserIsHomeless}</p>
+            }
+            <h2>{data.Language.AccessLevel}</h2>
+            <p>{data.Language.AccessLevels[user.AccessLevel]}</p>
+        }
+    }
+}

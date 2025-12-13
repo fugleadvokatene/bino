@@ -1,8 +1,6 @@
 package request
 
-import (
-	"github.com/fugleadvokatene/bino/internal/enums"
-)
+import "github.com/fugleadvokatene/bino/internal/model"
 
 type Feedback struct {
 	Items    []FeedbackItem
@@ -10,7 +8,7 @@ type Feedback struct {
 }
 
 func (fb Feedback) CSSClass() string {
-	var maxFBT enums.FB
+	var maxFBT model.FB
 	for _, item := range fb.Items {
 		if item.Type > maxFBT {
 			maxFBT = item.Type
@@ -21,5 +19,5 @@ func (fb Feedback) CSSClass() string {
 
 type FeedbackItem struct {
 	Message string
-	Type    enums.FB
+	Type    model.FB
 }

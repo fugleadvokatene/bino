@@ -5,11 +5,15 @@ import (
 	"fmt"
 
 	"github.com/fugleadvokatene/bino/internal/background"
+	"github.com/fugleadvokatene/bino/internal/config"
 	"github.com/fugleadvokatene/bino/internal/db"
 	"github.com/fugleadvokatene/bino/internal/fs"
+	"github.com/fugleadvokatene/bino/internal/gdrive"
 	"github.com/fugleadvokatene/bino/internal/sql"
 	"github.com/joho/godotenv"
 )
+
+var BuildKey string
 
 func main() {
 	if BuildKey == "" {
@@ -21,7 +25,7 @@ func main() {
 
 	godotenv.Load(".env")
 
-	config, err := loadConfig("config.json")
+	config, err := config.Load("config.json")
 	if err != nil {
 		panic(err)
 	}
@@ -32,13 +36,16 @@ func main() {
 	}
 	defer conn.Close()
 
-	db := &db.Database{Q: sql.New(conn)}
+	db := &db.Database{
+		Conn: conn,
+		Q:    sql.New(conn),
+	}
 
-	gdriveSA, err := NewGDriveWithServiceAccount(ctx, config.GoogleDrive, db)
+	gdriveClient, err := gdrive.NewClient(ctx, config.GoogleDrive, db)
 	if err != nil {
 		panic(err)
 	}
-	worker := NewGDriveWorker(ctx, config.GoogleDrive, gdriveSA)
+	worker := gdrive.NewWorker(ctx, config.GoogleDrive, gdriveClient)
 
 	fileBackend := fs.NewLocalFileStorage(ctx, "file", "tmp")
 

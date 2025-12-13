@@ -1,0 +1,144 @@
+package handleruseradmin
+
+import (
+    "github.com/fugleadvokatene/bino/internal/model"
+	"github.com/fugleadvokatene/bino/internal/request"
+	"github.com/fugleadvokatene/bino/internal/templbase"
+)
+
+templ UserAdmin(data *request.CommonData, homes []model.Home, users []model.User, invitations []model.Invitation) {
+	@templbase.Layout(data) {
+        <h1>{data.Language.AdminManageUsers}</h1>
+        @templbase.Card() {
+            <h2>{data.Language.AdminInviteUsers}</h2>
+            <div class="card">
+                <table class="table table-striped table-bordered m-0">
+                    <tbody>
+                        <tr>
+                            <td colspan="2">
+                                @templbase.Form("/invite", "POST") {
+                                    <label for="email">{data.Language.GenericEmail}</label>
+                                    <div class="input-group">
+                                        <input id="email" class="form-control" name="email" placeholder={data.Language.AdminEmailAddress} autocomplete="off" data-1p-ignore data-lpignore="true" data-bwignore="true" data-protonpass-ignore="true"></input>
+                                    </div>
+                                    <label for="home">
+                                        {data.Language.GenericHome}
+                                    </label>
+                                    <div class="input-group">
+                                        <select class="form-control form-select" id="home" name="home" placeholder={data.Language.DashboardSelectHome}>
+                                            <option value="0">{data.Language.GenericNone}</option>
+                                            for _, home := range homes {
+                                                <option value={home.ID}>{home.Name}</option>
+                                            }
+                                        </select>
+                                    </div>
+                                    <label for="access-level">
+                                        <a href="/access">
+                                            {data.Language.AccessLevel}
+                                        </a>
+                                    </label>
+                                    <div class="input-group">
+                                        <select class="form-control form-select" id="access-level" name="access-level" placeholder={model.AccessLevelRehabber}>
+                                            for _, al := range model.AccessLevelValues() {
+                                                <option value={al} selected?={al == model.AccessLevelRehabber}>{data.Language.AccessLevels[al]}</option>
+                                            }
+                                        </select>
+                                    </div>
+                                    <button class="btn btn-primary mt-2 w-100" type="submit">{data.Language.AdminInviteToBino}</button>
+                                }
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            if len(invitations) > 0 {
+                <h2>{data.Language.AdminPendingInvitations}</h2>
+                <div class="card">
+                    <table class="table table-striped table-bordered m-0">
+                        <thead>
+                            <tr>
+                                <th>{data.Language.AdminEmailAddress}</th>
+                                <th>{data.Language.AdminInviteExpires}</th>
+                                <th>{data.Language.AccessLevel}</th>
+                                <th>{data.Language.GenericHome}</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            for _, inv := range invitations {
+                                <tr>
+                                    <td>{inv.Email}</td>
+                                    <td>{data.Language.FormatTimeAbsWithRelParen(inv.Expires)}</td>
+                                    <td>{int(inv.AccessLevel)} - {data.Language.AccessLevels[inv.AccessLevel]}</td>
+                                    <td>
+                                        if inv.HomeID != 0 {
+                                            <a href={model.HomeURL(inv.HomeID)}>{inv.HomeName}</a>
+                                        } else {
+                                            {data.Language.GenericNone}
+                                        }
+                                    </td>
+                                    <td>@templbase.SingleButtonForm(inv.DeleteURL(), data.Language.GenericDelete, "POST", "btn-danger")</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+
+            <h2>{data.Language.AdminExistingUsers}</h2>
+            <div class="card">
+                <table class="table table-striped table-bordered m-0">
+                    <thead>
+                        <tr>
+                            <th>{data.Language.GenericAvatar}</th>
+                            <th>{data.Language.AdminDisplayName}</th>
+                            <th>{data.Language.AdminEmailAddress}</th>
+                            <th>{data.Language.AccessLevel}</th>
+                            <th colspan="2">{data.Language.GenericDelete}</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        for _, u := range users {
+                            <tr class="filter-box">
+                                <td class="center">@templbase.Avatar(u)</td>
+                                <td><a href={templ.URL(u.URL())}>{u.Name}</a></td>
+                                <td>{u.Email}</td>
+                                <td>{int(u.AccessLevel)} - {data.Language.AccessLevels[u.AccessLevel]}</td>
+                                <td>
+                                    if u.ID != data.User.AppuserID && u.AccessLevel < model.AccessLevelAdmin{
+                                        <a class="btn btn-danger" href={templ.URL(u.URLSuffix("confirm-scrub"))}>
+                                            {data.Language.AdminScrubUserData}
+                                        </a>
+                                    }
+                                </td>
+                                <td>
+                                    if u.ID != data.User.AppuserID && u.AccessLevel < model.AccessLevelAdmin {
+                                        <a class="btn btn-danger"href={templ.URL(u.URLSuffix("confirm-nuke"))}>
+                                            {data.Language.AdminNukeUser}
+                                        </a>
+                                    }
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+    }
+}
+
+templ UserConfirmScrubOrNuke(data *request.CommonData, user model.User, header, confirmMsg, dest, referer string) {
+    @templbase.Layout(data) {
+        <a href={templ.URL(referer)}>{data.Language.GenericGoBack}</a>
+        <h1>{header}</h1>
+        @templbase.Card() {
+            <p>{confirmMsg} ({user.Email})</p>
+            @templbase.Form(user.URLSuffix(dest), "POST", "form-control", "d-flex", "p-0") {
+                <div class="input-group">
+                    <input class="input w-75" name="confirm-email" value={data.Language.GenericEmail} autocomplete="off" data-1p-ignore data-lpignore="true" data-bwignore="true" data-protonpass-ignore="true"></input>
+                    <button type="submit" class="btn btn-danger w-25">{data.Language.GenericConfirm}</button>
+                </div>
+            }
+        }
+    }
+}

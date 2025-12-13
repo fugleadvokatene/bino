@@ -5,15 +5,14 @@ import (
 	"fmt"
 
 	"github.com/fugleadvokatene/bino/internal/calendar"
-	"github.com/fugleadvokatene/bino/internal/enums"
 	"github.com/fugleadvokatene/bino/internal/language"
-	"github.com/fugleadvokatene/bino/internal/view"
+	"github.com/fugleadvokatene/bino/internal/model"
 )
 
 // ---- Home
 
-func (h Home) ToHomeView() view.Home {
-	return view.Home{
+func (h Home) ToHomeView() model.Home {
+	return model.Home{
 		ID:       h.ID,
 		Capacity: h.Capacity,
 		Name:     h.Name,
@@ -23,8 +22,8 @@ func (h Home) ToHomeView() view.Home {
 
 // ---- Patient
 
-func (in GetCurrentPatientsForHomeRow) ToPatientView() view.Patient {
-	return view.Patient{
+func (in GetCurrentPatientsForHomeRow) ToPatientView() model.Patient {
+	return model.Patient{
 		ID:      in.ID,
 		Status:  in.Status,
 		Name:    in.Name,
@@ -32,8 +31,8 @@ func (in GetCurrentPatientsForHomeRow) ToPatientView() view.Patient {
 	}
 }
 
-func (in GetFormerPatientsRow) ToPatientView() view.Patient {
-	return view.Patient{
+func (in GetFormerPatientsRow) ToPatientView() model.Patient {
+	return model.Patient{
 		ID:                    in.ID,
 		Status:                in.Status,
 		Name:                  in.Name,
@@ -45,8 +44,8 @@ func (in GetFormerPatientsRow) ToPatientView() view.Patient {
 	}
 }
 
-func (in GetPatientWithSpeciesRow) ToPatientView() view.Patient {
-	return view.Patient{
+func (in GetPatientWithSpeciesRow) ToPatientView() model.Patient {
+	return model.Patient{
 		ID:                    in.ID,
 		Status:                in.Status,
 		Name:                  in.Name,
@@ -59,8 +58,8 @@ func (in GetPatientWithSpeciesRow) ToPatientView() view.Patient {
 	}
 }
 
-func (in GetActivePatientsRow) ToPatientView() view.Patient {
-	return view.Patient{
+func (in GetActivePatientsRow) ToPatientView() model.Patient {
+	return model.Patient{
 		ID:                    in.ID,
 		Species:               in.Species,
 		Name:                  in.Name,
@@ -75,48 +74,48 @@ func (in GetActivePatientsRow) ToPatientView() view.Patient {
 
 // ---- User
 
-func (user GetAppusersRow) ToUserView() view.User {
-	return view.User{
+func (user GetAppusersRow) ToUserView() model.User {
+	return model.User{
 		ID:           user.ID,
 		Name:         user.DisplayName,
 		Email:        user.Email,
 		AvatarURL:    user.AvatarUrl.String,
 		HasAvatarURL: user.AvatarUrl.Valid,
-		AccessLevel:  enums.AccessLevel(user.AccessLevel),
+		AccessLevel:  model.AccessLevel(user.AccessLevel),
 	}
 }
 
-func (user Appuser) ToUserView() view.User {
-	return view.User{
+func (user Appuser) ToUserView() model.User {
+	return model.User{
 		ID:           user.ID,
 		Name:         user.DisplayName,
 		Email:        user.Email,
 		AvatarURL:    user.AvatarUrl.String,
 		HasAvatarURL: user.AvatarUrl.Valid,
-		AccessLevel:  enums.AccessLevel(user.AccessLevel),
+		AccessLevel:  model.AccessLevel(user.AccessLevel),
 	}
 }
 
-func (user GetUserRow) ToUserView() view.User {
-	return view.User{
+func (user GetUserRow) ToUserView() model.User {
+	return model.User{
 		ID:           user.ID,
 		Name:         user.DisplayName,
 		Email:        user.Email,
 		AvatarURL:    user.AvatarUrl.String,
 		HasAvatarURL: user.AvatarUrl.Valid,
-		AccessLevel:  enums.AccessLevel(user.AccessLevel),
+		AccessLevel:  model.AccessLevel(user.AccessLevel),
 	}
 }
 
 // ---- Invitation
 
-func (inv GetInvitationsRow) ToInvitationView() view.Invitation {
-	return view.Invitation{
+func (inv GetInvitationsRow) ToInvitationView() model.Invitation {
+	return model.Invitation{
 		ID:          inv.ID,
 		Email:       inv.Email.String,
 		Expires:     inv.Expires.Time,
 		Created:     inv.Created.Time,
-		AccessLevel: enums.AccessLevel(inv.AccessLevel),
+		AccessLevel: model.AccessLevel(inv.AccessLevel),
 		HomeID:      inv.Home.Int32,
 		HomeName:    inv.HomeName.String,
 	}
@@ -124,16 +123,16 @@ func (inv GetInvitationsRow) ToInvitationView() view.Invitation {
 
 // ---- Preferred species
 
-func (in GetPreferredSpeciesForHomeRow) ToSpeciesView() view.Species {
-	return view.Species{
+func (in GetPreferredSpeciesForHomeRow) ToSpeciesView() model.Species {
+	return model.Species{
 		ID:        in.SpeciesID,
 		Name:      in.Name,
 		Preferred: true,
 	}
 }
 
-func (in GetSpeciesWithLanguageRow) ToSpeciesView(preferred bool) view.Species {
-	return view.Species{
+func (in GetSpeciesWithLanguageRow) ToSpeciesView(preferred bool) model.Species {
+	return model.Species{
 		ID:        in.SpeciesID,
 		Name:      in.Name,
 		Preferred: preferred,
@@ -142,48 +141,48 @@ func (in GetSpeciesWithLanguageRow) ToSpeciesView(preferred bool) view.Species {
 
 // ---- Period
 
-func (in HomeUnavailable) ToPeriodView() view.Period {
-	return view.Period{
+func (in HomeUnavailable) ToPeriodView() model.Period {
+	return model.Period{
 		ID:     in.ID,
 		HomeID: in.HomeID,
-		From:   view.DateViewFromPGDate(in.FromDate),
-		To:     view.DateViewFromPGDate(in.ToDate),
+		From:   model.DateViewFromPGDate(in.FromDate),
+		To:     model.DateViewFromPGDate(in.ToDate),
 		Note:   in.Note.String,
 	}
 }
 
 // ---- Match
 
-func (in *SearchBasicRow) ToMatchView() view.Match {
-	headerRuns := view.ParseHeadline(in.HeaderHeadline)
-	bodyRuns := view.ParseHeadline(in.BodyHeadline)
+func (in *SearchBasicRow) ToMatchView() model.Match {
+	headerRuns := model.ParseHeadline(in.HeaderHeadline)
+	bodyRuns := model.ParseHeadline(in.BodyHeadline)
 
-	return view.Match{
+	return model.Match{
 		URL:           in.AssociatedUrl.String,
-		Type:          enums.MatchType(in.Ns),
+		Type:          model.MatchType(in.Ns),
 		HeaderRuns:    headerRuns,
-		BodyFragments: view.SplitFragments(bodyRuns),
+		BodyFragments: model.SplitFragments(bodyRuns),
 		ExtraData:     in.ExtraData.String,
 		Rank:          in.Rank,
 	}
 }
 
-func (in *SearchAdvancedRow) ToMatchView(q string) view.Match {
-	headerRuns := view.ParseHeadline(in.HeaderHeadline)
+func (in *SearchAdvancedRow) ToMatchView(q string) model.Match {
+	headerRuns := model.ParseHeadline(in.HeaderHeadline)
 	if !hasHit(headerRuns) {
-		headerRuns = view.HighlightFallback(in.Header, q)
+		headerRuns = model.HighlightFallback(in.Header, q)
 	}
 
-	bodyRuns := view.ParseHeadline(in.BodyHeadline)
+	bodyRuns := model.ParseHeadline(in.BodyHeadline)
 	if !hasHit(bodyRuns) {
-		bodyRuns = view.HighlightFallback(in.Body, q)
+		bodyRuns = model.HighlightFallback(in.Body, q)
 	}
 
-	return view.Match{
+	return model.Match{
 		URL:           in.AssociatedUrl.String,
-		Type:          enums.MatchType(in.Ns),
+		Type:          model.MatchType(in.Ns),
 		HeaderRuns:    headerRuns,
-		BodyFragments: view.SplitFragments(bodyRuns),
+		BodyFragments: model.SplitFragments(bodyRuns),
 		ExtraData:     in.ExtraData.String,
 		Rank:          in.Rank,
 		RankParts: map[string]float32{
@@ -198,7 +197,7 @@ func (in *SearchAdvancedRow) ToMatchView(q string) view.Match {
 	}
 }
 
-func hasHit(runs []view.HighlightRun) bool {
+func hasHit(runs []model.HighlightRun) bool {
 	for _, r := range runs {
 		if r.Hit {
 			return true
@@ -217,11 +216,11 @@ func ParseJSON[T any](extraData string) *T {
 
 // ---- File
 
-func (in *File) ToFileView() view.File {
-	return view.File{
+func (in *File) ToFileView() model.File {
+	return model.File{
 		ID:                   in.ID,
 		Creator:              in.Creator,
-		Accessibility:        enums.FileAccessibility(in.Accessibility),
+		Accessibility:        model.FileAccessibility(in.Accessibility),
 		Created:              in.Created.Time,
 		UUID:                 in.Uuid,
 		OriginalFilename:     in.Filename,
@@ -233,23 +232,23 @@ func (in *File) ToFileView() view.File {
 
 // ---- Wiki
 
-func (in *WikiPage) ToWikiLinkView() view.WikiLink {
-	return view.WikiLink{
+func (in *WikiPage) ToWikiLinkView() model.WikiLink {
+	return model.WikiLink{
 		ID:    in.ID,
 		Title: in.Title,
 	}
 }
 
-func (in *GetWikiMainPageRow) ToWikiPageView() view.WikiPage {
-	return view.WikiPage{
+func (in *GetWikiMainPageRow) ToWikiPageView() model.WikiPage {
+	return model.WikiPage{
 		ID:      in.ID,
 		Title:   in.Title,
 		Content: string(in.Content),
 	}
 }
 
-func (in *GetLastWikiRevisionRow) ToWikiPageView() view.WikiPage {
-	return view.WikiPage{
+func (in *GetLastWikiRevisionRow) ToWikiPageView() model.WikiPage {
+	return model.WikiPage{
 		ID:      in.ID,
 		Title:   in.Title,
 		Content: string(in.Content),
@@ -263,7 +262,7 @@ func (gupirr GetUnavailablePeriodsInRangeRow) ToFullCalendarEvent(language *lang
 		Start:   gupirr.FromDate.Time.Format(calendar.TimeFormatFullCalendar),
 		End:     gupirr.ToDate.Time.Format(calendar.TimeFormatFullCalendar),
 		Title:   language.HomeIsUnavailable(gupirr.Name, gupirr.Note.String),
-		URL:     string(view.HomeURL(gupirr.HomeID)),
+		URL:     string(model.HomeURL(gupirr.HomeID)),
 		Display: "block",
 	}
 }
@@ -276,7 +275,7 @@ func (gefcr GetEventsForCalendarRow) ToFullCalendarEvent(language *language.Lang
 		Start:   t,
 		End:     t,
 		Title:   fmt.Sprintf("%s: %s", gefcr.PatientName, language.FormatEvent(gefcr.EventID, gefcr.AssociatedID)),
-		URL:     view.PatientURL(gefcr.PatientID),
+		URL:     model.PatientURL(gefcr.PatientID),
 		Display: "list-item",
 	}
 }

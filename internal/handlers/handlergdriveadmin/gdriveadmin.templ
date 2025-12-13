@@ -1,0 +1,109 @@
+package handlergdriveadmin
+
+import (
+    "context"
+    "fmt"
+	"github.com/fugleadvokatene/bino/internal/request"
+	"github.com/fugleadvokatene/bino/internal/templbase"
+	"github.com/fugleadvokatene/bino/internal/gdrive"
+	"github.com/fugleadvokatene/bino/internal/db"
+)
+
+templ GDrivePage(
+    ctx context.Context,
+    data *request.CommonData,
+    info gdrive.ConfigInfo,
+    db *db.Database,
+) {
+    @templbase.Layout(data) {
+        <h1>{data.Language.AdminManageGoogleDrive}</h1>
+        @GDrivePermissionOverview(ctx, data, info, db)
+    }
+}
+
+templ GDrivePermissionOverview(
+    ctx context.Context,
+    data *request.CommonData,
+    info gdrive.ConfigInfo,
+    db *db.Database,
+) {
+    @templbase.Card() {
+        <p>{data.Language.GDriveBaseDir} <a href={info.JournalFolder.FolderURL()}>{info.JournalFolder.Name}</a></p>
+        <p>{data.Language.GDriveTemplateFile} <a href={templ.URL(info.TemplateDoc.Item.DocumentURL())}>{info.TemplateDoc.Item.Name}</a></p>
+        if len(info.ExtraFolders) > 0 {
+            <p>{data.Language.GDriveExtraDirs}</p>
+            <ul>
+            for _, item := range info.ExtraFolders {
+                <p><a href={item.FolderURL()}>{item.Name}</a></p>
+            }
+            </ul>
+        }
+    }
+
+    @templbase.Card() {
+        <h2>{data.Language.GDrivePermissionsForBaseDir}</h2>
+        <p>{data.Language.GDrivePermissionsForBaseDirInstruction}</p>
+        <table class="table table-sm">
+        <thead>
+            <tr>
+                <th>{data.Language.GDriveDisplayName}</th>
+                <th>{data.Language.GDriveEmail}</th>
+                <th>{data.Language.GDriveRole}</th>
+                <th>{data.Language.GDriveFoundBinoUser}</th>
+            </tr>
+        </thead>
+        <tbody>
+        for _, p := range info.JournalFolder.Permissions {
+            <tr>
+                <td class="td-displayname">
+                    {p.DisplayName}
+                </td>
+                <td class="td-email">
+                    {p.Email}
+                </td>
+                <td>
+                    {p.Role} ({data.Language.GDriveRoles[p.Role]})
+                </td>
+                <td>
+                    if view := request.LookupUserByEmail(ctx, db, p.Email); view.Valid() {
+                        @templbase.Avatar(view)
+                    } else {
+                        <p>{data.Language.GenericNotFound}</p>
+                        @templbase.SingleButtonForm(fmt.Sprintf("/invite/%s", p.Email), data.Language.AdminInviteToBino, "POST", "btn-primary")
+                    }
+                </td>
+            </tr>
+        }
+        </tbody>
+        </table>
+
+        if extraBinoUsers := getExtraBinoUsers(ctx, info.JournalFolder, db); len(extraBinoUsers) > 0 {
+            <p>{data.Language.GDriveBinoUsersMissingWritePermission}</p>
+            <table class="table table-sm">
+            <thead>
+                <tr>
+                    <th>{data.Language.GenericName}</th>
+                    <th>{data.Language.GDriveEmailInBino}</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+            for _, user := range extraBinoUsers {
+                <tr>
+                    <td>{user.Name}
+                    @templbase.Avatar(user)
+                    </td>
+                    <td>{user.Email}</td>
+                    
+                    <td>
+                    if gdrive.UserCanShare(ctx, info.JournalFolder, data.User.Email) {
+                        @templbase.SingleButtonForm(fmt.Sprintf("/gdrive/invite/%s", user.Email), data.Language.GDriveGiveAccess, "POST", "btn-primary")
+                    }
+                    </td>
+                </tr>
+            }
+            </tbody>
+            </table>
+        }
+    }
+}

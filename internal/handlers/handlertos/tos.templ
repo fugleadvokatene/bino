@@ -1,18 +1,18 @@
 package handlertos
 
-import "github.com/fugleadvokatene/bino/internal/enums"
+import "github.com/fugleadvokatene/bino/internal/model"
 import "github.com/fugleadvokatene/bino/internal/request"
 import "github.com/fugleadvokatene/bino/internal/templbase"
 
 templ TOS(data *request.CommonData) {
     @templbase.Layout(data) {
-        if data.Language.ID == enums.LanguageIDEN {
+        if data.Language.ID == model.LanguageIDEN {
             <h1>Terms of Service</h1>
         } else {
             <h1>Bruksvilkår</h1>
         }
         @templbase.Card() {
-            if data.Language.ID == enums.LanguageIDEN {
+            if data.Language.ID == model.LanguageIDEN {
                 <p>By logging into Bino, you agree to these terms of service:</p>
                 <p>1. The website is run according to Norwegian national law.</p>
                 <p>2. Your information is handled according to the <a href="/privacy">privacy policy</a>.</p>

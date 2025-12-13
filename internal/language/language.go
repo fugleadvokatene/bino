@@ -4,13 +4,12 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/fugleadvokatene/bino/internal/enums"
-	"github.com/fugleadvokatene/bino/internal/view"
+	"github.com/fugleadvokatene/bino/internal/model"
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
 type Language struct {
-	ID          enums.LanguageID
+	ID          model.LanguageID
 	Emoji       string
 	SelfName    string
 	Weekdays    map[time.Weekday]string
@@ -18,9 +17,9 @@ type Language struct {
 	GDriveRoles map[string]string
 
 	AccessLevel  string
-	AccessLevels map[enums.AccessLevel]string
+	AccessLevels map[model.AccessLevel]string
 
-	FileAccessibility map[enums.FileAccessibility]string
+	FileAccessibility map[model.FileAccessibility]string
 
 	AdminDisplayName            string
 	AdminEmailAddress           string
@@ -212,25 +211,25 @@ type Language struct {
 
 	WikiHeader string
 
-	Status    map[enums.Status]string
-	Event     map[enums.Event]string
-	MatchType map[enums.MatchType]string
+	Status    map[model.Status]string
+	Event     map[model.EventID]string
+	MatchType map[model.MatchType]string
 
 	CapabilitiesExplanation       string
 	CapabilitiesYourAccessLevelIs string
-	Capabilities                  map[enums.Cap]string
+	Capabilities                  map[model.Cap]string
 	CapabilitiesLink              string
 	CapabilitiesHeader            string
 }
 
-func (l *Language) HomeUnavailableUntil(dv view.Date) string {
+func (l *Language) HomeUnavailableUntil(dv model.Date) string {
 	switch l.ID {
-	case enums.LanguageIDNO:
+	case model.LanguageIDNO:
 		if dv.Year > time.Now().Year()+2 {
 			return fmt.Sprintf("Utilgjengelig på ubestemt tid.")
 		}
 		return fmt.Sprintf("Utilgjengelig til og med den %d. %s %d.", dv.Day, l.Months[dv.Month], dv.Year)
-	case enums.LanguageIDEN:
+	case model.LanguageIDEN:
 		fallthrough
 	default:
 		if dv.Year > time.Now().Year()+2 {
@@ -240,27 +239,27 @@ func (l *Language) HomeUnavailableUntil(dv view.Date) string {
 	}
 }
 
-func (l *Language) HomeAvailableUntil(dv view.Date) string {
+func (l *Language) HomeAvailableUntil(dv model.Date) string {
 	switch l.ID {
-	case enums.LanguageIDNO:
+	case model.LanguageIDNO:
 		return fmt.Sprintf("Blir utilgjengelig den %d. %s %d.", dv.Day, l.Months[dv.Month], dv.Year)
-	case enums.LanguageIDEN:
+	case model.LanguageIDEN:
 		fallthrough
 	default:
 		return fmt.Sprintf("Becomes unavailable from %s %d %d.", l.Months[dv.Month], dv.Day, dv.Year)
 	}
 }
 
-func (l *Language) AvailabilityString(up []view.Period) (enums.Availability, string) {
-	availability, dv := view.AvailabilityDate(up)
+func (l *Language) AvailabilityString(up []model.Period) (model.Availability, string) {
+	availability, dv := model.AvailabilityDate(up)
 	switch availability {
-	case enums.AvailabilityAvailableIndefinitely:
+	case model.AvailabilityAvailableIndefinitely:
 		return availability, l.HomeAvailableIndefinitely
-	case enums.AvailabilityAvailableUntil:
+	case model.AvailabilityAvailableUntil:
 		return availability, l.HomeAvailableUntil(dv)
-	case enums.AvailabilityUnavailableIndefinitely:
+	case model.AvailabilityUnavailableIndefinitely:
 		return availability, l.HomeUnavailableIndefinitely
-	case enums.AvailabilityUnavailableUntil:
+	case model.AvailabilityUnavailableUntil:
 		return availability, l.HomeUnavailableUntil(dv)
 	}
 	return availability, l.HomeAvailableIndefinitely
@@ -268,12 +267,12 @@ func (l *Language) AvailabilityString(up []view.Period) (enums.Availability, str
 
 func (l *Language) HomeIsUnavailable(name string, note string) string {
 	switch l.ID {
-	case enums.LanguageIDNO:
+	case model.LanguageIDNO:
 		if note != "" {
 			note = fmt.Sprintf(" (%s)", note)
 		}
 		return fmt.Sprintf("%s er utilgjengelig%s", name, note)
-	case enums.LanguageIDEN:
+	case model.LanguageIDEN:
 		fallthrough
 	default:
 		if note != "" {
@@ -288,7 +287,7 @@ func (l *Language) TODO(s string) string {
 }
 
 var NO = &Language{
-	ID:       enums.LanguageIDNO,
+	ID:       model.LanguageIDNO,
 	Emoji:    "🇳🇴",
 	SelfName: "Norsk",
 	Weekdays: map[time.Weekday]string{
@@ -324,16 +323,16 @@ var NO = &Language{
 	},
 
 	AccessLevel: "Tilgangsnivå",
-	AccessLevels: map[enums.AccessLevel]string{
-		enums.AccessLevelAdmin:       "Administrator",
-		enums.AccessLevelCoordinator: "Koordinator",
-		enums.AccessLevelRehabber:    "Rehabilitør",
-		enums.AccessLevelNone:        "Bruker",
+	AccessLevels: map[model.AccessLevel]string{
+		model.AccessLevelAdmin:       "Administrator",
+		model.AccessLevelCoordinator: "Koordinator",
+		model.AccessLevelRehabber:    "Rehabilitør",
+		model.AccessLevelNone:        "Bruker",
 	},
-	FileAccessibility: map[enums.FileAccessibility]string{
-		enums.FileAccessibilityPersonal: "Synlig for bare deg",
-		enums.FileAccessibilityInternal: "Synlig for innloggede",
-		enums.FileAccessibilityPublic:   "Synlig for hele internett",
+	FileAccessibility: map[model.FileAccessibility]string{
+		model.FileAccessibilityPersonal: "Synlig for bare deg",
+		model.FileAccessibilityInternal: "Synlig for innloggede",
+		model.FileAccessibilityPublic:   "Synlig for hele internett",
 	},
 
 	AdminDisplayName:            "Navn",
@@ -523,69 +522,69 @@ var NO = &Language{
 	SearchTimePreferenceOlder: "Eldre",
 	SearchTimePreferenceNewer: "Nyere",
 
-	Status: map[enums.Status]string{
-		enums.StatusUnknown:                        "Ukjent",
-		enums.StatusAdmitted:                       "I rehab",
-		enums.StatusAdopted:                        "Adoptert",
-		enums.StatusReleased:                       "Sluppet fri",
-		enums.StatusTransferredOutsideOrganization: "Overført til annet tiltak",
-		enums.StatusDead:                           "Død",
-		enums.StatusEuthanized:                     "Avlivet",
-		enums.StatusDeleted:                        "Slettet",
+	Status: map[model.Status]string{
+		model.StatusUnknown:                        "Ukjent",
+		model.StatusAdmitted:                       "I rehab",
+		model.StatusAdopted:                        "Adoptert",
+		model.StatusReleased:                       "Sluppet fri",
+		model.StatusTransferredOutsideOrganization: "Overført til annet tiltak",
+		model.StatusDead:                           "Død",
+		model.StatusEuthanized:                     "Avlivet",
+		model.StatusDeleted:                        "Slettet",
 	},
 
-	Event: map[enums.Event]string{
-		enums.EventUnknown:                        "Ukjent",
-		enums.EventRegistered:                     "Registrert",
-		enums.EventAdopted:                        "Adoptert",
-		enums.EventReleased:                       "Sluppet fri",
-		enums.EventTransferredToOtherHome:         "Overført",
-		enums.EventTransferredOutsideOrganization: "Overført til annen organisasjon",
-		enums.EventDied:                           "Døde",
-		enums.EventEuthanized:                     "Avlivet",
-		enums.EventStatusChanged:                  "Endret status",
-		enums.EventDeleted:                        "Slettet",
-		enums.EventNameChanged:                    "Endret navn",
-		enums.EventJournalCreated:                 "Opprettet journal i Google Drive",
-		enums.EventJournalAttached:                "Koblet til journal i Google Drive",
-		enums.EventJournalDetached:                "Koblet fra journal i Google Drive",
+	Event: map[model.EventID]string{
+		model.EventIDUnknown:                        "Ukjent",
+		model.EventIDRegistered:                     "Registrert",
+		model.EventIDAdopted:                        "Adoptert",
+		model.EventIDReleased:                       "Sluppet fri",
+		model.EventIDTransferredToOtherHome:         "Overført",
+		model.EventIDTransferredOutsideOrganization: "Overført til annen organisasjon",
+		model.EventIDDied:                           "Døde",
+		model.EventIDEuthanized:                     "Avlivet",
+		model.EventIDStatusChanged:                  "Endret status",
+		model.EventIDDeleted:                        "Slettet",
+		model.EventIDNameChanged:                    "Endret navn",
+		model.EventIDJournalCreated:                 "Opprettet journal i Google Drive",
+		model.EventIDJournalAttached:                "Koblet til journal i Google Drive",
+		model.EventIDJournalDetached:                "Koblet fra journal i Google Drive",
 	},
 
-	MatchType: map[enums.MatchType]string{
-		enums.MatchTypeJournal: "📝 Journal",
-		enums.MatchTypePatient: "❤️‍🩹 Pasient",
+	MatchType: map[model.MatchType]string{
+		model.MatchTypeJournal: "📝 Journal",
+		model.MatchTypePatient: "❤️‍🩹 Pasient",
 	},
 
 	CapabilitiesLink:              "Les om brukertilganger i Bino",
 	CapabilitiesHeader:            "Brukertilganger",
 	CapabilitiesYourAccessLevelIs: "Ditt tilgangsnivå er: ",
 	CapabilitiesExplanation:       "Her er det brukere med forskjellig tilgangsnivå kan gjøre: ",
-	Capabilities: map[enums.Cap]string{
-		enums.CapViewAllActivePatients: "Se alle pasienter som er i rehab",
-		enums.CapViewAllFormerPatients: "Se alle pasienter som har vært i rehab",
-		enums.CapViewAllHomes:          "Se alle rehabhjem",
-		enums.CapViewAllUsers:          "Se alle brukere",
-		enums.CapViewCalendar:          "Se kalenderen",
-		enums.CapSearch:                "Søke i journaler",
-		enums.CapSetOwnPreferences:     "Sette egne preferanser for språk o.l.",
-		enums.CapCheckInPatient:        "Sjekke inn pasienter",
-		enums.CapManageOwnPatients:     "Endre informasjon om egne pasienter",
-		enums.CapManageAllPatients:     "Redigere alle pasienter",
-		enums.CapManageOwnHomes:        "Endre informasjon om eget rehabhjem",
-		enums.CapManageAllHomes:        "Endre informasjon om alle rehabhjem",
-		enums.CapCreatePatientJournal:  "Opprette nye pasientjournaler i Google Drive",
-		enums.CapManageSpecies:         "Endre listen over arter",
-		enums.CapManageUsers:           "Endre informasjon om andre brukere",
-		enums.CapDeleteUsers:           "Slette brukere",
-		enums.CapViewAdminTools:        "Se liste over adminverktøy",
-		enums.CapViewGDriveSettings:    "Se Google Drive-innstillinger",
-		enums.CapInviteToGDrive:        "Invitere brukere til Google Drive-mappen fra Bino",
-		enums.CapInviteToBino:          "Invitere nye brukere til Bino",
+	Capabilities: map[model.Cap]string{
+		model.CapViewAllActivePatients: "Se alle pasienter som er i rehab",
+		model.CapViewAllFormerPatients: "Se alle pasienter som har vært i rehab",
+		model.CapViewAllHomes:          "Se alle rehabhjem",
+		model.CapViewAllUsers:          "Se alle brukere",
+		model.CapViewCalendar:          "Se kalenderen",
+		model.CapSearch:                "Søke i journaler",
+		model.CapSetOwnPreferences:     "Sette egne preferanser for språk o.l.",
+		model.CapCheckInPatient:        "Sjekke inn pasienter",
+		model.CapManageOwnPatients:     "Endre informasjon om egne pasienter",
+		model.CapManageAllPatients:     "Redigere alle pasienter",
+		model.CapManageOwnHomes:        "Endre informasjon om eget rehabhjem",
+		model.CapManageAllHomes:        "Endre informasjon om alle rehabhjem",
+		model.CapCreatePatientJournal:  "Opprette nye pasientjournaler i Google Drive",
+		model.CapManageSpecies:         "Endre listen over arter",
+		model.CapManageUsers:           "Endre informasjon om andre brukere",
+		model.CapDeleteUsers:           "Slette brukere",
+		model.CapViewAdminTools:        "Se liste over adminverktøy",
+		model.CapViewGDriveSettings:    "Se Google Drive-innstillinger",
+		model.CapInviteToGDrive:        "Invitere brukere til Google Drive-mappen fra Bino",
+		model.CapInviteToBino:          "Invitere nye brukere til Bino",
 	},
 }
 
 var EN = &Language{
-	ID:       enums.LanguageIDEN,
+	ID:       model.LanguageIDEN,
 	Emoji:    "🇬🇧",
 	SelfName: "English",
 	Weekdays: map[time.Weekday]string{
@@ -622,16 +621,16 @@ var EN = &Language{
 
 	AccessLevel: "Access level",
 
-	AccessLevels: map[enums.AccessLevel]string{
-		enums.AccessLevelAdmin:       "Administrator",
-		enums.AccessLevelCoordinator: "Coordinator",
-		enums.AccessLevelRehabber:    "Rehabilitator",
-		enums.AccessLevelNone:        "User",
+	AccessLevels: map[model.AccessLevel]string{
+		model.AccessLevelAdmin:       "Administrator",
+		model.AccessLevelCoordinator: "Coordinator",
+		model.AccessLevelRehabber:    "Rehabilitator",
+		model.AccessLevelNone:        "User",
 	},
-	FileAccessibility: map[enums.FileAccessibility]string{
-		enums.FileAccessibilityPersonal: "Visible for you",
-		enums.FileAccessibilityInternal: "Visible for logged-in users",
-		enums.FileAccessibilityPublic:   "Visible for the entire internet",
+	FileAccessibility: map[model.FileAccessibility]string{
+		model.FileAccessibilityPersonal: "Visible for you",
+		model.FileAccessibilityInternal: "Visible for logged-in users",
+		model.FileAccessibilityPublic:   "Visible for the entire internet",
 	},
 
 	AdminDisplayName:            "Name",
@@ -820,68 +819,68 @@ var EN = &Language{
 	SearchTimePreferenceOlder: "Older",
 	SearchTimePreferenceNewer: "Newer",
 
-	Status: map[enums.Status]string{
-		enums.StatusUnknown:                        "Unknown",
-		enums.StatusAdmitted:                       "In rehab",
-		enums.StatusAdopted:                        "Adopted",
-		enums.StatusReleased:                       "Released",
-		enums.StatusTransferredOutsideOrganization: "Transferred outside organization",
-		enums.StatusDead:                           "Dead",
-		enums.StatusEuthanized:                     "Euthanized",
-		enums.StatusDeleted:                        "Deleted",
+	Status: map[model.Status]string{
+		model.StatusUnknown:                        "Unknown",
+		model.StatusAdmitted:                       "In rehab",
+		model.StatusAdopted:                        "Adopted",
+		model.StatusReleased:                       "Released",
+		model.StatusTransferredOutsideOrganization: "Transferred outside organization",
+		model.StatusDead:                           "Dead",
+		model.StatusEuthanized:                     "Euthanized",
+		model.StatusDeleted:                        "Deleted",
 	},
 
-	Event: map[enums.Event]string{
-		enums.EventUnknown:                        "Unknown",
-		enums.EventRegistered:                     "Registered",
-		enums.EventAdopted:                        "Adopted",
-		enums.EventReleased:                       "Released",
-		enums.EventTransferredToOtherHome:         "Transferred",
-		enums.EventTransferredOutsideOrganization: "Transferred outside of organisation",
-		enums.EventDied:                           "Died",
-		enums.EventEuthanized:                     "Euthanized",
-		enums.EventStatusChanged:                  "Status changed",
-		enums.EventDeleted:                        "Deleted",
-		enums.EventNameChanged:                    "Name changed",
-		enums.EventJournalCreated:                 "Created journal",
-		enums.EventJournalAttached:                "Linked journal",
-		enums.EventJournalDetached:                "Unlinked journal",
+	Event: map[model.EventID]string{
+		model.EventIDUnknown:                        "Unknown",
+		model.EventIDRegistered:                     "Registered",
+		model.EventIDAdopted:                        "Adopted",
+		model.EventIDReleased:                       "Released",
+		model.EventIDTransferredToOtherHome:         "Transferred",
+		model.EventIDTransferredOutsideOrganization: "Transferred outside of organisation",
+		model.EventIDDied:                           "Died",
+		model.EventIDEuthanized:                     "Euthanized",
+		model.EventIDStatusChanged:                  "Status changed",
+		model.EventIDDeleted:                        "Deleted",
+		model.EventIDNameChanged:                    "Name changed",
+		model.EventIDJournalCreated:                 "Created journal",
+		model.EventIDJournalAttached:                "Linked journal",
+		model.EventIDJournalDetached:                "Unlinked journal",
 	},
 
-	MatchType: map[enums.MatchType]string{
-		enums.MatchTypeJournal: "📝 Journal",
-		enums.MatchTypePatient: "❤️‍🩹 Patient",
+	MatchType: map[model.MatchType]string{
+		model.MatchTypeJournal: "📝 Journal",
+		model.MatchTypePatient: "❤️‍🩹 Patient",
 	},
 
 	CapabilitiesHeader:            "Access levels and capabilities",
 	CapabilitiesLink:              "Read about access levels in Bino",
 	CapabilitiesYourAccessLevelIs: "Your access level is: ",
 	CapabilitiesExplanation:       "Here is the list of actions users with different levels can perform: ",
-	Capabilities: map[enums.Cap]string{
-		enums.CapViewAllActivePatients: "View all patients currently in rehab",
-		enums.CapViewAllFormerPatients: "View all patients who have been in rehab",
-		enums.CapViewAllHomes:          "View all rehab homes",
-		enums.CapViewAllUsers:          "View all users",
-		enums.CapViewCalendar:          "View the calendar",
-		enums.CapSearch:                "Search in journals",
-		enums.CapSetOwnPreferences:     "Set own preferences for language etc.",
-		enums.CapCheckInPatient:        "Check in patients",
-		enums.CapManageOwnPatients:     "Edit information about own patients",
-		enums.CapManageAllPatients:     "Edit all patients",
-		enums.CapManageOwnHomes:        "Edit information about own rehab home",
-		enums.CapManageAllHomes:        "Edit information about all rehab homes",
-		enums.CapCreatePatientJournal:  "Create new patient journals in Google Drive",
-		enums.CapManageSpecies:         "Edit the list of species",
-		enums.CapManageUsers:           "Edit information about other users",
-		enums.CapDeleteUsers:           "Delete users",
-		enums.CapViewAdminTools:        "View list of admin tools",
-		enums.CapViewGDriveSettings:    "View Google Drive settings",
-		enums.CapInviteToGDrive:        "Invite users to the Google Drive folder from Bino",
-		enums.CapInviteToBino:          "Invite new users to Bino",
+	Capabilities: map[model.Cap]string{
+		model.CapViewAllActivePatients: "View all patients currently in rehab",
+		model.CapViewAllFormerPatients: "View all patients who have been in rehab",
+		model.CapViewAllHomes:          "View all rehab homes",
+		model.CapViewAllUsers:          "View all users",
+		model.CapViewCalendar:          "View the calendar",
+		model.CapSearch:                "Search in journals",
+		model.CapSetOwnPreferences:     "Set own preferences for language etc.",
+		model.CapCheckInPatient:        "Check in patients",
+		model.CapManageOwnPatients:     "Edit information about own patients",
+		model.CapManageAllPatients:     "Edit all patients",
+		model.CapManageOwnHomes:        "Edit information about own rehab home",
+		model.CapManageAllHomes:        "Edit information about all rehab homes",
+		model.CapCreatePatientJournal:  "Create new patient journals in Google Drive",
+		model.CapManageSpecies:         "Edit the list of species",
+		model.CapManageUsers:           "Edit information about other users",
+		model.CapDeleteUsers:           "Delete users",
+		model.CapViewAdminTools:        "View list of admin tools",
+		model.CapViewGDriveSettings:    "View Google Drive settings",
+		model.CapInviteToGDrive:        "Invite users to the Google Drive folder from Bino",
+		model.CapInviteToBino:          "Invite new users to Bino",
 	},
 }
 
-func (l *Language) AccessLevelBlocked(al enums.AccessLevel) string {
+func (l *Language) AccessLevelBlocked(al model.AccessLevel) string {
 	switch l.ID {
 	case NO.ID:
 		return fmt.Sprintf("Du har ikke tilgang til dette (trenger tilgangsnivå: %s).", l.AccessLevels[al])
@@ -893,11 +892,11 @@ func (l *Language) AccessLevelBlocked(al enums.AccessLevel) string {
 }
 
 func (l *Language) FormatEvent(e int32, assocID pgtype.Int4) string {
-	event := enums.Event(e)
+	event := model.EventID(e)
 
 	switch event {
-	case enums.EventStatusChanged:
-		return l.formatStatusChanged(enums.Status(assocID.Int32))
+	case model.EventIDStatusChanged:
+		return l.formatStatusChanged(model.Status(assocID.Int32))
 	default:
 		if str, ok := l.Event[event]; ok {
 			return str
@@ -908,9 +907,9 @@ func (l *Language) FormatEvent(e int32, assocID pgtype.Int4) string {
 
 func (l *Language) formatTagAdded(tagName string) string {
 	switch l.ID {
-	case enums.LanguageIDNO:
+	case model.LanguageIDNO:
 		return fmt.Sprintf("Tagget som '%s'", tagName)
-	case enums.LanguageIDEN:
+	case model.LanguageIDEN:
 		return fmt.Sprintf("Tagged as '%s'", tagName)
 	default:
 		return tagName
@@ -919,20 +918,20 @@ func (l *Language) formatTagAdded(tagName string) string {
 
 func (l *Language) formatTagRemoved(tagName string) string {
 	switch l.ID {
-	case enums.LanguageIDNO:
+	case model.LanguageIDNO:
 		return fmt.Sprintf("Fjernet taggen '%s'", tagName)
-	case enums.LanguageIDEN:
+	case model.LanguageIDEN:
 		return fmt.Sprintf("Removed tag '%s'", tagName)
 	default:
 		return tagName
 	}
 }
 
-func (l *Language) formatStatusChanged(status enums.Status) string {
+func (l *Language) formatStatusChanged(status model.Status) string {
 	switch l.ID {
-	case enums.LanguageIDNO:
+	case model.LanguageIDNO:
 		return fmt.Sprintf("Endret status til '%s'", status)
-	case enums.LanguageIDEN:
+	case model.LanguageIDEN:
 		return fmt.Sprintf("Changed status to '%s'", status)
 	default:
 		return status.String()
@@ -970,7 +969,7 @@ func (l *Language) FormatDateAbs(t time.Time) string {
 	}
 
 	switch l.ID {
-	case enums.LanguageIDNO:
+	case model.LanguageIDNO:
 		if t.Year() == time.Now().Year() {
 			return fmt.Sprintf("%d. %s",
 				t.Day(),
@@ -983,7 +982,7 @@ func (l *Language) FormatDateAbs(t time.Time) string {
 				t.Year(),
 			)
 		}
-	case enums.LanguageIDEN:
+	case model.LanguageIDEN:
 		if t.Year() == time.Now().Year() {
 			return t.Format("January 2")
 		} else {
@@ -1000,7 +999,7 @@ func (l *Language) FormatTimeAbs(t time.Time) string {
 	}
 
 	switch l.ID {
-	case enums.LanguageIDNO:
+	case model.LanguageIDNO:
 		if t.Year() == time.Now().Year() {
 			return fmt.Sprintf("%d. %s kl. %02d:%02d",
 				t.Day(),
@@ -1017,7 +1016,7 @@ func (l *Language) FormatTimeAbs(t time.Time) string {
 				t.Minute(),
 			)
 		}
-	case enums.LanguageIDEN:
+	case model.LanguageIDEN:
 		if t.Year() == time.Now().Year() {
 			return t.Format("January 2, 2006 at 3:04 PM")
 		} else {
@@ -1037,7 +1036,7 @@ func (l *Language) FormatTimeRel(t time.Time) string {
 	diff := now.Sub(t)
 
 	switch l.ID {
-	case enums.LanguageIDNO:
+	case model.LanguageIDNO:
 		if diff < -356*24*time.Hour {
 			return ""
 		}
@@ -1092,7 +1091,7 @@ func (l *Language) FormatTimeRel(t time.Time) string {
 		if diff < 356*24*time.Hour {
 			return fmt.Sprintf("for %d dager siden", int(diff.Hours()/24))
 		}
-	case enums.LanguageIDEN:
+	case model.LanguageIDEN:
 		if diff < -356*24*time.Hour {
 			return ""
 		}
@@ -1153,9 +1152,9 @@ func (l *Language) FormatTimeRel(t time.Time) string {
 
 func (l *Language) AdminDefaultInviteMessage(inviter string) string {
 	switch l.ID {
-	case enums.LanguageIDNO:
+	case model.LanguageIDNO:
 		return fmt.Sprintf("%s har invitert deg til å opprette en bruker i Bino.", inviter)
-	case enums.LanguageIDEN:
+	case model.LanguageIDEN:
 		fallthrough
 	default:
 		return fmt.Sprintf("%s has invited you to create a user in Bino.", inviter)
@@ -1163,8 +1162,8 @@ func (l *Language) AdminDefaultInviteMessage(inviter string) string {
 }
 
 var Languages = map[int32]*Language{
-	int32(enums.LanguageIDNO): NO,
-	int32(enums.LanguageIDEN): EN,
+	int32(model.LanguageIDNO): NO,
+	int32(model.LanguageIDEN): EN,
 }
 
 func GetLanguage(id int32) *Language {

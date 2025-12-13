@@ -8,7 +8,7 @@ package handleradminroot
 import "github.com/a-h/templ"
 import templruntime "github.com/a-h/templ/runtime"
 
-import "github.com/fugleadvokatene/bino/internal/enums"
+import "github.com/fugleadvokatene/bino/internal/model"
 import "github.com/fugleadvokatene/bino/internal/request"
 import "github.com/fugleadvokatene/bino/internal/templbase"
 
@@ -75,7 +75,7 @@ func AdminRootPage(data *request.CommonData) templ.Component {
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			if data.User.AccessLevel >= enums.AccessLevelCoordinator {
+			if data.User.AccessLevel >= model.AccessLevelCoordinator {
 				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 4, "<li class=\"card mb-1\"><div class=\"card-header\"><a href=\"/species\">")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
@@ -111,7 +111,7 @@ func AdminRootPage(data *request.CommonData) templ.Component {
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			if data.User.AccessLevel >= enums.AccessLevelAdmin {
+			if data.User.AccessLevel >= model.AccessLevelAdmin {
 				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 8, "<li class=\"card mb-1\"><div class=\"card-header\"><a href=\"/homes\">")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err

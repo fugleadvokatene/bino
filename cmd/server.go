@@ -10,21 +10,36 @@ import (
 	"time"
 
 	"github.com/coreos/go-oidc"
+	"github.com/fugleadvokatene/bino/internal/config"
 	"github.com/fugleadvokatene/bino/internal/cookies"
 	"github.com/fugleadvokatene/bino/internal/db"
 	"github.com/fugleadvokatene/bino/internal/debug"
-	"github.com/fugleadvokatene/bino/internal/enums"
 	"github.com/fugleadvokatene/bino/internal/fs"
+	"github.com/fugleadvokatene/bino/internal/gdrive"
 	"github.com/fugleadvokatene/bino/internal/handlers/handleraccess"
 	"github.com/fugleadvokatene/bino/internal/handlers/handleradminroot"
 	"github.com/fugleadvokatene/bino/internal/handlers/handlercalendar"
+	"github.com/fugleadvokatene/bino/internal/handlers/handlerdashboard"
 	"github.com/fugleadvokatene/bino/internal/handlers/handlerdebug"
 	"github.com/fugleadvokatene/bino/internal/handlers/handlererror"
 	"github.com/fugleadvokatene/bino/internal/handlers/handlerevent"
+	"github.com/fugleadvokatene/bino/internal/handlers/handlerfile"
+	"github.com/fugleadvokatene/bino/internal/handlers/handlerformerpatients"
+	"github.com/fugleadvokatene/bino/internal/handlers/handlergdriveadmin"
+	"github.com/fugleadvokatene/bino/internal/handlers/handlerhome"
+	"github.com/fugleadvokatene/bino/internal/handlers/handlerhomeadmin"
+	"github.com/fugleadvokatene/bino/internal/handlers/handlerimport"
 	"github.com/fugleadvokatene/bino/internal/handlers/handlerlanguage"
+	"github.com/fugleadvokatene/bino/internal/handlers/handlermain"
+	"github.com/fugleadvokatene/bino/internal/handlers/handlerpatient"
 	"github.com/fugleadvokatene/bino/internal/handlers/handlerprivacy"
+	"github.com/fugleadvokatene/bino/internal/handlers/handlersearch"
+	"github.com/fugleadvokatene/bino/internal/handlers/handlerspeciesadmin"
 	"github.com/fugleadvokatene/bino/internal/handlers/handlertos"
-	"github.com/jackc/pgx/v5"
+	"github.com/fugleadvokatene/bino/internal/handlers/handleruser"
+	"github.com/fugleadvokatene/bino/internal/handlers/handleruseradmin"
+	"github.com/fugleadvokatene/bino/internal/handlers/handlerwiki"
+	"github.com/fugleadvokatene/bino/internal/model"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/google"
@@ -39,50 +54,18 @@ var ProfileScopes = []string{
 }
 
 type Server struct {
-	Conn              *pgxpool.Pool
 	DB                *db.Database
 	Cookies           cookies.CookieStore
 	OAuthConfig       *oauth2.Config
 	TokenVerifier     *oidc.IDTokenVerifier
-	GDriveWorker      *GDriveWorker
+	GDriveWorker      *gdrive.Worker
 	FileBackend       fs.FileStorage
 	ConstantDebugInfo debug.ConstantInfo
 	BuildKey          string
-	Config            Config
-}
-
-type AuthConfig struct {
-	SessionKeyLocation       string
-	OAuthCredentialsLocation string
-	ClientID                 string
-	OAuthRedirectURI         string
-}
-
-type HTTPConfig struct {
-	URL                      string
-	ReadTimeoutSeconds       time.Duration
-	ReadHeaderTimeoutSeconds time.Duration
-	WriteTimeoutSeconds      time.Duration
-	IdleTimeoutSeconds       time.Duration
-	StaticDir                string
+	Config            config.Config
 }
 
 type Middleware = func(http.Handler) http.Handler
-
-func (s *Server) Transaction(ctx context.Context, f func(ctx context.Context, q *db.Database) error) error {
-	tx, err := s.Conn.BeginTx(ctx, pgx.TxOptions{})
-	if err != nil {
-		return fmt.Errorf("starting database transaction: %w", err)
-	}
-	db := &db.Database{Q: s.DB.Q.WithTx(tx)}
-	err = f(ctx, db)
-	if err == nil {
-		err = tx.Commit(ctx)
-	} else {
-		tx.Rollback(ctx)
-	}
-	return err
-}
 
 var ErrUnauthorized = errors.New("unauthorized")
 var ErrInternalServerError = errors.New("internal server error")
@@ -101,12 +84,11 @@ func startServer(
 	ctx context.Context,
 	conn *pgxpool.Pool,
 	db *db.Database,
-	gdriveWorker *GDriveWorker,
+	gdriveWorker *gdrive.Worker,
 	fileBackend fs.FileStorage,
-	config Config,
+	config config.Config,
 	buildKey string,
 ) error {
-
 	c, err := loadCreds(config.Auth.OAuthCredentialsLocation)
 	if err != nil {
 		return err
@@ -126,10 +108,8 @@ func startServer(
 	if redirectURI == "" {
 		redirectURI = c.Web.RedirectURIs[0]
 	}
-	fmt.Printf("using redirect URL: %s\n", redirectURI)
 
 	server := &Server{
-		Conn:         conn,
 		DB:           db,
 		Cookies:      cookies.NewCookieStore(sessionKey),
 		GDriveWorker: gdriveWorker,
@@ -152,147 +132,150 @@ func startServer(
 	mux := http.NewServeMux()
 
 	// Set up auth middlewares
-	baseFlow := []Middleware{server.requireLogin, withLogging}
-
+	baseFlow := []Middleware{server.requireLogin, WithLogging}
 	publicFlow := []Middleware{func(h http.Handler) http.Handler {
 		return server.tryLogin(h, server.requireLogin)
 	}}
 
-	requiresRehabber := slices.Clone(baseFlow)
-	requiresRehabber = append(requiresRehabber, server.requireAccessLevel(enums.AccessLevelRehabber))
-
-	requiresCoordinator := slices.Clone(baseFlow)
-	requiresCoordinator = append(requiresCoordinator, server.requireAccessLevel(enums.AccessLevelCoordinator))
-
-	requiresAdmin := slices.Clone(baseFlow)
-	requiresAdmin = append(requiresAdmin, server.requireAccessLevel(enums.AccessLevelAdmin))
-
-	loggedIn := func(handler http.Handler, cap enums.Cap) http.Handler {
-		requirements := slices.Clone(baseFlow)
-		requirements = append(requirements, server.requireCapability(cap))
-		return chain(handler, requirements...)
-	}
-
-	loggedInf := func(handler http.HandlerFunc, cap enums.Cap) http.Handler {
-		requirements := slices.Clone(baseFlow)
-		requirements = append(requirements, server.requireCapability(cap))
-		return chain(handler, requirements...)
-	}
-
 	// Abbreviations
 	type W = http.ResponseWriter
 	type R = http.Request
+	m := func(path string, handler http.Handler, cap model.Cap) {
+		requirements := slices.Clone(baseFlow)
+		requirements = append(requirements, server.requireCapability(cap))
+		mux.Handle(path, Chain(handler, requirements...))
+	}
 
-	//// PUBLIC
-	// Pages
-	mux.Handle("GET /{$}", chainf(server.mainHandler, publicFlow...))
-	mux.Handle("GET /privacy", chain(&handlerprivacy.Page{Config: server.Config.Privacy}, publicFlow...))
-	mux.Handle("GET /tos", chainf(handlertos.Handler, publicFlow...))
-	mux.Handle("GET /access", chainf(handleraccess.Handler, baseFlow...))
+	// Main page
+	mux.Handle("GET /{$}", Chain(&handlermain.Handler{Dashboard: &handlerdashboard.Page{DB: db}}, publicFlow...))
+
+	// Login flow
+	mux.Handle("GET /login", Chainf(server.loginHandler))
+	mux.Handle("POST /login", Chainf(server.loginHandler))
+	mux.Handle("GET /AuthLogOut", Chainf(server.AuthLogOutHandler))
+	mux.Handle("POST /AuthLogOut", Chainf(server.AuthLogOutHandler))
+	mux.Handle("GET /oauth2/callback", Chainf(server.callbackHandler))
+	mux.Handle("POST /oauth2/callback", Chainf(server.callbackHandler))
+
+	// Dashbord
+	m("POST /checkin", &handlerdashboard.Checkin{DB: db, GDriveWorker: server.GDriveWorker, Config: &server.Config}, model.CapCheckInPatient)
+
+	// Privacy policy
+	mux.Handle("GET /privacy", Chain(&handlerprivacy.Page{Config: server.Config.Privacy}, publicFlow...))
+	m("POST /privacy", &handlerprivacy.Form{DB: db, Config: server.Config.Privacy}, model.CapSetOwnPreferences)
+	mux.Handle("GET /tos", Chainf(handlertos.Handler, publicFlow...))
+	mux.Handle("GET /access", Chainf(handleraccess.Handler, baseFlow...))
+
 	// Static content
 	staticDir := fmt.Sprintf("/static/%s/", buildKey)
 	mux.Handle("GET "+staticDir, http.StripPrefix(staticDir, http.FileServer(http.Dir(config.HTTP.StaticDir))))
 
-	// User content
-	mux.Handle("GET /file/{id}/{filename}", chainf(server.fileHandler, baseFlow...))
+	// Files
+	mux.Handle("GET /file/{id}/{filename}", Chain(&handlerfile.Read{DB: db, FileBackend: fileBackend}, baseFlow...))
+	m("GET /file", &handlerfile.UploadPage{DB: db}, model.CapUploadFile)
+	m("POST /file/filepond", &handlerfile.FilepondProcess{FileBackend: fileBackend}, model.CapUploadFile)
+	m("DELETE /file/filepond", &handlerfile.FilepondRevert{FileBackend: fileBackend}, model.CapUploadFile)
+	m("GET /file/filepond/{id}", &handlerfile.FilepondRestore{FileBackend: fileBackend}, model.CapUploadFile)
+	m("POST /file/submit", &handlerfile.FilepondSubmit{DB: db, FileBackend: fileBackend}, model.CapUploadFile)
+	m("POST /file/{id}/delete", &handlerfile.Delete{DB: db, FileBackend: fileBackend}, model.CapUploadFile)
+	m("POST /file/{id}/set-filename", &handlerfile.SetFilename{DB: db}, model.CapEditWiki)
 
-	//// LOGIN
-	mux.Handle("GET /login", chainf(server.loginHandler))
-	mux.Handle("POST /login", chainf(server.loginHandler))
-	mux.Handle("GET /AuthLogOut", chainf(server.AuthLogOutHandler))
-	mux.Handle("POST /AuthLogOut", chainf(server.AuthLogOutHandler))
-	mux.Handle("GET /oauth2/callback", chainf(server.callbackHandler))
-	mux.Handle("POST /oauth2/callback", chainf(server.callbackHandler))
+	// Patients
+	m("GET /patient/{patient}", &handlerpatient.Page{DB: db}, model.CapViewAllActivePatients)
+	m("POST /patient/{patient}/move", &handlerpatient.Move{DB: db}, model.CapManageOwnPatients)
+	m("POST /patient/{patient}/checkout", &handlerpatient.Checkout{DB: db}, model.CapManageOwnPatients)
+	m("POST /patient/{patient}/set-name", &handlerpatient.SetName{DB: db}, model.CapManageOwnPatients)
+	m("POST /patient/{patient}/create-journal", &handlerpatient.CreateJournal{DB: db, GDriveWorker: server.GDriveWorker, Config: &server.Config}, model.CapCreatePatientJournal)
+	m("POST /patient/{patient}/attach-journal", &handlerpatient.AttachJournal{DB: db}, model.CapManageOwnPatients)
+	m("POST /patient/{patient}/accept-suggested-journal", &handlerpatient.AcceptSuggestedJournal{DB: db}, model.CapManageOwnPatients)
+	m("POST /patient/{patient}/decline-suggested-journal", &handlerpatient.DeclineSuggestedJournal{DB: db}, model.CapManageOwnPatients)
 
-	//// LOGGED-IN USER / REHABBER
-	// Pages
-	mux.Handle("GET /patient/{patient}", loggedInf(server.getPatientHandler, enums.CapViewAllActivePatients))
-	mux.Handle("GET /home/{home}", loggedInf(server.getHomeHandler, enums.CapViewAllHomes))
-	mux.Handle("GET /user/{user}", loggedInf(server.getUserHandler, enums.CapViewAllHomes))
-	mux.Handle("GET /former-patients", loggedInf(server.formerPatientsHandler, enums.CapViewAllFormerPatients))
-	mux.Handle("GET /calendar", loggedInf(handlercalendar.Page, enums.CapViewCalendar))
-	mux.Handle("GET /import", loggedInf(server.getImportHandler, enums.CapUseImportTool))
-	mux.Handle("GET /search", loggedInf(server.searchHandler, enums.CapSearch))
-	mux.Handle("GET /search/live", loggedInf(server.searchLiveHandler, enums.CapSearch))
-	mux.Handle("GET /file", loggedInf(server.filePage, enums.CapUploadFile))
-	mux.Handle("GET /wiki", loggedInf(server.wikiMain, enums.CapEditWiki))
-	mux.Handle("GET /wiki/view/{id}", loggedInf(server.wikiPage, enums.CapEditWiki))
-	// Forms
-	mux.Handle("POST /checkin", loggedInf(server.postCheckinHandler, enums.CapCheckInPatient))
-	mux.Handle("POST /privacy", loggedIn(&handlerprivacy.Form{Backend: server.DB, Config: server.Config.Privacy}, enums.CapSetOwnPreferences))
-	mux.Handle("POST /patient/{patient}/move", loggedInf(server.movePatientHandler, enums.CapManageOwnPatients))
-	mux.Handle("POST /patient/{patient}/checkout", loggedInf(server.postCheckoutHandler, enums.CapManageOwnPatients))
-	mux.Handle("POST /patient/{patient}/set-name", loggedInf(server.postSetNameHandler, enums.CapManageOwnPatients))
-	mux.Handle("POST /patient/{patient}/create-journal", loggedInf(server.createJournalHandler, enums.CapCreatePatientJournal))
-	mux.Handle("POST /patient/{patient}/attach-journal", loggedInf(server.attachJournalHandler, enums.CapManageOwnPatients))
-	mux.Handle("POST /patient/{patient}/accept-suggested-journal", loggedInf(server.acceptSuggestedJournalHandler, enums.CapManageOwnPatients))
-	mux.Handle("POST /patient/{patient}/decline-suggested-journal", loggedInf(server.declineSuggestedJournalHandler, enums.CapManageOwnPatients))
-	mux.Handle("POST /event/{event}/set-note", loggedIn(&handlerevent.SetNote{Backend: server.DB}, enums.CapManageOwnPatients))
-	mux.Handle("POST /home/{home}/set-capacity", loggedInf(server.setCapacityHandler, enums.CapManageOwnHomes))
-	mux.Handle("POST /home/{home}/add-unavailable", loggedInf(server.addHomeUnavailablePeriodHandler, enums.CapManageOwnHomes))
-	mux.Handle("POST /home/{home}/set-note", loggedInf(server.homeSetNoteHandler, enums.CapManageOwnHomes))
-	mux.Handle("POST /home/{home}/species/add", loggedInf(server.addPreferredSpeciesHandler, enums.CapManageOwnHomes))
-	mux.Handle("POST /home/{home}/species/delete/{species}", loggedInf(server.deletePreferredSpeciesHandler, enums.CapManageOwnHomes))
-	mux.Handle("POST /home/{home}/species/reorder", loggedInf(server.reorderSpeciesHandler, enums.CapManageOwnHomes))
-	mux.Handle("POST /period/{period}/delete", loggedInf(server.deleteHomeUnavailableHandler, enums.CapManageOwnHomes))
-	mux.Handle("POST /import", loggedInf(server.postImportHandler, enums.CapUseImportTool))
-	mux.Handle("POST /wiki/create", loggedInf(server.wikiCreate, enums.CapEditWiki))
-	mux.Handle("POST /wiki/title/{id}", loggedInf(server.wikiSetTitle, enums.CapEditWiki))
-	mux.Handle("POST /file/{id}/set-filename", loggedInf(server.fileSetFilename, enums.CapEditWiki))
-	// Ajax
-	mux.Handle("POST /language", loggedIn(&handlerlanguage.Post{Backend: server.DB}, enums.CapSetOwnPreferences))
-	mux.Handle("POST /ajaxreorder", loggedInf(server.ajaxReorderHandler, enums.CapManageOwnPatients))
-	mux.Handle("GET /calendar/away", loggedIn(&handlercalendar.AjaxCalendarAway{Backend: server.DB}, enums.CapViewCalendar))
-	mux.Handle("GET /calendar/patientevents", loggedIn(&handlercalendar.AjaxCalendarPatientEvents{Backend: server.DB}, enums.CapViewCalendar))
-	mux.Handle("GET /import/validation", loggedInf(server.ajaxImportValidateHandler, enums.CapViewCalendar))
-	mux.Handle("POST /wiki/save/{id}", loggedInf(server.wikiSave, enums.CapEditWiki))
-	mux.Handle("POST /wiki/fetchimage/{id}", loggedInf(server.wikiFetchImage, enums.CapEditWiki))
-	mux.Handle("POST /wiki/uploadimage/{id}", loggedInf(server.wikiUploadImage, enums.CapEditWiki))
-	// Filepond
-	mux.Handle("POST /file/filepond", loggedInf(server.filepondProcess, enums.CapUploadFile))
-	mux.Handle("DELETE /file/filepond", loggedInf(server.imageFilepondRevert, enums.CapUploadFile))
-	mux.Handle("GET /file/filepond/{id}", loggedInf(server.imageFilepondRestore, enums.CapUploadFile))
-	mux.Handle("POST /file/submit", loggedInf(server.filepondSubmit, enums.CapUploadFile))
-	mux.Handle("POST /file/{id}/delete", loggedInf(server.fileDelete, enums.CapUploadFile))
+	// Home
+	m("GET /home/{home}", &handlerhome.Page{DB: db}, model.CapViewAllHomes)
+	m("POST /home/{home}/set-capacity", &handlerhome.SetCapacity{DB: db}, model.CapManageOwnHomes)
+	m("POST /home/{home}/add-unavailable", &handlerhome.AddHomeUnavailablePeriod{DB: db}, model.CapManageOwnHomes)
+	m("POST /home/{home}/set-note", &handlerhome.SetNote{DB: db}, model.CapManageOwnHomes)
+	m("POST /home/{home}/species/add", &handlerhome.AddPreferredSpecies{DB: db}, model.CapManageOwnHomes)
+	m("POST /home/{home}/species/delete/{species}", &handlerhome.DeletePreferredSpecies{DB: db}, model.CapManageOwnHomes)
+	m("POST /home/{home}/species/reorder", &handlerhome.ReorderSpecies{DB: db}, model.CapManageOwnHomes)
+	m("POST /period/{period}/delete", &handlerhome.DeleteHomeUnavailablePeriod{DB: db}, model.CapManageOwnHomes)
+	m("POST /ajaxreorder", &handlerhome.AjaxReorderHandler{DB: db}, model.CapManageOwnPatients)
 
-	//// CONTENT MANAGEMENT
-	// Pages
-	mux.Handle("GET /species", loggedInf(server.getSpeciesHandler, enums.CapManageSpecies))
-	mux.Handle("GET /admin", loggedInf(handleradminroot.Handler, enums.CapViewAdminTools))
-	mux.Handle("GET /homes", loggedInf(server.getHomesHandler, enums.CapManageAllHomes))
-	mux.Handle("GET /users", loggedInf(server.userAdminHandler, enums.CapManageUsers))
-	// Forms
-	mux.Handle("POST /homes", loggedInf(server.postHomeHandler, enums.CapManageAllHomes))
-	mux.Handle("POST /homes/{home}/set-name", loggedInf(server.postHomeSetName, enums.CapManageOwnHomes))
-	// Ajax
-	mux.Handle("POST /species", loggedInf(server.postSpeciesHandler, enums.CapManageSpecies))
-	mux.Handle("PUT /species", loggedInf(server.putSpeciesHandler, enums.CapManageSpecies))
+	// User
+	m("GET /user/{user}", &handleruser.GetUser{DB: db}, model.CapViewAllHomes)
 
-	//// ADMIN
-	// Pages
-	mux.Handle("GET /gdrive", loggedInf(server.getGDriveHandler, enums.CapViewGDriveSettings))
-	mux.Handle("GET /user/{user}/confirm-scrub", loggedInf(server.userConfirmScrubHandler, enums.CapDeleteUsers))
-	mux.Handle("GET /user/{user}/confirm-nuke", loggedInf(server.userConfirmNukeHandler, enums.CapDeleteUsers))
-	mux.Handle("GET /debug", loggedIn(&handlerdebug.Page{ConstantInfo: server.ConstantDebugInfo}, enums.CapDebug))
-	// Forms
-	mux.Handle("POST /user/{user}/scrub", loggedInf(server.userDoScrubHandler, enums.CapDeleteUsers))
-	mux.Handle("POST /user/{user}/nuke", loggedInf(server.userDoNukeHandler, enums.CapDeleteUsers))
-	mux.Handle("POST /gdrive/invite/{email}", loggedInf(server.gdriveInviteUserHandler, enums.CapInviteToGDrive))
-	mux.Handle("POST /invite", loggedInf(server.inviteHandler, enums.CapInviteToBino))
-	mux.Handle("POST /invite/{email}", loggedInf(server.inviteHandler, enums.CapInviteToBino))
-	mux.Handle("POST /invite/{id}/delete", loggedInf(server.inviteDeleteHandler, enums.CapInviteToBino))
+	// Former patients
+	m("GET /former-patients", &handlerformerpatients.Page{DB: db}, model.CapViewAllFormerPatients)
 
-	//// FALLBACK
-	// Pages
-	mux.Handle("GET /", chainf(func(w W, r *R) {
+	// Calendar
+	m("GET /calendar", &handlercalendar.Page{}, model.CapViewCalendar)
+	m("GET /calendar/away", &handlercalendar.AjaxAway{DB: db}, model.CapViewCalendar)
+	m("GET /calendar/patientevents", &handlercalendar.AjaxPatientEvents{DB: db}, model.CapViewCalendar)
+
+	// Import tool
+	m("GET /import", &handlerimport.Page{}, model.CapUseImportTool)
+	m("POST /import", &handlerimport.Post{}, model.CapUseImportTool)
+	m("GET /import/validation", &handlerimport.Validate{DB: db}, model.CapUseImportTool)
+
+	// Search
+	m("GET /search", &handlersearch.Page{DB: db}, model.CapSearch)
+	m("GET /search/live", &handlersearch.Live{DB: db}, model.CapSearch)
+
+	// Wiki
+	m("GET /wiki", &handlerwiki.Main{DB: db}, model.CapEditWiki)
+	m("GET /wiki/view/{id}", &handlerwiki.Page{DB: db}, model.CapEditWiki)
+	m("POST /wiki/create", &handlerwiki.Create{DB: db}, model.CapEditWiki)
+	m("POST /wiki/title/{id}", &handlerwiki.SetTitle{DB: db}, model.CapEditWiki)
+	m("POST /wiki/save/{id}", &handlerwiki.Save{DB: db}, model.CapEditWiki)
+	m("POST /wiki/fetchimage/{id}", &handlerwiki.FetchImage{DB: db, FileBackend: fileBackend}, model.CapEditWiki)
+	m("POST /wiki/uploadimage/{id}", &handlerwiki.UploadImage{DB: db, FileBackend: fileBackend}, model.CapEditWiki)
+
+	// Events
+	m("POST /event/{event}/set-note", &handlerevent.SetNote{DB: db}, model.CapManageOwnPatients)
+
+	// Language
+	m("POST /language", &handlerlanguage.Post{DB: db}, model.CapSetOwnPreferences)
+
+	// Admin root
+	m("GET /admin", &handleradminroot.Handler{}, model.CapViewAdminTools)
+
+	// Species admin
+	m("GET /species", &handlerspeciesadmin.GetSpecies{DB: db}, model.CapManageSpecies)
+	m("POST /species", &handlerspeciesadmin.PostSpecies{DB: db}, model.CapManageSpecies)
+	m("PUT /species", &handlerspeciesadmin.PutSpecies{DB: db}, model.CapManageSpecies)
+
+	// Home admin
+	m("GET /homes", &handlerhomeadmin.Page{DB: db}, model.CapManageAllHomes)
+	m("POST /homes", &handlerhomeadmin.Form{DB: db}, model.CapManageAllHomes)
+	m("POST /homes/{home}/set-name", &handlerhomeadmin.Form{DB: db}, model.CapManageOwnHomes)
+
+	// User admin
+	m("GET /users", &handleruseradmin.Page{DB: db}, model.CapManageUsers)
+	m("GET /user/{user}/confirm-scrub", &handleruseradmin.ConfirmScrubOrNuke{DB: db, Nuke: false}, model.CapDeleteUsers)
+	m("GET /user/{user}/confirm-nuke", &handleruseradmin.ConfirmScrubOrNuke{DB: db, Nuke: true}, model.CapDeleteUsers)
+	m("POST /user/{user}/scrub", &handleruseradmin.DoScrubOrNuke{DB: db, Nuke: false}, model.CapDeleteUsers)
+	m("POST /user/{user}/nuke", &handleruseradmin.DoScrubOrNuke{DB: db, Nuke: true}, model.CapDeleteUsers)
+	m("POST /invite", &handleruseradmin.Invite{DB: db}, model.CapInviteToBino)
+	m("POST /invite/{email}", &handleruseradmin.Invite{DB: db}, model.CapInviteToBino)
+	m("POST /invite/{id}/delete", &handleruseradmin.InviteDelete{DB: db}, model.CapInviteToBino)
+
+	// GDrive admin
+	m("GET /gdrive", &handlergdriveadmin.Page{Worker: server.GDriveWorker, DB: db}, model.CapViewGDriveSettings)
+	m("POST /gdrive/invite/{email}", &handlergdriveadmin.Invite{Worker: server.GDriveWorker}, model.CapInviteToGDrive)
+
+	// Debug
+	m("GET /debug", &handlerdebug.Page{ConstantInfo: server.ConstantDebugInfo}, model.CapDebug)
+
+	// 404
+	mux.Handle("GET /", Chainf(func(w W, r *R) {
 		handlererror.NotFound(w, r, fmt.Errorf("not found: %s %s", r.Method, r.RequestURI))
 	}, publicFlow...))
-	mux.Handle("POST /", chainf(func(w W, r *R) {
+	mux.Handle("POST /", Chainf(func(w W, r *R) {
 		handlererror.NotFound(w, r, fmt.Errorf("not found: %s %s", r.Method, r.RequestURI))
 	}, publicFlow...))
 
 	go func() {
-		handler := chain(mux, withRecover)
+		handler := Chain(mux, WithRecover)
 		srv := &http.Server{
 			Addr:              config.HTTP.URL,
 			Handler:           handler,

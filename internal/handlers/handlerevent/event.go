@@ -1,17 +1,15 @@
 package handlerevent
 
 import (
-	"context"
 	"net/http"
 
+	"github.com/fugleadvokatene/bino/internal/db"
 	"github.com/fugleadvokatene/bino/internal/handlers/handlererror"
 	"github.com/fugleadvokatene/bino/internal/request"
 )
 
 type SetNote struct {
-	Backend interface {
-		SetEventNote(ctx context.Context, ID int32, Note string) error
-	}
+	DB *db.Database
 }
 
 func (h *SetNote) ServeHTTP(w http.ResponseWriter, r *http.Request) {
@@ -29,7 +27,7 @@ func (h *SetNote) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := h.Backend.SetEventNote(ctx, event, note); err != nil {
+	if err := h.DB.SetEventNote(ctx, event, note); err != nil {
 		handlererror.Error(w, r, err)
 		return
 	}

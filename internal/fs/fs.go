@@ -8,7 +8,7 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/fugleadvokatene/bino/internal/view"
+	"github.com/fugleadvokatene/bino/internal/model"
 	"github.com/google/uuid"
 )
 
@@ -31,26 +31,26 @@ type DeleteResult struct {
 
 type ReadResult struct {
 	Data           []byte
-	FileInfo       view.FileInfo
+	FileInfo       model.FileInfo
 	Error          error
 	HTTPStatusCode int
 }
 
 type CommitResult struct {
-	Commited       map[string]view.FileInfo
+	Commited       map[string]model.FileInfo
 	Failed         []string
 	Error          error
 	HTTPStatusCode int
 }
 
 type ListTempResult struct {
-	Files map[string]view.FileInfo
+	Files map[string]model.FileInfo
 	Error error
 }
 
 type FileStorage interface {
 	// Upload to temporary storage
-	Upload(ctx context.Context, data io.Reader, fileInfo view.FileInfo) UploadResult
+	Upload(ctx context.Context, data io.Reader, fileInfo model.FileInfo) UploadResult
 	// Delete from temporary storage
 	DeleteTemp(ctx context.Context, ID string) DeleteResult
 	// Read file from temporary storage
@@ -60,7 +60,7 @@ type FileStorage interface {
 	// Commit files from temporary storage to real storage
 	Commit(ctx context.Context, IDs []string) CommitResult
 	// Open file
-	Open(ctx context.Context, ID string, fileInfo view.FileInfo) (io.ReadCloser, error)
+	Open(ctx context.Context, ID string, fileInfo model.FileInfo) (io.ReadCloser, error)
 	// Delete file
 	Delete(ctx context.Context, ID string) DeleteResult
 }
@@ -85,7 +85,7 @@ func NewLocalFileStorage(ctx context.Context, mainDir, tmpDir string) *LocalFile
 	}
 }
 
-func (lfs *LocalFileStorage) Upload(ctx context.Context, data io.Reader, fileInfo view.FileInfo) (out UploadResult) {
+func (lfs *LocalFileStorage) Upload(ctx context.Context, data io.Reader, fileInfo model.FileInfo) (out UploadResult) {
 	id := uuid.New().String()
 
 	// Open the file base directory
@@ -200,15 +200,15 @@ func (lfs *LocalFileStorage) DeleteTemp(ctx context.Context, id string) (out Del
 	return lfs.delete(ctx, lfs.TmpDirectory, id)
 }
 
-func (lfs *LocalFileStorage) readMetaFile(ctx context.Context, dir *os.Root, id string) (view.FileInfo, error) {
+func (lfs *LocalFileStorage) readMetaFile(ctx context.Context, dir *os.Root, id string) (model.FileInfo, error) {
 	metaFile, err := dir.Open(id + "/metadata.json")
 	if err != nil {
-		return view.FileInfo{}, err
+		return model.FileInfo{}, err
 	}
-	var info view.FileInfo
+	var info model.FileInfo
 	if err := json.NewDecoder(metaFile).Decode(&info); err != nil {
 		metaFile.Close()
-		return view.FileInfo{}, err
+		return model.FileInfo{}, err
 	}
 	metaFile.Close()
 
@@ -216,7 +216,7 @@ func (lfs *LocalFileStorage) readMetaFile(ctx context.Context, dir *os.Root, id 
 }
 
 func (lfs *LocalFileStorage) ListTemp(ctx context.Context) (out ListTempResult) {
-	out.Files = map[string]view.FileInfo{}
+	out.Files = map[string]model.FileInfo{}
 
 	dir, err := os.OpenRoot(lfs.TmpDirectory)
 	if err != nil {
@@ -310,7 +310,7 @@ func (lfs *LocalFileStorage) ReadTemp(ctx context.Context, id string) (out ReadR
 
 func (lfs *LocalFileStorage) Commit(ctx context.Context, ids []string) CommitResult {
 	var out CommitResult
-	out.Commited = map[string]view.FileInfo{}
+	out.Commited = map[string]model.FileInfo{}
 	out.HTTPStatusCode = http.StatusOK
 
 	dir, err := os.OpenRoot(lfs.MainDirectory)
@@ -343,7 +343,7 @@ func (lfs *LocalFileStorage) Commit(ctx context.Context, ids []string) CommitRes
 	return out
 }
 
-func (lfs *LocalFileStorage) Open(ctx context.Context, id string, info view.FileInfo) (io.ReadCloser, error) {
+func (lfs *LocalFileStorage) Open(ctx context.Context, id string, info model.FileInfo) (io.ReadCloser, error) {
 	dir, err := os.OpenRoot(lfs.MainDirectory)
 	if err != nil {
 		return nil, err

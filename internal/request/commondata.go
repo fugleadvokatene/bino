@@ -5,9 +5,8 @@ import (
 	"log"
 
 	"github.com/a-h/templ"
-	"github.com/fugleadvokatene/bino/internal/enums"
 	"github.com/fugleadvokatene/bino/internal/language"
-	"github.com/fugleadvokatene/bino/internal/view"
+	"github.com/fugleadvokatene/bino/internal/model"
 )
 
 type CommonData struct {
@@ -20,8 +19,8 @@ type CommonData struct {
 	Subtitle string
 	// Cached result of queries that might be called more than once
 	QueryCache struct {
-		Self        view.User
-		EmailToUser map[string]view.User
+		Self        model.User
+		EmailToUser map[string]model.User
 	}
 	Feedback Feedback
 
@@ -30,23 +29,23 @@ type CommonData struct {
 
 func (cd *CommonData) Error(msg string, err error) {
 	cd.Log("Showed user ERROR: err=%v, message to user=%s", err, msg)
-	cd.SetFeedback(enums.FBError, msg)
+	cd.SetFeedback(model.FBError, msg)
 }
 
 func (cd *CommonData) Warning(msg string, err error) {
 	cd.Log("Showed user WARNING: err=%v, message to user=%s", err, msg)
-	cd.SetFeedback(enums.FBWarning, msg)
+	cd.SetFeedback(model.FBWarning, msg)
 }
 
 func (cd *CommonData) Success(msg string) {
-	cd.SetFeedback(enums.FBSuccess, msg)
+	cd.SetFeedback(model.FBSuccess, msg)
 }
 
 func (cd *CommonData) Info(msg string) {
-	cd.SetFeedback(enums.FBInfo, msg)
+	cd.SetFeedback(model.FBInfo, msg)
 }
 
-func (cd *CommonData) SetFeedback(fbt enums.FB, msg string) {
+func (cd *CommonData) SetFeedback(fbt model.FB, msg string) {
 	if n := len(cd.Feedback.Items); n < 10 {
 		// Filter dupes
 		for i := range n {
@@ -69,7 +68,7 @@ func (cd *CommonData) StaticFile(name string) templ.SafeURL {
 	return templ.URL(fmt.Sprintf("/static/%s/%s", cd.BuildKey, name))
 }
 
-func (cd *CommonData) Lang() enums.LanguageID {
+func (cd *CommonData) Lang() model.LanguageID {
 	return cd.Language.ID
 }
 
@@ -94,16 +93,16 @@ func (cd *CommonData) Log(format string, args ...any) {
 type UserData struct {
 	AppuserID       int32
 	DisplayName     string
-	PreferredHome   view.Home
+	PreferredHome   model.Home
 	Email           string
 	LoggingConsent  bool
 	AvatarURL       string
 	HasAvatarURL    bool
 	HasGDriveAccess bool
-	AccessLevel     enums.AccessLevel
+	AccessLevel     model.AccessLevel
 }
 
-func (u *UserData) HasHomeOrAccess(homeID int32, al enums.AccessLevel) bool {
+func (u *UserData) HasHomeOrAccess(homeID int32, al model.AccessLevel) bool {
 	if u.PreferredHome.ID == homeID {
 		return true
 	}

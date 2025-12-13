@@ -47,3 +47,6 @@ pull-release:
 	git branch -D tmp
 	go build -buildvcs -ldflags="-X 'main.BuildKey=$(tr -dc A-Za-z0-9 </dev/urandom | head -c 8)'" -o backend github.com/fugleadvokatene/bino/cmd
 	sudo systemctl restart bino-backend
+
+mmd:
+	mmdc -i doc/backend.mmd -o doc/img/backend.png

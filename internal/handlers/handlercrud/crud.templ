@@ -1,0 +1,71 @@
+package handlercrud
+
+import (
+    "fmt"
+	"github.com/fugleadvokatene/bino/internal/model"
+	"github.com/fugleadvokatene/bino/internal/language"
+	"github.com/fugleadvokatene/bino/internal/request"
+    "github.com/fugleadvokatene/bino/internal/templbase"
+)
+
+templ (page CRUDPage) Component(data *request.CommonData) {
+    @templbase.Layout(data) {
+        <h1>{page.Header}</h1>
+        @templbase.Card() {
+            <table>
+            <thead>
+                <tr>
+                    for _, key := range page.LangIndependent {
+                        <th>{key}</th>
+                    }
+                    for _, lang := range model.LanguageIDValues() {
+                        <th>{language.Languages[int32(lang)].Emoji}</th>
+                    }
+                    <th><!-- Update button --></th>
+                </tr>
+            </thead>
+            <tbody>
+                { children... }
+            </tbody>
+            </table>
+        }
+    }
+}
+
+templ UpdateRow(data *request.CommonData,  id int32, obj interface{Name(id model.LanguageID) (string, bool)}) {
+    <tr>
+        {children...}
+        for _, lang := range model.LanguageIDValues()  {
+            <td>
+                if name, ok := obj.Name(lang); ok {
+                    <input class="form-control" data-field="lang" data-lang={fmt.Sprintf("%d", lang)} value={name}/>
+                } else {
+                    <input class="form-control"  data-field="lang" data-lang={fmt.Sprintf("%d", lang)} value="?"/>
+                }
+            </input>
+            </td>
+        }
+        <td>
+            <button class="btn btn-outline-primary update-submit" data-id={fmt.Sprintf("%d", id)}>
+                {data.Language.GenericUpdate}
+            </button>
+        </td>
+    </tr>
+}
+
+templ CreateRow(data *request.CommonData) {
+    <tr>
+        {children...}
+        for _, lang := range model.LanguageIDValues() {
+            <td>
+                <input class="form-control" value="" data-field="lang" data-lang={fmt.Sprintf("%d", lang)} placeholder={language.Languages[int32(lang)].SelfName}/>
+                </input>
+            </td>
+        }
+        <td>
+            <button class="btn btn-outline-success w-100" id="new-submit">
+                {data.Language.GenericAdd}
+            </button>
+        </td>
+    </tr>
+}

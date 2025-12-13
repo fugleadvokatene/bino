@@ -4,9 +4,8 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/fugleadvokatene/bino/internal/enums"
+	"github.com/fugleadvokatene/bino/internal/model"
 	"github.com/fugleadvokatene/bino/internal/sql"
-	"github.com/fugleadvokatene/bino/internal/view"
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
@@ -17,7 +16,7 @@ const (
 type SearchQuery struct {
 	Mode           string
 	Query          string
-	TimePreference enums.TimePreference
+	TimePreference model.TimePreference
 	Page           int32
 	MinCreated     int64
 	MaxCreated     int64
@@ -66,11 +65,11 @@ func NewBasicSearchParams(q SearchQuery) sql.SearchBasicParams {
 func NewSearchAdvancedParams(q SearchQuery) sql.SearchAdvancedParams {
 	wRecency := float32(0.0)
 	switch q.TimePreference {
-	case enums.TimePreferenceNewer:
+	case model.TimePreferenceNewer:
 		wRecency = 3.0
-	case enums.TimePreferenceOlder:
+	case model.TimePreferenceOlder:
 		wRecency = -3.0
-	case enums.TimePreferenceNone:
+	case model.TimePreferenceNone:
 		wRecency = 0.0
 	}
 
@@ -97,7 +96,7 @@ func NewSearchAdvancedParams(q SearchQuery) sql.SearchAdvancedParams {
 
 type SearchResult struct {
 	Query        SearchQuery
-	PageMatches  []view.Match
+	PageMatches  []model.Match
 	Offset       int32
 	TotalMatches int32
 	Milliseconds int

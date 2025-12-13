@@ -10,7 +10,7 @@ import templruntime "github.com/a-h/templ/runtime"
 
 import (
 	"fmt"
-	"github.com/fugleadvokatene/bino/internal/enums"
+	"github.com/fugleadvokatene/bino/internal/model"
 	"github.com/fugleadvokatene/bino/internal/privacy"
 	"github.com/fugleadvokatene/bino/internal/request"
 	"github.com/fugleadvokatene/bino/internal/templbase"
@@ -79,7 +79,7 @@ func Privacy(data *request.CommonData, config privacy.Config) templ.Component {
 					}()
 				}
 				ctx = templ.InitializeContext(ctx)
-				if data.Language.ID == enums.LanguageIDEN {
+				if data.Language.ID == model.LanguageIDEN {
 					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 3, "<h2>1. About Bino</h2><p>Bino was developed for idealistic reasons, and has no incentive to store, process or share any informasjon except exactly what is required for the website to function. Bino is Free Software licensed under <a href=\"https://opensource.org/license/agpl-v3\">GNU Affero GPL V3</a>, which requires that the source code be freely available, both the original website and any modified works. You can read the <a href=\"https://github.com/fugleadvokatene/bino\">source code on Github</a> to verify for yourself that what happens when you interact with the site is in line with the privacy policy.</p><h2>2. What we store</h2><p>Bino only saves the information required for you to have an account and to organize information about patients:</p><ol><li>Information provided through your publicly accessible Google account: name, email and profile picture.</li><li>Settings that need to be stored between browser sessions, such as preferred language. This is stored in a database.</li><li>Cookies are stored in your browser to avoid losing text in certain forms.</li><li>Any content you have created on the site, such as pictures of patients and patient history.</li></ol><p>Bino does not share any information with third parties.</p><h2>3. Logging</h2><h3>3.a. No logging by default</h3><p>Bino does no tracking or fingerprinting, regardless of your privacy settings. There is no logging of your activity at all unless you have explicitly consented to this using the form below. Actions that are visible to all logged-in users may be logged, such as checking in a patient, editing the capacity settings for your home, or marking yourself as unavailable. </p><h3>3.b. Opt in to temporary logging</h3><p>To help solve certain technical issues, you can choose to let us log the activity on the site, for instance when you click on links or submit forms, for a short period of time. Do not enable this setting unless an administrator has requested it in order to solve a specific problem. You can revoke the consent at any time, and consent is automatically removed after ")
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err

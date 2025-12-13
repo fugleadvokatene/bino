@@ -4,7 +4,7 @@ import (
 	"errors"
 	"net/http"
 
-	"github.com/fugleadvokatene/bino/internal/enums"
+	"github.com/fugleadvokatene/bino/internal/model"
 	"github.com/fugleadvokatene/bino/internal/request"
 )
 
@@ -23,7 +23,7 @@ func Unauthorized(w http.ResponseWriter, r *http.Request, err error) {
 	request.LogError(r, err)
 }
 
-func EnsureAccess(w http.ResponseWriter, r *http.Request, al enums.AccessLevel) bool {
+func EnsureAccess(w http.ResponseWriter, r *http.Request, al model.AccessLevel) bool {
 	ctx := r.Context()
 	commonData := request.MustLoadCommonData(ctx)
 	hasAccess := commonData.User.AccessLevel >= al

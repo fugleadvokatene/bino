@@ -1,0 +1,150 @@
+package handlersearch
+
+import "github.com/fugleadvokatene/bino/internal/db"
+import "github.com/fugleadvokatene/bino/internal/model"
+import "github.com/fugleadvokatene/bino/internal/request"
+import "github.com/fugleadvokatene/bino/internal/sql"
+import "github.com/fugleadvokatene/bino/internal/templbase"
+
+templ SearchPage(data *request.CommonData, result db.SearchResult, fallbackMsg string) {
+	@templbase.Layout(data) {
+        <div class="search">
+            <form
+                id="search-form"
+                class="card p-2 form-control"
+                hx-get="/search/live"
+                hx-trigger="change, input changed"
+                hx-target="#live-matches"
+                hx-swap="outerHTML"
+                autocomplete="off"
+            >
+                <label for="live-q">{data.Language.GenericSearch}</label>
+                <input
+                    class="form-control input"
+                    type="search"
+                    id="live-q"
+                    name="q"
+                    autocorrect="off"
+                    autocapitalize="off"
+                    value={result.Query.Query}
+                >
+                <div class="mt-2">
+                    <label><input type="radio" name="mode" value="basic" checked?={result.Query.Mode=="basic"}> {data.Language.SearchModeBasic}</label>
+                    <label><input type="radio" name="mode" value="advanced" checked?={result.Query.Mode=="advanced"}> {data.Language.SearchModeAdvanced}</label>
+                </div>
+                <div class="search-advanced-options" data-show={result.Query.Mode=="advanced"}>
+                    <div class="d-flex justify-content-between form-control-sm form-control-plaintext">
+                        <label class="me-2 align-self-center">{data.Language.SearchFilterCreated}</label>
+                        <label for="created-from" class="input-group-text short-label">{data.Language.GenericFrom}</label>
+                        <input autocomplete="off" type="date" class="form-control search-created-filter" id="created-from" name="created-from"></input>
+                        <label for="created-to" class="input-group-text short-label">{data.Language.GenericTo}</label>
+                        <input autocomplete="off" type="date" class="form-control search-created-filter" id="created-to" name="created-to"></input>
+                        <button class="btn btn-secondary search-filter-clear-created" type="button">{data.Language.SearchFilterClear}</button>
+                    </div>
+
+                    <div class="mt-2">
+                        <label>{data.Language.SearchTimePreference}</label>
+                        <label><input type="radio" name="time-preference" value={model.TimePreferenceNone.String()} checked?={result.Query.TimePreference==model.TimePreferenceNone}> {data.Language.SearchTimePreferenceNone}</label>
+                        <label><input type="radio" name="time-preference" value={model.TimePreferenceNewer.String()} checked?={result.Query.TimePreference==model.TimePreferenceNewer}> {data.Language.SearchTimePreferenceNewer}</label>
+                        <label><input type="radio" name="time-preference" value={model.TimePreferenceOlder.String()} checked?={result.Query.TimePreference==model.TimePreferenceOlder}> {data.Language.SearchTimePreferenceOlder}</label>
+                    </div>
+                </div>
+            </form>
+        </div>
+        @SearchMatches(data, result, fallbackMsg)
+	}
+    @templbase.JSModule(data, "search")
+}
+
+templ SearchMatches(data *request.CommonData, result db.SearchResult, fallbackMsg string) {
+    <div class="card p-2 matches mt-2" id="live-matches">
+        <div class="search-header p-0 m-0">
+            <p class="p-0 m-0">
+            Fant <strong>{result.TotalMatches}</strong> resultater på {result.Milliseconds} ms.
+            if int32(len(result.PageMatches)) < result.TotalMatches {
+                Viser <strong>{result.Offset}</strong> til <strong>{result.Offset+int32(len(result.PageMatches))}</strong>
+            }
+            </p>
+        </div>
+        if len(result.PageMatches) > 0 {
+            for _, match := range result.PageMatches {
+                <div class="card">
+                    <div class="card-header match-header">
+                        <div class="match-name">
+                            <a href={templ.URL(match.URL)}>
+                                @Runs(match.HeaderRuns, false)
+                            </a>
+                        </div>
+                        <div class="match-meta">
+                            <div class="match-type d-flex justify-content-end">
+                                {data.Language.MatchType[match.Type]}
+                            </div>
+                            <div class="match-extra-info">
+                                @ExtraInfo(&match)
+                            </div>
+                        </div>
+                    </div>
+                    <div>
+                        for _, frag := range match.BodyFragments {
+                            <div class="fragment shadow-sm">
+                                <pre>
+                                    @Runs(frag.Runs, true)
+                                </pre>
+                            </div>
+                        }
+                    </div>
+                    if result.Query.DebugRank {
+                        <div class="rankings micro align-self-end">
+                            Rank: {match.Rank}
+                            <ul>
+                                for key, r := range match.RankParts {
+                                    <ul>{key}: {r}</ul>
+                                }
+                            </ul>
+                        </div>
+                    }
+                </div>
+            }
+        } else {
+            <p><code>{result.Query.Query}</code>: {fallbackMsg}</p>
+        }
+    </div>
+}
+
+
+templ Runs(runs []model.HighlightRun, ellipsis bool) {
+    if ellipsis {
+        …
+    }
+	for _, run := range runs {
+		@RunComponent(&run)
+	}
+    if ellipsis {
+        …
+    }
+}
+
+templ RunComponent(r *model.HighlightRun) {
+    if r.Hit {
+        <mark class="hl">{r.Text}</mark>
+    } else {
+        <span class="nohl">{r.Text}</span>
+    }
+}
+
+templ ExtraInfo(mv *model.Match) {
+    switch mv.Type {
+        case model.MatchTypePatient:
+            if info := sql.ParseJSON[db.SearchPatientInfo](mv.ExtraData); info != nil {
+                <span class="micro">
+                    <a href={templ.URL(info.JournalURL)}>Gå til journal</a> i <a href={templ.URL(info.JournalInfo.FolderURL)}>{info.JournalInfo.FolderName}</a>
+                </span>
+            }
+        case model.MatchTypeJournal:
+            if info := sql.ParseJSON[db.SearchJournalInfo](mv.ExtraData); info != nil {
+                <span class="micro">
+                    <a href={templ.URL(info.FolderURL)}>{info.FolderName}</a>
+                </span>
+            }
+    }
+}

@@ -2,7 +2,7 @@ package handlerprivacy
 
 import (
     "fmt"
-	"github.com/fugleadvokatene/bino/internal/enums"
+	"github.com/fugleadvokatene/bino/internal/model"
 	"github.com/fugleadvokatene/bino/internal/privacy"
 	"github.com/fugleadvokatene/bino/internal/request"
 	"github.com/fugleadvokatene/bino/internal/templbase"
@@ -13,7 +13,7 @@ templ Privacy(data *request.CommonData, config privacy.Config) {
     @templbase.Layout(data) {
         <h1>{data.Language.FooterPrivacy}</h1>
         @templbase.Card() {
-            if data.Language.ID == enums.LanguageIDEN {
+            if data.Language.ID == model.LanguageIDEN {
                 <h2>1. About Bino</h2>
                 <p>
                     Bino was developed for idealistic reasons, and has no incentive to store, process or share any informasjon except exactly what is required for the website to function.

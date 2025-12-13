@@ -1,18 +1,20 @@
 package handlercalendar
 
 import (
-	"context"
 	"encoding/json"
 	"errors"
 	"net/http"
 	"time"
 
 	"github.com/fugleadvokatene/bino/internal/calendar"
-	"github.com/fugleadvokatene/bino/internal/language"
+	"github.com/fugleadvokatene/bino/internal/db"
 	"github.com/fugleadvokatene/bino/internal/request"
 )
 
-func Page(w http.ResponseWriter, r *http.Request) {
+type Page struct {
+}
+
+func (h *Page) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	commonData := request.MustLoadCommonData(ctx)
 
@@ -30,13 +32,11 @@ func Page(w http.ResponseWriter, r *http.Request) {
 	_ = CalendarPage(commonData, initialtime, initialview).Render(ctx, w)
 }
 
-type AjaxCalendarAway struct {
-	Backend interface {
-		GetUnavailablePeriodsInRange(ctx context.Context, start, end time.Time, lang *language.Language) ([]calendar.Event, error)
-	}
+type AjaxAway struct {
+	DB *db.Database
 }
 
-func (h *AjaxCalendarAway) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+func (h *AjaxAway) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	commonData := request.MustLoadCommonData(ctx)
 
@@ -46,7 +46,7 @@ func (h *AjaxCalendarAway) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
-	out, err := h.Backend.GetUnavailablePeriodsInRange(r.Context(), start, end, commonData.Language)
+	out, err := h.DB.GetUnavailablePeriodsInRange(r.Context(), start, end, commonData.Language)
 	if err != nil {
 		request.LogError(r, err)
 		w.WriteHeader(http.StatusInternalServerError)
@@ -61,13 +61,11 @@ func (h *AjaxCalendarAway) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	w.Write(bin)
 }
 
-type AjaxCalendarPatientEvents struct {
-	Backend interface {
-		GetEventsForCalendar(ctx context.Context, start, end time.Time, lang *language.Language) ([]calendar.Event, error)
-	}
+type AjaxPatientEvents struct {
+	DB *db.Database
 }
 
-func (h *AjaxCalendarPatientEvents) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+func (h *AjaxPatientEvents) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	commonData := request.MustLoadCommonData(ctx)
 
@@ -77,7 +75,7 @@ func (h *AjaxCalendarPatientEvents) ServeHTTP(w http.ResponseWriter, r *http.Req
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
-	out, err := h.Backend.GetEventsForCalendar(ctx, start, end, commonData.Language)
+	out, err := h.DB.GetEventsForCalendar(ctx, start, end, commonData.Language)
 	if err != nil {
 		request.LogError(r, err)
 		w.WriteHeader(http.StatusInternalServerError)

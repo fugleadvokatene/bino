@@ -5,13 +5,13 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/fugleadvokatene/bino/internal/enums"
-	"github.com/fugleadvokatene/bino/internal/gdrive"
+	"github.com/fugleadvokatene/bino/internal/gdrive/url"
+	"github.com/fugleadvokatene/bino/internal/model"
 	"github.com/fugleadvokatene/bino/internal/sql"
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
-func (db *Database) SuggestJournalURLs(ctx context.Context, systemLanguage enums.LanguageID) (int64, error) {
+func (db *Database) SuggestJournalURLs(ctx context.Context, systemLanguage model.LanguageID) (int64, error) {
 	missing, err := db.Q.GetActivePatientsMissingJournal(ctx, int32(systemLanguage))
 	if err != nil {
 		return 0, fmt.Errorf("looking up patients: %w", err)
@@ -43,7 +43,7 @@ func (db *Database) SuggestJournalBasedOnSearch(ctx context.Context, id int32, n
 		return err
 	} else if len(results) == 0 {
 		return fmt.Errorf("no results")
-	} else if baseURL := gdrive.JournalRegex.FindString(results[0].AssociatedUrl.String); baseURL != "" {
+	} else if baseURL := url.JournalRegex.FindString(results[0].AssociatedUrl.String); baseURL != "" {
 		return db.Q.SuggestJournal(ctx, sql.SuggestJournalParams{
 			Url:   pgtype.Text{String: baseURL, Valid: true},
 			Title: pgtype.Text{String: results[0].Header.String, Valid: true},

@@ -1,0 +1,22 @@
+package handlerspeciesadmin
+
+import "github.com/fugleadvokatene/bino/internal/request"
+import "github.com/fugleadvokatene/bino/internal/templbase"
+import "github.com/fugleadvokatene/bino/internal/handlers/handlercrud"
+
+templ SpeciesPage(data *request.CommonData, species []SpeciesLangs) {
+    @handlercrud.CRUDPage{
+        Header: data.Language.AdminManageSpecies,
+        LangIndependent: []string{data.Language.GenericLatin},
+    }.Component(data) {
+        for _, species := range species {
+            @handlercrud.UpdateRow(data, species.ID, species) {
+                <td><input class="form-control" data-field="latin" value={species.LatinName}/></td>
+            }
+        }
+        @handlercrud.CreateRow(data) {
+            <td><input class="form-control" value="" data-field="latin" placeholder={data.Language.GenericLatin}/></td>
+        }
+    }
+    @templbase.JSModule(data, "speciesadmin")
+}

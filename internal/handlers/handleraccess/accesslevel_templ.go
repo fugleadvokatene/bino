@@ -8,7 +8,7 @@ package handleraccess
 import "github.com/a-h/templ"
 import templruntime "github.com/a-h/templ/runtime"
 
-import "github.com/fugleadvokatene/bino/internal/enums"
+import "github.com/fugleadvokatene/bino/internal/model"
 import "github.com/fugleadvokatene/bino/internal/request"
 import "github.com/fugleadvokatene/bino/internal/capabilities"
 import "github.com/fugleadvokatene/bino/internal/templbase"
@@ -103,7 +103,7 @@ func AccessLevelPage(data *request.CommonData) templ.Component {
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var7 string
-			templ_7745c5c3_Var7, templ_7745c5c3_Err = templ.JoinStringErrs(data.Language.AccessLevels[enums.AccessLevelNone])
+			templ_7745c5c3_Var7, templ_7745c5c3_Err = templ.JoinStringErrs(data.Language.AccessLevels[model.AccessLevelNone])
 			if templ_7745c5c3_Err != nil {
 				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handlers/handleraccess/accesslevel.templ`, Line: 13, Col: 66}
 			}
@@ -139,7 +139,7 @@ func AccessLevelPage(data *request.CommonData) templ.Component {
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var9 string
-			templ_7745c5c3_Var9, templ_7745c5c3_Err = templ.JoinStringErrs(data.Language.AccessLevels[enums.AccessLevelRehabber])
+			templ_7745c5c3_Var9, templ_7745c5c3_Err = templ.JoinStringErrs(data.Language.AccessLevels[model.AccessLevelRehabber])
 			if templ_7745c5c3_Err != nil {
 				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handlers/handleraccess/accesslevel.templ`, Line: 19, Col: 70}
 			}
@@ -175,7 +175,7 @@ func AccessLevelPage(data *request.CommonData) templ.Component {
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var11 string
-			templ_7745c5c3_Var11, templ_7745c5c3_Err = templ.JoinStringErrs(data.Language.AccessLevels[enums.AccessLevelCoordinator])
+			templ_7745c5c3_Var11, templ_7745c5c3_Err = templ.JoinStringErrs(data.Language.AccessLevels[model.AccessLevelCoordinator])
 			if templ_7745c5c3_Err != nil {
 				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handlers/handleraccess/accesslevel.templ`, Line: 25, Col: 73}
 			}
@@ -211,7 +211,7 @@ func AccessLevelPage(data *request.CommonData) templ.Component {
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var13 string
-			templ_7745c5c3_Var13, templ_7745c5c3_Err = templ.JoinStringErrs(data.Language.AccessLevels[enums.AccessLevelAdmin])
+			templ_7745c5c3_Var13, templ_7745c5c3_Err = templ.JoinStringErrs(data.Language.AccessLevels[model.AccessLevelAdmin])
 			if templ_7745c5c3_Err != nil {
 				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handlers/handleraccess/accesslevel.templ`, Line: 31, Col: 67}
 			}

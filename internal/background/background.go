@@ -5,8 +5,8 @@ import (
 	"log"
 	"time"
 
-	"github.com/fugleadvokatene/bino/internal/enums"
 	"github.com/fugleadvokatene/bino/internal/fs"
+	"github.com/fugleadvokatene/bino/internal/model"
 )
 
 func RunJob[T any](what string, interval time.Duration, f func() (T, error)) {
@@ -25,14 +25,14 @@ type Backend interface {
 	DeleteStaleSessions(ctx context.Context) (int64, error)
 	DeleteExpiredInvitations(ctx context.Context) (int64, error)
 	RemoveFalseFileWikiLinks(ctx context.Context) (int64, error)
-	SuggestJournalURLs(ctx context.Context, languageID enums.LanguageID) (int64, error)
+	SuggestJournalURLs(ctx context.Context, languageID model.LanguageID) (int64, error)
 }
 
 func StartJobs(
 	ctx context.Context,
 	backend Backend,
 	fileBackend fs.FileStorage,
-	systemLanguageID enums.LanguageID,
+	systemLanguageID model.LanguageID,
 ) {
 	go RunJob("Delete stale sessions", time.Hour, func() (any, error) { return backend.DeleteStaleSessions(ctx) })
 	go RunJob("Delete expired invitations", time.Hour, func() (any, error) { return backend.DeleteExpiredInvitations(ctx) })

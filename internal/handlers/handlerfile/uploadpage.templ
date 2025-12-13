@@ -1,0 +1,97 @@
+package handlerfile
+
+import (
+    "fmt"
+	"github.com/fugleadvokatene/bino/internal/model"
+	"github.com/fugleadvokatene/bino/internal/request"
+	"github.com/fugleadvokatene/bino/internal/templbase"
+)
+
+templ FileUploadPage(data *request.CommonData, files []model.File) {
+    <!doctype html>
+    <html lang="en">
+    <head>
+        @templbase.Head(data)
+    </head>
+    <body data-lang={templ.JSONString(data.Language)}>
+        @templbase.Body(data) {
+            <div class={"main b-container"}>
+                <h1>{data.Language.FilesUploadHeader}</h1>
+                <div class="card p-2">
+                    @FileUploader(data, "/file/submit")
+                </div>
+                <h1>{data.Language.FilesThatYouHaveUploaded}</h1>
+                <div class="file-list">
+                    for _, file := range files {
+                        @FileViewComponent(data, &file)
+                    }
+                </div>
+            </div>
+        }
+
+    <link rel="stylesheet" href={data.StaticFile("bundle/imageupload.css")}></link>
+    @templbase.JSModule(data, "imageupload")
+    </body>
+    </html>
+}
+
+templ FileUploader(data *request.CommonData, url string) {
+    <form action={templ.URL(url)} method="POST">
+        <input type="file" 
+            class="filepond m-0"
+            name="filepond"
+            id="general-file-uploader"
+            multiple 
+            data-allow-reorder="true"
+            data-max-files="10"
+        >
+        <button
+            disabled
+            type="submit"
+            class="btn btn-success w-100"
+            id="general-file-submit"
+        >{data.Language.GenericSave}</button>
+    </form>
+}
+
+templ FileViewComponent(data *request.CommonData, file *model.File) {
+    <div class="card file-container mb-2">
+        <div class="card-header d-flex justify-content-between">
+            <div>
+                <div class="user-file-name editable"  data-action={file.EditPresentationFilenameURL()}>{file.PresentationFilename}</div>
+                <div class="user-metadata d-flex gap-2">
+                    <div class="user-file-accessibility small bg-gradient p-1 border border-black border-1 rounded-2">{data.Language.FileAccessibility[file.Accessibility]}</div>
+                    <div class="user-file-size small bg-gradient p-1 border border-black border-1 rounded-2">{file.FileSizeText()}</div>
+                    for _, wl := range file.WikiLinks {
+                        <div class="user-file-size small bg-gradient p-1 border border-black border-1 rounded-2">Used in Wiki page: <a href={wl.URL()}>{wl.Title}</a></div>
+                    }
+                </div>
+            </div>
+            if len(file.WikiLinks) == 0 && len(file.PatientLinks) == 0 {
+                @templbase.SingleButtonForm(
+                    fmt.Sprintf("/file/%d/delete", file.ID),
+                    "⛔",
+                    "POST",
+                    "btn-outline-danger",
+                )
+            }
+        </div>
+        <div class="card-content d-flex justify-content-around">
+            if file.IsImage() {
+                <a
+                    href={templ.URL(file.URL())}
+                    data-lightbox="user-files"
+                    class="user-image-link"
+                >
+                    <img 
+                        class="user-image dark-on-hover"
+                        src={templ.URL(file.URL())}
+                        alt={file.PresentationFilename}
+                    />
+                </a>
+            } else {
+                <a href={templ.URL(file.URL())}>{file.PresentationFilename}</a>
+            }
+        </div>
+    </div>
+}
