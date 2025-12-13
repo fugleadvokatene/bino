@@ -11,7 +11,11 @@ import (
 	"time"
 
 	"github.com/coreos/go-oidc"
+	"github.com/fugleadvokatene/bino/internal/db"
 	"github.com/fugleadvokatene/bino/internal/enums"
+	accesshandler "github.com/fugleadvokatene/bino/internal/handlers/handleraccess"
+	"github.com/fugleadvokatene/bino/internal/handlers/handleradminroot"
+	"github.com/fugleadvokatene/bino/internal/handlers/handlercalendar"
 	"github.com/gorilla/sessions"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -29,7 +33,7 @@ var ProfileScopes = []string{
 
 type Server struct {
 	Conn          *pgxpool.Pool
-	Queries       *Queries
+	Queries       *db.Queries
 	Cookies       *sessions.CookieStore
 	OAuthConfig   *oauth2.Config
 	TokenVerifier *oidc.IDTokenVerifier
@@ -63,7 +67,7 @@ type RuntimeInfo struct {
 
 type Middleware = func(http.Handler) http.Handler
 
-func (s *Server) Transaction(ctx context.Context, f func(ctx context.Context, q *Queries) error) error {
+func (s *Server) Transaction(ctx context.Context, f func(ctx context.Context, q *db.Queries) error) error {
 	tx, err := s.Conn.BeginTx(ctx, pgx.TxOptions{})
 	if err != nil {
 		return fmt.Errorf("starting database transaction: %w", err)
@@ -94,7 +98,7 @@ func getStatusCode(err error) int {
 func startServer(
 	ctx context.Context,
 	conn *pgxpool.Pool,
-	queries *Queries,
+	queries *db.Queries,
 	gdriveWorker *GDriveWorker,
 	fileBackend FileBackend,
 	config Config,
@@ -179,7 +183,7 @@ func startServer(
 	mux.Handle("GET /{$}", chainf(server.mainHandler, publicFlow...))
 	mux.Handle("GET /privacy", chainf(server.privacyHandler, publicFlow...))
 	mux.Handle("GET /tos", chainf(server.tosHandler, publicFlow...))
-	mux.Handle("GET /access", chainf(server.accessHandler, baseFlow...))
+	mux.Handle("GET /access", chainf(accesshandler.Handler, baseFlow...))
 	// Static content
 	staticDir := fmt.Sprintf("/static/%s/", buildKey)
 	mux.Handle("GET "+staticDir, http.StripPrefix(staticDir, http.FileServer(http.Dir(config.HTTP.StaticDir))))
@@ -201,7 +205,7 @@ func startServer(
 	mux.Handle("GET /home/{home}", loggedInHandler(server.getHomeHandler, enums.CapViewAllHomes))
 	mux.Handle("GET /user/{user}", loggedInHandler(server.getUserHandler, enums.CapViewAllHomes))
 	mux.Handle("GET /former-patients", loggedInHandler(server.formerPatientsHandler, enums.CapViewAllFormerPatients))
-	mux.Handle("GET /calendar", loggedInHandler(server.calendarHandler, enums.CapViewCalendar))
+	mux.Handle("GET /calendar", loggedInHandler(handlercalendar.Handler, enums.CapViewCalendar))
 	mux.Handle("GET /import", loggedInHandler(server.getImportHandler, enums.CapUseImportTool))
 	mux.Handle("GET /search", loggedInHandler(server.searchHandler, enums.CapSearch))
 	mux.Handle("GET /search/live", loggedInHandler(server.searchLiveHandler, enums.CapSearch))
@@ -234,7 +238,7 @@ func startServer(
 	mux.Handle("POST /language", loggedInHandler(server.postLanguageHandler, enums.CapSetOwnPreferences))
 	mux.Handle("POST /ajaxreorder", loggedInHandler(server.ajaxReorderHandler, enums.CapManageOwnPatients))
 	mux.Handle("POST /ajaxtransfer", loggedInHandler(server.ajaxTransferHandler, enums.CapManageOwnPatients))
-	mux.Handle("GET /calendar/away", loggedInHandler(server.ajaxCalendarAwayHandler, enums.CapViewCalendar))
+	mux.Handle("GET /calendar/away", loggedInHandler(func(w http.ResponseWriter, r *http.Request) { handlercalendar.AjaxCalendarAway(w, r, server) }, enums.CapViewCalendar))
 	mux.Handle("GET /calendar/patientevents", loggedInHandler(server.ajaxCalendarPatientEventsHandler, enums.CapViewCalendar))
 	mux.Handle("GET /import/validation", loggedInHandler(server.ajaxImportValidateHandler, enums.CapViewCalendar))
 	mux.Handle("POST /wiki/save/{id}", loggedInHandler(server.wikiSave, enums.CapEditWiki))
@@ -250,7 +254,7 @@ func startServer(
 	//// CONTENT MANAGEMENT
 	// Pages
 	mux.Handle("GET /species", loggedInHandler(server.getSpeciesHandler, enums.CapManageSpecies))
-	mux.Handle("GET /admin", loggedInHandler(server.adminRootHandler, enums.CapViewAdminTools))
+	mux.Handle("GET /admin", loggedInHandler(handleradminroot.Handler, enums.CapViewAdminTools))
 	mux.Handle("GET /homes", loggedInHandler(server.getHomesHandler, enums.CapManageAllHomes))
 	mux.Handle("GET /users", loggedInHandler(server.userAdminHandler, enums.CapManageUsers))
 	// Forms
@@ -295,18 +299,6 @@ func startServer(
 	}()
 
 	return nil
-}
-
-func (server *Server) getQueryValue(r *http.Request, field string) (string, error) {
-	q := r.URL.Query()
-	values, ok := q[field]
-	if !ok {
-		return "", fmt.Errorf("no such value: '%s'", field)
-	}
-	if len(values) != 1 {
-		return "", fmt.Errorf("%d values named '%s", len(values), field)
-	}
-	return values[0], nil
 }
 
 func (server *Server) getFormIDs(r *http.Request, fields ...string) (map[string]int32, error) {

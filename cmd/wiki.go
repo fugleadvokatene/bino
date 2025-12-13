@@ -13,14 +13,16 @@ import (
 	"strings"
 	"time"
 
+	"github.com/fugleadvokatene/bino/internal/db"
 	"github.com/fugleadvokatene/bino/internal/enums"
+	"github.com/fugleadvokatene/bino/internal/request"
 	"github.com/fugleadvokatene/bino/internal/view"
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
 func (server *Server) wikiMain(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-	data := MustLoadCommonData(ctx)
+	data := request.MustLoadCommonData(ctx)
 
 	pages, err := server.Queries.GetWikiPages(ctx)
 	if err != nil {
@@ -39,7 +41,7 @@ func (server *Server) wikiMain(w http.ResponseWriter, r *http.Request) {
 	_ = WikiPageTempl(
 		data,
 		mainPage.ToWikiPageView(),
-		SliceToSlice(pages, func(in WikiPage) view.WikiLink {
+		SliceToSlice(pages, func(in db.WikiPage) view.WikiLink {
 			return in.ToWikiLinkView()
 		}),
 	).Render(ctx, w)
@@ -47,7 +49,7 @@ func (server *Server) wikiMain(w http.ResponseWriter, r *http.Request) {
 
 func (server *Server) wikiPage(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-	data := MustLoadCommonData(ctx)
+	data := request.MustLoadCommonData(ctx)
 
 	id, err := server.getPathID(r, "id")
 	if err != nil {
@@ -72,7 +74,7 @@ func (server *Server) wikiPage(w http.ResponseWriter, r *http.Request) {
 	_ = WikiPageTempl(
 		data,
 		page.ToWikiPageView(),
-		SliceToSlice(pages, func(in WikiPage) view.WikiLink {
+		SliceToSlice(pages, func(in db.WikiPage) view.WikiLink {
 			return in.ToWikiLinkView()
 		}),
 	).Render(ctx, w)
@@ -80,7 +82,7 @@ func (server *Server) wikiPage(w http.ResponseWriter, r *http.Request) {
 
 func (server *Server) wikiSave(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-	data := MustLoadCommonData(ctx)
+	data := request.MustLoadCommonData(ctx)
 
 	id, err := server.getPathID(r, "id")
 	if err != nil {
@@ -94,7 +96,7 @@ func (server *Server) wikiSave(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if _, err := server.Queries.SaveWikiPage(ctx, SaveWikiPageParams{
+	if _, err := server.Queries.SaveWikiPage(ctx, db.SaveWikiPageParams{
 		PageID:  id,
 		Content: bytes,
 		Editor:  data.User.AppuserID,
@@ -108,7 +110,7 @@ func (server *Server) wikiSave(w http.ResponseWriter, r *http.Request) {
 
 func (server *Server) wikiSetTitle(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-	data := MustLoadCommonData(ctx)
+	data := request.MustLoadCommonData(ctx)
 
 	id, err := server.getPathID(r, "id")
 	if err != nil {
@@ -122,7 +124,7 @@ func (server *Server) wikiSetTitle(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := server.Queries.SetWikiPageTitle(ctx, SetWikiPageTitleParams{
+	if err := server.Queries.SetWikiPageTitle(ctx, db.SetWikiPageTitleParams{
 		ID:    id,
 		Title: title,
 	}); err != nil {
@@ -135,7 +137,7 @@ func (server *Server) wikiSetTitle(w http.ResponseWriter, r *http.Request) {
 
 func (server *Server) wikiCreate(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-	data := MustLoadCommonData(ctx)
+	data := request.MustLoadCommonData(ctx)
 
 	title, err := server.getFormValue(r, "title")
 	if err != nil {
@@ -144,7 +146,7 @@ func (server *Server) wikiCreate(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	result, err := server.Queries.AddWikiPage(ctx, AddWikiPageParams{
+	result, err := server.Queries.AddWikiPage(ctx, db.AddWikiPageParams{
 		Title:   title,
 		Creator: data.User.AppuserID,
 	})
@@ -172,32 +174,32 @@ type WikiImageResponse struct {
 
 func (server *Server) wikiUploadImage(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-	data := MustLoadCommonData(ctx)
+	data := request.MustLoadCommonData(ctx)
 
 	var resp WikiImageResponse
 	defer func() {
 		if err := json.NewEncoder(w).Encode(resp); err != nil {
-			logError(r, fmt.Errorf("encoding output response: %w", err))
+			request.LogError(r, fmt.Errorf("encoding output response: %w", err))
 		}
 	}()
 
 	wikiID, err := server.getPathID(r, "id")
 	if err != nil {
-		logError(r, fmt.Errorf("getting ID from path: %w", err))
+		request.LogError(r, fmt.Errorf("getting ID from path: %w", err))
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 
 	// Parse multipart form with reasonable max memory
 	if err := r.ParseMultipartForm(MaxImageSize); err != nil {
-		logError(r, fmt.Errorf("reading request body: %w", err))
+		request.LogError(r, fmt.Errorf("reading request body: %w", err))
 		w.WriteHeader(http.StatusRequestEntityTooLarge)
 		return
 	}
 
 	file, header, err := r.FormFile("image")
 	if err != nil {
-		logError(r, fmt.Errorf("getting form file: %w", err))
+		request.LogError(r, fmt.Errorf("getting form file: %w", err))
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
@@ -211,22 +213,22 @@ func (server *Server) wikiUploadImage(w http.ResponseWriter, r *http.Request) {
 		Created:  time.Now(),
 	})
 	if uploadResult.Error != nil {
-		logError(r, fmt.Errorf("uploading file file: %w", err))
+		request.LogError(r, fmt.Errorf("uploading file file: %w", err))
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 
 	commitResult := server.FileBackend.Commit(ctx, []string{uploadResult.UniqueID})
 	if commitResult.Error != nil {
-		logError(r, fmt.Errorf("committing image: %w", err))
+		request.LogError(r, fmt.Errorf("committing image: %w", err))
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 
 	fileInfo := commitResult.Commited[uploadResult.UniqueID]
-	fileID, err := server.Queries.RegisterFile(ctx, RegisterFileParams{
+	fileID, err := server.Queries.RegisterFile(ctx, db.RegisterFileParams{
 		Uuid:          uploadResult.UniqueID,
-		Creator:       MustLoadCommonData(ctx).User.AppuserID,
+		Creator:       request.MustLoadCommonData(ctx).User.AppuserID,
 		Created:       pgtype.Timestamptz{Time: time.Now(), Valid: true},
 		Accessibility: int32(enums.FileAccessibilityInternal),
 		Filename:      fileInfo.FileName,
@@ -234,7 +236,7 @@ func (server *Server) wikiUploadImage(w http.ResponseWriter, r *http.Request) {
 		Size:          fileInfo.Size,
 	})
 	if err != nil {
-		logError(r, fmt.Errorf("registering file to db: %w", err))
+		request.LogError(r, fmt.Errorf("registering file to db: %w", err))
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	} else {
@@ -242,11 +244,11 @@ func (server *Server) wikiUploadImage(w http.ResponseWriter, r *http.Request) {
 		resp.File.URL = view.FileURL(fileID, fileInfo.FileName)
 	}
 
-	if err := server.Queries.AssociateFileWithWikiPage(ctx, AssociateFileWithWikiPageParams{
+	if err := server.Queries.AssociateFileWithWikiPage(ctx, db.AssociateFileWithWikiPageParams{
 		FileID: fileID,
 		WikiID: wikiID,
 	}); err != nil {
-		logError(r, fmt.Errorf("associating file %d with wiki page %d: %w", fileID, wikiID, err))
+		request.LogError(r, fmt.Errorf("associating file %d with wiki page %d: %w", fileID, wikiID, err))
 	}
 
 	w.WriteHeader(http.StatusOK)
@@ -258,59 +260,59 @@ func (server *Server) wikiFetchImage(w http.ResponseWriter, r *http.Request) {
 	var resp WikiImageResponse
 	defer func() {
 		if err := json.NewEncoder(w).Encode(resp); err != nil {
-			logError(r, fmt.Errorf("encoding output response: %w", err))
+			request.LogError(r, fmt.Errorf("encoding output response: %w", err))
 		}
 	}()
 
 	wikiID, err := server.getPathID(r, "id")
 	if err != nil {
-		logError(r, fmt.Errorf("getting ID from path: %w", err))
+		request.LogError(r, fmt.Errorf("getting ID from path: %w", err))
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 
 	bytes, err := io.ReadAll(r.Body)
 	if err != nil {
-		logError(r, fmt.Errorf("reading request body: %w", err))
+		request.LogError(r, fmt.Errorf("reading request body: %w", err))
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 	var req WikiFetchImageRequest
 	if err := json.Unmarshal(bytes, &req); err != nil {
-		logError(r, fmt.Errorf("unmarshalling request body: %w", err))
+		request.LogError(r, fmt.Errorf("unmarshalling request body: %w", err))
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 
 	var fileID int32
-	if fileID, err = server.parseFileURLFromSameSite(r, req.URL); err == nil {
+	if fileID, err = parseFileURLFromSameSite(r, req.URL); err == nil {
 		if file, err := server.Queries.GetFileByID(ctx, fileID); err == nil {
 			resp.Success = 1
 			resp.File.URL = view.FileURL(fileID, file.PresentationFilename)
 		} else {
-			logError(r, fmt.Errorf("no such file ID '%d': %w", fileID, err))
+			request.LogError(r, fmt.Errorf("no such file ID '%d': %w", fileID, err))
 		}
 	}
 
 	if resp.Success == 0 {
 		uploadResult := server.uploadImageFromURL(ctx, req.URL)
 		if uploadResult.Error != nil {
-			logError(r, fmt.Errorf("uploading image: %w", err))
+			request.LogError(r, fmt.Errorf("uploading image: %w", err))
 			w.WriteHeader(http.StatusInternalServerError)
 			return
 		}
 
 		commitResult := server.FileBackend.Commit(ctx, []string{uploadResult.UniqueID})
 		if commitResult.Error != nil {
-			logError(r, fmt.Errorf("committing image: %w", err))
+			request.LogError(r, fmt.Errorf("committing image: %w", err))
 			w.WriteHeader(http.StatusInternalServerError)
 			return
 		}
 
 		fileInfo := commitResult.Commited[uploadResult.UniqueID]
-		fileID, err = server.Queries.RegisterFile(ctx, RegisterFileParams{
+		fileID, err = server.Queries.RegisterFile(ctx, db.RegisterFileParams{
 			Uuid:          uploadResult.UniqueID,
-			Creator:       MustLoadCommonData(ctx).User.AppuserID,
+			Creator:       request.MustLoadCommonData(ctx).User.AppuserID,
 			Created:       pgtype.Timestamptz{Time: time.Now(), Valid: true},
 			Accessibility: int32(enums.FileAccessibilityInternal),
 			Filename:      fileInfo.FileName,
@@ -318,7 +320,7 @@ func (server *Server) wikiFetchImage(w http.ResponseWriter, r *http.Request) {
 			Size:          fileInfo.Size,
 		})
 		if err != nil {
-			logError(r, fmt.Errorf("registering file to db: %w", err))
+			request.LogError(r, fmt.Errorf("registering file to db: %w", err))
 			w.WriteHeader(http.StatusInternalServerError)
 			return
 		} else {
@@ -327,17 +329,17 @@ func (server *Server) wikiFetchImage(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	if err := server.Queries.AssociateFileWithWikiPage(ctx, AssociateFileWithWikiPageParams{
+	if err := server.Queries.AssociateFileWithWikiPage(ctx, db.AssociateFileWithWikiPageParams{
 		FileID: fileID,
 		WikiID: wikiID,
 	}); err != nil {
-		logError(r, fmt.Errorf("associating file %d with wiki page %d: %w", fileID, wikiID, err))
+		request.LogError(r, fmt.Errorf("associating file %d with wiki page %d: %w", fileID, wikiID, err))
 	}
 
 	w.WriteHeader(http.StatusOK)
 }
 
-func (s *Server) parseFileURLFromSameSite(r *http.Request, raw string) (int32, error) {
+func parseFileURLFromSameSite(r *http.Request, raw string) (int32, error) {
 	ref := r.Referer()
 	if ref == "" {
 		return 0, fmt.Errorf("no referer")
@@ -371,7 +373,7 @@ func (s *Server) parseFileURLFromSameSite(r *http.Request, raw string) (int32, e
 }
 
 func (server *Server) uploadImageFromURL(ctx context.Context, url string) UploadResult {
-	data := MustLoadCommonData(ctx)
+	data := request.MustLoadCommonData(ctx)
 
 	resp, err := http.Get(url)
 	if err != nil {

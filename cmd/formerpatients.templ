@@ -2,11 +2,14 @@ package main
 
 import "github.com/fugleadvokatene/bino/internal/view"
 import "github.com/fugleadvokatene/bino/internal/enums"
+import "github.com/fugleadvokatene/bino/internal/request"
+import "github.com/fugleadvokatene/bino/internal/templbase"
+import "github.com/fugleadvokatene/bino/internal/handlers/handlercalendar"
 
-templ FormerPatients(data *CommonData, patients []view.Patient) {
-	@Layout(data) {
+templ FormerPatients(data *request.CommonData, patients []view.Patient) {
+	@templbase.Layout(data) {
         <h1>{data.Language.FormerPatients}</h1>
-        @Card("dashboard-search", "shadow-sm", "mb-2") {
+        @templbase.Card("dashboard-search", "shadow-sm", "mb-2") {
             <fieldset>
                 <legend for="dashboard-search">{data.Language.DashboardSearch}</legend>
                 <label class="small">{data.Language.DashboardSearchExplanation}</label>
@@ -36,8 +39,8 @@ templ FormerPatients(data *CommonData, patients []view.Patient) {
                             <td><a href={templ.URL(p.URL())} class="filter-content">{p.Name}</a></td>
                             <td class="filter-content">{p.Species}</td>
                             <td class="filter-content">{data.Language.Status[enums.Status(p.Status)]}</td>
-                            <td class="filter-content" data-sort-key={p.TimeCheckin.Unix()}>@CalendarLinkAbs(data.Language, p.TimeCheckin, "listDay")</td>
-                            <td class="filter-content" data-sort-key={p.TimeCheckin.Unix()}>@CalendarLinkAbs(data.Language, p.TimeCheckout, "listDay")</td>
+                            <td class="filter-content" data-sort-key={p.TimeCheckin.Unix()}>@handlercalendar.CalendarLinkAbs(data.Language, p.TimeCheckin, "listDay")</td>
+                            <td class="filter-content" data-sort-key={p.TimeCheckin.Unix()}>@handlercalendar.CalendarLinkAbs(data.Language, p.TimeCheckout, "listDay")</td>
                         </tr>
                     }
                     <tr id="filter-none" hidden>
@@ -47,5 +50,5 @@ templ FormerPatients(data *CommonData, patients []view.Patient) {
             </table>
         </div>
     }
-    @JSModule(data, "formerpatients")
+    @templbase.JSModule(data, "formerpatients")
 }

@@ -1,13 +1,15 @@
 package main
 
 import "github.com/fugleadvokatene/bino/internal/view"
+import "github.com/fugleadvokatene/bino/internal/request"
+import "github.com/fugleadvokatene/bino/internal/templbase"
 
-templ HomesPage(data *CommonData, homes []HomeViewAdmin, homeless []view.User) {
-    @Layout(data) {
+templ HomesPage(data *request.CommonData, homes []HomeViewAdmin, homeless []view.User) {
+    @templbase.Layout(data) {
 
         // Create home-form
         <h2>{data.Language.HomesCreateHome}</h2>
-        @Card() {
+        @templbase.Card() {
             <p class="small">{data.Language.HomesCreateHomeNote}</p>
             <form class="form-inline" action="/homes" method="POST">
                 <label for="name">{data.Language.HomesHomeName}</label>
@@ -22,7 +24,7 @@ templ HomesPage(data *CommonData, homes []HomeViewAdmin, homeless []view.User) {
         // Unassigned users
         if len(homeless) > 0 {
             <h2>{data.Language.HomesUnassignedUsers}</h2>
-            @Card() {
+            @templbase.Card() {
                 for _, user := range homeless {
                     @UserComponent(data, &user) {
                         <form class="form-inline" action="/homes" method="POST">
@@ -41,13 +43,13 @@ templ HomesPage(data *CommonData, homes []HomeViewAdmin, homeless []view.User) {
             }
         }
 
-        @Card() {
+        @templbase.Card() {
             // List of homes
             for _, home := range homes {
-                @Card() {
+                @templbase.Card() {
                     <h2 class="editable" data-action={home.SetNameURL()}>{home.Name}</h2>
                     for _, user := range home.Users {
-                        @Card() {
+                        @templbase.Card() {
                             @UserComponent(data, &user) {
                                 // Move user to different home
                                 <form class="form-inline" action="/homes" method="POST">
@@ -102,10 +104,10 @@ templ HomesPage(data *CommonData, homes []HomeViewAdmin, homeless []view.User) {
             }
         }
     }
-    @JSModule(data, "dashboard")
+    @templbase.JSModule(data, "dashboard")
 }
 
-templ UserComponent(data *CommonData, u *view.User) {
+templ UserComponent(data *request.CommonData, u *view.User) {
     <table class="table tbl">
         <thead>
             <tr>

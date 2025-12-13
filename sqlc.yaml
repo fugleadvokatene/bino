@@ -5,8 +5,8 @@ sql:
     schema: "cmd/migrations"
     gen:
       go:
-        package: "main"
-        out: "cmd"
+        package: "db"
+        out: "internal/db"
         sql_package: "pgx/v5"
         overrides:
           - db_type: regconfig

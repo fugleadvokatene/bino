@@ -8,7 +8,9 @@ import (
 	"strings"
 	"time"
 
+	"github.com/fugleadvokatene/bino/internal/db"
 	"github.com/fugleadvokatene/bino/internal/enums"
+	"github.com/fugleadvokatene/bino/internal/request"
 	"github.com/fugleadvokatene/bino/internal/view"
 	"github.com/jackc/pgx/v5/pgtype"
 )
@@ -55,8 +57,8 @@ func (spi *SearchPatientInfo) IndexableText() string {
 	return spi.JournalInfo.IndexableText()
 }
 
-func NewBasicSearchParams(q SearchQuery) SearchBasicParams {
-	return SearchBasicParams{
+func NewBasicSearchParams(q SearchQuery) db.SearchBasicParams {
+	return db.SearchBasicParams{
 		WFtsHeader: 1.0,
 		WFtsBody:   1.0,
 		Lang:       "norwegian",
@@ -66,7 +68,7 @@ func NewBasicSearchParams(q SearchQuery) SearchBasicParams {
 	}
 }
 
-func NewSearchAdvancedParams(q SearchQuery) SearchAdvancedParams {
+func NewSearchAdvancedParams(q SearchQuery) db.SearchAdvancedParams {
 	wRecency := float32(0.0)
 	switch q.TimePreference {
 	case enums.TimePreferenceNewer:
@@ -77,7 +79,7 @@ func NewSearchAdvancedParams(q SearchQuery) SearchAdvancedParams {
 		wRecency = 0.0
 	}
 
-	return SearchAdvancedParams{
+	return db.SearchAdvancedParams{
 		Lang:                "norwegian",
 		Query:               q.Query,
 		WFtsHeader:          10.0,
@@ -170,17 +172,17 @@ func (server *Server) doSearch(r *http.Request) (SearchResult, error) {
 		if err != nil {
 			return SearchResult{Query: query}, err
 		}
-		matches = SliceToSlice(rows, func(in SearchAdvancedRow) view.Match {
+		matches = SliceToSlice(rows, func(in db.SearchAdvancedRow) view.Match {
 			return in.ToMatchView(q)
 		})
 		if searchParams.Offset > 0 || len(matches) >= int(searchParams.Limit) {
-			totalMatches, err = server.Queries.SearchAdvancedCount(r.Context(), SearchAdvancedCountParams{
+			totalMatches, err = server.Queries.SearchAdvancedCount(r.Context(), db.SearchAdvancedCountParams{
 				Query:        query.Query,
 				Simthreshold: searchParams.Simthreshold,
 				Lang:         searchParams.Lang,
 			})
 			if err != nil {
-				LogR(r, "counting: %s", err.Error())
+				request.LogR(r, "counting: %s", err.Error())
 				totalMatches = int32(len(matches))
 			}
 		} else {
@@ -193,16 +195,16 @@ func (server *Server) doSearch(r *http.Request) (SearchResult, error) {
 		if err != nil {
 			return SearchResult{Query: query}, err
 		}
-		matches = SliceToSlice(rows, func(in SearchBasicRow) view.Match {
+		matches = SliceToSlice(rows, func(in db.SearchBasicRow) view.Match {
 			return in.ToMatchView()
 		})
 		if searchParams.Offset > 0 || len(matches) >= int(searchParams.Limit) {
-			totalMatches, err = server.Queries.SearchBasicCount(r.Context(), SearchBasicCountParams{
+			totalMatches, err = server.Queries.SearchBasicCount(r.Context(), db.SearchBasicCountParams{
 				Query: query.Query,
 				Lang:  searchParams.Lang,
 			})
 			if err != nil {
-				LogR(r, "counting: %s", err.Error())
+				request.LogR(r, "counting: %s", err.Error())
 				totalMatches = int32(len(matches))
 			}
 		} else {
@@ -223,7 +225,7 @@ func (server *Server) doSearch(r *http.Request) (SearchResult, error) {
 
 func (server *Server) emptySearch(w http.ResponseWriter, r *http.Request, result SearchResult, msg string, fullPage bool) {
 	ctx := r.Context()
-	commonData := MustLoadCommonData(ctx)
+	commonData := request.MustLoadCommonData(ctx)
 	if fullPage {
 		_ = SearchPage(commonData, result, msg).Render(ctx, w)
 	} else {
@@ -233,7 +235,7 @@ func (server *Server) emptySearch(w http.ResponseWriter, r *http.Request, result
 
 func (server *Server) searchHandler(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-	commonData := MustLoadCommonData(ctx)
+	commonData := request.MustLoadCommonData(ctx)
 
 	commonData.Subtitle = commonData.Language.GenericSearch
 
@@ -247,7 +249,7 @@ func (server *Server) searchHandler(w http.ResponseWriter, r *http.Request) {
 
 func (server *Server) searchLiveHandler(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-	commonData := MustLoadCommonData(ctx)
+	commonData := request.MustLoadCommonData(ctx)
 
 	result, err := server.doSearch(r)
 	if err != nil {

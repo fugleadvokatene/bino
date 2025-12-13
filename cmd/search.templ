@@ -2,9 +2,12 @@ package main
 
 import "github.com/fugleadvokatene/bino/internal/enums"
 import "github.com/fugleadvokatene/bino/internal/view"
+import "github.com/fugleadvokatene/bino/internal/request"
+import "github.com/fugleadvokatene/bino/internal/db"
+import "github.com/fugleadvokatene/bino/internal/templbase"
 
-templ SearchPage(data *CommonData, result SearchResult, fallbackMsg string) {
-	@Layout(data) {
+templ SearchPage(data *request.CommonData, result SearchResult, fallbackMsg string) {
+	@templbase.Layout(data) {
         <div class="search">
             <form
                 id="search-form"
@@ -50,10 +53,10 @@ templ SearchPage(data *CommonData, result SearchResult, fallbackMsg string) {
         </div>
         @SearchMatches(data, result, fallbackMsg)
 	}
-    @JSModule(data, "search")
+    @templbase.JSModule(data, "search")
 }
 
-templ SearchMatches(data *CommonData, result SearchResult, fallbackMsg string) {
+templ SearchMatches(data *request.CommonData, result SearchResult, fallbackMsg string) {
     <div class="card p-2 matches mt-2" id="live-matches">
         <div class="search-header p-0 m-0">
             <p class="p-0 m-0">
@@ -132,13 +135,13 @@ templ RunComponent(r *view.HighlightRun) {
 templ ExtraInfo(mv *view.Match) {
     switch mv.Type {
         case enums.MatchTypePatient:
-            if info := parseJSON[SearchPatientInfo](mv.ExtraData); info != nil {
+            if info := db.ParseJSON[SearchPatientInfo](mv.ExtraData); info != nil {
                 <span class="micro">
                     <a href={templ.URL(info.JournalURL)}>Gå til journal</a> i <a href={templ.URL(info.JournalInfo.FolderURL)}>{info.JournalInfo.FolderName}</a>
                 </span>
             }
         case enums.MatchTypeJournal:
-            if info := parseJSON[SearchJournalInfo](mv.ExtraData); info != nil {
+            if info := db.ParseJSON[SearchJournalInfo](mv.ExtraData); info != nil {
                 <span class="micro">
                     <a href={templ.URL(info.FolderURL)}>{info.FolderName}</a>
                 </span>

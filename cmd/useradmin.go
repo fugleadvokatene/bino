@@ -7,6 +7,8 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/fugleadvokatene/bino/internal/db"
+	"github.com/fugleadvokatene/bino/internal/request"
 	"github.com/fugleadvokatene/bino/internal/view"
 	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/jackc/pgx/v5/pgtype"
@@ -14,7 +16,7 @@ import (
 
 func (server *Server) userAdminHandler(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-	data := MustLoadCommonData(ctx)
+	data := request.MustLoadCommonData(ctx)
 
 	users, err := server.Queries.GetAppusers(ctx)
 	if err != nil {
@@ -34,18 +36,18 @@ func (server *Server) userAdminHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	UserAdmin(data, SliceToSlice(homes, func(in Home) view.Home {
+	UserAdmin(data, SliceToSlice(homes, func(in db.Home) view.Home {
 		return in.ToHomeView()
-	}), SliceToSlice(users, func(in GetAppusersRow) view.User {
+	}), SliceToSlice(users, func(in db.GetAppusersRow) view.User {
 		return in.ToUserView()
-	}), SliceToSlice(invitations, func(in GetInvitationsRow) view.Invitation {
+	}), SliceToSlice(invitations, func(in db.GetInvitationsRow) view.Invitation {
 		return in.ToInvitationView()
 	})).Render(ctx, w)
 }
 
 func (server *Server) userConfirmScrubOrNukeHandler(w http.ResponseWriter, r *http.Request, nuke bool) {
 	ctx := r.Context()
-	data := MustLoadCommonData(ctx)
+	data := request.MustLoadCommonData(ctx)
 
 	id, err := server.getPathID(r, "user")
 	if err != nil {
@@ -81,7 +83,7 @@ func (server *Server) userConfirmNukeHandler(w http.ResponseWriter, r *http.Requ
 
 func (server *Server) userDoScrubOrNukeHandler(w http.ResponseWriter, r *http.Request, nuke bool) {
 	ctx := r.Context()
-	data := MustLoadCommonData(ctx)
+	data := request.MustLoadCommonData(ctx)
 
 	id, err := server.getPathID(r, "user")
 	if err != nil {
@@ -133,7 +135,7 @@ func (server *Server) userDoNukeHandler(w http.ResponseWriter, r *http.Request) 
 
 // Delete information associated with user
 func (server *Server) DeleteUser(ctx context.Context, id int32) error {
-	return server.Transaction(ctx, func(ctx context.Context, q *Queries) error {
+	return server.Transaction(ctx, func(ctx context.Context, q *db.Queries) error {
 		if err := q.RemoveHomesForAppuser(ctx, id); err != nil {
 			return fmt.Errorf("removing homes: %w", err)
 		}
@@ -152,7 +154,7 @@ func (server *Server) NukeUser(ctx context.Context, id int32) error {
 	if err := server.DeleteUser(ctx, id); err != nil {
 		return fmt.Errorf("deleting user: %w", err)
 	}
-	return server.Transaction(ctx, func(ctx context.Context, q *Queries) error {
+	return server.Transaction(ctx, func(ctx context.Context, q *db.Queries) error {
 		if err := q.DeleteEventsCreatedByUser(ctx, id); err != nil {
 			return fmt.Errorf("deleting events created by user: %w", err)
 		}
@@ -168,7 +170,7 @@ func (server *Server) NukeUser(ctx context.Context, id int32) error {
 
 func (server *Server) inviteHandler(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-	data := MustLoadCommonData(ctx)
+	data := request.MustLoadCommonData(ctx)
 
 	email, err := server.getPathValue(r, "email")
 	if err != nil {
@@ -191,7 +193,7 @@ func (server *Server) inviteHandler(w http.ResponseWriter, r *http.Request) {
 		code := inviteCodes[i*8 : (i+1)*8]
 
 		// Try to insert
-		if err := server.Queries.InsertInvitation(ctx, InsertInvitationParams{
+		if err := server.Queries.InsertInvitation(ctx, db.InsertInvitationParams{
 			ID:      code,
 			Email:   pgtype.Text{String: email, Valid: true},
 			Created: pgtype.Timestamptz{Time: now, Valid: true},
@@ -217,7 +219,7 @@ func (server *Server) inviteHandler(w http.ResponseWriter, r *http.Request) {
 
 func (server *Server) inviteDeleteHandler(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-	data := MustLoadCommonData(ctx)
+	data := request.MustLoadCommonData(ctx)
 
 	id, err := server.getPathValue(r, "id")
 	if err != nil {

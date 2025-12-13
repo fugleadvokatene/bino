@@ -9,7 +9,9 @@ import (
 	"strings"
 	"time"
 
+	"github.com/fugleadvokatene/bino/internal/db"
 	"github.com/fugleadvokatene/bino/internal/gdrive"
+	"github.com/fugleadvokatene/bino/internal/request"
 	"google.golang.org/api/docs/v1"
 	"google.golang.org/api/drive/v3"
 	"google.golang.org/api/option"
@@ -27,7 +29,7 @@ const (
 type GDrive struct {
 	Drive     *drive.Service
 	Docs      *docs.Service
-	Queries   *Queries
+	Queries   *db.Queries
 	DriveBase string
 }
 
@@ -39,7 +41,7 @@ type GDriveConfig struct {
 	ExtraJournalFolders       []string
 }
 
-func NewGDriveWithServiceAccount(ctx context.Context, config GDriveConfig, queries *Queries) (*GDrive, error) {
+func NewGDriveWithServiceAccount(ctx context.Context, config GDriveConfig, queries *db.Queries) (*GDrive, error) {
 	drive, err := drive.NewService(ctx, option.WithCredentialsFile(config.ServiceAccountKeyLocation))
 	if err != nil {
 		return nil, fmt.Errorf("creating Drive service: %w", err)
@@ -59,7 +61,7 @@ func NewGDriveWithServiceAccount(ctx context.Context, config GDriveConfig, queri
 }
 
 func (server *Server) LoggedInUserCanShare(ctx context.Context, item gdrive.Item) bool {
-	cd := MustLoadCommonData(ctx)
+	cd := request.MustLoadCommonData(ctx)
 
 	for _, p := range item.Permissions {
 		if p.Email == cd.User.Email {

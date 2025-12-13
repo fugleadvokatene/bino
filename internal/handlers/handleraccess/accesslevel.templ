@@ -1,33 +1,36 @@
-package main
+package handleraccess
 
 import "github.com/fugleadvokatene/bino/internal/enums"
+import "github.com/fugleadvokatene/bino/internal/request"
+import "github.com/fugleadvokatene/bino/internal/capabilities"
+import "github.com/fugleadvokatene/bino/internal/templbase"
 
-templ AccessLevelPage(data *CommonData) {
-    @Layout(data) {
+templ AccessLevelPage(data *request.CommonData) {
+    @templbase.Layout(data) {
         <div class="card p-2">
             <p>{data.Language.CapabilitiesYourAccessLevelIs} <strong>{int(data.User.AccessLevel)} - {data.Language.AccessLevels[data.User.AccessLevel]}</strong></p>
             <p>{data.Language.CapabilitiesExplanation}</p>
             <h3>{data.Language.AccessLevels[enums.AccessLevelNone]}</h3>
             <ul>
-                for _, cap := range AccessLevelToCapabilities.None {
+                for _, cap := range capabilities.AccessLevelToCapabilities.None {
                     <li>{data.Language.Capabilities[cap]}</li>
                 }
             </ul>
             <h3>{data.Language.AccessLevels[enums.AccessLevelRehabber]}</h3>
             <ul>
-                for _, cap := range AccessLevelToCapabilities.Rehabber {
+                for _, cap := range capabilities.AccessLevelToCapabilities.Rehabber {
                     <li>{data.Language.Capabilities[cap]}</li>
                 }
             </ul>
             <h3>{data.Language.AccessLevels[enums.AccessLevelCoordinator]}</h3>
             <ul>
-                for _, cap := range AccessLevelToCapabilities.Coordinator {
+                for _, cap := range capabilities.AccessLevelToCapabilities.Coordinator {
                     <li>{data.Language.Capabilities[cap]}</li>
                 }
             </ul>
             <h3>{data.Language.AccessLevels[enums.AccessLevelAdmin]}</h3>
             <ul>
-                for _, cap := range AccessLevelToCapabilities.Admin {
+                for _, cap := range capabilities.AccessLevelToCapabilities.Admin {
                     <li>{data.Language.Capabilities[cap]}</li>
                 }
             </ul>
@@ -36,8 +39,8 @@ templ AccessLevelPage(data *CommonData) {
 }
 
 
-templ UnauthorizedPage(data *CommonData, err error, referer string) {
-	@Layout(data) {
+templ UnauthorizedPage(data *request.CommonData, err error, referer string) {
+	@templbase.Layout(data) {
         <a href={templ.URL(referer)}>{data.Language.GenericGoBack}</a>
         <h1>{data.Language.ErrorPageHead}</h1>
         <div class="card b-card">

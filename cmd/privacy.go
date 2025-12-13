@@ -1,9 +1,10 @@
 package main
 
 import (
-	"context"
-	"log"
 	"net/http"
+
+	"github.com/fugleadvokatene/bino/internal/db"
+	"github.com/fugleadvokatene/bino/internal/request"
 )
 
 type PrivacyConfig struct {
@@ -13,33 +14,33 @@ type PrivacyConfig struct {
 
 func (server *Server) privacyHandler(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-	commonData := MustLoadCommonData(ctx)
+	commonData := request.MustLoadCommonData(ctx)
 	commonData.Subtitle = commonData.Language.FooterPrivacy
 	_ = Privacy(commonData, server.Config.Privacy).Render(ctx, w)
 }
 
 func (server *Server) tosHandler(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-	commonData := MustLoadCommonData(ctx)
+	commonData := request.MustLoadCommonData(ctx)
 	commonData.Subtitle = commonData.Language.FooterTOS
 	_ = TOS(commonData).Render(ctx, w)
 }
 
 func (server *Server) loginPageHandler(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-	commonData := MustLoadCommonData(ctx)
+	commonData := request.MustLoadCommonData(ctx)
 	_ = LoginPage(commonData).Render(ctx, w)
 }
 
 func (server *Server) postPrivacyHandler(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-	commonData := MustLoadCommonData(ctx)
+	commonData := request.MustLoadCommonData(ctx)
 
 	consent := server.getCheckboxValue(r, "logging-consent")
 
 	var err error
 	if consent {
-		err = server.Queries.SetLoggingConsent(ctx, SetLoggingConsentParams{
+		err = server.Queries.SetLoggingConsent(ctx, db.SetLoggingConsentParams{
 			ID:     commonData.User.AppuserID,
 			Period: server.Config.Privacy.RevokeConsentPolicy,
 		})
@@ -52,29 +53,4 @@ func (server *Server) postPrivacyHandler(w http.ResponseWriter, r *http.Request)
 	}
 
 	server.redirectToReferer(w, r)
-}
-
-// Log from request if the user has given explicit concent
-func LogR(r *http.Request, format string, args ...any) {
-	LogCtx(r.Context(), format, args...)
-}
-
-// Log from context if the user has given explicit concent
-func LogCtx(ctx context.Context, format string, args ...any) {
-	commonData, err := LoadCommonData(ctx)
-	if err != nil {
-		return
-	}
-	commonData.Log(format, args...)
-}
-
-// Log if the user has given explicit concent
-func (cd *CommonData) Log(format string, args ...any) {
-	if cd == nil {
-		return
-	}
-	if !cd.User.LoggingConsent {
-		return
-	}
-	log.Printf(format, args...)
 }

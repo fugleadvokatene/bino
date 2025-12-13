@@ -1,6 +1,9 @@
 package main
 
-templ SpeciesPage(data *CommonData, species []SpeciesLangs) {
+import "github.com/fugleadvokatene/bino/internal/request"
+import "github.com/fugleadvokatene/bino/internal/templbase"
+
+templ SpeciesPage(data *request.CommonData, species []SpeciesLangs) {
     @CRUDPage{
         Header: data.Language.AdminManageSpecies,
         LangIndependent: []string{data.Language.GenericLatin},
@@ -14,5 +17,5 @@ templ SpeciesPage(data *CommonData, species []SpeciesLangs) {
             <td><input class="form-control" value="" data-field="latin" placeholder={data.Language.GenericLatin}/></td>
         }
     }
-    @JSModule(data, "speciesadmin")
+    @templbase.JSModule(data, "speciesadmin")
 }

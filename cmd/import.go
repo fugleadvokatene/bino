@@ -6,7 +6,9 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/fugleadvokatene/bino/internal/db"
 	"github.com/fugleadvokatene/bino/internal/enums"
+	"github.com/fugleadvokatene/bino/internal/request"
 	"github.com/fugleadvokatene/bino/internal/view"
 	"github.com/jackc/pgx/v5/pgtype"
 )
@@ -28,7 +30,7 @@ type ImportPatient struct {
 
 func (server *Server) getImportHandler(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-	commonData := MustLoadCommonData(ctx)
+	commonData := request.MustLoadCommonData(ctx)
 
 	commonData.Subtitle = commonData.Language.ImportHeader
 
@@ -40,14 +42,14 @@ func (server *Server) getImportHandler(w http.ResponseWriter, r *http.Request) {
 
 func (server *Server) postImportHandler(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-	commonData := MustLoadCommonData(ctx)
+	commonData := request.MustLoadCommonData(ctx)
 
 	result := server.parseImportForm(r)
 	if result.OK {
 		var patientsRequiringJournal []int32
 
-		if err := server.Transaction(ctx, func(ctx context.Context, q *Queries) error {
-			addPatientParams := AddPatientsParams{}
+		if err := server.Transaction(ctx, func(ctx context.Context, q *db.Queries) error {
+			addPatientParams := db.AddPatientsParams{}
 			for _, patient := range result.Patients {
 				addPatientParams.CurrHomeID = append(addPatientParams.CurrHomeID, patient.HomeID)
 				addPatientParams.Species = append(addPatientParams.Species, patient.SpeciesID)
@@ -62,7 +64,7 @@ func (server *Server) postImportHandler(w http.ResponseWriter, r *http.Request) 
 				return err
 			} else {
 				result.Notes = []string{fmt.Sprintf("Added %d patients", len(ids))}
-				addPatientRegisteredEventsParams := AddPatientRegisteredEventsParams{
+				addPatientRegisteredEventsParams := db.AddPatientRegisteredEventsParams{
 					EventID:   int32(enums.EventRegistered),
 					AppuserID: commonData.User.AppuserID,
 				}
@@ -89,7 +91,7 @@ func (server *Server) postImportHandler(w http.ResponseWriter, r *http.Request) 
 	}
 
 	if err := server.setCookie(w, r, "import-request", &result); err != nil {
-		LogR(r, "setting import-request cookie: %w")
+		request.LogR(r, "setting import-request cookie: %w")
 	}
 
 	server.redirect(w, r, "/import")
@@ -100,11 +102,11 @@ func (server *Server) tryCreateJournals(ids []int32) {
 
 func (server *Server) ajaxImportValidateHandler(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-	commonData := MustLoadCommonData(ctx)
+	commonData := request.MustLoadCommonData(ctx)
 
 	result := server.parseImportForm(r)
 	if err := server.setCookie(w, r, "import-request", &result); err != nil {
-		LogR(r, "setting import-request cookie from AJAX: %w")
+		request.LogR(r, "setting import-request cookie from AJAX: %w")
 	}
 
 	_ = ImportValidation(commonData, result).Render(ctx, w)
@@ -112,7 +114,7 @@ func (server *Server) ajaxImportValidateHandler(w http.ResponseWriter, r *http.R
 
 func (server *Server) parseImportForm(r *http.Request) ImportRequest {
 	ctx := r.Context()
-	commonData := MustLoadCommonData(ctx)
+	commonData := request.MustLoadCommonData(ctx)
 
 	out := ImportRequest{}
 
@@ -180,7 +182,7 @@ func (server *Server) parseImportForm(r *http.Request) ImportRequest {
 		}
 		speciesID := species[0]
 
-		if rows, err := server.Queries.GetCurrentPatientsForHome(ctx, GetCurrentPatientsForHomeParams{
+		if rows, err := server.Queries.GetCurrentPatientsForHome(ctx, db.GetCurrentPatientsForHomeParams{
 			CurrHomeID: pgtype.Int4{Int32: homeID, Valid: true},
 			LanguageID: commonData.Lang32(),
 		}); err == nil {

@@ -3,12 +3,14 @@ package main
 import (
 	"net/http"
 
+	"github.com/fugleadvokatene/bino/internal/db"
+	"github.com/fugleadvokatene/bino/internal/request"
 	"github.com/fugleadvokatene/bino/internal/view"
 )
 
 func (server *Server) getUserHandler(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-	commonData := MustLoadCommonData(ctx)
+	commonData := request.MustLoadCommonData(ctx)
 
 	id, err := server.getPathID(r, "user")
 	if err != nil {
@@ -30,7 +32,7 @@ func (server *Server) getUserHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	userView := user.ToUserView()
-	userView.Homes = SliceToSlice(homes, func(h Home) view.Home { return h.ToHomeView() })
+	userView.Homes = SliceToSlice(homes, func(h db.Home) view.Home { return h.ToHomeView() })
 
 	UserPage(ctx, commonData, userView).Render(r.Context(), w)
 }

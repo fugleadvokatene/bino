@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/fugleadvokatene/bino/internal/db"
 	"github.com/joho/godotenv"
 )
 
@@ -28,7 +29,7 @@ func main() {
 	}
 	defer conn.Close()
 
-	queries := New(conn)
+	queries := db.New(conn)
 
 	gdriveSA, err := NewGDriveWithServiceAccount(ctx, config.GoogleDrive, queries)
 	if err != nil {

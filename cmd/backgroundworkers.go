@@ -6,12 +6,13 @@ import (
 	"log"
 	"time"
 
+	"github.com/fugleadvokatene/bino/internal/db"
 	"github.com/fugleadvokatene/bino/internal/enums"
 )
 
 func background(
 	ctx context.Context,
-	queries *Queries,
+	queries *db.Queries,
 	fileBackend FileBackend,
 	systemLanguageID enums.LanguageID,
 ) {
@@ -75,7 +76,7 @@ func deleteOldStagedFiles(ctx context.Context, fileBackend FileBackend) (int, er
 	return n, nil
 }
 
-func suggestJournalURLs(ctx context.Context, queries *Queries, systemLanguage enums.LanguageID) (int, error) {
+func suggestJournalURLs(ctx context.Context, queries *db.Queries, systemLanguage enums.LanguageID) (int, error) {
 	missing, err := queries.GetActivePatientsMissingJournal(ctx, int32(systemLanguage))
 	if err != nil {
 		return 0, fmt.Errorf("looking up patients: %w", err)

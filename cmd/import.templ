@@ -1,7 +1,10 @@
 package main
 
-templ ImportPage(data *CommonData, req ImportRequest) {
-    @Layout(data) {
+import "github.com/fugleadvokatene/bino/internal/request"
+import "github.com/fugleadvokatene/bino/internal/templbase"
+
+templ ImportPage(data *request.CommonData, req ImportRequest) {
+    @templbase.Layout(data) {
         <h1>{data.Language.ImportHeader}</h1>
         <div class="card p-2">
             <p>This tool allows you to add many patients in one go.</p>
@@ -32,7 +35,7 @@ templ ImportPage(data *CommonData, req ImportRequest) {
     }
 }
 
-templ ImportValidation(data *CommonData, req ImportRequest) {
+templ ImportValidation(data *request.CommonData, req ImportRequest) {
     if req.OK {
         <div id="import-validation">
             <p>Validation result: <span class="import-ok">OK</span></p>

@@ -11,8 +11,11 @@ import (
 	"os"
 	"time"
 
+	"github.com/fugleadvokatene/bino/internal/capabilities"
+	"github.com/fugleadvokatene/bino/internal/db"
 	"github.com/fugleadvokatene/bino/internal/enums"
 	"github.com/fugleadvokatene/bino/internal/language"
+	"github.com/fugleadvokatene/bino/internal/request"
 	"github.com/gorilla/sessions"
 	"github.com/jackc/pgx/v5/pgtype"
 	"golang.org/x/oauth2"
@@ -46,7 +49,7 @@ func (server *Server) requireLogin(f http.Handler) http.Handler {
 		}
 
 		ctx := r.Context()
-		ctx = WithCommonData(ctx, &commonData)
+		ctx = request.WithCommonData(ctx, &commonData)
 		r = r.WithContext(ctx)
 
 		f.ServeHTTP(w, r)
@@ -62,7 +65,7 @@ func (server *Server) tryLogin(f http.Handler, onLoggedIn func(f http.Handler) h
 		}
 
 		ctx := r.Context()
-		ctx = WithCommonData(ctx, &CommonData{
+		ctx = request.WithCommonData(ctx, &request.CommonData{
 			BuildKey: server.BuildKey,
 			Language: language.EN,
 		})
@@ -76,7 +79,7 @@ func (server *Server) requireAccessLevel(al enums.AccessLevel) Middleware {
 	return func(f http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			ctx := r.Context()
-			data := MustLoadCommonData(ctx)
+			data := request.MustLoadCommonData(ctx)
 
 			if data.User.AccessLevel < al {
 				server.renderUnauthorized(w, r, data, errors.New(data.Language.AccessLevelBlocked(al)))
@@ -88,45 +91,44 @@ func (server *Server) requireAccessLevel(al enums.AccessLevel) Middleware {
 }
 
 func (server *Server) requireCapability(cap enums.Cap) Middleware {
-	al, ok := RequiredAccessLevel[cap]
+	al, ok := capabilities.RequiredAccessLevel[cap]
 	if !ok {
 		panic(fmt.Errorf("no access level for %s", cap.String()))
 	}
 	return server.requireAccessLevel(al)
 }
 
-func (server *Server) authenticate(w http.ResponseWriter, r *http.Request) (CommonData, error) {
+func (server *Server) authenticate(w http.ResponseWriter, r *http.Request) (request.CommonData, error) {
 	ctx := r.Context()
 
 	user, err := server.getUser(r, w)
 
 	if err != nil {
 		server.loginHandler(w, r)
-		return CommonData{}, err
+		return request.CommonData{}, err
 	}
 
 	homes, err := server.Queries.GetHomesForUser(ctx, user.ID)
-	var preferredHome Home
+	var preferredHome db.Home
 	if len(homes) > 0 {
 		preferredHome = homes[0]
 	}
 
 	loggingConsent := user.LoggingConsent.Valid && user.LoggingConsent.Time.After(time.Now())
 
-	userData := UserData{
+	userData := request.UserData{
 		AppuserID:       user.ID,
 		DisplayName:     user.DisplayName,
 		Email:           user.Email,
 		AvatarURL:       user.AvatarUrl.String,
 		HasAvatarURL:    user.AvatarUrl.Valid,
 		HasGDriveAccess: user.HasGdriveAccess,
-		PreferredHome:   preferredHome,
-		Homes:           homes,
+		PreferredHome:   preferredHome.ToHomeView(),
 		LoggingConsent:  loggingConsent,
 		AccessLevel:     enums.AccessLevel(user.AccessLevel),
 	}
 
-	commonData := CommonData{
+	commonData := request.CommonData{
 		User:     &userData,
 		BuildKey: server.BuildKey,
 		Language: language.GetLanguage(user.LanguageID),
@@ -144,7 +146,7 @@ func (server *Server) authenticate(w http.ResponseWriter, r *http.Request) (Comm
 	return commonData, err
 }
 
-func (server *Server) getUser(r *http.Request, w http.ResponseWriter) (GetUserRow, error) {
+func (server *Server) getUser(r *http.Request, w http.ResponseWriter) (db.GetUserRow, error) {
 	// Get the encrypted auth cookie
 	ctx := r.Context()
 	sess, _ := server.Cookies.Get(r, "auth")
@@ -152,22 +154,22 @@ func (server *Server) getUser(r *http.Request, w http.ResponseWriter) (GetUserRo
 	// OAuth token data must be valid
 	tokenData, ok := sess.Values["oauth_token"].(string)
 	if !ok {
-		return GetUserRow{}, fmt.Errorf("no OAuth token in session")
+		return db.GetUserRow{}, fmt.Errorf("no OAuth token in session")
 	}
 	var token oauth2.Token
 	if err := json.Unmarshal([]byte(tokenData), &token); err != nil {
-		return GetUserRow{}, fmt.Errorf("correpted OAuth token in session")
+		return db.GetUserRow{}, fmt.Errorf("correpted OAuth token in session")
 	}
 
 	ts := oauth2.ReuseTokenSource(&token, server.OAuthConfig.TokenSource(ctx, &token))
 	newTok, err := ts.Token()
 	if err != nil {
-		return GetUserRow{}, fmt.Errorf("unable to refresh token: %w", err)
+		return db.GetUserRow{}, fmt.Errorf("unable to refresh token: %w", err)
 	}
 	if newTok.AccessToken != token.AccessToken || newTok.Expiry != token.Expiry {
 		b, err := json.Marshal(newTok)
 		if err != nil {
-			return GetUserRow{}, fmt.Errorf("unable to marshal new token: %w", err)
+			return db.GetUserRow{}, fmt.Errorf("unable to marshal new token: %w", err)
 		}
 		sess.Values["oauth_token"] = string(b)
 		_ = sess.Save(r, w)
@@ -176,27 +178,27 @@ func (server *Server) getUser(r *http.Request, w http.ResponseWriter) (GetUserRo
 	// Look up session
 	sessionIDIF, ok := sess.Values["session_id"]
 	if !ok {
-		return GetUserRow{}, ErrUnauthorized
+		return db.GetUserRow{}, ErrUnauthorized
 	}
 	sessionID, ok := sessionIDIF.(string)
 	if !ok {
-		return GetUserRow{}, fmt.Errorf("%w: session_id is %T", ErrInternalServerError, sessionID)
+		return db.GetUserRow{}, fmt.Errorf("%w: session_id is %T", ErrInternalServerError, sessionID)
 	}
 	session, err := server.Queries.GetSession(ctx, sessionID)
 	if err != nil {
-		return GetUserRow{}, fmt.Errorf("%w: no such session %s", err, sessionID)
+		return db.GetUserRow{}, fmt.Errorf("%w: no such session %s", err, sessionID)
 	}
 	if time.Now().After(session.Expires.Time) {
-		return GetUserRow{}, fmt.Errorf("session expired")
+		return db.GetUserRow{}, fmt.Errorf("session expired")
 	}
 	if err := server.Queries.UpdateSessionLastSeen(ctx, sessionID); err != nil {
-		return GetUserRow{}, fmt.Errorf("updating session-last-seen failed")
+		return db.GetUserRow{}, fmt.Errorf("updating session-last-seen failed")
 	}
 
 	// Look up user
 	user, err := server.Queries.GetUser(ctx, session.AppuserID)
 	if err != nil {
-		return GetUserRow{}, fmt.Errorf("%w: database error", ErrInternalServerError)
+		return db.GetUserRow{}, fmt.Errorf("%w: database error", ErrInternalServerError)
 	}
 
 	return user, nil
@@ -294,7 +296,7 @@ func (server *Server) callbackHandler(
 	userID, err := server.Queries.GetUserIDByEmail(ctx, claims.Email)
 	if err == nil {
 		// User exists; update personal data
-		if err := server.Queries.UpdateUser(ctx, UpdateUserParams{
+		if err := server.Queries.UpdateUser(ctx, db.UpdateUserParams{
 			ID:          userID,
 			GoogleSub:   claims.Sub,
 			Email:       claims.Email,
@@ -306,8 +308,8 @@ func (server *Server) callbackHandler(
 		}
 	} else if invitation, err := server.Queries.GetInvitation(ctx, pgtype.Text{String: claims.Email, Valid: true}); err == nil {
 		// User has been invited; create user
-		if server.Transaction(ctx, func(ctx context.Context, q *Queries) error {
-			if createdUserID, err := server.Queries.CreateUser(ctx, CreateUserParams{
+		if server.Transaction(ctx, func(ctx context.Context, q *db.Queries) error {
+			if createdUserID, err := server.Queries.CreateUser(ctx, db.CreateUserParams{
 				DisplayName: claims.Name,
 				Email:       claims.Email,
 				GoogleSub:   claims.Sub,
@@ -334,7 +336,7 @@ func (server *Server) callbackHandler(
 
 	// Create session
 	sessionID := rand.Text()
-	if err := server.Queries.InsertSession(ctx, InsertSessionParams{
+	if err := server.Queries.InsertSession(ctx, db.InsertSessionParams{
 		ID:        sessionID,
 		AppuserID: userID,
 		Expires:   pgtype.Timestamptz{Time: time.Now().AddDate(0, 1, 0), Valid: true},

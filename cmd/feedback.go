@@ -5,28 +5,8 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/fugleadvokatene/bino/internal/enums"
+	"github.com/fugleadvokatene/bino/internal/request"
 )
-
-type Feedback struct {
-	Items    []FeedbackItem
-	NSkipped int
-}
-
-func (fb Feedback) CSSClass() string {
-	var maxFBT enums.FB
-	for _, item := range fb.Items {
-		if item.Type > maxFBT {
-			maxFBT = item.Type
-		}
-	}
-	return maxFBT.CSSClass()
-}
-
-type FeedbackItem struct {
-	Message string
-	Type    enums.FB
-}
 
 func (server *Server) setCookie(w http.ResponseWriter, r *http.Request, key string, value any) error {
 	// Try to marshal the feedback we have now
@@ -102,7 +82,7 @@ func (server *Server) deleteCookie(w http.ResponseWriter, r *http.Request, key s
 }
 
 func (server *Server) setFeedbackCookie(w http.ResponseWriter, r *http.Request) {
-	cd, err := LoadCommonData(r.Context())
+	cd, err := request.LoadCommonData(r.Context())
 	if err != nil {
 		cd.Log("no common data: %w", err)
 		return
@@ -115,13 +95,13 @@ func (server *Server) setFeedbackCookie(w http.ResponseWriter, r *http.Request) 
 }
 
 func (server *Server) eatFeedbackCookie(w http.ResponseWriter, r *http.Request) {
-	cd, err := LoadCommonData(r.Context())
+	cd, err := request.LoadCommonData(r.Context())
 	if err != nil {
 		cd.Log("no common data: %w", err)
 		return
 	}
 
-	var feedback Feedback
+	var feedback request.Feedback
 	if _, err := server.eatCookie(w, r, "feedback", &feedback); err != nil {
 		cd.Log("failed to unmarshal feedback cookie: %v", err)
 		return

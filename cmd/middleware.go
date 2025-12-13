@@ -5,13 +5,15 @@ import (
 	"net/http"
 	"runtime/debug"
 	"time"
+
+	"github.com/fugleadvokatene/bino/internal/request"
 )
 
 func withLogging(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		start := time.Now()
 		next.ServeHTTP(w, r)
-		LogR(
+		request.LogR(
 			r,
 			"%s %s %s",
 			r.Method,
@@ -20,7 +22,7 @@ func withLogging(next http.Handler) http.Handler {
 		)
 		r.ParseForm()
 		for k, v := range r.Form {
-			LogR(
+			request.LogR(
 				r,
 				"Form value: %s=%+v",
 				k,

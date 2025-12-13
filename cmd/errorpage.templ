@@ -1,9 +1,11 @@
 package main
 
 import "runtime/debug"
+import "github.com/fugleadvokatene/bino/internal/request"
+import "github.com/fugleadvokatene/bino/internal/templbase"
 
-templ ErrorPage(data *CommonData, err error, referer string) {
-	@Layout(data) {
+templ ErrorPage(data *request.CommonData, err error, referer string) {
+	@templbase.Layout(data) {
         <a href={templ.URL(referer)}>{data.Language.GenericGoBack}</a>
         <h1>{data.Language.ErrorPageHead}</h1>
         <div class="card b-card">

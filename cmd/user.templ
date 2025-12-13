@@ -3,12 +3,14 @@ package main
 import (
     "context"
     "github.com/fugleadvokatene/bino/internal/view"
+	"github.com/fugleadvokatene/bino/internal/request"
+	"github.com/fugleadvokatene/bino/internal/templbase"
 )
 
-templ UserPage(ctx context.Context, data *CommonData, user view.User) {
-    @Layout(data, "user-page") {
+templ UserPage(ctx context.Context, data *request.CommonData, user view.User) {
+    @templbase.Layout(data, "user-page") {
         <h1>{user.Name}</h1>
-        @Card() {
+        @templbase.Card() {
             <h2>{data.Language.UserHomes}</h2>
             <ul>
                 for _, home := range user.Homes {

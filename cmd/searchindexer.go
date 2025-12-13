@@ -9,6 +9,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/fugleadvokatene/bino/internal/db"
 	"github.com/fugleadvokatene/bino/internal/gdrive"
 	"github.com/fugleadvokatene/bino/internal/view"
 	"github.com/jackc/pgx/v5"
@@ -84,7 +85,7 @@ func (w *GDriveWorker) searchIndexFile(ctx context.Context, folder, file gdrive.
 	// Delete trashed files
 	if file.Trashed {
 		if info.didSearchEntryExist() {
-			if err := w.g.Queries.DeleteSearchEntry(ctx, DeleteSearchEntryParams{
+			if err := w.g.Queries.DeleteSearchEntry(ctx, db.DeleteSearchEntryParams{
 				Namespace:     info.namespace,
 				AssociatedUrl: info.urlField,
 			}); err != nil {
@@ -97,7 +98,7 @@ func (w *GDriveWorker) searchIndexFile(ctx context.Context, folder, file gdrive.
 	// If search-entry is synced, only update extra-data
 	if info.didSearchEntryExist() && !file.ModifiedTime.After(info.dbUpdatedField.Time) {
 		if info.extraDataField.Valid {
-			tag, err := w.g.Queries.UpdateSearchMetadata(ctx, UpdateSearchMetadataParams{
+			tag, err := w.g.Queries.UpdateSearchMetadata(ctx, db.UpdateSearchMetadataParams{
 				Namespace:     info.namespace,
 				AssociatedUrl: info.urlField,
 				ExtraData:     info.extraDataField,
@@ -116,7 +117,7 @@ func (w *GDriveWorker) searchIndexFile(ctx context.Context, folder, file gdrive.
 	journal, err := w.g.ExportDocument(file.ID)
 	if err != nil {
 		// On failure, create a skipped entry. It won't show up in search, but we also won't try to read the document later.
-		if err := w.g.Queries.UpsertSkippedSearchEntry(ctx, UpsertSkippedSearchEntryParams{
+		if err := w.g.Queries.UpsertSkippedSearchEntry(ctx, db.UpsertSkippedSearchEntryParams{
 			Namespace:     info.namespace,
 			AssociatedUrl: info.urlField,
 			Updated:       info.fileUpdatedField,
@@ -133,7 +134,7 @@ func (w *GDriveWorker) searchIndexFile(ctx context.Context, folder, file gdrive.
 	}
 
 	// Create valid search entry
-	if err := w.g.Queries.UpsertSearchEntry(ctx, UpsertSearchEntryParams{
+	if err := w.g.Queries.UpsertSearchEntry(ctx, db.UpsertSearchEntryParams{
 		Namespace:     info.namespace,
 		AssociatedUrl: info.urlField,
 		Updated:       info.fileUpdatedField,
@@ -199,7 +200,7 @@ func (w *GDriveWorker) getSearchIndexInfo(ctx context.Context, file gdrive.Item,
 	}
 
 	// Get updated-time
-	if updatedField, err := w.g.Queries.GetSearchUpdatedTime(ctx, GetSearchUpdatedTimeParams{
+	if updatedField, err := w.g.Queries.GetSearchUpdatedTime(ctx, db.GetSearchUpdatedTimeParams{
 		Namespace:     out.namespace,
 		AssociatedUrl: out.urlField,
 	}); err == nil {

@@ -3,19 +3,21 @@ package main
 import (
     "github.com/fugleadvokatene/bino/internal/enums"
     "github.com/fugleadvokatene/bino/internal/view"
+	"github.com/fugleadvokatene/bino/internal/request"
+	"github.com/fugleadvokatene/bino/internal/templbase"
 )
 
-templ UserAdmin(data *CommonData, homes []view.Home, users []view.User, invitations []view.Invitation) {
-	@Layout(data) {
+templ UserAdmin(data *request.CommonData, homes []view.Home, users []view.User, invitations []view.Invitation) {
+	@templbase.Layout(data) {
         <h1>{data.Language.AdminManageUsers}</h1>
-        @Card() {
+        @templbase.Card() {
             <h2>{data.Language.AdminInviteUsers}</h2>
             <div class="card">
                 <table class="table table-striped table-bordered m-0">
                     <tbody>
                         <tr>
                             <td colspan="2">
-                                @Form("/invite", "POST") {
+                                @templbase.Form("/invite", "POST") {
                                     <label for="email">{data.Language.GenericEmail}</label>
                                     <div class="input-group">
                                         <input id="email" class="form-control" name="email" placeholder={data.Language.AdminEmailAddress} autocomplete="off" data-1p-ignore data-lpignore="true" data-bwignore="true" data-protonpass-ignore="true"></input>
@@ -76,7 +78,7 @@ templ UserAdmin(data *CommonData, homes []view.Home, users []view.User, invitati
                                             {data.Language.GenericNone}
                                         }
                                     </td>
-                                    <td>@SingleButtonForm(inv.DeleteURL(), data.Language.GenericDelete, "POST", "btn-danger")</td>
+                                    <td>@templbase.SingleButtonForm(inv.DeleteURL(), data.Language.GenericDelete, "POST", "btn-danger")</td>
                                 </tr>
                             }
                         </tbody>
@@ -126,13 +128,13 @@ templ UserAdmin(data *CommonData, homes []view.Home, users []view.User, invitati
     }
 }
 
-templ UserConfirmScrubOrNuke(data *CommonData, user view.User, header, confirmMsg, dest, referer string) {
-    @Layout(data) {
+templ UserConfirmScrubOrNuke(data *request.CommonData, user view.User, header, confirmMsg, dest, referer string) {
+    @templbase.Layout(data) {
         <a href={templ.URL(referer)}>{data.Language.GenericGoBack}</a>
         <h1>{header}</h1>
-        @Card() {
+        @templbase.Card() {
             <p>{confirmMsg} ({user.Email})</p>
-            @Form(user.URLSuffix(dest), "POST", "form-control", "d-flex", "p-0") {
+            @templbase.Form(user.URLSuffix(dest), "POST", "form-control", "d-flex", "p-0") {
                 <div class="input-group">
                     <input class="input w-75" name="confirm-email" value={data.Language.GenericEmail} autocomplete="off" data-1p-ignore data-lpignore="true" data-bwignore="true" data-protonpass-ignore="true"></input>
                     <button type="submit" class="btn btn-danger w-25">{data.Language.GenericConfirm}</button>

@@ -3,13 +3,15 @@ package main
 import (
     "fmt"
 	"github.com/fugleadvokatene/bino/internal/enums"
+	"github.com/fugleadvokatene/bino/internal/request"
+	"github.com/fugleadvokatene/bino/internal/templbase"
 )
 
 // NOTE: must not assume data.User exists
-templ Privacy(data *CommonData, config PrivacyConfig) {
-    @Layout(data) {
+templ Privacy(data *request.CommonData, config PrivacyConfig) {
+    @templbase.Layout(data) {
         <h1>{data.Language.FooterPrivacy}</h1>
-        @Card() {
+        @templbase.Card() {
             if data.Language.ID == enums.LanguageIDEN {
                 <h2>1. About Bino</h2>
                 <p>
@@ -125,14 +127,14 @@ templ Privacy(data *CommonData, config PrivacyConfig) {
     }
 }
 
-templ TOS(data *CommonData) {
-    @Layout(data) {
+templ TOS(data *request.CommonData) {
+    @templbase.Layout(data) {
         if data.Language.ID == enums.LanguageIDEN {
             <h1>Terms of Service</h1>
         } else {
             <h1>Bruksvilkår</h1>
         }
-        @Card() {
+        @templbase.Card() {
             if data.Language.ID == enums.LanguageIDEN {
                 <p>By logging into Bino, you agree to these terms of service:</p>
                 <p>1. The website is run according to Norwegian national law.</p>
@@ -147,9 +149,9 @@ templ TOS(data *CommonData) {
 }
 
 
-templ LoginPage(data *CommonData) {
-    @Layout(data) {
-        @Card() {
+templ LoginPage(data *request.CommonData) {
+    @templbase.Layout(data) {
+        @templbase.Card() {
             <p>Bino is a patient management system for distributed wildlife rescues.</p>
             <p>You can log in using your Google account. Click the button below to sign in.</p>
             <button class="gsi-material-button m-auto">

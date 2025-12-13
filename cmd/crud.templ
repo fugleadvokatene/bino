@@ -4,12 +4,14 @@ import (
     "fmt"
 	"github.com/fugleadvokatene/bino/internal/enums"
 	"github.com/fugleadvokatene/bino/internal/language"
+	"github.com/fugleadvokatene/bino/internal/request"
+    "github.com/fugleadvokatene/bino/internal/templbase"
 )
 
-templ (page CRUDPage) Component(data *CommonData) {
-    @Layout(data) {
+templ (page CRUDPage) Component(data *request.CommonData) {
+    @templbase.Layout(data) {
         <h1>{page.Header}</h1>
-        @Card() {
+        @templbase.Card() {
             <table>
             <thead>
                 <tr>
@@ -30,7 +32,7 @@ templ (page CRUDPage) Component(data *CommonData) {
     }
 }
 
-templ UpdateRow(data *CommonData,  id int32, obj interface{Name(id enums.LanguageID) (string, bool)}) {
+templ UpdateRow(data *request.CommonData,  id int32, obj interface{Name(id enums.LanguageID) (string, bool)}) {
     <tr>
         {children...}
         for _, lang := range enums.LanguageIDValues()  {
@@ -51,7 +53,7 @@ templ UpdateRow(data *CommonData,  id int32, obj interface{Name(id enums.Languag
     </tr>
 }
 
-templ CreateRow(data *CommonData) {
+templ CreateRow(data *request.CommonData) {
     <tr>
         {children...}
         for _, lang := range enums.LanguageIDValues() {

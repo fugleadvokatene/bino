@@ -1,11 +1,10 @@
-package main
+package templbase
 
-import (
-    "github.com/fugleadvokatene/bino/internal/enums"
-    "github.com/fugleadvokatene/bino/internal/language"
-)
+import "github.com/fugleadvokatene/bino/internal/request"
+import "github.com/fugleadvokatene/bino/internal/enums"
+import "github.com/fugleadvokatene/bino/internal/language"
 
-templ FullLayout(data *CommonData) {
+templ FullLayout(data *request.CommonData) {
     <!doctype html>
     <html lang="en">
     <head>
@@ -27,7 +26,7 @@ templ FullLayout(data *CommonData) {
     </html>
 }
 
-templ Head(data *CommonData) {
+templ Head(data *request.CommonData) {
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="autocomplete" content="off">
@@ -40,7 +39,7 @@ templ Head(data *CommonData) {
     <script src="https://kit.fontawesome.com/9e1149297d.js" crossorigin="anonymous"></script>
 }
 
-templ Body(data *CommonData) {
+templ Body(data *request.CommonData) {
     @Navbar(data)
     if len(data.Feedback.Items) > 0 {
         <div class="b-container">
@@ -61,11 +60,11 @@ templ Body(data *CommonData) {
     <link href="https://fonts.googleapis.com/css2?family=Hammersmith+One&family=Roboto:wght@100..900&display=swap" rel="stylesheet">
 }
 
-templ JSModule(data *CommonData, name string) {
+templ JSModule(data *request.CommonData, name string) {
     <script type="module" src={data.StaticFile("/bundle/" + name + ".js")}></script>
 }
 
-templ Layout(data *CommonData, classes ...string) {
+templ Layout(data *request.CommonData, classes ...string) {
     @FullLayout(data) {
         <div class={"main b-container", classes}>
             { children... }
@@ -79,7 +78,7 @@ templ Card(classes ...string) {
     </div>
 }
 
-templ Navbar(data *CommonData) {
+templ Navbar(data *request.CommonData) {
     <nav class="b-navbar navbar navbar-expand-lg shadow-lg">
         <div class="container">
             <div class="brand-badge brand-color">
@@ -113,7 +112,7 @@ templ NavbarPageLink(text, loc string, classes ...string) {
     </div>
 }
 
-templ LanguageSelect(data *CommonData) {
+templ LanguageSelect(data *request.CommonData) {
     <div class="b-navbar-item">
         <form class="d-flex" action="/language" method="post">
             <select id="language-select" class="form-select" aria-label="Select language" name="language">
@@ -125,7 +124,7 @@ templ LanguageSelect(data *CommonData) {
     </div>
 }
 
-templ FullTextSearch(data *CommonData) {
+templ FullTextSearch(data *request.CommonData) {
     <div class="b-navbar-item">
         <form class="d-flex" action="/search" method="get">
             <div class="input-group">
@@ -148,7 +147,7 @@ templ FullTextSearch(data *CommonData) {
     </div>
 }
 
-templ SelfInfo(data *UserData) {
+templ SelfInfo(data *request.UserData) {
     if data.HasAvatarURL {
         <div class="b-navbar-item">
             <img src={data.AvatarURL} class="nav-profile-picture">
@@ -163,13 +162,13 @@ templ SelfInfo(data *UserData) {
     }
 }
 
-templ AuthLogOut(data *CommonData) {
+templ AuthLogOut(data *request.CommonData) {
     <form class="d-flex" role="AuthLogOut" action="/AuthLogOut">
         <button class="btn btn-outline-warning" type="submit">{data.Language.AuthLogOut}</button>
     </form>
 }
 
-templ Footer(data *CommonData) {
+templ Footer(data *request.CommonData) {
     <footer class="footer b-color-lightgray">
         <div class="container">
             <div class="footer-layout d-flex justify-content-between">

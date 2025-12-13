@@ -3,14 +3,16 @@ package main
 import (
     "context"
     "fmt"
+	"github.com/fugleadvokatene/bino/internal/request"
+	"github.com/fugleadvokatene/bino/internal/templbase"
 )
 
 templ (server *Server) GDrivePage(
     ctx context.Context,
-    data *CommonData,
+    data *request.CommonData,
     info GDriveConfigInfo,
 ) {
-    @Layout(data) {
+    @templbase.Layout(data) {
         <h1>{data.Language.AdminManageGoogleDrive}</h1>
         @server.GDrivePermissionOverview(ctx, data, info)
     }
@@ -18,10 +20,10 @@ templ (server *Server) GDrivePage(
 
 templ (server *Server) GDrivePermissionOverview(
     ctx context.Context,
-    data *CommonData,
+    data *request.CommonData,
     info GDriveConfigInfo,
 ) {
-    @Card() {
+    @templbase.Card() {
         <p>{data.Language.GDriveBaseDir} <a href={info.JournalFolder.FolderURL()}>{info.JournalFolder.Name}</a></p>
         <p>{data.Language.GDriveTemplateFile} <a href={templ.URL(info.TemplateDoc.Item.DocumentURL())}>{info.TemplateDoc.Item.Name}</a></p>
         if len(info.ExtraFolders) > 0 {
@@ -34,7 +36,7 @@ templ (server *Server) GDrivePermissionOverview(
         }
     }
 
-    @Card() {
+    @templbase.Card() {
         <h2>{data.Language.GDrivePermissionsForBaseDir}</h2>
         <p>{data.Language.GDrivePermissionsForBaseDirInstruction}</p>
         <table class="table table-sm">
@@ -63,7 +65,7 @@ templ (server *Server) GDrivePermissionOverview(
                         @Avatar(view)
                     } else {
                         <p>{data.Language.GenericNotFound}</p>
-                        @SingleButtonForm(fmt.Sprintf("/invite/%s", p.Email), data.Language.AdminInviteToBino, "POST", "btn-primary")
+                        @templbase.SingleButtonForm(fmt.Sprintf("/invite/%s", p.Email), data.Language.AdminInviteToBino, "POST", "btn-primary")
                     }
                 </td>
             </tr>
@@ -91,7 +93,7 @@ templ (server *Server) GDrivePermissionOverview(
                     
                     <td>
                     if server.LoggedInUserCanShare(ctx, info.JournalFolder) {
-                        @SingleButtonForm(fmt.Sprintf("/gdrive/invite/%s", user.Email), data.Language.GDriveGiveAccess, "POST", "btn-primary")
+                        @templbase.SingleButtonForm(fmt.Sprintf("/gdrive/invite/%s", user.Email), data.Language.GDriveGiveAccess, "POST", "btn-primary")
                     }
                     </td>
                 </tr>

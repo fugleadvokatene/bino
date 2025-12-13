@@ -1,7 +1,10 @@
 package main
 
-templ NotFoundPage(data *CommonData, msg string, referer string) {
-	@Layout(data) {
+import "github.com/fugleadvokatene/bino/internal/request"
+import "github.com/fugleadvokatene/bino/internal/templbase"
+
+templ NotFoundPage(data *request.CommonData, msg string, referer string) {
+	@templbase.Layout(data) {
         <a href={templ.URL(referer)}>{data.Language.GenericGoBack}</a>
         <h1>{data.Language.NotFoundPageHead}</h1>
         <div class="card b-card">

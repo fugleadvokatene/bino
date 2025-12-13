@@ -8,24 +8,20 @@ import (
 	"io"
 	"net/http"
 
+	"github.com/fugleadvokatene/bino/internal/db"
 	"github.com/fugleadvokatene/bino/internal/enums"
+	"github.com/fugleadvokatene/bino/internal/handlers/handleraccess"
 	"github.com/fugleadvokatene/bino/internal/language"
+	"github.com/fugleadvokatene/bino/internal/request"
 )
-
-func (server *Server) adminRootHandler(w http.ResponseWriter, r *http.Request) {
-	ctx := r.Context()
-	commonData := MustLoadCommonData(ctx)
-
-	_ = AdminRootPage(commonData).Render(ctx, w)
-}
 
 func (server *Server) postLanguageHandler(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-	commonData := MustLoadCommonData(ctx)
+	commonData := request.MustLoadCommonData(ctx)
 
 	lang, err := enums.ParseLanguageID(r.FormValue("language"))
 	if err == nil {
-		err = server.Queries.SetUserLanguage(ctx, SetUserLanguageParams{
+		err = server.Queries.SetUserLanguage(ctx, db.SetUserLanguageParams{
 			AppuserID:  commonData.User.AppuserID,
 			LanguageID: int32(lang),
 		})
@@ -53,57 +49,53 @@ func (server *Server) lastGoodURL(r *http.Request) string {
 	return r.Referer()
 }
 
-func (server *Server) renderError(w http.ResponseWriter, r *http.Request, commonData *CommonData, err error) {
+func (server *Server) renderError(w http.ResponseWriter, r *http.Request, commonData *request.CommonData, err error) {
 	ctx := r.Context()
 	w.WriteHeader(http.StatusInternalServerError)
 	commonData.Subtitle = commonData.Language.GenericFailed
 	_ = ErrorPage(commonData, err, server.lastGoodURL(r)).Render(ctx, w)
-	logError(r, err)
+	request.LogError(r, err)
 }
 
-func (server *Server) renderUnauthorized(w http.ResponseWriter, r *http.Request, commonData *CommonData, err error) {
+func (server *Server) renderUnauthorized(w http.ResponseWriter, r *http.Request, commonData *request.CommonData, err error) {
 	ctx := r.Context()
 	w.WriteHeader(http.StatusInternalServerError)
-	_ = UnauthorizedPage(commonData, err, server.lastGoodURL(r)).Render(ctx, w)
-	logError(r, err)
+	_ = handleraccess.UnauthorizedPage(commonData, err, server.lastGoodURL(r)).Render(ctx, w)
+	request.LogError(r, err)
 }
 
-func (server *Server) render404(w http.ResponseWriter, r *http.Request, commonData *CommonData, err error) {
+func (server *Server) render404(w http.ResponseWriter, r *http.Request, commonData *request.CommonData, err error) {
 	ctx := r.Context()
 	w.WriteHeader(http.StatusNotFound)
 	_ = NotFoundPage(commonData, err.Error(), server.lastGoodURL(r)).Render(ctx, w)
-	logError(r, err)
+	request.LogError(r, err)
 }
 
 func (server *Server) ensureAccess(w http.ResponseWriter, r *http.Request, al enums.AccessLevel) bool {
 	ctx := r.Context()
-	commonData := MustLoadCommonData(ctx)
+	commonData := request.MustLoadCommonData(ctx)
 	hasAccess := commonData.User.AccessLevel >= al
 	if !hasAccess {
 		w.WriteHeader(http.StatusUnauthorized)
 		err := errors.New(commonData.Language.AccessLevelBlocked(al))
-		_ = UnauthorizedPage(
+		_ = handleraccess.UnauthorizedPage(
 			commonData,
 			err,
 			server.lastGoodURL(r),
 		).Render(ctx, w)
-		logError(r, err)
+		request.LogError(r, err)
 	}
 	return hasAccess
 }
 
 func ajaxError(w http.ResponseWriter, r *http.Request, err error, statusCode int) {
-	logError(r, err)
+	request.LogError(r, err)
 	w.WriteHeader(statusCode)
-}
-
-func logError(r *http.Request, err error) {
-	LogR(r, "%s %s ERROR: %v", r.Method, r.URL.Path, err)
 }
 
 func (server *Server) fourOhFourHandler(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-	commonData := MustLoadCommonData(ctx)
+	commonData := request.MustLoadCommonData(ctx)
 	server.render404(w, r, commonData, fmt.Errorf("not found: %s %s", r.Method, r.RequestURI))
 }
 
@@ -111,7 +103,7 @@ func jsonHandler[T any](
 	server *Server,
 	w http.ResponseWriter,
 	r *http.Request,
-	f func(q *Queries, req T) error,
+	f func(q *db.Queries, req T) error,
 ) {
 	ctx := r.Context()
 
@@ -125,7 +117,7 @@ func jsonHandler[T any](
 		ajaxError(w, r, err, http.StatusBadRequest)
 		return
 	}
-	if err := server.Transaction(ctx, func(ctx context.Context, q *Queries) error {
+	if err := server.Transaction(ctx, func(ctx context.Context, q *db.Queries) error {
 		return f(q, recv)
 	}); err != nil {
 		ajaxError(w, r, err, http.StatusInternalServerError)

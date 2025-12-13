@@ -5,18 +5,21 @@ import (
 
 	"github.com/fugleadvokatene/bino/internal/view"
 	"github.com/fugleadvokatene/bino/internal/enums"
+	"github.com/fugleadvokatene/bino/internal/request"
+	"github.com/fugleadvokatene/bino/internal/templbase"
+	"github.com/fugleadvokatene/bino/internal/handlers/handlercalendar"
 )
 
-templ PatientPage(ctx context.Context, data *CommonData, view view.PatientPage, server *Server) {
-	@Layout(data, "patient-page") {
+templ PatientPage(ctx context.Context, data *request.CommonData, view view.PatientPage, server *Server) {
+	@templbase.Layout(data, "patient-page") {
         <h1 class="editable" data-action={view.Patient.URLSuffix("set-name")}>{view.Patient.Name}</h1>
-        @Card() {
+        @templbase.Card() {
             <h2>Personalia</h2>
             <table class="table table-bordered mb-2">
             <tbody>
                 <tr>
                     <th>{data.Language.PatientRegisteredTime}</th>
-                    <td>@CalendarLinkAbs(data.Language, view.Patient.TimeCheckin, "listDay")</td>
+                    <td>@handlercalendar.CalendarLinkAbs(data.Language, view.Patient.TimeCheckin, "listDay")</td>
                 </tr>
                 <tr>
                     <th>{data.Language.GenericStatus}</th>
@@ -59,7 +62,7 @@ templ PatientPage(ctx context.Context, data *CommonData, view view.PatientPage, 
             <tbody>
                 for _, event := range view.Events {
                     <tr>
-                        <td>@CalendarLinkAbs(data.Language, event.Time, "listDay")</td>
+                        <td>@handlercalendar.CalendarLinkAbs(data.Language, event.Time, "listDay")</td>
                         <td class="center">
                             @Avatar(event.User)
                         </td>
@@ -78,11 +81,11 @@ templ PatientPage(ctx context.Context, data *CommonData, view view.PatientPage, 
     }
 }
 
-templ PatientCheckout(data *CommonData, patient view.Patient) {
+templ PatientCheckout(data *request.CommonData, patient view.Patient) {
     <tr>
         <th class="w-25">{data.Language.DashboardCheckOut}</th>
         <td>
-            @Form(
+            @templbase.Form(
                 patient.URLSuffix("checkout"),
                 "POST",
                 "form-control-sm", "form-control-plaintext",
@@ -110,7 +113,7 @@ templ PatientCheckout(data *CommonData, patient view.Patient) {
     </tr>
 }
 
-templ PatientJournalUpdate(data *CommonData, patient view.Patient, unconditionallyShowAttachForm bool) {
+templ PatientJournalUpdate(data *request.CommonData, patient view.Patient, unconditionallyShowAttachForm bool) {
     <tr>
         <th class="w-25">{data.Language.GenericJournal}</th>
         <td>
@@ -120,11 +123,11 @@ templ PatientJournalUpdate(data *CommonData, patient view.Patient, unconditional
                 </a>
             } else {
                 <p class="mb-0 small">{data.Language.GDriveNoJournalForPatient}</p>
-                @SingleButtonForm(patient.URLSuffix("create-journal"), data.Language.GDriveCreateJournalForPatient, "POST", "btn-primary", "d-flex", "flex-column", "center", "mb-2")
+                @templbase.SingleButtonForm(patient.URLSuffix("create-journal"), data.Language.GDriveCreateJournalForPatient, "POST", "btn-primary", "d-flex", "flex-column", "center", "mb-2")
             }
             if patient.JournalURL == "" || unconditionallyShowAttachForm  {
                 <p class="mb-0 small">{data.Language.GDriveSelectExistingJournalInstruction}</p>
-                @Form(
+                @templbase.Form(
                     patient.URLSuffix("attach-journal"),
                     "POST",
                     "form-control-sm", "form-control-plaintext",
@@ -138,8 +141,8 @@ templ PatientJournalUpdate(data *CommonData, patient view.Patient, unconditional
                 if patient.SuggestedJournalTitle != "" && patient.SuggestedJournalURL != "" {
                     <p class="mb-0 small">{data.Language.GDriveSuggestedJournal}: <a href={templ.URL(patient.SuggestedJournalURL)}>{patient.SuggestedJournalTitle}</a></p>
                     <div class="d-flex justify-content-evenly">
-                        @SingleButtonForm(patient.URLSuffix("accept-suggested-journal"), data.Language.GDriveAcceptSuggestedJournal, "POST", "btn-success", "d-flex", "flex-column", "center", "mb-2")
-                        @SingleButtonForm(patient.URLSuffix("decline-suggested-journal"), data.Language.GDriveDeclineSuggestedJournal, "POST", "btn-warning", "d-flex", "flex-column", "center", "mb-2")
+                        @templbase.SingleButtonForm(patient.URLSuffix("accept-suggested-journal"), data.Language.GDriveAcceptSuggestedJournal, "POST", "btn-success", "d-flex", "flex-column", "center", "mb-2")
+                        @templbase.SingleButtonForm(patient.URLSuffix("decline-suggested-journal"), data.Language.GDriveDeclineSuggestedJournal, "POST", "btn-warning", "d-flex", "flex-column", "center", "mb-2")
                     </div>
                 }
             }

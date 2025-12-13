@@ -5,7 +5,9 @@ import (
 	"regexp"
 	"time"
 
+	"github.com/fugleadvokatene/bino/internal/db"
 	"github.com/fugleadvokatene/bino/internal/enums"
+	"github.com/fugleadvokatene/bino/internal/request"
 	"github.com/fugleadvokatene/bino/internal/view"
 	"github.com/jackc/pgx/v5/pgtype"
 )
@@ -14,7 +16,7 @@ var journalRegex = regexp.MustCompile(`(https:\/\/docs\.google\.com\/document\/d
 
 func (server *Server) getPatientHandler(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-	commonData := MustLoadCommonData(ctx)
+	commonData := request.MustLoadCommonData(ctx)
 
 	id, err := server.getPathID(r, "patient")
 	if err != nil {
@@ -22,7 +24,7 @@ func (server *Server) getPatientHandler(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	patientData, err := server.Queries.GetPatientWithSpecies(ctx, GetPatientWithSpeciesParams{
+	patientData, err := server.Queries.GetPatientWithSpecies(ctx, db.GetPatientWithSpeciesParams{
 		ID:         id,
 		LanguageID: commonData.Lang32(),
 	})
@@ -56,7 +58,7 @@ func (server *Server) getPatientHandler(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	events := SliceToSlice(eventData, func(r GetEventsForPatientRow) view.Event {
+	events := SliceToSlice(eventData, func(r db.GetEventsForPatientRow) view.Event {
 		return view.Event{
 			ID:           r.ID,
 			PatientID:    r.PatientID,
@@ -88,7 +90,7 @@ func (server *Server) getPatientHandler(w http.ResponseWriter, r *http.Request) 
 	PatientPage(ctx, commonData, view.PatientPage{
 		Patient: patientData.ToPatientView(),
 		Home:    home,
-		Homes: SliceToSlice(homes, func(home Home) view.Home {
+		Homes: SliceToSlice(homes, func(home db.Home) view.Home {
 			return home.ToHomeView()
 		}),
 		Events: events,
@@ -97,7 +99,7 @@ func (server *Server) getPatientHandler(w http.ResponseWriter, r *http.Request) 
 
 func (server *Server) createJournalHandler(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-	commonData := MustLoadCommonData(ctx)
+	commonData := request.MustLoadCommonData(ctx)
 
 	patient, err := server.getPathID(r, "patient")
 	if err != nil {
@@ -105,7 +107,7 @@ func (server *Server) createJournalHandler(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
-	patientData, err := server.Queries.GetPatientWithSpecies(ctx, GetPatientWithSpeciesParams{
+	patientData, err := server.Queries.GetPatientWithSpecies(ctx, db.GetPatientWithSpeciesParams{
 		ID:         patient,
 		LanguageID: int32(server.Config.SystemLanguage),
 	})
@@ -120,12 +122,12 @@ func (server *Server) createJournalHandler(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
-	created, err := server.Queries.GetFirstEventOfTypeForPatient(ctx, GetFirstEventOfTypeForPatientParams{
+	created, err := server.Queries.GetFirstEventOfTypeForPatient(ctx, db.GetFirstEventOfTypeForPatientParams{
 		PatientID: patient,
 		EventID:   int32(enums.EventRegistered),
 	})
 	if err != nil || !created.Valid {
-		LogR(r, "vad creation date, using current time. Err=%v", err)
+		request.LogR(r, "vad creation date, using current time. Err=%v", err)
 		created = pgtype.Timestamptz{Time: time.Now(), Valid: true}
 	}
 
@@ -141,7 +143,7 @@ func (server *Server) createJournalHandler(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
-	if tag, err := server.Queries.SetPatientJournal(ctx, SetPatientJournalParams{
+	if tag, err := server.Queries.SetPatientJournal(ctx, db.SetPatientJournalParams{
 		ID: patient,
 		JournalUrl: pgtype.Text{
 			String: item.DocumentURL(),
@@ -153,7 +155,7 @@ func (server *Server) createJournalHandler(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
-	if _, err := server.Queries.AddPatientEvent(ctx, AddPatientEventParams{
+	if _, err := server.Queries.AddPatientEvent(ctx, db.AddPatientEventParams{
 		PatientID: patient,
 		HomeID:    patientData.CurrHomeID.Int32,
 		EventID:   int32(enums.EventJournalCreated),
@@ -169,7 +171,7 @@ func (server *Server) createJournalHandler(w http.ResponseWriter, r *http.Reques
 
 func (server *Server) attachJournalHandler(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-	commonData := MustLoadCommonData(ctx)
+	commonData := request.MustLoadCommonData(ctx)
 
 	patient, err := server.getPathID(r, "patient")
 	if err != nil {
@@ -196,7 +198,7 @@ func (server *Server) attachJournalHandler(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
-	if tag, err := server.Queries.SetPatientJournal(ctx, SetPatientJournalParams{
+	if tag, err := server.Queries.SetPatientJournal(ctx, db.SetPatientJournalParams{
 		ID: patient,
 		JournalUrl: pgtype.Text{
 			String: baseURL,
@@ -208,7 +210,7 @@ func (server *Server) attachJournalHandler(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
-	if _, err := server.Queries.AddPatientEvent(ctx, AddPatientEventParams{
+	if _, err := server.Queries.AddPatientEvent(ctx, db.AddPatientEventParams{
 		PatientID: patient,
 		HomeID:    patientData.CurrHomeID.Int32,
 		EventID:   int32(enums.EventJournalAttached),
@@ -224,7 +226,7 @@ func (server *Server) attachJournalHandler(w http.ResponseWriter, r *http.Reques
 
 func (server *Server) acceptSuggestedJournalHandler(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-	commonData := MustLoadCommonData(ctx)
+	commonData := request.MustLoadCommonData(ctx)
 
 	patient, err := server.getPathID(r, "patient")
 	if err != nil {
@@ -239,7 +241,7 @@ func (server *Server) acceptSuggestedJournalHandler(w http.ResponseWriter, r *ht
 
 func (server *Server) declineSuggestedJournalHandler(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-	commonData := MustLoadCommonData(ctx)
+	commonData := request.MustLoadCommonData(ctx)
 
 	patient, err := server.getPathID(r, "patient")
 	if err != nil {

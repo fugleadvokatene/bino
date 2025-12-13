@@ -6,7 +6,9 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/fugleadvokatene/bino/internal/db"
 	"github.com/fugleadvokatene/bino/internal/enums"
+	"github.com/fugleadvokatene/bino/internal/request"
 	"github.com/fugleadvokatene/bino/internal/view"
 	"github.com/jackc/pgx/v5/pgtype"
 )
@@ -19,16 +21,16 @@ type DashboardData struct {
 }
 
 func (server *Server) getSpeciesForUser(ctx context.Context, user int32) ([]view.Species, []view.Species, error) {
-	commonData := MustLoadCommonData(ctx)
+	commonData := request.MustLoadCommonData(ctx)
 
-	preferredSpeciesRows, err := server.Queries.GetPreferredSpeciesForHome(ctx, GetPreferredSpeciesForHomeParams{
+	preferredSpeciesRows, err := server.Queries.GetPreferredSpeciesForHome(ctx, db.GetPreferredSpeciesForHomeParams{
 		HomeID:     user,
 		LanguageID: commonData.Lang32(),
 	})
 	if err != nil {
 		return nil, nil, err
 	}
-	preferredSpecies := SliceToSlice(preferredSpeciesRows, func(in GetPreferredSpeciesForHomeRow) view.Species {
+	preferredSpecies := SliceToSlice(preferredSpeciesRows, func(in db.GetPreferredSpeciesForHomeRow) view.Species {
 		return in.ToSpeciesView()
 	})
 
@@ -36,11 +38,11 @@ func (server *Server) getSpeciesForUser(ctx context.Context, user int32) ([]view
 	if err != nil {
 		return nil, nil, err
 	}
-	otherSpecies := SliceToSlice(FilterSlice(otherSpeciesRows, func(in GetSpeciesWithLanguageRow) bool {
+	otherSpecies := SliceToSlice(FilterSlice(otherSpeciesRows, func(in db.GetSpeciesWithLanguageRow) bool {
 		return Find(preferredSpecies, func(preferred view.Species) bool {
 			return preferred.ID == in.SpeciesID
 		}) == -1
-	}), func(in GetSpeciesWithLanguageRow) view.Species {
+	}), func(in db.GetSpeciesWithLanguageRow) view.Species {
 		return in.ToSpeciesView(false)
 	})
 	return preferredSpecies, otherSpecies, nil
@@ -48,7 +50,7 @@ func (server *Server) getSpeciesForUser(ctx context.Context, user int32) ([]view
 
 func (server *Server) mainHandler(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-	commonData := MustLoadCommonData(ctx)
+	commonData := request.MustLoadCommonData(ctx)
 	if commonData.User != nil {
 		server.dashboardHandler(w, r)
 	} else {
@@ -58,7 +60,7 @@ func (server *Server) mainHandler(w http.ResponseWriter, r *http.Request) {
 
 func (server *Server) dashboardHandler(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-	commonData := MustLoadCommonData(ctx)
+	commonData := request.MustLoadCommonData(ctx)
 
 	commonData.Subtitle = commonData.Language.NavbarDashboard
 
@@ -92,32 +94,32 @@ func (server *Server) dashboardHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	homeViews := SliceToSlice(homes, func(h Home) view.Home {
+	homeViews := SliceToSlice(homes, func(h db.Home) view.Home {
 		return view.Home{
 			ID:       h.ID,
 			Capacity: h.Capacity,
 			Name:     h.Name,
 			Note:     h.Note,
-			Patients: SliceToSlice(FilterSlice(patients, func(p GetActivePatientsRow) bool {
+			Patients: SliceToSlice(FilterSlice(patients, func(p db.GetActivePatientsRow) bool {
 				return p.CurrHomeID.Valid && p.CurrHomeID.Int32 == h.ID
-			}), func(p GetActivePatientsRow) view.Patient {
+			}), func(p db.GetActivePatientsRow) view.Patient {
 				return p.ToPatientView()
 			}),
-			Users: SliceToSlice(FilterSlice(users, func(u GetAppusersRow) bool {
+			Users: SliceToSlice(FilterSlice(users, func(u db.GetAppusersRow) bool {
 				return u.HomeID.Valid && u.HomeID.Int32 == h.ID
-			}), func(u GetAppusersRow) view.User {
+			}), func(u db.GetAppusersRow) view.User {
 				return u.ToUserView()
 			}),
-			UnavailablePeriods: SliceToSlice(FilterSlice(unavailablePeriods, func(p HomeUnavailable) bool {
+			UnavailablePeriods: SliceToSlice(FilterSlice(unavailablePeriods, func(p db.HomeUnavailable) bool {
 				return p.HomeID == h.ID
-			}), func(in HomeUnavailable) view.Period {
+			}), func(in db.HomeUnavailable) view.Period {
 				return in.ToPeriodView()
 			}),
 		}
 	})
 
 	var preferredHomeView view.Home
-	if preferredHomeIdx := Find(homes, func(h Home) bool {
+	if preferredHomeIdx := Find(homes, func(h db.Home) bool {
 		return h.ID == commonData.User.PreferredHome.ID
 	}); preferredHomeIdx != -1 {
 		preferredHomeView = homeViews[preferredHomeIdx]
@@ -140,7 +142,7 @@ func (server *Server) dashboardHandler(w http.ResponseWriter, r *http.Request) {
 
 func (server *Server) postCheckinHandler(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-	commonData := MustLoadCommonData(ctx)
+	commonData := request.MustLoadCommonData(ctx)
 
 	if !server.ensureAccess(w, r, enums.AccessLevelRehabber) {
 		return
@@ -163,7 +165,7 @@ func (server *Server) postCheckinHandler(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	systemSpeciesName, err := server.Queries.GetNameOfSpecies(ctx, GetNameOfSpeciesParams{
+	systemSpeciesName, err := server.Queries.GetNameOfSpecies(ctx, db.GetNameOfSpeciesParams{
 		SpeciesID:  fields["species"],
 		LanguageID: int32(server.Config.SystemLanguage),
 	})
@@ -173,9 +175,9 @@ func (server *Server) postCheckinHandler(w http.ResponseWriter, r *http.Request)
 	}
 
 	var patientID int32
-	if err := server.Transaction(ctx, func(ctx context.Context, q *Queries) error {
+	if err := server.Transaction(ctx, func(ctx context.Context, q *db.Queries) error {
 		var err error
-		patientID, err = q.AddPatient(ctx, AddPatientParams{
+		patientID, err = q.AddPatient(ctx, db.AddPatientParams{
 			SpeciesID:  fields["species"],
 			CurrHomeID: pgtype.Int4{Int32: fields["home"], Valid: true},
 			Name:       name,
@@ -185,7 +187,7 @@ func (server *Server) postCheckinHandler(w http.ResponseWriter, r *http.Request)
 			return err
 		}
 
-		if _, err := q.AddPatientEvent(ctx, AddPatientEventParams{
+		if _, err := q.AddPatientEvent(ctx, db.AddPatientEventParams{
 			PatientID: patientID,
 			AppuserID: commonData.User.AppuserID,
 			EventID:   int32(enums.EventRegistered),
@@ -211,7 +213,7 @@ func (server *Server) postCheckinHandler(w http.ResponseWriter, r *http.Request)
 		}); err != nil {
 			commonData.Warning(commonData.Language.GDriveCreateJournalFailed, err)
 		} else {
-			if tag, err := server.Queries.SetPatientJournal(ctx, SetPatientJournalParams{
+			if tag, err := server.Queries.SetPatientJournal(ctx, db.SetPatientJournalParams{
 				ID:         patientID,
 				JournalUrl: pgtype.Text{String: item.DocumentURL(), Valid: true},
 			}); err != nil || tag.RowsAffected() == 0 {
@@ -223,13 +225,13 @@ func (server *Server) postCheckinHandler(w http.ResponseWriter, r *http.Request)
 	}
 	if suggestJournal {
 		if err := suggestJournalBasedOnSearch(ctx, server.Queries, patientID, name, systemSpeciesName, fields["home"]); err != nil {
-			LogCtx(ctx, "suggesting journal: %v", err)
+			request.LogCtx(ctx, "suggesting journal: %v", err)
 		}
 	}
 	server.redirectToReferer(w, r)
 }
 
-func suggestJournalBasedOnSearch(ctx context.Context, queries *Queries, id int32, name, speciesName string, homeID int32) error {
+func suggestJournalBasedOnSearch(ctx context.Context, queries *db.Queries, id int32, name, speciesName string, homeID int32) error {
 	searchQuery := name + " " + speciesName
 	if home, err := queries.GetHome(ctx, homeID); err != nil {
 		searchQuery += " " + home.Name
@@ -242,7 +244,7 @@ func suggestJournalBasedOnSearch(ctx context.Context, queries *Queries, id int32
 	} else if len(results) == 0 {
 		return fmt.Errorf("no results")
 	} else if baseURL := journalRegex.FindString(results[0].AssociatedUrl.String); baseURL != "" {
-		return queries.SuggestJournal(ctx, SuggestJournalParams{
+		return queries.SuggestJournal(ctx, db.SuggestJournalParams{
 			Url:   pgtype.Text{String: baseURL, Valid: true},
 			Title: pgtype.Text{String: results[0].Header.String, Valid: true},
 			ID:    id,
@@ -254,7 +256,7 @@ func suggestJournalBasedOnSearch(ctx context.Context, queries *Queries, id int32
 
 func (server *Server) movePatientHandler(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-	commonData := MustLoadCommonData(ctx)
+	commonData := request.MustLoadCommonData(ctx)
 
 	patient, err := server.getPathID(r, "patient")
 	if err != nil {
@@ -274,15 +276,15 @@ func (server *Server) movePatientHandler(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	if err := server.Transaction(ctx, func(ctx context.Context, q *Queries) error {
-		if err := q.MovePatient(ctx, MovePatientParams{
+	if err := server.Transaction(ctx, func(ctx context.Context, q *db.Queries) error {
+		if err := q.MovePatient(ctx, db.MovePatientParams{
 			ID:         patient,
 			CurrHomeID: pgtype.Int4{Int32: newHomeID, Valid: true},
 		}); err != nil {
 			return err
 		}
 
-		q.AddPatientEvent(ctx, AddPatientEventParams{
+		q.AddPatientEvent(ctx, db.AddPatientEventParams{
 			PatientID:    patient,
 			AppuserID:    commonData.User.AppuserID,
 			HomeID:       newHomeID,
@@ -303,7 +305,7 @@ func (server *Server) movePatientHandler(w http.ResponseWriter, r *http.Request)
 
 func (server *Server) postCheckoutHandler(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-	commonData := MustLoadCommonData(ctx)
+	commonData := request.MustLoadCommonData(ctx)
 
 	patient, err := server.getPathID(r, "patient")
 	if err != nil {
@@ -325,24 +327,24 @@ func (server *Server) postCheckoutHandler(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	if err := server.Transaction(ctx, func(ctx context.Context, q *Queries) error {
+	if err := server.Transaction(ctx, func(ctx context.Context, q *db.Queries) error {
 		now := pgtype.Timestamptz{Time: time.Now(), Valid: true}
 
-		if err := q.CheckoutPatient(ctx, CheckoutPatientParams{
+		if err := q.CheckoutPatient(ctx, db.CheckoutPatientParams{
 			ID:           patientData.ID,
 			TimeCheckout: now,
 		}); err != nil {
 			return err
 		}
 
-		if err := q.SetPatientStatus(ctx, SetPatientStatusParams{
+		if err := q.SetPatientStatus(ctx, db.SetPatientStatusParams{
 			ID:     patient,
 			Status: status,
 		}); err != nil {
 			return err
 		}
 
-		if err := q.MovePatient(ctx, MovePatientParams{
+		if err := q.MovePatient(ctx, db.MovePatientParams{
 			ID:         patient,
 			CurrHomeID: pgtype.Int4{},
 		}); err != nil {
@@ -367,7 +369,7 @@ func (server *Server) postCheckoutHandler(w http.ResponseWriter, r *http.Request
 			associatedID = pgtype.Int4{Int32: int32(status), Valid: true}
 		}
 
-		if _, err := q.AddPatientEvent(ctx, AddPatientEventParams{
+		if _, err := q.AddPatientEvent(ctx, db.AddPatientEventParams{
 			PatientID:    patient,
 			AppuserID:    commonData.User.AppuserID,
 			HomeID:       patientData.CurrHomeID.Int32,
@@ -390,7 +392,7 @@ func (server *Server) postCheckoutHandler(w http.ResponseWriter, r *http.Request
 
 func (server *Server) postSetNameHandler(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-	commonData := MustLoadCommonData(ctx)
+	commonData := request.MustLoadCommonData(ctx)
 
 	patient, err := server.getPathID(r, "patient")
 	if err != nil {
@@ -415,15 +417,15 @@ func (server *Server) postSetNameHandler(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	if err := server.Transaction(ctx, func(ctx context.Context, q *Queries) error {
-		if err := q.SetPatientName(ctx, SetPatientNameParams{
+	if err := server.Transaction(ctx, func(ctx context.Context, q *db.Queries) error {
+		if err := q.SetPatientName(ctx, db.SetPatientNameParams{
 			ID:   patient,
 			Name: newName,
 		}); err != nil {
 			return err
 		}
 
-		if _, err := q.AddPatientEvent(ctx, AddPatientEventParams{
+		if _, err := q.AddPatientEvent(ctx, db.AddPatientEventParams{
 			PatientID: patient,
 			HomeID:    patientData.CurrHomeID.Int32,
 			EventID:   int32(enums.EventNameChanged),
@@ -455,30 +457,30 @@ type AJAXTransferRequest struct {
 }
 
 func (server *Server) ajaxReorderHandler(w http.ResponseWriter, r *http.Request) {
-	jsonHandler(server, w, r, func(q *Queries, req AJAXReorderRequest) error {
+	jsonHandler(server, w, r, func(q *db.Queries, req AJAXReorderRequest) error {
 		ctx := r.Context()
 		return sortPatients(ctx, server.Queries, req)
 	})
 }
 
 func (server *Server) ajaxTransferHandler(w http.ResponseWriter, r *http.Request) {
-	jsonHandler(server, w, r, func(q *Queries, req AJAXTransferRequest) error {
+	jsonHandler(server, w, r, func(q *db.Queries, req AJAXTransferRequest) error {
 		ctx := r.Context()
-		cd := MustLoadCommonData(ctx)
-		return server.Transaction(ctx, func(ctx context.Context, q *Queries) error {
+		cd := request.MustLoadCommonData(ctx)
+		return server.Transaction(ctx, func(ctx context.Context, q *db.Queries) error {
 			patientData, err := q.GetPatient(ctx, req.Patient)
 			if err != nil {
 				return err
 			}
 
-			if err := q.MovePatient(ctx, MovePatientParams{
+			if err := q.MovePatient(ctx, db.MovePatientParams{
 				ID:         req.Patient,
 				CurrHomeID: pgtype.Int4{Int32: req.Receiver.ID, Valid: true},
 			}); err != nil {
 				return err
 			}
 
-			if _, err := q.AddPatientEvent(ctx, AddPatientEventParams{
+			if _, err := q.AddPatientEvent(ctx, db.AddPatientEventParams{
 				PatientID:    req.Patient,
 				AppuserID:    cd.User.AppuserID,
 				HomeID:       req.Receiver.ID,
@@ -501,14 +503,14 @@ func (server *Server) ajaxTransferHandler(w http.ResponseWriter, r *http.Request
 	})
 }
 
-func sortPatients(ctx context.Context, q *Queries, req AJAXReorderRequest) error {
+func sortPatients(ctx context.Context, q *db.Queries, req AJAXReorderRequest) error {
 	ids := []int32{}
 	orders := []int32{}
 	for idx, id := range req.Order {
 		ids = append(ids, id)
 		orders = append(orders, int32(idx))
 	}
-	return q.UpdatePatientSortOrder(ctx, UpdatePatientSortOrderParams{
+	return q.UpdatePatientSortOrder(ctx, db.UpdatePatientSortOrderParams{
 		Ids:    ids,
 		Orders: orders,
 	})

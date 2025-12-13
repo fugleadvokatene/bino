@@ -1,15 +1,17 @@
 package main
 
 import "github.com/fugleadvokatene/bino/internal/view"
+import "github.com/fugleadvokatene/bino/internal/request"
+import "github.com/fugleadvokatene/bino/internal/templbase"
 
-templ WikiPageTempl(data *CommonData, page view.WikiPage, links []view.WikiLink) {
+templ WikiPageTempl(data *request.CommonData, page view.WikiPage, links []view.WikiLink) {
     <!doctype html>
     <html lang="en">
     <head>
-        @Head(data)
+        @templbase.Head(data)
     </head>
     <body data-lang={templ.JSONString(data.Language)}>
-        @Body(data) {
+        @templbase.Body(data) {
             <div class="main b-container dashboard-container gap-2 justify-content-center">
                 <div class="card editor-container-outer shadow-lg">
                     <div class="card-header d-flex justify-content-between p-1">
@@ -31,7 +33,7 @@ templ WikiPageTempl(data *CommonData, page view.WikiPage, links []view.WikiLink)
                     }
                     <div class="card card-header mb-2">
                         <span>Create article</span>
-                        @Form("/wiki/create", "POST") {
+                        @templbase.Form("/wiki/create", "POST") {
                             <div class="input-group">
                                 <input id="title" name="title" class="form-control"></input>
                                 @Button("submit", "fa-file-circle-plus", data.Language.GenericAdd)
@@ -41,7 +43,7 @@ templ WikiPageTempl(data *CommonData, page view.WikiPage, links []view.WikiLink)
                 </div>
             </div>
         }
-        @JSModule(data, "editor2")
+        @templbase.JSModule(data, "editor2")
     </body>
     </html>
 }

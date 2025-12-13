@@ -11,10 +11,12 @@ import templruntime "github.com/a-h/templ/runtime"
 import (
 	"context"
 	"fmt"
+	"github.com/fugleadvokatene/bino/internal/request"
+	"github.com/fugleadvokatene/bino/internal/templbase"
 	"github.com/fugleadvokatene/bino/internal/view"
 )
 
-func HomePage(ctx context.Context, data *CommonData, dashboardData *DashboardData, view *view.Home) templ.Component {
+func HomePage(ctx context.Context, data *request.CommonData, dashboardData *DashboardData, view *view.Home) templ.Component {
 	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
 		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
 		if templ_7745c5c3_CtxErr := ctx.Err(); templ_7745c5c3_CtxErr != nil {
@@ -54,7 +56,7 @@ func HomePage(ctx context.Context, data *CommonData, dashboardData *DashboardDat
 			var templ_7745c5c3_Var3 string
 			templ_7745c5c3_Var3, templ_7745c5c3_Err = templ.JoinStringErrs(view.Name)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `cmd/home.templ`, Line: 11, Col: 22}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `cmd/home.templ`, Line: 13, Col: 22}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var3))
 			if templ_7745c5c3_Err != nil {
@@ -83,7 +85,7 @@ func HomePage(ctx context.Context, data *CommonData, dashboardData *DashboardDat
 				var templ_7745c5c3_Var5 string
 				templ_7745c5c3_Var5, templ_7745c5c3_Err = templ.JoinStringErrs(data.Language.HomesPatients)
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `cmd/home.templ`, Line: 13, Col: 44}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `cmd/home.templ`, Line: 15, Col: 44}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var5))
 				if templ_7745c5c3_Err != nil {
@@ -96,7 +98,7 @@ func HomePage(ctx context.Context, data *CommonData, dashboardData *DashboardDat
 				var templ_7745c5c3_Var6 string
 				templ_7745c5c3_Var6, templ_7745c5c3_Err = templ.JoinStringErrs(len(view.Patients))
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `cmd/home.templ`, Line: 13, Col: 66}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `cmd/home.templ`, Line: 15, Col: 66}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var6))
 				if templ_7745c5c3_Err != nil {
@@ -109,7 +111,7 @@ func HomePage(ctx context.Context, data *CommonData, dashboardData *DashboardDat
 				var templ_7745c5c3_Var7 string
 				templ_7745c5c3_Var7, templ_7745c5c3_Err = templ.JoinStringErrs(view.ID)
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `cmd/home.templ`, Line: 14, Col: 66}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `cmd/home.templ`, Line: 16, Col: 66}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var7))
 				if templ_7745c5c3_Err != nil {
@@ -132,7 +134,7 @@ func HomePage(ctx context.Context, data *CommonData, dashboardData *DashboardDat
 				var templ_7745c5c3_Var8 string
 				templ_7745c5c3_Var8, templ_7745c5c3_Err = templ.JoinStringErrs(data.Language.GenericUpdate)
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `cmd/home.templ`, Line: 20, Col: 44}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `cmd/home.templ`, Line: 22, Col: 44}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var8))
 				if templ_7745c5c3_Err != nil {
@@ -145,7 +147,7 @@ func HomePage(ctx context.Context, data *CommonData, dashboardData *DashboardDat
 				var templ_7745c5c3_Var9 string
 				templ_7745c5c3_Var9, templ_7745c5c3_Err = templ.JoinStringErrs(data.Language.HomeCapacity)
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `cmd/home.templ`, Line: 21, Col: 43}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `cmd/home.templ`, Line: 23, Col: 43}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var9))
 				if templ_7745c5c3_Err != nil {
@@ -166,7 +168,7 @@ func HomePage(ctx context.Context, data *CommonData, dashboardData *DashboardDat
 				var templ_7745c5c3_Var10 string
 				templ_7745c5c3_Var10, templ_7745c5c3_Err = templ.JoinStringErrs(data.Language.HomeAvailability)
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `cmd/home.templ`, Line: 24, Col: 47}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `cmd/home.templ`, Line: 26, Col: 47}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var10))
 				if templ_7745c5c3_Err != nil {
@@ -187,7 +189,7 @@ func HomePage(ctx context.Context, data *CommonData, dashboardData *DashboardDat
 				var templ_7745c5c3_Var11 string
 				templ_7745c5c3_Var11, templ_7745c5c3_Err = templ.JoinStringErrs(data.Language.HomePreferredSpecies)
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `cmd/home.templ`, Line: 27, Col: 51}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `cmd/home.templ`, Line: 29, Col: 51}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var11))
 				if templ_7745c5c3_Err != nil {
@@ -208,7 +210,7 @@ func HomePage(ctx context.Context, data *CommonData, dashboardData *DashboardDat
 				var templ_7745c5c3_Var12 string
 				templ_7745c5c3_Var12, templ_7745c5c3_Err = templ.JoinStringErrs(data.Language.HomesUsers)
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `cmd/home.templ`, Line: 30, Col: 41}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `cmd/home.templ`, Line: 32, Col: 41}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var12))
 				if templ_7745c5c3_Err != nil {
@@ -236,7 +238,7 @@ func HomePage(ctx context.Context, data *CommonData, dashboardData *DashboardDat
 					var templ_7745c5c3_Var13 string
 					templ_7745c5c3_Var13, templ_7745c5c3_Err = templ.JoinStringErrs(data.Language.HomesEmptyHome)
 					if templ_7745c5c3_Err != nil {
-						return templ.Error{Err: templ_7745c5c3_Err, FileName: `cmd/home.templ`, Line: 35, Col: 62}
+						return templ.Error{Err: templ_7745c5c3_Err, FileName: `cmd/home.templ`, Line: 37, Col: 62}
 					}
 					_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var13))
 					if templ_7745c5c3_Err != nil {
@@ -249,21 +251,21 @@ func HomePage(ctx context.Context, data *CommonData, dashboardData *DashboardDat
 				}
 				return nil
 			})
-			templ_7745c5c3_Err = Card().Render(templ.WithChildren(ctx, templ_7745c5c3_Var4), templ_7745c5c3_Buffer)
+			templ_7745c5c3_Err = templbase.Card().Render(templ.WithChildren(ctx, templ_7745c5c3_Var4), templ_7745c5c3_Buffer)
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 			return nil
 		})
-		templ_7745c5c3_Err = Layout(data, "home-page").Render(templ.WithChildren(ctx, templ_7745c5c3_Var2), templ_7745c5c3_Buffer)
+		templ_7745c5c3_Err = templbase.Layout(data, "home-page").Render(templ.WithChildren(ctx, templ_7745c5c3_Var2), templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = JSModule(data, "home").Render(ctx, templ_7745c5c3_Buffer)
+		templ_7745c5c3_Err = templbase.JSModule(data, "home").Render(ctx, templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = JSModule(data, "reorder-patients").Render(ctx, templ_7745c5c3_Buffer)
+		templ_7745c5c3_Err = templbase.JSModule(data, "reorder-patients").Render(ctx, templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -271,7 +273,7 @@ func HomePage(ctx context.Context, data *CommonData, dashboardData *DashboardDat
 	})
 }
 
-func DateView(data *CommonData, dv *view.Date) templ.Component {
+func DateView(data *request.CommonData, dv *view.Date) templ.Component {
 	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
 		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
 		if templ_7745c5c3_CtxErr := ctx.Err(); templ_7745c5c3_CtxErr != nil {
@@ -299,7 +301,7 @@ func DateView(data *CommonData, dv *view.Date) templ.Component {
 		var templ_7745c5c3_Var15 string
 		templ_7745c5c3_Var15, templ_7745c5c3_Err = templ.JoinStringErrs(dv.Year)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `cmd/home.templ`, Line: 47, Col: 16}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `cmd/home.templ`, Line: 49, Col: 16}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var15))
 		if templ_7745c5c3_Err != nil {
@@ -312,7 +314,7 @@ func DateView(data *CommonData, dv *view.Date) templ.Component {
 		var templ_7745c5c3_Var16 string
 		templ_7745c5c3_Var16, templ_7745c5c3_Err = templ.JoinStringErrs(int(dv.Month))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `cmd/home.templ`, Line: 47, Col: 32}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `cmd/home.templ`, Line: 49, Col: 32}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var16))
 		if templ_7745c5c3_Err != nil {
@@ -325,7 +327,7 @@ func DateView(data *CommonData, dv *view.Date) templ.Component {
 		var templ_7745c5c3_Var17 string
 		templ_7745c5c3_Var17, templ_7745c5c3_Err = templ.JoinStringErrs(dv.Day)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `cmd/home.templ`, Line: 47, Col: 41}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `cmd/home.templ`, Line: 49, Col: 41}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var17))
 		if templ_7745c5c3_Err != nil {
@@ -339,7 +341,7 @@ func DateView(data *CommonData, dv *view.Date) templ.Component {
 	})
 }
 
-func UnavailableEditor(data *CommonData, view *view.Home) templ.Component {
+func UnavailableEditor(data *request.CommonData, view *view.Home) templ.Component {
 	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
 		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
 		if templ_7745c5c3_CtxErr := ctx.Err(); templ_7745c5c3_CtxErr != nil {
@@ -368,7 +370,7 @@ func UnavailableEditor(data *CommonData, view *view.Home) templ.Component {
 			var templ_7745c5c3_Var19 string
 			templ_7745c5c3_Var19, templ_7745c5c3_Err = templ.JoinStringErrs(availability)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `cmd/home.templ`, Line: 53, Col: 24}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `cmd/home.templ`, Line: 55, Col: 24}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var19))
 			if templ_7745c5c3_Err != nil {
@@ -387,7 +389,7 @@ func UnavailableEditor(data *CommonData, view *view.Home) templ.Component {
 			var templ_7745c5c3_Var20 string
 			templ_7745c5c3_Var20, templ_7745c5c3_Err = templ.JoinStringErrs(data.Language.GenericFrom)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `cmd/home.templ`, Line: 61, Col: 54}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `cmd/home.templ`, Line: 63, Col: 54}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var20))
 			if templ_7745c5c3_Err != nil {
@@ -400,7 +402,7 @@ func UnavailableEditor(data *CommonData, view *view.Home) templ.Component {
 			var templ_7745c5c3_Var21 string
 			templ_7745c5c3_Var21, templ_7745c5c3_Err = templ.JoinStringErrs(data.Language.GenericTo)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `cmd/home.templ`, Line: 62, Col: 52}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `cmd/home.templ`, Line: 64, Col: 52}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var21))
 			if templ_7745c5c3_Err != nil {
@@ -413,7 +415,7 @@ func UnavailableEditor(data *CommonData, view *view.Home) templ.Component {
 			var templ_7745c5c3_Var22 string
 			templ_7745c5c3_Var22, templ_7745c5c3_Err = templ.JoinStringErrs(data.Language.GenericNote)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `cmd/home.templ`, Line: 63, Col: 54}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `cmd/home.templ`, Line: 65, Col: 54}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var22))
 			if templ_7745c5c3_Err != nil {
@@ -426,7 +428,7 @@ func UnavailableEditor(data *CommonData, view *view.Home) templ.Component {
 			var templ_7745c5c3_Var23 string
 			templ_7745c5c3_Var23, templ_7745c5c3_Err = templ.JoinStringErrs(data.Language.GenericDelete)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `cmd/home.templ`, Line: 64, Col: 56}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `cmd/home.templ`, Line: 66, Col: 56}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var23))
 			if templ_7745c5c3_Err != nil {
@@ -460,7 +462,7 @@ func UnavailableEditor(data *CommonData, view *view.Home) templ.Component {
 				var templ_7745c5c3_Var24 string
 				templ_7745c5c3_Var24, templ_7745c5c3_Err = templ.JoinStringErrs(period.Note)
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `cmd/home.templ`, Line: 72, Col: 50}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `cmd/home.templ`, Line: 74, Col: 50}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var24))
 				if templ_7745c5c3_Err != nil {
@@ -470,7 +472,7 @@ func UnavailableEditor(data *CommonData, view *view.Home) templ.Component {
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
-				templ_7745c5c3_Err = SingleButtonForm(
+				templ_7745c5c3_Err = templbase.SingleButtonForm(
 					period.DeleteURL(),
 					data.Language.GenericDelete,
 					"POST",
@@ -496,7 +498,7 @@ func UnavailableEditor(data *CommonData, view *view.Home) templ.Component {
 		var templ_7745c5c3_Var25 string
 		templ_7745c5c3_Var25, templ_7745c5c3_Err = templ.JoinStringErrs(data.Language.GenericAdd)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `cmd/home.templ`, Line: 88, Col: 33}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `cmd/home.templ`, Line: 90, Col: 33}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var25))
 		if templ_7745c5c3_Err != nil {
@@ -525,7 +527,7 @@ func UnavailableEditor(data *CommonData, view *view.Home) templ.Component {
 			var templ_7745c5c3_Var27 string
 			templ_7745c5c3_Var27, templ_7745c5c3_Err = templ.JoinStringErrs(FormID("#", "unavailable-from", view.ID))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `cmd/home.templ`, Line: 95, Col: 64}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `cmd/home.templ`, Line: 97, Col: 64}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var27))
 			if templ_7745c5c3_Err != nil {
@@ -538,7 +540,7 @@ func UnavailableEditor(data *CommonData, view *view.Home) templ.Component {
 			var templ_7745c5c3_Var28 string
 			templ_7745c5c3_Var28, templ_7745c5c3_Err = templ.JoinStringErrs(data.Language.GenericFrom)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `cmd/home.templ`, Line: 95, Col: 129}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `cmd/home.templ`, Line: 97, Col: 129}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var28))
 			if templ_7745c5c3_Err != nil {
@@ -551,7 +553,7 @@ func UnavailableEditor(data *CommonData, view *view.Home) templ.Component {
 			var templ_7745c5c3_Var29 string
 			templ_7745c5c3_Var29, templ_7745c5c3_Err = templ.JoinStringErrs(FormID("", "unavailable-from", view.ID))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `cmd/home.templ`, Line: 96, Col: 114}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `cmd/home.templ`, Line: 98, Col: 114}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var29))
 			if templ_7745c5c3_Err != nil {
@@ -564,7 +566,7 @@ func UnavailableEditor(data *CommonData, view *view.Home) templ.Component {
 			var templ_7745c5c3_Var30 string
 			templ_7745c5c3_Var30, templ_7745c5c3_Err = templ.JoinStringErrs(data.Language.HomeUnavailableFromInstruction)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `cmd/home.templ`, Line: 98, Col: 89}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `cmd/home.templ`, Line: 100, Col: 89}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var30))
 			if templ_7745c5c3_Err != nil {
@@ -577,7 +579,7 @@ func UnavailableEditor(data *CommonData, view *view.Home) templ.Component {
 			var templ_7745c5c3_Var31 string
 			templ_7745c5c3_Var31, templ_7745c5c3_Err = templ.JoinStringErrs(FormID("#", "unavailable-to", view.ID))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `cmd/home.templ`, Line: 103, Col: 62}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `cmd/home.templ`, Line: 105, Col: 62}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var31))
 			if templ_7745c5c3_Err != nil {
@@ -590,7 +592,7 @@ func UnavailableEditor(data *CommonData, view *view.Home) templ.Component {
 			var templ_7745c5c3_Var32 string
 			templ_7745c5c3_Var32, templ_7745c5c3_Err = templ.JoinStringErrs(data.Language.GenericTo)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `cmd/home.templ`, Line: 103, Col: 125}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `cmd/home.templ`, Line: 105, Col: 125}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var32))
 			if templ_7745c5c3_Err != nil {
@@ -603,7 +605,7 @@ func UnavailableEditor(data *CommonData, view *view.Home) templ.Component {
 			var templ_7745c5c3_Var33 string
 			templ_7745c5c3_Var33, templ_7745c5c3_Err = templ.JoinStringErrs(FormID("", "unavailable-to", view.ID))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `cmd/home.templ`, Line: 104, Col: 112}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `cmd/home.templ`, Line: 106, Col: 112}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var33))
 			if templ_7745c5c3_Err != nil {
@@ -616,7 +618,7 @@ func UnavailableEditor(data *CommonData, view *view.Home) templ.Component {
 			var templ_7745c5c3_Var34 string
 			templ_7745c5c3_Var34, templ_7745c5c3_Err = templ.JoinStringErrs(data.Language.HomeUnavailableToInstruction)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `cmd/home.templ`, Line: 106, Col: 87}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `cmd/home.templ`, Line: 108, Col: 87}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var34))
 			if templ_7745c5c3_Err != nil {
@@ -629,7 +631,7 @@ func UnavailableEditor(data *CommonData, view *view.Home) templ.Component {
 			var templ_7745c5c3_Var35 string
 			templ_7745c5c3_Var35, templ_7745c5c3_Err = templ.JoinStringErrs(FormID("#", "unavailable-note", view.ID))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `cmd/home.templ`, Line: 111, Col: 64}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `cmd/home.templ`, Line: 113, Col: 64}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var35))
 			if templ_7745c5c3_Err != nil {
@@ -642,7 +644,7 @@ func UnavailableEditor(data *CommonData, view *view.Home) templ.Component {
 			var templ_7745c5c3_Var36 string
 			templ_7745c5c3_Var36, templ_7745c5c3_Err = templ.JoinStringErrs(data.Language.GenericNote)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `cmd/home.templ`, Line: 111, Col: 129}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `cmd/home.templ`, Line: 113, Col: 129}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var36))
 			if templ_7745c5c3_Err != nil {
@@ -655,7 +657,7 @@ func UnavailableEditor(data *CommonData, view *view.Home) templ.Component {
 			var templ_7745c5c3_Var37 string
 			templ_7745c5c3_Var37, templ_7745c5c3_Err = templ.JoinStringErrs(FormID("", "unavailable-note", view.ID))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `cmd/home.templ`, Line: 112, Col: 114}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `cmd/home.templ`, Line: 114, Col: 114}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var37))
 			if templ_7745c5c3_Err != nil {
@@ -668,7 +670,7 @@ func UnavailableEditor(data *CommonData, view *view.Home) templ.Component {
 			var templ_7745c5c3_Var38 string
 			templ_7745c5c3_Var38, templ_7745c5c3_Err = templ.JoinStringErrs(data.Language.GenericAdd)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `cmd/home.templ`, Line: 115, Col: 96}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `cmd/home.templ`, Line: 117, Col: 96}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var38))
 			if templ_7745c5c3_Err != nil {
@@ -680,7 +682,7 @@ func UnavailableEditor(data *CommonData, view *view.Home) templ.Component {
 			}
 			return nil
 		})
-		templ_7745c5c3_Err = Form(
+		templ_7745c5c3_Err = templbase.Form(
 			view.URLSuffix("add-unavailable"),
 			"POST",
 			"card p-2",
@@ -692,7 +694,7 @@ func UnavailableEditor(data *CommonData, view *view.Home) templ.Component {
 	})
 }
 
-func CapacityForm(data *CommonData, view *view.Home) templ.Component {
+func CapacityForm(data *request.CommonData, view *view.Home) templ.Component {
 	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
 		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
 		if templ_7745c5c3_CtxErr := ctx.Err(); templ_7745c5c3_CtxErr != nil {
@@ -732,7 +734,7 @@ func CapacityForm(data *CommonData, view *view.Home) templ.Component {
 			var templ_7745c5c3_Var41 string
 			templ_7745c5c3_Var41, templ_7745c5c3_Err = templ.JoinStringErrs(FormID("#", "set-capacity", view.ID))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `cmd/home.templ`, Line: 126, Col: 60}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `cmd/home.templ`, Line: 128, Col: 60}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var41))
 			if templ_7745c5c3_Err != nil {
@@ -745,7 +747,7 @@ func CapacityForm(data *CommonData, view *view.Home) templ.Component {
 			var templ_7745c5c3_Var42 string
 			templ_7745c5c3_Var42, templ_7745c5c3_Err = templ.JoinStringErrs(data.Language.HomeCapacity)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `cmd/home.templ`, Line: 126, Col: 114}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `cmd/home.templ`, Line: 128, Col: 114}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var42))
 			if templ_7745c5c3_Err != nil {
@@ -758,7 +760,7 @@ func CapacityForm(data *CommonData, view *view.Home) templ.Component {
 			var templ_7745c5c3_Var43 string
 			templ_7745c5c3_Var43, templ_7745c5c3_Err = templ.JoinStringErrs(FormID("", "set-capacity", view.ID))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `cmd/home.templ`, Line: 127, Col: 112}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `cmd/home.templ`, Line: 129, Col: 112}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var43))
 			if templ_7745c5c3_Err != nil {
@@ -771,7 +773,7 @@ func CapacityForm(data *CommonData, view *view.Home) templ.Component {
 			var templ_7745c5c3_Var44 string
 			templ_7745c5c3_Var44, templ_7745c5c3_Err = templ.JoinStringErrs(view.Capacity)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `cmd/home.templ`, Line: 127, Col: 150}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `cmd/home.templ`, Line: 129, Col: 150}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var44))
 			if templ_7745c5c3_Err != nil {
@@ -784,7 +786,7 @@ func CapacityForm(data *CommonData, view *view.Home) templ.Component {
 			var templ_7745c5c3_Var45 string
 			templ_7745c5c3_Var45, templ_7745c5c3_Err = templ.JoinStringErrs(data.Language.GenericUpdate)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `cmd/home.templ`, Line: 128, Col: 98}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `cmd/home.templ`, Line: 130, Col: 98}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var45))
 			if templ_7745c5c3_Err != nil {
@@ -796,7 +798,7 @@ func CapacityForm(data *CommonData, view *view.Home) templ.Component {
 			}
 			return nil
 		})
-		templ_7745c5c3_Err = Form(
+		templ_7745c5c3_Err = templbase.Form(
 			view.URLSuffix("set-capacity"),
 			"POST",
 		).Render(templ.WithChildren(ctx, templ_7745c5c3_Var40), templ_7745c5c3_Buffer)
@@ -807,7 +809,7 @@ func CapacityForm(data *CommonData, view *view.Home) templ.Component {
 	})
 }
 
-func PreferredSpecies(data *CommonData, dashboardData *DashboardData, view *view.Home) templ.Component {
+func PreferredSpecies(data *request.CommonData, dashboardData *DashboardData, view *view.Home) templ.Component {
 	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
 		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
 		if templ_7745c5c3_CtxErr := ctx.Err(); templ_7745c5c3_CtxErr != nil {
@@ -835,7 +837,7 @@ func PreferredSpecies(data *CommonData, dashboardData *DashboardData, view *view
 		var templ_7745c5c3_Var47 string
 		templ_7745c5c3_Var47, templ_7745c5c3_Err = templ.JoinStringErrs(view.ID)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `cmd/home.templ`, Line: 135, Col: 47}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `cmd/home.templ`, Line: 137, Col: 47}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var47))
 		if templ_7745c5c3_Err != nil {
@@ -853,7 +855,7 @@ func PreferredSpecies(data *CommonData, dashboardData *DashboardData, view *view
 			var templ_7745c5c3_Var48 string
 			templ_7745c5c3_Var48, templ_7745c5c3_Err = templ.JoinStringErrs(species.ID)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `cmd/home.templ`, Line: 137, Col: 35}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `cmd/home.templ`, Line: 139, Col: 35}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var48))
 			if templ_7745c5c3_Err != nil {
@@ -866,7 +868,7 @@ func PreferredSpecies(data *CommonData, dashboardData *DashboardData, view *view
 			var templ_7745c5c3_Var49 string
 			templ_7745c5c3_Var49, templ_7745c5c3_Err = templ.JoinStringErrs(species.Name)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `cmd/home.templ`, Line: 141, Col: 33}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `cmd/home.templ`, Line: 143, Col: 33}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var49))
 			if templ_7745c5c3_Err != nil {
@@ -876,7 +878,7 @@ func PreferredSpecies(data *CommonData, dashboardData *DashboardData, view *view
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = SingleButtonForm(
+			templ_7745c5c3_Err = templbase.SingleButtonForm(
 				fmt.Sprintf("/home/%d/species/delete/%d", view.ID, species.ID),
 				"⛔",
 				"POST",
@@ -913,7 +915,7 @@ func PreferredSpecies(data *CommonData, dashboardData *DashboardData, view *view
 			var templ_7745c5c3_Var51 string
 			templ_7745c5c3_Var51, templ_7745c5c3_Err = templ.JoinStringErrs(data.Language.DashboardSelectSpecies)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `cmd/home.templ`, Line: 165, Col: 96}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `cmd/home.templ`, Line: 167, Col: 96}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var51))
 			if templ_7745c5c3_Err != nil {
@@ -931,7 +933,7 @@ func PreferredSpecies(data *CommonData, dashboardData *DashboardData, view *view
 				var templ_7745c5c3_Var52 string
 				templ_7745c5c3_Var52, templ_7745c5c3_Err = templ.JoinStringErrs(otherSpecies.ID)
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `cmd/home.templ`, Line: 167, Col: 58}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `cmd/home.templ`, Line: 169, Col: 58}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var52))
 				if templ_7745c5c3_Err != nil {
@@ -944,7 +946,7 @@ func PreferredSpecies(data *CommonData, dashboardData *DashboardData, view *view
 				var templ_7745c5c3_Var53 string
 				templ_7745c5c3_Var53, templ_7745c5c3_Err = templ.JoinStringErrs(otherSpecies.Name)
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `cmd/home.templ`, Line: 167, Col: 78}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `cmd/home.templ`, Line: 169, Col: 78}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var53))
 				if templ_7745c5c3_Err != nil {
@@ -962,7 +964,7 @@ func PreferredSpecies(data *CommonData, dashboardData *DashboardData, view *view
 			var templ_7745c5c3_Var54 string
 			templ_7745c5c3_Var54, templ_7745c5c3_Err = templ.JoinStringErrs(data.Language.GenericAdd)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `cmd/home.templ`, Line: 170, Col: 103}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `cmd/home.templ`, Line: 172, Col: 103}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var54))
 			if templ_7745c5c3_Err != nil {
@@ -974,7 +976,7 @@ func PreferredSpecies(data *CommonData, dashboardData *DashboardData, view *view
 			}
 			return nil
 		})
-		templ_7745c5c3_Err = Form(
+		templ_7745c5c3_Err = templbase.Form(
 			view.URLSuffix("species/add"),
 			"POST",
 			"form-control-sm",

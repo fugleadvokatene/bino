@@ -1,9 +1,11 @@
-package main
+package handleradminroot
 
 import "github.com/fugleadvokatene/bino/internal/enums"
+import "github.com/fugleadvokatene/bino/internal/request"
+import "github.com/fugleadvokatene/bino/internal/templbase"
 
-templ AdminRootPage(data *CommonData) {
-	@Layout(data) {
+templ AdminRootPage(data *request.CommonData) {
+	@templbase.Layout(data) {
         <h1>{data.Language.AdminRoot}</h1>
         // TODO: make these check for capabilities instead
         <li class="card mb-1"><div class="card-header"><a href="/file">{data.Language.FilesUploadHeader}</a></div></li>

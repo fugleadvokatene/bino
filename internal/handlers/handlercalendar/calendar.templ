@@ -1,4 +1,4 @@
-package main
+package handlercalendar
 
 import (
     "time"
@@ -6,10 +6,13 @@ import (
     "fmt"
 
 	"github.com/fugleadvokatene/bino/internal/language"
+	"github.com/fugleadvokatene/bino/internal/request"
+    "github.com/fugleadvokatene/bino/internal/templbase"
+    "github.com/fugleadvokatene/bino/internal/calendar"
 )
 
-templ CalendarPage(data *CommonData, initialTime, initialView string) {
-	@FullLayout(data) {
+templ CalendarPage(data *request.CommonData, initialTime, initialView string) {
+	@templbase.FullLayout(data) {
         <div class="h-100">
             <h1>{data.Language.Calendar}</h1>
             <div class="card p-2 w-100">
@@ -26,7 +29,7 @@ templ CalendarPage(data *CommonData, initialTime, initialView string) {
 
 templ CalendarLink(formatter func(t time.Time) string, t time.Time, v string) {
     if !t.IsZero() {
-        <a class="calendar-link" href={templ.URL(fmt.Sprintf("/calendar?t=%s&v=%s", t.Format(timeFormatFullCalendarNoTZ), v))}>
+        <a class="calendar-link" href={templ.URL(fmt.Sprintf("/calendar?t=%s&v=%s", t.Format(calendar.TimeFormatFullCalendarNoTZ), v))}>
             {formatter(t)}
         </a>
     } else {

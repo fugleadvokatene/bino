@@ -9,6 +9,7 @@ import (
 	"runtime/debug"
 	"time"
 
+	"github.com/fugleadvokatene/bino/internal/request"
 	"github.com/shirou/gopsutil/v3/disk"
 	"github.com/shirou/gopsutil/v3/host"
 	"github.com/shirou/gopsutil/v3/load"
@@ -33,7 +34,7 @@ func fetchPublicIP() string {
 
 func (server *Server) debugHandler(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-	data := MustLoadCommonData(ctx)
+	data := request.MustLoadCommonData(ctx)
 
 	// Process info
 	var procMem runtime.MemStats
@@ -42,27 +43,27 @@ func (server *Server) debugHandler(w http.ResponseWriter, r *http.Request) {
 	// Machine info
 	avg, err := load.Avg()
 	if err != nil {
-		LogCtx(ctx, "getting machine Avg: %v", err)
+		request.LogCtx(ctx, "getting machine Avg: %v", err)
 	}
 	u, err := disk.Usage("/")
 	if err != nil {
-		LogCtx(ctx, "getting machine Disk usage: %v", err)
+		request.LogCtx(ctx, "getting machine Disk usage: %v", err)
 	}
 	h, err := host.Info()
 	if err != nil {
-		LogCtx(ctx, "getting machine Info: %v", err)
+		request.LogCtx(ctx, "getting machine Info: %v", err)
 	}
 	users, err := host.Users()
 	if err != nil {
-		LogCtx(ctx, "getting machine Users: %v", err)
+		request.LogCtx(ctx, "getting machine Users: %v", err)
 	}
 	cwd, err := os.Getwd()
 	if err != nil {
-		LogCtx(ctx, "getting machine Getwd: %v", err)
+		request.LogCtx(ctx, "getting machine Getwd: %v", err)
 	}
 	mem, err := mem.VirtualMemory()
 	if err != nil {
-		LogCtx(ctx, "getting machine VirtualMemory: %v", err)
+		request.LogCtx(ctx, "getting machine VirtualMemory: %v", err)
 	}
 
 	// Build info

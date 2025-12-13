@@ -4,10 +4,12 @@ import (
     "strings"
 	"github.com/fugleadvokatene/bino/internal/view"
 	"github.com/fugleadvokatene/bino/internal/enums"
+	"github.com/fugleadvokatene/bino/internal/request"
+    "github.com/fugleadvokatene/bino/internal/templbase"
 )
 
-templ DashboardPage(data *CommonData, dashboardData *DashboardData) {
-	@Layout(data, "dashboard-container") {
+templ DashboardPage(data *request.CommonData, dashboardData *DashboardData) {
+	@templbase.Layout(data, "dashboard-container") {
         <div class="dashboard-left-sidebar">
             @DashboardForm(data, dashboardData)
             @DashboardSearch(data)
@@ -21,12 +23,12 @@ templ DashboardPage(data *CommonData, dashboardData *DashboardData) {
         @DashboardHomes(data, dashboardData)
     }
 
-    @JSModule(data, "dashboard")
-    @JSModule(data, "reorder-patients")
+    @templbase.JSModule(data, "dashboard")
+    @templbase.JSModule(data, "reorder-patients")
 }
 
-templ DashboardSearch(data *CommonData) {
-    @Card("dashboard-search", "shadow-sm", "mb-2") {
+templ DashboardSearch(data *request.CommonData) {
+    @templbase.Card("dashboard-search", "shadow-sm", "mb-2") {
         <fieldset>
             <legend for="dashboard-search">{data.Language.DashboardSearch}</legend>
             <label class="small">{data.Language.DashboardSearchExplanation}</label>
@@ -44,7 +46,7 @@ templ DashboardSearch(data *CommonData) {
 
     // not ready
     if false {
-        @Card("dashboard-filter", "shadow-sm") {
+        @templbase.Card("dashboard-filter", "shadow-sm") {
             <fieldset>
                 <legend>{data.Language.DashboardSearchFilter}</legend>
                 @DashboardSearchCheckbox(
@@ -93,9 +95,9 @@ templ DashboardSearchCheckbox(id, text string, checked bool) {
     </div>
 }
 
-templ DashboardForm(data *CommonData, dashboardData *DashboardData) {
-    @Card("dashboard-form", "shadow-sm") {
-        @Form("/checkin", "POST") {
+templ DashboardForm(data *request.CommonData, dashboardData *DashboardData) {
+    @templbase.Card("dashboard-form", "shadow-sm") {
+        @templbase.Form("/checkin", "POST") {
             <legend for="dashboard-form">{data.Language.CheckinLegend}</legend>
             <div class="form-group">
                 <label>{data.Language.CheckinPatientName}</label>
@@ -154,7 +156,7 @@ templ DashboardForm(data *CommonData, dashboardData *DashboardData) {
     }
 }
 
-templ DashboardSelf(data *CommonData, dashboardData *DashboardData) {
+templ DashboardSelf(data *request.CommonData, dashboardData *DashboardData) {
     <div class="dashboard dashboard-self shadow-sm">
         <div class="dashboard-home card">
             @DashboardHomeCard(data, dashboardData, &dashboardData.PreferredHomeView)
@@ -162,7 +164,7 @@ templ DashboardSelf(data *CommonData, dashboardData *DashboardData) {
     </div>
 }
 
-templ DashboardHomes(data *CommonData, dashboardData *DashboardData) {
+templ DashboardHomes(data *request.CommonData, dashboardData *DashboardData) {
     <div class="dashboard-indicator invisible" id="dashboard-indicator-left"></div>
     <div class="dashboard search-container">
         for _, home := range dashboardData.Homes {
@@ -189,7 +191,7 @@ templ Avatar(u view.User) {
     </a>
 }
 
-templ DashboardHomeCard(data *CommonData, dashboardData *DashboardData, home *view.Home) {
+templ DashboardHomeCard(data *request.CommonData, dashboardData *DashboardData, home *view.Home) {
     <div class="card-header d-flex justify-content-between">
         <a href={home.URL()} class="filter-content">{home.Name} — <span class={"occupancy", home.OccupancyClass()}>{len(home.Patients)} / {home.Capacity}</span></a>
         <div>
@@ -209,7 +211,7 @@ templ DashboardHomeCard(data *CommonData, dashboardData *DashboardData, home *vi
         </div>
     }
     <div class="card-header small fw-normal">
-        <div class={"mb-0", "filter-content", ClassIf(data.User.HasHomeOrAccess(home.ID, enums.AccessLevelCoordinator), "editable", "editable-lg")} data-action={home.URLSuffix("set-note")}>
+        <div class={"mb-0", "filter-content", templbase.ClassIf(data.User.HasHomeOrAccess(home.ID, enums.AccessLevelCoordinator), "editable", "editable-lg")} data-action={home.URLSuffix("set-note")}>
             <div class="d-block">
                 for _, p := range strings.Split(home.Note, "\n") {
                     <p class="home-note">{p}</p>
@@ -226,7 +228,7 @@ templ DashboardHomeCard(data *CommonData, dashboardData *DashboardData, home *vi
     </div>
 }
 
-templ DashboardPatientCard(data *CommonData, dashboardData *DashboardData, home *view.Home, patient view.Patient) {
+templ DashboardPatientCard(data *request.CommonData, dashboardData *DashboardData, home *view.Home, patient view.Patient) {
     <div class="card b-card dashboard-patient-card m-2 filter-box shadow-sm" id={patient.CardID("#")} data-patient-id={patient.ID}>
         <div class="card-header card-header-patient d-flex justify-content-between">
             <div>
@@ -247,7 +249,7 @@ templ DashboardPatientCard(data *CommonData, dashboardData *DashboardData, home 
 }
 
 templ DashboardPatientTable(
-    data *CommonData,
+    data *request.CommonData,
     homes []view.Home,
     home *view.Home,
     patient view.Patient,
@@ -264,7 +266,7 @@ templ DashboardPatientTable(
     </table>
 }
 
-templ DashboardMove(data *CommonData, homes []view.Home, home *view.Home, patient view.Patient) {
+templ DashboardMove(data *request.CommonData, homes []view.Home, home *view.Home, patient view.Patient) {
     <tr>
         <th class="w-25">{data.Language.GenericMoveTo}</th>
         <td>
@@ -294,11 +296,11 @@ templ Button(typeAttr string, icon string, txt string, classes ...string) {
     </button>
 }
 
-templ DashboardCheckout(data *CommonData, patient view.Patient) {
+templ DashboardCheckout(data *request.CommonData, patient view.Patient) {
     <tr>
         <th class="w-25">{data.Language.DashboardCheckOut}</th>
         <td>
-            @Form(
+            @templbase.Form(
                 patient.URLSuffix("checkout"),
                 "POST",
                 "form-control-sm", "form-control-plaintext",
@@ -326,7 +328,7 @@ templ DashboardCheckout(data *CommonData, patient view.Patient) {
     </tr>
 }
 
-templ DashboardGoToPatientPage(data *CommonData, patient view.Patient) {
+templ DashboardGoToPatientPage(data *request.CommonData, patient view.Patient) {
     <tr>
         <th class="w-25">{data.Language.GenericDetails}</th>
         <td>

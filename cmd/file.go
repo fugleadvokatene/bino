@@ -9,7 +9,9 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/fugleadvokatene/bino/internal/db"
 	"github.com/fugleadvokatene/bino/internal/enums"
+	"github.com/fugleadvokatene/bino/internal/request"
 	"github.com/fugleadvokatene/bino/internal/view"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgtype"
@@ -43,13 +45,13 @@ func (server *Server) fileHandler(w http.ResponseWriter, r *http.Request) {
 	switch fileView.Accessibility {
 	case enums.FileAccessibilityPublic:
 	case enums.FileAccessibilityInternal:
-		_, err := LoadCommonData(ctx)
+		_, err := request.LoadCommonData(ctx)
 		if err != nil {
 			ajaxError(w, r, err, http.StatusUnauthorized)
 			return
 		}
 	case enums.FileAccessibilityPersonal:
-		data, err := LoadCommonData(ctx)
+		data, err := request.LoadCommonData(ctx)
 		if err != nil || data.User.AppuserID != fileView.Creator {
 			ajaxError(w, r, err, http.StatusUnauthorized)
 			return
@@ -65,13 +67,13 @@ func (server *Server) fileHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", fileView.MIMEType)
 	w.Header().Set("Content-Length", strconv.Itoa(int(fileView.Size)))
 	if _, err := io.Copy(w, rc); err != nil {
-		LogCtx(ctx, "failed to write out file: %w", err)
+		request.LogCtx(ctx, "failed to write out file: %w", err)
 	}
 }
 
 func (server *Server) fileSetFilename(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-	data := MustLoadCommonData(ctx)
+	data := request.MustLoadCommonData(ctx)
 
 	id, err := server.getPathID(r, "id")
 	if err != nil {
@@ -85,7 +87,7 @@ func (server *Server) fileSetFilename(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := server.Queries.UpdatePresentationFilename(ctx, UpdatePresentationFilenameParams{
+	if err := server.Queries.UpdatePresentationFilename(ctx, db.UpdatePresentationFilenameParams{
 		Filename: value,
 		ID:       id,
 	}); err != nil {
@@ -98,11 +100,11 @@ func (server *Server) fileSetFilename(w http.ResponseWriter, r *http.Request) {
 
 func (server *Server) filePage(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-	data := MustLoadCommonData(ctx)
+	data := request.MustLoadCommonData(ctx)
 
 	data.Subtitle = data.Language.FilesUploadHeader
 
-	files, err := server.Queries.GetFilesAccessibleByUser(ctx, GetFilesAccessibleByUserParams{
+	files, err := server.Queries.GetFilesAccessibleByUser(ctx, db.GetFilesAccessibleByUserParams{
 		Creator:       data.User.AppuserID,
 		Accessibility: int32(enums.FileAccessibilityPersonal),
 	})
@@ -110,7 +112,7 @@ func (server *Server) filePage(w http.ResponseWriter, r *http.Request) {
 		data.Error(data.Language.TODO("Failed to load files"), err)
 		files = nil
 	}
-	fileViews := SliceToSlice(files, func(in File) view.File {
+	fileViews := SliceToSlice(files, func(in db.File) view.File {
 		fv := in.ToFileView()
 		return fv
 	})
@@ -119,7 +121,7 @@ func (server *Server) filePage(w http.ResponseWriter, r *http.Request) {
 		fileViewLookupByID[fileViews[i].ID] = &fileViews[i]
 	}
 
-	fileWikiAssociations, err := server.Queries.GetFileWikiAssociationsAccessibleByUser(ctx, GetFileWikiAssociationsAccessibleByUserParams{
+	fileWikiAssociations, err := server.Queries.GetFileWikiAssociationsAccessibleByUser(ctx, db.GetFileWikiAssociationsAccessibleByUserParams{
 		Creator:       data.User.AppuserID,
 		Accessibility: int32(enums.FileAccessibilityPersonal),
 	})
@@ -134,7 +136,7 @@ func (server *Server) filePage(w http.ResponseWriter, r *http.Request) {
 		})
 	}
 
-	filePatientAssociations, err := server.Queries.GetFilePatientAssociationsAccessibleByUser(ctx, GetFilePatientAssociationsAccessibleByUserParams{
+	filePatientAssociations, err := server.Queries.GetFilePatientAssociationsAccessibleByUser(ctx, db.GetFilePatientAssociationsAccessibleByUserParams{
 		Creator:       data.User.AppuserID,
 		Accessibility: int32(enums.FileAccessibilityPersonal),
 	})
@@ -154,7 +156,7 @@ func (server *Server) filePage(w http.ResponseWriter, r *http.Request) {
 
 func (server *Server) filepondSubmit(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-	data := MustLoadCommonData(ctx)
+	data := request.MustLoadCommonData(ctx)
 
 	uuids, err := server.getFormMultiValue(r, "filepond")
 	if err != nil {
@@ -170,10 +172,10 @@ func (server *Server) filepondSubmit(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := server.Transaction(ctx, func(ctx context.Context, q *Queries) error {
+	if err := server.Transaction(ctx, func(ctx context.Context, q *db.Queries) error {
 		errs := []error{}
 		for uuid, fileInfo := range result.Commited {
-			_, err := server.Queries.RegisterFile(ctx, RegisterFileParams{
+			_, err := server.Queries.RegisterFile(ctx, db.RegisterFileParams{
 				Uuid:          uuid,
 				Creator:       data.User.AppuserID,
 				Created:       pgtype.Timestamptz{Time: time.Now(), Valid: true},
@@ -200,7 +202,7 @@ func (server *Server) filepondSubmit(w http.ResponseWriter, r *http.Request) {
 // https://pqina.nl/filepond/docs/api/server/#process
 func (server *Server) filepondProcess(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-	data := MustLoadCommonData(ctx)
+	data := request.MustLoadCommonData(ctx)
 
 	// Parse multipart form with reasonable max memory
 	err := r.ParseMultipartForm(MaxImageSize)
@@ -276,7 +278,7 @@ func (server *Server) imageFilepondRestore(w http.ResponseWriter, r *http.Reques
 
 func (server *Server) fileDelete(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-	data := MustLoadCommonData(ctx)
+	data := request.MustLoadCommonData(ctx)
 
 	id, err := server.getPathID(r, "id")
 	if err != nil {

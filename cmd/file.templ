@@ -3,16 +3,18 @@ package main
 import (
     "fmt"
 	"github.com/fugleadvokatene/bino/internal/view"
+	"github.com/fugleadvokatene/bino/internal/request"
+	"github.com/fugleadvokatene/bino/internal/templbase"
 )
 
-templ FileUploadPage(data *CommonData, files []view.File) {
+templ FileUploadPage(data *request.CommonData, files []view.File) {
     <!doctype html>
     <html lang="en">
     <head>
-        @Head(data)
+        @templbase.Head(data)
     </head>
     <body data-lang={templ.JSONString(data.Language)}>
-        @Body(data) {
+        @templbase.Body(data) {
             <div class={"main b-container"}>
                 <h1>{data.Language.FilesUploadHeader}</h1>
                 <div class="card p-2">
@@ -28,12 +30,12 @@ templ FileUploadPage(data *CommonData, files []view.File) {
         }
 
     <link rel="stylesheet" href={data.StaticFile("bundle/imageupload.css")}></link>
-    @JSModule(data, "imageupload")
+    @templbase.JSModule(data, "imageupload")
     </body>
     </html>
 }
 
-templ FileUploader(data *CommonData, url string) {
+templ FileUploader(data *request.CommonData, url string) {
     <form action={templ.URL(url)} method="POST">
         <input type="file" 
             class="filepond m-0"
@@ -52,7 +54,7 @@ templ FileUploader(data *CommonData, url string) {
     </form>
 }
 
-templ FileViewComponent(data *CommonData, file *view.File) {
+templ FileViewComponent(data *request.CommonData, file *view.File) {
     <div class="card file-container mb-2">
         <div class="card-header d-flex justify-content-between">
             <div>
@@ -66,7 +68,7 @@ templ FileViewComponent(data *CommonData, file *view.File) {
                 </div>
             </div>
             if len(file.WikiLinks) == 0 && len(file.PatientLinks) == 0 {
-                @SingleButtonForm(
+                @templbase.SingleButtonForm(
                     fmt.Sprintf("/file/%d/delete", file.ID),
                     "⛔",
                     "POST",

@@ -10,8 +10,11 @@ import templruntime "github.com/a-h/templ/runtime"
 
 import "github.com/fugleadvokatene/bino/internal/enums"
 import "github.com/fugleadvokatene/bino/internal/view"
+import "github.com/fugleadvokatene/bino/internal/request"
+import "github.com/fugleadvokatene/bino/internal/db"
+import "github.com/fugleadvokatene/bino/internal/templbase"
 
-func SearchPage(data *CommonData, result SearchResult, fallbackMsg string) templ.Component {
+func SearchPage(data *request.CommonData, result SearchResult, fallbackMsg string) templ.Component {
 	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
 		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
 		if templ_7745c5c3_CtxErr := ctx.Err(); templ_7745c5c3_CtxErr != nil {
@@ -51,7 +54,7 @@ func SearchPage(data *CommonData, result SearchResult, fallbackMsg string) templ
 			var templ_7745c5c3_Var3 string
 			templ_7745c5c3_Var3, templ_7745c5c3_Err = templ.JoinStringErrs(data.Language.GenericSearch)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `cmd/search.templ`, Line: 18, Col: 64}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `cmd/search.templ`, Line: 21, Col: 64}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var3))
 			if templ_7745c5c3_Err != nil {
@@ -64,7 +67,7 @@ func SearchPage(data *CommonData, result SearchResult, fallbackMsg string) templ
 			var templ_7745c5c3_Var4 string
 			templ_7745c5c3_Var4, templ_7745c5c3_Err = templ.JoinStringErrs(result.Query.Query)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `cmd/search.templ`, Line: 26, Col: 45}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `cmd/search.templ`, Line: 29, Col: 45}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var4))
 			if templ_7745c5c3_Err != nil {
@@ -87,7 +90,7 @@ func SearchPage(data *CommonData, result SearchResult, fallbackMsg string) templ
 			var templ_7745c5c3_Var5 string
 			templ_7745c5c3_Var5, templ_7745c5c3_Err = templ.JoinStringErrs(data.Language.SearchModeBasic)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `cmd/search.templ`, Line: 29, Col: 142}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `cmd/search.templ`, Line: 32, Col: 142}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var5))
 			if templ_7745c5c3_Err != nil {
@@ -110,7 +113,7 @@ func SearchPage(data *CommonData, result SearchResult, fallbackMsg string) templ
 			var templ_7745c5c3_Var6 string
 			templ_7745c5c3_Var6, templ_7745c5c3_Err = templ.JoinStringErrs(data.Language.SearchModeAdvanced)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `cmd/search.templ`, Line: 30, Col: 151}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `cmd/search.templ`, Line: 33, Col: 151}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var6))
 			if templ_7745c5c3_Err != nil {
@@ -123,7 +126,7 @@ func SearchPage(data *CommonData, result SearchResult, fallbackMsg string) templ
 			var templ_7745c5c3_Var7 string
 			templ_7745c5c3_Var7, templ_7745c5c3_Err = templ.JoinStringErrs(result.Query.Mode == "advanced")
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `cmd/search.templ`, Line: 32, Col: 93}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `cmd/search.templ`, Line: 35, Col: 93}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var7))
 			if templ_7745c5c3_Err != nil {
@@ -136,7 +139,7 @@ func SearchPage(data *CommonData, result SearchResult, fallbackMsg string) templ
 			var templ_7745c5c3_Var8 string
 			templ_7745c5c3_Var8, templ_7745c5c3_Err = templ.JoinStringErrs(data.Language.SearchFilterCreated)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `cmd/search.templ`, Line: 34, Col: 96}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `cmd/search.templ`, Line: 37, Col: 96}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var8))
 			if templ_7745c5c3_Err != nil {
@@ -149,7 +152,7 @@ func SearchPage(data *CommonData, result SearchResult, fallbackMsg string) templ
 			var templ_7745c5c3_Var9 string
 			templ_7745c5c3_Var9, templ_7745c5c3_Err = templ.JoinStringErrs(data.Language.GenericFrom)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `cmd/search.templ`, Line: 35, Col: 113}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `cmd/search.templ`, Line: 38, Col: 113}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var9))
 			if templ_7745c5c3_Err != nil {
@@ -162,7 +165,7 @@ func SearchPage(data *CommonData, result SearchResult, fallbackMsg string) templ
 			var templ_7745c5c3_Var10 string
 			templ_7745c5c3_Var10, templ_7745c5c3_Err = templ.JoinStringErrs(data.Language.GenericTo)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `cmd/search.templ`, Line: 37, Col: 109}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `cmd/search.templ`, Line: 40, Col: 109}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var10))
 			if templ_7745c5c3_Err != nil {
@@ -175,7 +178,7 @@ func SearchPage(data *CommonData, result SearchResult, fallbackMsg string) templ
 			var templ_7745c5c3_Var11 string
 			templ_7745c5c3_Var11, templ_7745c5c3_Err = templ.JoinStringErrs(data.Language.SearchFilterClear)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `cmd/search.templ`, Line: 39, Col: 132}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `cmd/search.templ`, Line: 42, Col: 132}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var11))
 			if templ_7745c5c3_Err != nil {
@@ -188,7 +191,7 @@ func SearchPage(data *CommonData, result SearchResult, fallbackMsg string) templ
 			var templ_7745c5c3_Var12 string
 			templ_7745c5c3_Var12, templ_7745c5c3_Err = templ.JoinStringErrs(data.Language.SearchTimePreference)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `cmd/search.templ`, Line: 43, Col: 66}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `cmd/search.templ`, Line: 46, Col: 66}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var12))
 			if templ_7745c5c3_Err != nil {
@@ -201,7 +204,7 @@ func SearchPage(data *CommonData, result SearchResult, fallbackMsg string) templ
 			var templ_7745c5c3_Var13 string
 			templ_7745c5c3_Var13, templ_7745c5c3_Err = templ.JoinStringErrs(enums.TimePreferenceNone.String())
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `cmd/search.templ`, Line: 44, Col: 114}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `cmd/search.templ`, Line: 47, Col: 114}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var13))
 			if templ_7745c5c3_Err != nil {
@@ -224,7 +227,7 @@ func SearchPage(data *CommonData, result SearchResult, fallbackMsg string) templ
 			var templ_7745c5c3_Var14 string
 			templ_7745c5c3_Var14, templ_7745c5c3_Err = templ.JoinStringErrs(data.Language.SearchTimePreferenceNone)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `cmd/search.templ`, Line: 44, Col: 221}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `cmd/search.templ`, Line: 47, Col: 221}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var14))
 			if templ_7745c5c3_Err != nil {
@@ -237,7 +240,7 @@ func SearchPage(data *CommonData, result SearchResult, fallbackMsg string) templ
 			var templ_7745c5c3_Var15 string
 			templ_7745c5c3_Var15, templ_7745c5c3_Err = templ.JoinStringErrs(enums.TimePreferenceNewer.String())
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `cmd/search.templ`, Line: 45, Col: 115}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `cmd/search.templ`, Line: 48, Col: 115}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var15))
 			if templ_7745c5c3_Err != nil {
@@ -260,7 +263,7 @@ func SearchPage(data *CommonData, result SearchResult, fallbackMsg string) templ
 			var templ_7745c5c3_Var16 string
 			templ_7745c5c3_Var16, templ_7745c5c3_Err = templ.JoinStringErrs(data.Language.SearchTimePreferenceNewer)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `cmd/search.templ`, Line: 45, Col: 224}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `cmd/search.templ`, Line: 48, Col: 224}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var16))
 			if templ_7745c5c3_Err != nil {
@@ -273,7 +276,7 @@ func SearchPage(data *CommonData, result SearchResult, fallbackMsg string) templ
 			var templ_7745c5c3_Var17 string
 			templ_7745c5c3_Var17, templ_7745c5c3_Err = templ.JoinStringErrs(enums.TimePreferenceOlder.String())
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `cmd/search.templ`, Line: 46, Col: 115}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `cmd/search.templ`, Line: 49, Col: 115}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var17))
 			if templ_7745c5c3_Err != nil {
@@ -296,7 +299,7 @@ func SearchPage(data *CommonData, result SearchResult, fallbackMsg string) templ
 			var templ_7745c5c3_Var18 string
 			templ_7745c5c3_Var18, templ_7745c5c3_Err = templ.JoinStringErrs(data.Language.SearchTimePreferenceOlder)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `cmd/search.templ`, Line: 46, Col: 224}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `cmd/search.templ`, Line: 49, Col: 224}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var18))
 			if templ_7745c5c3_Err != nil {
@@ -312,11 +315,11 @@ func SearchPage(data *CommonData, result SearchResult, fallbackMsg string) templ
 			}
 			return nil
 		})
-		templ_7745c5c3_Err = Layout(data).Render(templ.WithChildren(ctx, templ_7745c5c3_Var2), templ_7745c5c3_Buffer)
+		templ_7745c5c3_Err = templbase.Layout(data).Render(templ.WithChildren(ctx, templ_7745c5c3_Var2), templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = JSModule(data, "search").Render(ctx, templ_7745c5c3_Buffer)
+		templ_7745c5c3_Err = templbase.JSModule(data, "search").Render(ctx, templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -324,7 +327,7 @@ func SearchPage(data *CommonData, result SearchResult, fallbackMsg string) templ
 	})
 }
 
-func SearchMatches(data *CommonData, result SearchResult, fallbackMsg string) templ.Component {
+func SearchMatches(data *request.CommonData, result SearchResult, fallbackMsg string) templ.Component {
 	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
 		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
 		if templ_7745c5c3_CtxErr := ctx.Err(); templ_7745c5c3_CtxErr != nil {
@@ -352,7 +355,7 @@ func SearchMatches(data *CommonData, result SearchResult, fallbackMsg string) te
 		var templ_7745c5c3_Var20 string
 		templ_7745c5c3_Var20, templ_7745c5c3_Err = templ.JoinStringErrs(result.TotalMatches)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `cmd/search.templ`, Line: 60, Col: 45}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `cmd/search.templ`, Line: 63, Col: 45}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var20))
 		if templ_7745c5c3_Err != nil {
@@ -365,7 +368,7 @@ func SearchMatches(data *CommonData, result SearchResult, fallbackMsg string) te
 		var templ_7745c5c3_Var21 string
 		templ_7745c5c3_Var21, templ_7745c5c3_Err = templ.JoinStringErrs(result.Milliseconds)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `cmd/search.templ`, Line: 60, Col: 91}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `cmd/search.templ`, Line: 63, Col: 91}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var21))
 		if templ_7745c5c3_Err != nil {
@@ -383,7 +386,7 @@ func SearchMatches(data *CommonData, result SearchResult, fallbackMsg string) te
 			var templ_7745c5c3_Var22 string
 			templ_7745c5c3_Var22, templ_7745c5c3_Err = templ.JoinStringErrs(result.Offset)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `cmd/search.templ`, Line: 62, Col: 44}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `cmd/search.templ`, Line: 65, Col: 44}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var22))
 			if templ_7745c5c3_Err != nil {
@@ -396,7 +399,7 @@ func SearchMatches(data *CommonData, result SearchResult, fallbackMsg string) te
 			var templ_7745c5c3_Var23 string
 			templ_7745c5c3_Var23, templ_7745c5c3_Err = templ.JoinStringErrs(result.Offset + int32(len(result.PageMatches)))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `cmd/search.templ`, Line: 62, Col: 112}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `cmd/search.templ`, Line: 65, Col: 112}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var23))
 			if templ_7745c5c3_Err != nil {
@@ -420,7 +423,7 @@ func SearchMatches(data *CommonData, result SearchResult, fallbackMsg string) te
 				var templ_7745c5c3_Var24 templ.SafeURL
 				templ_7745c5c3_Var24, templ_7745c5c3_Err = templ.JoinURLErrs(templ.URL(match.URL))
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `cmd/search.templ`, Line: 71, Col: 57}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `cmd/search.templ`, Line: 74, Col: 57}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var24))
 				if templ_7745c5c3_Err != nil {
@@ -441,7 +444,7 @@ func SearchMatches(data *CommonData, result SearchResult, fallbackMsg string) te
 				var templ_7745c5c3_Var25 string
 				templ_7745c5c3_Var25, templ_7745c5c3_Err = templ.JoinStringErrs(data.Language.MatchType[match.Type])
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `cmd/search.templ`, Line: 77, Col: 68}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `cmd/search.templ`, Line: 80, Col: 68}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var25))
 				if templ_7745c5c3_Err != nil {
@@ -485,7 +488,7 @@ func SearchMatches(data *CommonData, result SearchResult, fallbackMsg string) te
 					var templ_7745c5c3_Var26 string
 					templ_7745c5c3_Var26, templ_7745c5c3_Err = templ.JoinStringErrs(match.Rank)
 					if templ_7745c5c3_Err != nil {
-						return templ.Error{Err: templ_7745c5c3_Err, FileName: `cmd/search.templ`, Line: 95, Col: 45}
+						return templ.Error{Err: templ_7745c5c3_Err, FileName: `cmd/search.templ`, Line: 98, Col: 45}
 					}
 					_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var26))
 					if templ_7745c5c3_Err != nil {
@@ -503,7 +506,7 @@ func SearchMatches(data *CommonData, result SearchResult, fallbackMsg string) te
 						var templ_7745c5c3_Var27 string
 						templ_7745c5c3_Var27, templ_7745c5c3_Err = templ.JoinStringErrs(key)
 						if templ_7745c5c3_Err != nil {
-							return templ.Error{Err: templ_7745c5c3_Err, FileName: `cmd/search.templ`, Line: 98, Col: 44}
+							return templ.Error{Err: templ_7745c5c3_Err, FileName: `cmd/search.templ`, Line: 101, Col: 44}
 						}
 						_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var27))
 						if templ_7745c5c3_Err != nil {
@@ -516,7 +519,7 @@ func SearchMatches(data *CommonData, result SearchResult, fallbackMsg string) te
 						var templ_7745c5c3_Var28 string
 						templ_7745c5c3_Var28, templ_7745c5c3_Err = templ.JoinStringErrs(r)
 						if templ_7745c5c3_Err != nil {
-							return templ.Error{Err: templ_7745c5c3_Err, FileName: `cmd/search.templ`, Line: 98, Col: 49}
+							return templ.Error{Err: templ_7745c5c3_Err, FileName: `cmd/search.templ`, Line: 101, Col: 49}
 						}
 						_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var28))
 						if templ_7745c5c3_Err != nil {
@@ -545,7 +548,7 @@ func SearchMatches(data *CommonData, result SearchResult, fallbackMsg string) te
 			var templ_7745c5c3_Var29 string
 			templ_7745c5c3_Var29, templ_7745c5c3_Err = templ.JoinStringErrs(result.Query.Query)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `cmd/search.templ`, Line: 106, Col: 40}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `cmd/search.templ`, Line: 109, Col: 40}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var29))
 			if templ_7745c5c3_Err != nil {
@@ -558,7 +561,7 @@ func SearchMatches(data *CommonData, result SearchResult, fallbackMsg string) te
 			var templ_7745c5c3_Var30 string
 			templ_7745c5c3_Var30, templ_7745c5c3_Err = templ.JoinStringErrs(fallbackMsg)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `cmd/search.templ`, Line: 106, Col: 62}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `cmd/search.templ`, Line: 109, Col: 62}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var30))
 			if templ_7745c5c3_Err != nil {
@@ -649,7 +652,7 @@ func RunComponent(r *view.HighlightRun) templ.Component {
 			var templ_7745c5c3_Var33 string
 			templ_7745c5c3_Var33, templ_7745c5c3_Err = templ.JoinStringErrs(r.Text)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `cmd/search.templ`, Line: 126, Col: 32}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `cmd/search.templ`, Line: 129, Col: 32}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var33))
 			if templ_7745c5c3_Err != nil {
@@ -667,7 +670,7 @@ func RunComponent(r *view.HighlightRun) templ.Component {
 			var templ_7745c5c3_Var34 string
 			templ_7745c5c3_Var34, templ_7745c5c3_Err = templ.JoinStringErrs(r.Text)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `cmd/search.templ`, Line: 128, Col: 34}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `cmd/search.templ`, Line: 131, Col: 34}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var34))
 			if templ_7745c5c3_Err != nil {
@@ -705,7 +708,7 @@ func ExtraInfo(mv *view.Match) templ.Component {
 		ctx = templ.ClearChildren(ctx)
 		switch mv.Type {
 		case enums.MatchTypePatient:
-			if info := parseJSON[SearchPatientInfo](mv.ExtraData); info != nil {
+			if info := db.ParseJSON[SearchPatientInfo](mv.ExtraData); info != nil {
 				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 60, "<span class=\"micro\"><a href=\"")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
@@ -713,7 +716,7 @@ func ExtraInfo(mv *view.Match) templ.Component {
 				var templ_7745c5c3_Var36 templ.SafeURL
 				templ_7745c5c3_Var36, templ_7745c5c3_Err = templ.JoinURLErrs(templ.URL(info.JournalURL))
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `cmd/search.templ`, Line: 137, Col: 55}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `cmd/search.templ`, Line: 140, Col: 55}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var36))
 				if templ_7745c5c3_Err != nil {
@@ -726,7 +729,7 @@ func ExtraInfo(mv *view.Match) templ.Component {
 				var templ_7745c5c3_Var37 templ.SafeURL
 				templ_7745c5c3_Var37, templ_7745c5c3_Err = templ.JoinURLErrs(templ.URL(info.JournalInfo.FolderURL))
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `cmd/search.templ`, Line: 137, Col: 125}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `cmd/search.templ`, Line: 140, Col: 125}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var37))
 				if templ_7745c5c3_Err != nil {
@@ -739,7 +742,7 @@ func ExtraInfo(mv *view.Match) templ.Component {
 				var templ_7745c5c3_Var38 string
 				templ_7745c5c3_Var38, templ_7745c5c3_Err = templ.JoinStringErrs(info.JournalInfo.FolderName)
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `cmd/search.templ`, Line: 137, Col: 155}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `cmd/search.templ`, Line: 140, Col: 155}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var38))
 				if templ_7745c5c3_Err != nil {
@@ -751,7 +754,7 @@ func ExtraInfo(mv *view.Match) templ.Component {
 				}
 			}
 		case enums.MatchTypeJournal:
-			if info := parseJSON[SearchJournalInfo](mv.ExtraData); info != nil {
+			if info := db.ParseJSON[SearchJournalInfo](mv.ExtraData); info != nil {
 				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 64, "<span class=\"micro\"><a href=\"")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
@@ -759,7 +762,7 @@ func ExtraInfo(mv *view.Match) templ.Component {
 				var templ_7745c5c3_Var39 templ.SafeURL
 				templ_7745c5c3_Var39, templ_7745c5c3_Err = templ.JoinURLErrs(templ.URL(info.FolderURL))
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `cmd/search.templ`, Line: 143, Col: 54}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `cmd/search.templ`, Line: 146, Col: 54}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var39))
 				if templ_7745c5c3_Err != nil {
@@ -772,7 +775,7 @@ func ExtraInfo(mv *view.Match) templ.Component {
 				var templ_7745c5c3_Var40 string
 				templ_7745c5c3_Var40, templ_7745c5c3_Err = templ.JoinStringErrs(info.FolderName)
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `cmd/search.templ`, Line: 143, Col: 72}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `cmd/search.templ`, Line: 146, Col: 72}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var40))
 				if templ_7745c5c3_Err != nil {

@@ -4,13 +4,15 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/fugleadvokatene/bino/internal/db"
+	"github.com/fugleadvokatene/bino/internal/request"
 	"github.com/fugleadvokatene/bino/internal/view"
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
 func (server *Server) getHomeHandler(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-	commonData := MustLoadCommonData(ctx)
+	commonData := request.MustLoadCommonData(ctx)
 
 	id, err := server.getPathID(r, "home")
 	if err != nil {
@@ -32,7 +34,7 @@ func (server *Server) getHomeHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	patients, err := server.Queries.GetCurrentPatientsForHome(ctx, GetCurrentPatientsForHomeParams{
+	patients, err := server.Queries.GetCurrentPatientsForHome(ctx, db.GetCurrentPatientsForHomeParams{
 		CurrHomeID: pgtype.Int4{Int32: id, Valid: true},
 		LanguageID: commonData.Lang32(),
 	})
@@ -61,7 +63,7 @@ func (server *Server) getHomeHandler(w http.ResponseWriter, r *http.Request) {
 
 	HomePage(ctx, commonData, &DashboardData{
 		NonPreferredSpecies: otherSpecies,
-		Homes: SliceToSlice(homes, func(h Home) view.Home {
+		Homes: SliceToSlice(homes, func(h db.Home) view.Home {
 			return h.ToHomeView()
 		}),
 	}, &view.Home{
@@ -69,14 +71,14 @@ func (server *Server) getHomeHandler(w http.ResponseWriter, r *http.Request) {
 		Name:     homeData.Name,
 		Note:     homeData.Note,
 		Capacity: homeData.Capacity,
-		Users: SliceToSlice(users, func(u Appuser) view.User {
+		Users: SliceToSlice(users, func(u db.Appuser) view.User {
 			return u.ToUserView()
 		}),
-		Patients: SliceToSlice(patients, func(p GetCurrentPatientsForHomeRow) view.Patient {
+		Patients: SliceToSlice(patients, func(p db.GetCurrentPatientsForHomeRow) view.Patient {
 			return p.ToPatientView()
 		}),
 		PreferredSpecies: preferredSpecies,
-		UnavailablePeriods: SliceToSlice(unavailablePeriods, func(in HomeUnavailable) view.Period {
+		UnavailablePeriods: SliceToSlice(unavailablePeriods, func(in db.HomeUnavailable) view.Period {
 			return in.ToPeriodView()
 		}),
 	}).Render(r.Context(), w)
@@ -84,7 +86,7 @@ func (server *Server) getHomeHandler(w http.ResponseWriter, r *http.Request) {
 
 func (server *Server) setCapacityHandler(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-	commonData := MustLoadCommonData(ctx)
+	commonData := request.MustLoadCommonData(ctx)
 
 	id, err := server.getPathID(r, "home")
 	if err != nil {
@@ -98,7 +100,7 @@ func (server *Server) setCapacityHandler(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	if err := server.Queries.SetHomeCapacity(ctx, SetHomeCapacityParams{
+	if err := server.Queries.SetHomeCapacity(ctx, db.SetHomeCapacityParams{
 		ID:       id,
 		Capacity: capacity,
 	}); err != nil {
@@ -110,7 +112,7 @@ func (server *Server) setCapacityHandler(w http.ResponseWriter, r *http.Request)
 
 func (server *Server) addPreferredSpeciesHandler(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-	commonData := MustLoadCommonData(ctx)
+	commonData := request.MustLoadCommonData(ctx)
 
 	id, err := server.getPathID(r, "home")
 	if err != nil {
@@ -124,7 +126,7 @@ func (server *Server) addPreferredSpeciesHandler(w http.ResponseWriter, r *http.
 		return
 	}
 
-	if err := server.Queries.AddPreferredSpecies(ctx, AddPreferredSpeciesParams{
+	if err := server.Queries.AddPreferredSpecies(ctx, db.AddPreferredSpeciesParams{
 		HomeID:    id,
 		SpeciesID: species,
 	}); err != nil {
@@ -137,7 +139,7 @@ func (server *Server) addPreferredSpeciesHandler(w http.ResponseWriter, r *http.
 
 func (server *Server) deletePreferredSpeciesHandler(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-	commonData := MustLoadCommonData(ctx)
+	commonData := request.MustLoadCommonData(ctx)
 
 	id, err := server.getPathID(r, "home")
 	if err != nil {
@@ -151,7 +153,7 @@ func (server *Server) deletePreferredSpeciesHandler(w http.ResponseWriter, r *ht
 		return
 	}
 
-	if err := server.Queries.DeletePreferredSpecies(ctx, DeletePreferredSpeciesParams{
+	if err := server.Queries.DeletePreferredSpecies(ctx, db.DeletePreferredSpeciesParams{
 		HomeID:    id,
 		SpeciesID: species,
 	}); err != nil {
@@ -164,14 +166,14 @@ func (server *Server) deletePreferredSpeciesHandler(w http.ResponseWriter, r *ht
 
 func (server *Server) reorderSpeciesHandler(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-	commonData := MustLoadCommonData(ctx)
+	commonData := request.MustLoadCommonData(ctx)
 
 	id, err := server.getPathID(r, "home")
 	if err != nil {
 		server.renderError(w, r, commonData, err)
 		return
 	}
-	jsonHandler(server, w, r, func(q *Queries, req AJAXReorderRequest) error {
+	jsonHandler(server, w, r, func(q *db.Queries, req AJAXReorderRequest) error {
 		if req.ID != id {
 			return fmt.Errorf("mismatched ID between request data and URL (URL=%d, req=%d)", id, req.ID)
 		}
@@ -181,7 +183,7 @@ func (server *Server) reorderSpeciesHandler(w http.ResponseWriter, r *http.Reque
 			ids = append(ids, id)
 			orders = append(orders, int32(idx))
 		}
-		return q.UpdatePreferredSpeciesSortOrder(ctx, UpdatePreferredSpeciesSortOrderParams{
+		return q.UpdatePreferredSpeciesSortOrder(ctx, db.UpdatePreferredSpeciesSortOrderParams{
 			HomeID:    id,
 			SpeciesID: ids,
 			Orders:    orders,
@@ -191,7 +193,7 @@ func (server *Server) reorderSpeciesHandler(w http.ResponseWriter, r *http.Reque
 
 func (server *Server) addHomeUnavailablePeriodHandler(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-	commonData := MustLoadCommonData(ctx)
+	commonData := request.MustLoadCommonData(ctx)
 
 	homeID, err := server.getPathID(r, "home")
 	if err != nil {
@@ -225,7 +227,7 @@ func (server *Server) addHomeUnavailablePeriodHandler(w http.ResponseWriter, r *
 		server.redirectToReferer(w, r)
 		return
 	}
-	if _, err := server.Queries.AddHomeUnavailablePeriod(ctx, AddHomeUnavailablePeriodParams{
+	if _, err := server.Queries.AddHomeUnavailablePeriod(ctx, db.AddHomeUnavailablePeriodParams{
 		HomeID:   homeID,
 		FromDate: fromV.ToPGDate(),
 		ToDate:   toV.ToPGDate(),
@@ -240,7 +242,7 @@ func (server *Server) addHomeUnavailablePeriodHandler(w http.ResponseWriter, r *
 
 func (server *Server) deleteHomeUnavailableHandler(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-	commonData := MustLoadCommonData(ctx)
+	commonData := request.MustLoadCommonData(ctx)
 
 	periodID, err := server.getPathID(r, "period")
 	if err != nil {
@@ -258,7 +260,7 @@ func (server *Server) deleteHomeUnavailableHandler(w http.ResponseWriter, r *htt
 
 func (server *Server) homeSetNoteHandler(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-	commonData := MustLoadCommonData(ctx)
+	commonData := request.MustLoadCommonData(ctx)
 
 	homeID, err := server.getPathID(r, "home")
 	if err != nil {
@@ -272,7 +274,7 @@ func (server *Server) homeSetNoteHandler(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	if err := server.Queries.SetHomeNote(ctx, SetHomeNoteParams{
+	if err := server.Queries.SetHomeNote(ctx, db.SetHomeNoteParams{
 		ID:   homeID,
 		Note: note,
 	}); err != nil {

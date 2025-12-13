@@ -1,10 +1,15 @@
 package main
 
-import "net/http"
+import (
+	"net/http"
+
+	"github.com/fugleadvokatene/bino/internal/db"
+	"github.com/fugleadvokatene/bino/internal/request"
+)
 
 func (server *Server) postEventSetNoteHandler(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-	commonData := MustLoadCommonData(ctx)
+	commonData := request.MustLoadCommonData(ctx)
 
 	event, err := server.getPathID(r, "event")
 	if err != nil {
@@ -18,7 +23,7 @@ func (server *Server) postEventSetNoteHandler(w http.ResponseWriter, r *http.Req
 		return
 	}
 
-	if err := server.Queries.SetEventNote(ctx, SetEventNoteParams{
+	if err := server.Queries.SetEventNote(ctx, db.SetEventNoteParams{
 		ID:   event,
 		Note: note,
 	}); err != nil {
