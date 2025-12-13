@@ -36,9 +36,9 @@ templ HomePage(ctx context.Context, data *CommonData, dashboardData *DashboardDa
         }
     }
     
-    // drag and drop
-    <script type="module" src={data.StaticFile("bundle/home.js")}></script>
-    <script type="module" src={data.StaticFile("bundle/reorder-patients.js")}></script>
+    
+    @JSModule(data, "home")
+    @JSModule(data, "reorder-patients")
 }
 
 templ (dv DateView) View(data *CommonData) {

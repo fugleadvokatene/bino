@@ -39,7 +39,7 @@ templ WikiPageTempl(data *CommonData, page WikiPageView, links []WikiLinkView) {
                 </div>
             </div>
         }
-        <script type="module" src={data.StaticFile("bundle/editor2.js")}></script>
+        @JSModule(data, "editor2")
     </body>
     </html>
 }

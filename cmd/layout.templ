@@ -54,7 +54,10 @@ templ Body(data *CommonData) {
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Hammersmith+One&family=Roboto:wght@100..900&display=swap" rel="stylesheet">
-    <script type="module" src={data.StaticFile("/bundle/common.js")}></script>
+}
+
+templ JSModule(data *CommonData, name string) {
+    <script type="module" src={data.StaticFile("/bundle/" + name + ".js")}></script>
 }
 
 templ Layout(data *CommonData, classes ...string) {

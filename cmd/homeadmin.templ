@@ -100,7 +100,7 @@ templ HomesPage(data *CommonData, homes []HomeViewAdmin, homeless []UserView) {
             }
         }
     }
-    <script type="module" src={data.StaticFile("dashboard.js")}></script>
+    @JSModule(data, "dashboard")
 }
 
 templ (u *UserView) Component(data *CommonData) {

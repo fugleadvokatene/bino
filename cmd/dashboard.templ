@@ -19,8 +19,8 @@ templ DashboardPage(data *CommonData, dashboardData *DashboardData) {
         @DashboardHomes(data, dashboardData)
     }
 
-    <script type="module" src={data.StaticFile("bundle/dashboard.js")}></script>
-    <script type="module" src={data.StaticFile("bundle/reorder-patients.js")}></script>
+    @JSModule(data, "dashboard")
+    @JSModule(data, "reorder-patients")
 }
 
 templ DashboardSearch(data *CommonData) {

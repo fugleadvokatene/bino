@@ -44,5 +44,5 @@ templ FormerPatients(data *CommonData, patients []PatientView) {
             </table>
         </div>
     }
-    <script type="module" src={data.StaticFile("bundle/formerpatients.js")}></script>
+    @JSModule(data, "formerpatients")
 }

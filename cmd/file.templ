@@ -27,7 +27,7 @@ templ FileUploadPage(data *CommonData, files []FileView) {
         }
 
     <link rel="stylesheet" href={data.StaticFile("bundle/imageupload.css")}></link>
-    <script type="module" src={data.StaticFile("bundle/imageupload.js")}></script>
+    @JSModule(data, "imageupload")
     </body>
     </html>
 }

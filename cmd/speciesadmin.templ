@@ -14,5 +14,5 @@ templ SpeciesPage(data *CommonData, species []SpeciesLangs) {
             <td><input class="form-control" value="" data-field="latin" placeholder={data.Language.GenericLatin}/></td>
         }
     }
-    <script type="module" src={data.StaticFile("bundle/speciesadmin.js")}></script>
+    @JSModule(data, "speciesadmin")
 }
