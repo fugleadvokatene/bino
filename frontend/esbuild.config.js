@@ -11,7 +11,7 @@ build({
     'search.js',
     'speciesadmin.js',
     'imageupload.js',
-    'home.js',
+    'home.ts',
     'reorder-patients.js',
     'dashboard.js',
     'formerpatients.ts',

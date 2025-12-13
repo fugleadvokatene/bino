@@ -2203,26 +2203,33 @@ Sortable.mount(new AutoScrollPlugin());
 Sortable.mount(Remove, Revert);
 var sortable_esm_default = Sortable;
 
-// home.js
-document.addEventListener("DOMContentLoaded", () => {
-  const table = document.getElementById("species-list");
-  if (!table) return;
-  const home = parseInt(table.dataset.home);
-  sortable_esm_default.create(table, {
-    handle: "td",
-    animation: 0,
-    onEnd: () => {
-      const req = {
-        ID: home,
-        Order: Array.from(table.children).map((row) => parseInt(row.dataset.id))
-      };
-      fetch(`/home/${home}/species/reorder`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(req)
-      }).then(() => location.reload());
-    }
+// dom.ts
+var QuerySelector = (sel, root = document) => root.querySelector(sel);
+var QuerySelectorAll = (sel, root = document) => Array.from(root.querySelectorAll(sel));
+
+// home.ts
+var table = QuerySelector("#species-list");
+if (!table) throw new Error("species-list not found");
+var home = Number(table.dataset.home);
+if (Number.isNaN(home)) throw new Error("invalid home id");
+var reorder = async () => {
+  const body = {
+    ID: home,
+    Order: QuerySelectorAll("[data-id]", table).map(
+      (row) => Number(row.dataset.id)
+    )
+  };
+  await fetch(`/home/${home}/species/reorder`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body)
   });
+  location.reload();
+};
+sortable_esm_default.create(table, {
+  handle: "td",
+  animation: 0,
+  onEnd: reorder
 });
 /*! Bundled license information:
 
