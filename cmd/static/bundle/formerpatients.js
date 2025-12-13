@@ -1,45 +1,42 @@
-// formerpatients.js
+// dom.ts
+var QuerySelector = (sel, root = document) => root.querySelector(sel);
+var QuerySelectorAll = (sel, root = document) => Array.from(root.querySelectorAll(sel));
+
+// formerpatients.ts
 var sortState = {};
-document.querySelectorAll("th[data-sort]").forEach((th) => {
-  if (th.classList.contains("sort-asc")) sortState[th.dataset.sort] = "asc";
-  if (th.classList.contains("sort-desc")) sortState[th.dataset.sort] = "desc";
-});
-function cellValue(row, col) {
+var getSortKey = (row, col) => {
   const cell = row.children[col];
-  const k = cell.dataset.sortKey;
-  if (k !== void 0) return Number(k);
-  return cell.textContent.trim().toLowerCase();
-}
-function sortTable(col, th) {
-  const tbody = document.querySelector(".search-container tbody");
-  const rows = Array.from(tbody.querySelectorAll(".filter-box"));
+  const key = cell.dataset.sortKey;
+  return key !== void 0 ? Number(key) : cell.textContent.trim().toLowerCase();
+};
+var sortTable = (col, th) => {
+  const tbody = QuerySelector(".search-container tbody");
+  const rows = QuerySelectorAll(".filter-box", tbody);
   const dir = sortState[col] === "asc" ? "desc" : "asc";
-  sortState = { [col]: dir };
-  document.querySelectorAll("th[data-sort]").forEach((h) => h.classList.remove("sort-asc", "sort-desc"));
+  Object.keys(sortState).forEach((k) => delete sortState[+k]);
+  sortState[col] = dir;
+  QuerySelectorAll("th[data-sort]").forEach(
+    (h) => h.classList.remove("sort-asc", "sort-desc")
+  );
   th.classList.add(dir === "asc" ? "sort-asc" : "sort-desc");
+  const posSortKey = dir === "asc" ? -1 : 1;
   rows.sort((a, b) => {
-    const va = cellValue(a, col);
-    const vb = cellValue(b, col);
-    if (va < vb) return dir === "asc" ? -1 : 1;
-    \u00E5;
-    if (va > vb) return dir === "asc" ? 1 : -1;
+    const keyA = getSortKey(a, col);
+    const keyB = getSortKey(b, col);
+    if (keyA < keyB) return posSortKey;
+    if (keyA > keyB) return -posSortKey;
     return 0;
-  });
-  rows.forEach((r) => tbody.appendChild(r));
-}
-document.addEventListener("click", (e) => {
-  const th = e.target.closest("th[data-sort]");
-  if (!th) return;
-  sortTable(Number(th.dataset.sort), th);
-});
-function filterFormer() {
-  const q = document.getElementById("former-search").value.trim().toLowerCase();
-  const boxes = document.querySelectorAll(".filter-box");
-  const container = document.querySelector(".search-container");
-  const searchBox = document.getElementById("former-search");
-  const noneMsg = document.getElementById("filter-none");
+  }).forEach((r) => tbody.appendChild(r));
+};
+var filterFormer = () => {
+  const input = QuerySelector("#former-search");
+  const q = input.value.trim().toLowerCase();
+  const boxes = QuerySelectorAll(".filter-box");
+  const container = QuerySelector(".search-container");
+  const noneMsg = QuerySelector("#filter-none");
   const active = q.length > 0;
-  [container, searchBox].forEach((el) => el.classList.toggle("active-search", active));
+  container.classList.toggle("active-search", active);
+  input.classList.toggle("active-search", active);
   if (!active) {
     boxes.forEach((b) => b.hidden = false);
     noneMsg.hidden = true;
@@ -47,20 +44,19 @@ function filterFormer() {
   }
   let anyMatch = false;
   boxes.forEach((box) => {
-    const items = box.querySelectorAll(".filter-content");
-    let match = false;
-    for (const el of items) {
-      if (el.textContent.toLowerCase().includes(q)) {
-        match = true;
-        break;
-      }
-    }
+    const match = QuerySelectorAll(".filter-content", box).some(
+      (el) => el.textContent.toLowerCase().includes(q)
+    );
     box.hidden = !match;
     if (match) anyMatch = true;
   });
   noneMsg.hidden = anyMatch;
-}
+};
+document.addEventListener("click", (e) => {
+  const th = e.target.closest("th[data-sort]");
+  if (th) sortTable(Number(th.dataset.sort), th);
+});
 document.addEventListener("input", (e) => {
-  if (e.target && e.target.id === "former-search") filterFormer();
+  if (e.target?.id === "former-search") filterFormer();
 });
 document.addEventListener("DOMContentLoaded", filterFormer);
