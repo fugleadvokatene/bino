@@ -22276,7 +22276,17 @@ var require_filepond_plugin_image_preview = __commonJS({
   }
 });
 
-// imageupload.js
+// dom.ts
+var QuerySelector = (sel, root = document) => root.querySelector(sel);
+var MustQuerySelector = (sel, root = document) => {
+  const v = QuerySelector(sel, root);
+  if (!v) {
+    throw new Error(`${sel} not found on ${root.nodeName}`);
+  }
+  return v;
+};
+
+// imageupload.ts
 var import_lightbox2 = __toESM(require_lightbox(), 1);
 var FilePond = __toESM(require_filepond(), 1);
 var import_filepond_plugin_file_validate_size = __toESM(require_filepond_plugin_file_validate_size(), 1);
@@ -22295,8 +22305,8 @@ FilePond.registerPlugin(
   import_filepond_plugin_image_transform.default,
   import_filepond_plugin_image_preview2.default
 );
-var fileInput = document.getElementById("general-file-uploader");
-var fileSubmit = document.getElementById("general-file-submit");
+var fileInput = MustQuerySelector("#general-file-uploader");
+var fileSubmit = MustQuerySelector("#general-file-submit");
 FilePond.create(fileInput, {
   server: "/file/filepond",
   instantUpload: true,

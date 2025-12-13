@@ -1,8 +1,7 @@
 import Sortable from 'sortablejs'
-import { QuerySelector, QuerySelectorAll } from './dom'
+import { MustQuerySelector, QuerySelectorAll } from './dom'
 
-const table = QuerySelector<HTMLElement>('#species-list')
-if (!table) throw new Error('species-list not found')
+const table = MustQuerySelector<HTMLElement>('#species-list');
 
 const home = Number(table.dataset.home)
 if (Number.isNaN(home)) throw new Error('invalid home id')

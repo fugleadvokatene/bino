@@ -10,7 +10,7 @@ build({
     'editor2.js',
     'search.js',
     'speciesadmin.js',
-    'imageupload.js',
+    'imageupload.ts',
     'home.ts',
     'reorder-patients.js',
     'dashboard.js',

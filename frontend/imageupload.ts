@@ -1,3 +1,6 @@
+
+import { MustQuerySelector } from './dom'
+
 import 'filepond/dist/filepond.css'
 import 'filepond-plugin-image-preview/dist/filepond-plugin-image-preview.css'
 import 'filepond-plugin-image-edit/dist/filepond-plugin-image-edit.css'
@@ -24,8 +27,8 @@ FilePond.registerPlugin(
   FilePondPluginImagePreview
 )
 
-const fileInput = document.getElementById('general-file-uploader')
-const fileSubmit = document.getElementById('general-file-submit')
+const fileInput = MustQuerySelector<HTMLElement>('#general-file-uploader')
+const fileSubmit = MustQuerySelector<HTMLButtonElement>('#general-file-submit')
 
 FilePond.create(fileInput, {
   server: '/file/filepond',
