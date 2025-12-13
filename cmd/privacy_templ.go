@@ -10,6 +10,7 @@ import templruntime "github.com/a-h/templ/runtime"
 
 import (
 	"fmt"
+	"github.com/fugleadvokatene/bino/internal/enums"
 )
 
 // NOTE: must not assume data.User exists
@@ -53,7 +54,7 @@ func Privacy(data *CommonData, config PrivacyConfig) templ.Component {
 			var templ_7745c5c3_Var3 string
 			templ_7745c5c3_Var3, templ_7745c5c3_Err = templ.JoinStringErrs(data.Language.FooterPrivacy)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `cmd/privacy.templ`, Line: 10, Col: 40}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `cmd/privacy.templ`, Line: 11, Col: 40}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var3))
 			if templ_7745c5c3_Err != nil {
@@ -75,7 +76,7 @@ func Privacy(data *CommonData, config PrivacyConfig) templ.Component {
 					}()
 				}
 				ctx = templ.InitializeContext(ctx)
-				if data.Language.ID == LanguageIDEN {
+				if data.Language.ID == enums.LanguageIDEN {
 					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 3, "<h2>1. About Bino</h2><p>Bino was developed for idealistic reasons, and has no incentive to store, process or share any informasjon except exactly what is required for the website to function. Bino is Free Software licensed under <a href=\"https://opensource.org/license/agpl-v3\">GNU Affero GPL V3</a>, which requires that the source code be freely available, both the original website and any modified works. You can read the <a href=\"https://github.com/fugleadvokatene/bino\">source code on Github</a> to verify for yourself that what happens when you interact with the site is in line with the privacy policy.</p><h2>2. What we store</h2><p>Bino only saves the information required for you to have an account and to organize information about patients:</p><ol><li>Information provided through your publicly accessible Google account: name, email and profile picture.</li><li>Settings that need to be stored between browser sessions, such as preferred language. This is stored in a database.</li><li>Cookies are stored in your browser to avoid losing text in certain forms.</li><li>Any content you have created on the site, such as pictures of patients and patient history.</li></ol><p>Bino does not share any information with third parties.</p><h2>3. Logging</h2><h3>3.a. No logging by default</h3><p>Bino does no tracking or fingerprinting, regardless of your privacy settings. There is no logging of your activity at all unless you have explicitly consented to this using the form below. Actions that are visible to all logged-in users may be logged, such as checking in a patient, editing the capacity settings for your home, or marking yourself as unavailable. </p><h3>3.b. Opt in to temporary logging</h3><p>To help solve certain technical issues, you can choose to let us log the activity on the site, for instance when you click on links or submit forms, for a short period of time. Do not enable this setting unless an administrator has requested it in order to solve a specific problem. You can revoke the consent at any time, and consent is automatically removed after ")
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err
@@ -83,7 +84,7 @@ func Privacy(data *CommonData, config PrivacyConfig) templ.Component {
 					var templ_7745c5c3_Var5 string
 					templ_7745c5c3_Var5, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("%d", config.RevokeConsentPolicy))
 					if templ_7745c5c3_Err != nil {
-						return templ.Error{Err: templ_7745c5c3_Err, FileName: `cmd/privacy.templ`, Line: 42, Col: 149}
+						return templ.Error{Err: templ_7745c5c3_Err, FileName: `cmd/privacy.templ`, Line: 43, Col: 149}
 					}
 					_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var5))
 					if templ_7745c5c3_Err != nil {
@@ -132,7 +133,7 @@ func Privacy(data *CommonData, config PrivacyConfig) templ.Component {
 					var templ_7745c5c3_Var6 string
 					templ_7745c5c3_Var6, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("%d", config.RevokeConsentPolicy))
 					if templ_7745c5c3_Err != nil {
-						return templ.Error{Err: templ_7745c5c3_Err, FileName: `cmd/privacy.templ`, Line: 96, Col: 172}
+						return templ.Error{Err: templ_7745c5c3_Err, FileName: `cmd/privacy.templ`, Line: 97, Col: 172}
 					}
 					_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var6))
 					if templ_7745c5c3_Err != nil {
@@ -223,7 +224,7 @@ func TOS(data *CommonData) templ.Component {
 				}()
 			}
 			ctx = templ.InitializeContext(ctx)
-			if data.Language.ID == LanguageIDEN {
+			if data.Language.ID == enums.LanguageIDEN {
 				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 19, "<h1>Terms of Service</h1>")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
@@ -250,7 +251,7 @@ func TOS(data *CommonData) templ.Component {
 					}()
 				}
 				ctx = templ.InitializeContext(ctx)
-				if data.Language.ID == LanguageIDEN {
+				if data.Language.ID == enums.LanguageIDEN {
 					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 22, "<p>By logging into Bino, you agree to these terms of service:</p><p>1. The website is run according to Norwegian national law.</p><p>2. Your information is handled according to the <a href=\"/privacy\">privacy policy</a>.</p>")
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err

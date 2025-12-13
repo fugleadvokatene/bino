@@ -11,6 +11,8 @@ import (
 	"os"
 	"time"
 
+	"github.com/fugleadvokatene/bino/internal/enums"
+	"github.com/fugleadvokatene/bino/internal/language"
 	"github.com/gorilla/sessions"
 	"github.com/jackc/pgx/v5/pgtype"
 	"golang.org/x/oauth2"
@@ -62,7 +64,7 @@ func (server *Server) tryLogin(f http.Handler, onLoggedIn func(f http.Handler) h
 		ctx := r.Context()
 		ctx = WithCommonData(ctx, &CommonData{
 			BuildKey: server.BuildKey,
-			Language: EN,
+			Language: language.EN,
 		})
 		r = r.WithContext(ctx)
 
@@ -70,7 +72,7 @@ func (server *Server) tryLogin(f http.Handler, onLoggedIn func(f http.Handler) h
 	})
 }
 
-func (server *Server) requireAccessLevel(al AccessLevel) Middleware {
+func (server *Server) requireAccessLevel(al enums.AccessLevel) Middleware {
 	return func(f http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			ctx := r.Context()
@@ -85,7 +87,7 @@ func (server *Server) requireAccessLevel(al AccessLevel) Middleware {
 	}
 }
 
-func (server *Server) requireCapability(cap Cap) Middleware {
+func (server *Server) requireCapability(cap enums.Cap) Middleware {
 	al, ok := RequiredAccessLevel[cap]
 	if !ok {
 		panic(fmt.Errorf("no access level for %s", cap.String()))
@@ -121,20 +123,20 @@ func (server *Server) authenticate(w http.ResponseWriter, r *http.Request) (Comm
 		PreferredHome:   preferredHome,
 		Homes:           homes,
 		LoggingConsent:  loggingConsent,
-		AccessLevel:     AccessLevel(user.AccessLevel),
+		AccessLevel:     enums.AccessLevel(user.AccessLevel),
 	}
 
 	commonData := CommonData{
 		User:     &userData,
 		BuildKey: server.BuildKey,
-		Language: GetLanguage(user.LanguageID),
+		Language: language.GetLanguage(user.LanguageID),
 	}
 
 	if val, ok := r.URL.Query()["_AL"]; ok && len(val) == 1 {
 		if val[0] == "LoggedOut" {
 			commonData.User = nil
 		}
-		if demotedAccessLevel, err := ParseAccessLevel(val[0]); err == nil && commonData.User.AccessLevel >= demotedAccessLevel {
+		if demotedAccessLevel, err := enums.ParseAccessLevel(val[0]); err == nil && commonData.User.AccessLevel >= demotedAccessLevel {
 			commonData.User.AccessLevel = demotedAccessLevel
 		}
 	}
@@ -310,7 +312,7 @@ func (server *Server) callbackHandler(
 				Email:       claims.Email,
 				GoogleSub:   claims.Sub,
 				AvatarUrl:   pgtype.Text{String: claims.Picture, Valid: claims.Picture != ""},
-				AccessLevel: int32(AccessLevelCoordinator),
+				AccessLevel: int32(enums.AccessLevelCoordinator),
 			}); err != nil {
 				return err
 			} else {

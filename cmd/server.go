@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/coreos/go-oidc"
+	"github.com/fugleadvokatene/bino/internal/enums"
 	"github.com/gorilla/sessions"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -159,15 +160,15 @@ func startServer(
 	}}
 
 	requiresRehabber := slices.Clone(baseFlow)
-	requiresRehabber = append(requiresRehabber, server.requireAccessLevel(AccessLevelRehabber))
+	requiresRehabber = append(requiresRehabber, server.requireAccessLevel(enums.AccessLevelRehabber))
 
 	requiresCoordinator := slices.Clone(baseFlow)
-	requiresCoordinator = append(requiresCoordinator, server.requireAccessLevel(AccessLevelCoordinator))
+	requiresCoordinator = append(requiresCoordinator, server.requireAccessLevel(enums.AccessLevelCoordinator))
 
 	requiresAdmin := slices.Clone(baseFlow)
-	requiresAdmin = append(requiresAdmin, server.requireAccessLevel(AccessLevelAdmin))
+	requiresAdmin = append(requiresAdmin, server.requireAccessLevel(enums.AccessLevelAdmin))
 
-	loggedInHandler := func(handler http.HandlerFunc, cap Cap) http.Handler {
+	loggedInHandler := func(handler http.HandlerFunc, cap enums.Cap) http.Handler {
 		requirements := slices.Clone(baseFlow)
 		requirements = append(requirements, server.requireCapability(cap))
 		return chainf(handler, requirements...)
@@ -196,82 +197,82 @@ func startServer(
 
 	//// LOGGED-IN USER / REHABBER
 	// Pages
-	mux.Handle("GET /patient/{patient}", loggedInHandler(server.getPatientHandler, CapViewAllActivePatients))
-	mux.Handle("GET /home/{home}", loggedInHandler(server.getHomeHandler, CapViewAllHomes))
-	mux.Handle("GET /user/{user}", loggedInHandler(server.getUserHandler, CapViewAllHomes))
-	mux.Handle("GET /former-patients", loggedInHandler(server.formerPatientsHandler, CapViewAllFormerPatients))
-	mux.Handle("GET /calendar", loggedInHandler(server.calendarHandler, CapViewCalendar))
-	mux.Handle("GET /import", loggedInHandler(server.getImportHandler, CapUseImportTool))
-	mux.Handle("GET /search", loggedInHandler(server.searchHandler, CapSearch))
-	mux.Handle("GET /search/live", loggedInHandler(server.searchLiveHandler, CapSearch))
-	mux.Handle("GET /file", loggedInHandler(server.filePage, CapUploadFile))
-	mux.Handle("GET /wiki", loggedInHandler(server.wikiMain, CapEditWiki))
-	mux.Handle("GET /wiki/view/{id}", loggedInHandler(server.wikiPage, CapEditWiki))
+	mux.Handle("GET /patient/{patient}", loggedInHandler(server.getPatientHandler, enums.CapViewAllActivePatients))
+	mux.Handle("GET /home/{home}", loggedInHandler(server.getHomeHandler, enums.CapViewAllHomes))
+	mux.Handle("GET /user/{user}", loggedInHandler(server.getUserHandler, enums.CapViewAllHomes))
+	mux.Handle("GET /former-patients", loggedInHandler(server.formerPatientsHandler, enums.CapViewAllFormerPatients))
+	mux.Handle("GET /calendar", loggedInHandler(server.calendarHandler, enums.CapViewCalendar))
+	mux.Handle("GET /import", loggedInHandler(server.getImportHandler, enums.CapUseImportTool))
+	mux.Handle("GET /search", loggedInHandler(server.searchHandler, enums.CapSearch))
+	mux.Handle("GET /search/live", loggedInHandler(server.searchLiveHandler, enums.CapSearch))
+	mux.Handle("GET /file", loggedInHandler(server.filePage, enums.CapUploadFile))
+	mux.Handle("GET /wiki", loggedInHandler(server.wikiMain, enums.CapEditWiki))
+	mux.Handle("GET /wiki/view/{id}", loggedInHandler(server.wikiPage, enums.CapEditWiki))
 	// Forms
-	mux.Handle("POST /checkin", loggedInHandler(server.postCheckinHandler, CapCheckInPatient))
-	mux.Handle("POST /privacy", loggedInHandler(server.postPrivacyHandler, CapSetOwnPreferences))
-	mux.Handle("POST /patient/{patient}/move", loggedInHandler(server.movePatientHandler, CapManageOwnPatients))
-	mux.Handle("POST /patient/{patient}/checkout", loggedInHandler(server.postCheckoutHandler, CapManageOwnPatients))
-	mux.Handle("POST /patient/{patient}/set-name", loggedInHandler(server.postSetNameHandler, CapManageOwnPatients))
-	mux.Handle("POST /patient/{patient}/create-journal", loggedInHandler(server.createJournalHandler, CapCreatePatientJournal))
-	mux.Handle("POST /patient/{patient}/attach-journal", loggedInHandler(server.attachJournalHandler, CapManageOwnPatients))
-	mux.Handle("POST /patient/{patient}/accept-suggested-journal", loggedInHandler(server.acceptSuggestedJournalHandler, CapManageOwnPatients))
-	mux.Handle("POST /patient/{patient}/decline-suggested-journal", loggedInHandler(server.declineSuggestedJournalHandler, CapManageOwnPatients))
-	mux.Handle("POST /event/{event}/set-note", loggedInHandler(server.postEventSetNoteHandler, CapManageOwnPatients))
-	mux.Handle("POST /home/{home}/set-capacity", loggedInHandler(server.setCapacityHandler, CapManageOwnHomes))
-	mux.Handle("POST /home/{home}/add-unavailable", loggedInHandler(server.addHomeUnavailablePeriodHandler, CapManageOwnHomes))
-	mux.Handle("POST /home/{home}/set-note", loggedInHandler(server.homeSetNoteHandler, CapManageOwnHomes))
-	mux.Handle("POST /home/{home}/species/add", loggedInHandler(server.addPreferredSpeciesHandler, CapManageOwnHomes))
-	mux.Handle("POST /home/{home}/species/delete/{species}", loggedInHandler(server.deletePreferredSpeciesHandler, CapManageOwnHomes))
-	mux.Handle("POST /home/{home}/species/reorder", loggedInHandler(server.reorderSpeciesHandler, CapManageOwnHomes))
-	mux.Handle("POST /period/{period}/delete", loggedInHandler(server.deleteHomeUnavailableHandler, CapManageOwnHomes))
-	mux.Handle("POST /import", loggedInHandler(server.postImportHandler, CapUseImportTool))
-	mux.Handle("POST /wiki/create", loggedInHandler(server.wikiCreate, CapEditWiki))
-	mux.Handle("POST /wiki/title/{id}", loggedInHandler(server.wikiSetTitle, CapEditWiki))
-	mux.Handle("POST /file/{id}/set-filename", loggedInHandler(server.fileSetFilename, CapEditWiki))
+	mux.Handle("POST /checkin", loggedInHandler(server.postCheckinHandler, enums.CapCheckInPatient))
+	mux.Handle("POST /privacy", loggedInHandler(server.postPrivacyHandler, enums.CapSetOwnPreferences))
+	mux.Handle("POST /patient/{patient}/move", loggedInHandler(server.movePatientHandler, enums.CapManageOwnPatients))
+	mux.Handle("POST /patient/{patient}/checkout", loggedInHandler(server.postCheckoutHandler, enums.CapManageOwnPatients))
+	mux.Handle("POST /patient/{patient}/set-name", loggedInHandler(server.postSetNameHandler, enums.CapManageOwnPatients))
+	mux.Handle("POST /patient/{patient}/create-journal", loggedInHandler(server.createJournalHandler, enums.CapCreatePatientJournal))
+	mux.Handle("POST /patient/{patient}/attach-journal", loggedInHandler(server.attachJournalHandler, enums.CapManageOwnPatients))
+	mux.Handle("POST /patient/{patient}/accept-suggested-journal", loggedInHandler(server.acceptSuggestedJournalHandler, enums.CapManageOwnPatients))
+	mux.Handle("POST /patient/{patient}/decline-suggested-journal", loggedInHandler(server.declineSuggestedJournalHandler, enums.CapManageOwnPatients))
+	mux.Handle("POST /event/{event}/set-note", loggedInHandler(server.postEventSetNoteHandler, enums.CapManageOwnPatients))
+	mux.Handle("POST /home/{home}/set-capacity", loggedInHandler(server.setCapacityHandler, enums.CapManageOwnHomes))
+	mux.Handle("POST /home/{home}/add-unavailable", loggedInHandler(server.addHomeUnavailablePeriodHandler, enums.CapManageOwnHomes))
+	mux.Handle("POST /home/{home}/set-note", loggedInHandler(server.homeSetNoteHandler, enums.CapManageOwnHomes))
+	mux.Handle("POST /home/{home}/species/add", loggedInHandler(server.addPreferredSpeciesHandler, enums.CapManageOwnHomes))
+	mux.Handle("POST /home/{home}/species/delete/{species}", loggedInHandler(server.deletePreferredSpeciesHandler, enums.CapManageOwnHomes))
+	mux.Handle("POST /home/{home}/species/reorder", loggedInHandler(server.reorderSpeciesHandler, enums.CapManageOwnHomes))
+	mux.Handle("POST /period/{period}/delete", loggedInHandler(server.deleteHomeUnavailableHandler, enums.CapManageOwnHomes))
+	mux.Handle("POST /import", loggedInHandler(server.postImportHandler, enums.CapUseImportTool))
+	mux.Handle("POST /wiki/create", loggedInHandler(server.wikiCreate, enums.CapEditWiki))
+	mux.Handle("POST /wiki/title/{id}", loggedInHandler(server.wikiSetTitle, enums.CapEditWiki))
+	mux.Handle("POST /file/{id}/set-filename", loggedInHandler(server.fileSetFilename, enums.CapEditWiki))
 	// Ajax
-	mux.Handle("POST /language", loggedInHandler(server.postLanguageHandler, CapSetOwnPreferences))
-	mux.Handle("POST /ajaxreorder", loggedInHandler(server.ajaxReorderHandler, CapManageOwnPatients))
-	mux.Handle("POST /ajaxtransfer", loggedInHandler(server.ajaxTransferHandler, CapManageOwnPatients))
-	mux.Handle("GET /calendar/away", loggedInHandler(server.ajaxCalendarAwayHandler, CapViewCalendar))
-	mux.Handle("GET /calendar/patientevents", loggedInHandler(server.ajaxCalendarPatientEventsHandler, CapViewCalendar))
-	mux.Handle("GET /import/validation", loggedInHandler(server.ajaxImportValidateHandler, CapViewCalendar))
-	mux.Handle("POST /wiki/save/{id}", loggedInHandler(server.wikiSave, CapEditWiki))
-	mux.Handle("POST /wiki/fetchimage/{id}", loggedInHandler(server.wikiFetchImage, CapEditWiki))
-	mux.Handle("POST /wiki/uploadimage/{id}", loggedInHandler(server.wikiUploadImage, CapEditWiki))
+	mux.Handle("POST /language", loggedInHandler(server.postLanguageHandler, enums.CapSetOwnPreferences))
+	mux.Handle("POST /ajaxreorder", loggedInHandler(server.ajaxReorderHandler, enums.CapManageOwnPatients))
+	mux.Handle("POST /ajaxtransfer", loggedInHandler(server.ajaxTransferHandler, enums.CapManageOwnPatients))
+	mux.Handle("GET /calendar/away", loggedInHandler(server.ajaxCalendarAwayHandler, enums.CapViewCalendar))
+	mux.Handle("GET /calendar/patientevents", loggedInHandler(server.ajaxCalendarPatientEventsHandler, enums.CapViewCalendar))
+	mux.Handle("GET /import/validation", loggedInHandler(server.ajaxImportValidateHandler, enums.CapViewCalendar))
+	mux.Handle("POST /wiki/save/{id}", loggedInHandler(server.wikiSave, enums.CapEditWiki))
+	mux.Handle("POST /wiki/fetchimage/{id}", loggedInHandler(server.wikiFetchImage, enums.CapEditWiki))
+	mux.Handle("POST /wiki/uploadimage/{id}", loggedInHandler(server.wikiUploadImage, enums.CapEditWiki))
 	// Filepond
-	mux.Handle("POST /file/filepond", loggedInHandler(server.filepondProcess, CapUploadFile))
-	mux.Handle("DELETE /file/filepond", loggedInHandler(server.imageFilepondRevert, CapUploadFile))
-	mux.Handle("GET /file/filepond/{id}", loggedInHandler(server.imageFilepondRestore, CapUploadFile))
-	mux.Handle("POST /file/submit", loggedInHandler(server.filepondSubmit, CapUploadFile))
-	mux.Handle("POST /file/{id}/delete", loggedInHandler(server.fileDelete, CapUploadFile))
+	mux.Handle("POST /file/filepond", loggedInHandler(server.filepondProcess, enums.CapUploadFile))
+	mux.Handle("DELETE /file/filepond", loggedInHandler(server.imageFilepondRevert, enums.CapUploadFile))
+	mux.Handle("GET /file/filepond/{id}", loggedInHandler(server.imageFilepondRestore, enums.CapUploadFile))
+	mux.Handle("POST /file/submit", loggedInHandler(server.filepondSubmit, enums.CapUploadFile))
+	mux.Handle("POST /file/{id}/delete", loggedInHandler(server.fileDelete, enums.CapUploadFile))
 
 	//// CONTENT MANAGEMENT
 	// Pages
-	mux.Handle("GET /species", loggedInHandler(server.getSpeciesHandler, CapManageSpecies))
-	mux.Handle("GET /admin", loggedInHandler(server.adminRootHandler, CapViewAdminTools))
-	mux.Handle("GET /homes", loggedInHandler(server.getHomesHandler, CapManageAllHomes))
-	mux.Handle("GET /users", loggedInHandler(server.userAdminHandler, CapManageUsers))
+	mux.Handle("GET /species", loggedInHandler(server.getSpeciesHandler, enums.CapManageSpecies))
+	mux.Handle("GET /admin", loggedInHandler(server.adminRootHandler, enums.CapViewAdminTools))
+	mux.Handle("GET /homes", loggedInHandler(server.getHomesHandler, enums.CapManageAllHomes))
+	mux.Handle("GET /users", loggedInHandler(server.userAdminHandler, enums.CapManageUsers))
 	// Forms
-	mux.Handle("POST /homes", loggedInHandler(server.postHomeHandler, CapManageAllHomes))
-	mux.Handle("POST /homes/{home}/set-name", loggedInHandler(server.postHomeSetName, CapManageOwnHomes))
+	mux.Handle("POST /homes", loggedInHandler(server.postHomeHandler, enums.CapManageAllHomes))
+	mux.Handle("POST /homes/{home}/set-name", loggedInHandler(server.postHomeSetName, enums.CapManageOwnHomes))
 	// Ajax
-	mux.Handle("POST /species", loggedInHandler(server.postSpeciesHandler, CapManageSpecies))
-	mux.Handle("PUT /species", loggedInHandler(server.putSpeciesHandler, CapManageSpecies))
+	mux.Handle("POST /species", loggedInHandler(server.postSpeciesHandler, enums.CapManageSpecies))
+	mux.Handle("PUT /species", loggedInHandler(server.putSpeciesHandler, enums.CapManageSpecies))
 
 	//// ADMIN
 	// Pages
-	mux.Handle("GET /gdrive", loggedInHandler(server.getGDriveHandler, CapViewGDriveSettings))
-	mux.Handle("GET /user/{user}/confirm-scrub", loggedInHandler(server.userConfirmScrubHandler, CapDeleteUsers))
-	mux.Handle("GET /user/{user}/confirm-nuke", loggedInHandler(server.userConfirmNukeHandler, CapDeleteUsers))
-	mux.Handle("GET /debug", loggedInHandler(server.debugHandler, CapDebug))
+	mux.Handle("GET /gdrive", loggedInHandler(server.getGDriveHandler, enums.CapViewGDriveSettings))
+	mux.Handle("GET /user/{user}/confirm-scrub", loggedInHandler(server.userConfirmScrubHandler, enums.CapDeleteUsers))
+	mux.Handle("GET /user/{user}/confirm-nuke", loggedInHandler(server.userConfirmNukeHandler, enums.CapDeleteUsers))
+	mux.Handle("GET /debug", loggedInHandler(server.debugHandler, enums.CapDebug))
 	// Forms
-	mux.Handle("POST /user/{user}/scrub", loggedInHandler(server.userDoScrubHandler, CapDeleteUsers))
-	mux.Handle("POST /user/{user}/nuke", loggedInHandler(server.userDoNukeHandler, CapDeleteUsers))
-	mux.Handle("POST /gdrive/invite/{email}", loggedInHandler(server.gdriveInviteUserHandler, CapInviteToGDrive))
-	mux.Handle("POST /invite", loggedInHandler(server.inviteHandler, CapInviteToBino))
-	mux.Handle("POST /invite/{email}", loggedInHandler(server.inviteHandler, CapInviteToBino))
-	mux.Handle("POST /invite/{id}/delete", loggedInHandler(server.inviteDeleteHandler, CapInviteToBino))
+	mux.Handle("POST /user/{user}/scrub", loggedInHandler(server.userDoScrubHandler, enums.CapDeleteUsers))
+	mux.Handle("POST /user/{user}/nuke", loggedInHandler(server.userDoNukeHandler, enums.CapDeleteUsers))
+	mux.Handle("POST /gdrive/invite/{email}", loggedInHandler(server.gdriveInviteUserHandler, enums.CapInviteToGDrive))
+	mux.Handle("POST /invite", loggedInHandler(server.inviteHandler, enums.CapInviteToBino))
+	mux.Handle("POST /invite/{email}", loggedInHandler(server.inviteHandler, enums.CapInviteToBino))
+	mux.Handle("POST /invite/{id}/delete", loggedInHandler(server.inviteDeleteHandler, enums.CapInviteToBino))
 
 	//// FALLBACK
 	// Pages

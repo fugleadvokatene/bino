@@ -2,6 +2,8 @@ package main
 
 import (
     "strings"
+	"github.com/fugleadvokatene/bino/internal/view"
+	"github.com/fugleadvokatene/bino/internal/enums"
 )
 
 templ DashboardPage(data *CommonData, dashboardData *DashboardData) {
@@ -13,7 +15,7 @@ templ DashboardPage(data *CommonData, dashboardData *DashboardData) {
                 <img class="mascot shadow-sm" src={data.StaticFile("mascot.jpg")}>
             </div>
         </div>
-        if dashboardData.PreferredHomeView.Home.ID != 0 {
+        if dashboardData.PreferredHomeView.ID != 0 {
             @DashboardSelf(data, dashboardData)
         }
         @DashboardHomes(data, dashboardData)
@@ -125,7 +127,7 @@ templ DashboardForm(data *CommonData, dashboardData *DashboardData) {
                         }
                         <optgroup label={data.Language.DashboardOtherHome}>
                             for _, home := range dashboardData.Homes {
-                                <option value={home.Home.ID}>{home.Home.Name}</option>
+                                <option value={home.ID}>{home.Name}</option>
                             }
                         </optgroup>
                     </select>
@@ -173,7 +175,7 @@ templ DashboardHomes(data *CommonData, dashboardData *DashboardData) {
     <div class="dashboard-indicator invisible" id="dashboard-indicator-right"></div>
 }
 
-templ Avatar(u UserView) {
+templ Avatar(u view.User) {
     <a href={templ.URL(u.URL())}>
         if u.HasAvatarURL {
             <img src={u.AvatarURL} class="dashboard-head-profile" data-toggle="tooltip" data-placement="top" title={u.Name}>
@@ -187,35 +189,35 @@ templ Avatar(u UserView) {
     </a>
 }
 
-templ DashboardHomeCard(data *CommonData, dashboardData *DashboardData, home *HomeView) {
+templ DashboardHomeCard(data *CommonData, dashboardData *DashboardData, home *view.Home) {
     <div class="card-header d-flex justify-content-between">
-        <a href={home.URL()} class="filter-content">{home.Home.Name} — <span class={"occupancy", home.OccupancyClass()}>{len(home.Patients)} / {home.Home.Capacity}</span></a>
+        <a href={home.URL()} class="filter-content">{home.Name} — <span class={"occupancy", home.OccupancyClass()}>{len(home.Patients)} / {home.Capacity}</span></a>
         <div>
             for _, u := range home.Users {
                 @Avatar(u)
             }
         </div>
     </div>
-    if _, availability := home.AvailabilityString(data.Language); true {
+    if _, availability := data.Language.AvailabilityString(home.UnavailablePeriods); true {
         <div class="card-header small fw-normal">
             <p class="mb-0 filter-content">{availability}</p>
         </div>
     }
-    if data.User.PreferredHome.ID == home.Home.ID || data.User.AccessLevel >= AccessLevelCoordinator {
+    if data.User.PreferredHome.ID == home.ID || data.User.AccessLevel >= enums.AccessLevelCoordinator {
         <div class="card-header d-flex justify-content-between">
                 @CapacityForm(data, home)
         </div>
     }
     <div class="card-header small fw-normal">
-        <div class={"mb-0", "filter-content", ClassIf(data.User.HasHomeOrAccess(home.Home.ID, AccessLevelCoordinator), "editable", "editable-lg")} data-action={home.URLSuffix("set-note")}>
+        <div class={"mb-0", "filter-content", ClassIf(data.User.HasHomeOrAccess(home.ID, enums.AccessLevelCoordinator), "editable", "editable-lg")} data-action={home.URLSuffix("set-note")}>
             <div class="d-block">
-                for _, p := range strings.Split(home.Home.Note, "\n") {
+                for _, p := range strings.Split(home.Note, "\n") {
                     <p class="home-note">{p}</p>
                 }
             </div>
         </div>
     </div>
-    <div class="card-content dashboard-patient-list" data-home={home.Home.ID}>
+    <div class="card-content dashboard-patient-list" data-home={home.ID}>
         if len(home.Patients) > 0 {
             for _, patient := range home.Patients {
                 @DashboardPatientCard(data, dashboardData, home, patient)
@@ -224,11 +226,11 @@ templ DashboardHomeCard(data *CommonData, dashboardData *DashboardData, home *Ho
     </div>
 }
 
-templ DashboardPatientCard(data *CommonData, dashboardData *DashboardData, home *HomeView, patient PatientView) {
+templ DashboardPatientCard(data *CommonData, dashboardData *DashboardData, home *view.Home, patient view.Patient) {
     <div class="card b-card dashboard-patient-card m-2 filter-box shadow-sm" id={patient.CardID("#")} data-patient-id={patient.ID}>
         <div class="card-header card-header-patient d-flex justify-content-between">
             <div>
-                if data.User.HasHomeOrAccess(home.Home.ID, AccessLevelCoordinator) {
+                if data.User.HasHomeOrAccess(home.ID, enums.AccessLevelCoordinator) {
                     <i class="fa-solid fa-grip-vertical card-gripper dark-on-hover"></i>
                 }
                 <a href={templ.URL(patient.URL())} class="filter-content must-be-clickable">{patient.Name}</a>
@@ -246,9 +248,9 @@ templ DashboardPatientCard(data *CommonData, dashboardData *DashboardData, home 
 
 templ DashboardPatientTable(
     data *CommonData,
-    homes []HomeView,
-    home *HomeView,
-    patient PatientView,
+    homes []view.Home,
+    home *view.Home,
+    patient view.Patient,
 ) {
     <table class="patient-table table table-bordered">
         <tbody>
@@ -262,7 +264,7 @@ templ DashboardPatientTable(
     </table>
 }
 
-templ DashboardMove(data *CommonData, homes []HomeView, home *HomeView, patient PatientView) {
+templ DashboardMove(data *CommonData, homes []view.Home, home *view.Home, patient view.Patient) {
     <tr>
         <th class="w-25">{data.Language.GenericMoveTo}</th>
         <td>
@@ -274,8 +276,8 @@ templ DashboardMove(data *CommonData, homes []HomeView, home *HomeView, patient 
                 <select autocomplete="off" class="form-control form-select form-select-sm" name="home">
                     <option value="" disabled selected>{data.Language.DashboardSelectHome}</option>
                     for _, otherHome := range homes {
-                        if home == nil || otherHome.Home.ID != home.Home.ID {
-                            <option value={otherHome.Home.ID}>{otherHome.Home.Name}</option>
+                        if home == nil || otherHome.ID != home.ID {
+                            <option value={otherHome.ID}>{otherHome.Name}</option>
                         }
                     }
                 </select>
@@ -292,7 +294,7 @@ templ Button(typeAttr string, icon string, txt string, classes ...string) {
     </button>
 }
 
-templ DashboardCheckout(data *CommonData, patient PatientView) {
+templ DashboardCheckout(data *CommonData, patient view.Patient) {
     <tr>
         <th class="w-25">{data.Language.DashboardCheckOut}</th>
         <td>
@@ -306,7 +308,7 @@ templ DashboardCheckout(data *CommonData, patient PatientView) {
                     <select autocomplete="off" class="form-control form-select form-select-sm" id={patient.CheckoutStatusID("")} name="status">
                         <option disabled selected>{data.Language.DashboardSelectCheckout}</option>
                         for statusID, status := range data.Language.Status {
-                            if IsCheckoutStatus[statusID] {
+                            if enums.IsCheckoutStatus[statusID] {
                                 <option value={int32(statusID)}>{status}</option>
                             }
                         }
@@ -324,7 +326,7 @@ templ DashboardCheckout(data *CommonData, patient PatientView) {
     </tr>
 }
 
-templ DashboardGoToPatientPage(data *CommonData, patient PatientView) {
+templ DashboardGoToPatientPage(data *CommonData, patient view.Patient) {
     <tr>
         <th class="w-25">{data.Language.GenericDetails}</th>
         <td>

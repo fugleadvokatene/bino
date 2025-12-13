@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+
+	"github.com/fugleadvokatene/bino/internal/enums"
 )
 
 var BuildKey string
@@ -13,7 +15,7 @@ type Config struct {
 	Auth           AuthConfig
 	HTTP           HTTPConfig
 	GoogleDrive    GDriveConfig
-	SystemLanguage LanguageID
+	SystemLanguage enums.LanguageID
 	SystemBaseURL  string
 }
 

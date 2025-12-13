@@ -9,6 +9,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/fugleadvokatene/bino/internal/gdrive"
+	"github.com/fugleadvokatene/bino/internal/view"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgtype"
 )
@@ -66,7 +68,7 @@ func (w *GDriveWorker) searchIndexFolder(ctx context.Context, folderID string) {
 	}
 }
 
-func (w *GDriveWorker) searchIndexFile(ctx context.Context, folder, file GDriveItem) error {
+func (w *GDriveWorker) searchIndexFile(ctx context.Context, folder, file gdrive.Item) error {
 	// Initialize to be used in the extraData field
 	journalInfo := SearchJournalInfo{
 		FolderURL:  string(folder.FolderURL()),
@@ -164,7 +166,7 @@ func (sii *searchIndexInfo) didSearchEntryExist() bool {
 	return sii.dbUpdatedField.Valid
 }
 
-func (w *GDriveWorker) getSearchIndexInfo(ctx context.Context, file GDriveItem, journalInfo SearchJournalInfo) (searchIndexInfo, error) {
+func (w *GDriveWorker) getSearchIndexInfo(ctx context.Context, file gdrive.Item, journalInfo SearchJournalInfo) (searchIndexInfo, error) {
 	var out searchIndexInfo
 
 	// See if there are existing patients
@@ -181,7 +183,7 @@ func (w *GDriveWorker) getSearchIndexInfo(ctx context.Context, file GDriveItem, 
 	out.urlField.Valid = true
 	if len(ids) == 1 {
 		out.namespace = "patient"
-		out.urlField.String = PatientURL(ids[0])
+		out.urlField.String = view.PatientURL(ids[0])
 		extraData = &SearchPatientInfo{
 			JournalInfo: journalInfo,
 			JournalURL:  file.DocumentURL(),

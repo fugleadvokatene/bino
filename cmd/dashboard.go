@@ -6,17 +6,19 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/fugleadvokatene/bino/internal/enums"
+	"github.com/fugleadvokatene/bino/internal/view"
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
 type DashboardData struct {
-	PreferredHomeView      HomeView
+	PreferredHomeView      view.Home
 	DefaultSelectedSpecies int32
-	NonPreferredSpecies    []SpeciesView
-	Homes                  []HomeView
+	NonPreferredSpecies    []view.Species
+	Homes                  []view.Home
 }
 
-func (server *Server) getSpeciesForUser(ctx context.Context, user int32) ([]SpeciesView, []SpeciesView, error) {
+func (server *Server) getSpeciesForUser(ctx context.Context, user int32) ([]view.Species, []view.Species, error) {
 	commonData := MustLoadCommonData(ctx)
 
 	preferredSpeciesRows, err := server.Queries.GetPreferredSpeciesForHome(ctx, GetPreferredSpeciesForHomeParams{
@@ -26,7 +28,7 @@ func (server *Server) getSpeciesForUser(ctx context.Context, user int32) ([]Spec
 	if err != nil {
 		return nil, nil, err
 	}
-	preferredSpecies := SliceToSlice(preferredSpeciesRows, func(in GetPreferredSpeciesForHomeRow) SpeciesView {
+	preferredSpecies := SliceToSlice(preferredSpeciesRows, func(in GetPreferredSpeciesForHomeRow) view.Species {
 		return in.ToSpeciesView()
 	})
 
@@ -35,10 +37,10 @@ func (server *Server) getSpeciesForUser(ctx context.Context, user int32) ([]Spec
 		return nil, nil, err
 	}
 	otherSpecies := SliceToSlice(FilterSlice(otherSpeciesRows, func(in GetSpeciesWithLanguageRow) bool {
-		return Find(preferredSpecies, func(preferred SpeciesView) bool {
+		return Find(preferredSpecies, func(preferred view.Species) bool {
 			return preferred.ID == in.SpeciesID
 		}) == -1
-	}), func(in GetSpeciesWithLanguageRow) SpeciesView {
+	}), func(in GetSpeciesWithLanguageRow) view.Species {
 		return in.ToSpeciesView(false)
 	})
 	return preferredSpecies, otherSpecies, nil
@@ -90,28 +92,31 @@ func (server *Server) dashboardHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	homeViews := SliceToSlice(homes, func(h Home) HomeView {
-		return HomeView{
-			Home: h,
+	homeViews := SliceToSlice(homes, func(h Home) view.Home {
+		return view.Home{
+			ID:       h.ID,
+			Capacity: h.Capacity,
+			Name:     h.Name,
+			Note:     h.Note,
 			Patients: SliceToSlice(FilterSlice(patients, func(p GetActivePatientsRow) bool {
 				return p.CurrHomeID.Valid && p.CurrHomeID.Int32 == h.ID
-			}), func(p GetActivePatientsRow) PatientView {
+			}), func(p GetActivePatientsRow) view.Patient {
 				return p.ToPatientView()
 			}),
 			Users: SliceToSlice(FilterSlice(users, func(u GetAppusersRow) bool {
 				return u.HomeID.Valid && u.HomeID.Int32 == h.ID
-			}), func(u GetAppusersRow) UserView {
+			}), func(u GetAppusersRow) view.User {
 				return u.ToUserView()
 			}),
 			UnavailablePeriods: SliceToSlice(FilterSlice(unavailablePeriods, func(p HomeUnavailable) bool {
 				return p.HomeID == h.ID
-			}), func(in HomeUnavailable) PeriodView {
+			}), func(in HomeUnavailable) view.Period {
 				return in.ToPeriodView()
 			}),
 		}
 	})
 
-	var preferredHomeView HomeView
+	var preferredHomeView view.Home
 	if preferredHomeIdx := Find(homes, func(h Home) bool {
 		return h.ID == commonData.User.PreferredHome.ID
 	}); preferredHomeIdx != -1 {
@@ -137,7 +142,7 @@ func (server *Server) postCheckinHandler(w http.ResponseWriter, r *http.Request)
 	ctx := r.Context()
 	commonData := MustLoadCommonData(ctx)
 
-	if !server.ensureAccess(w, r, AccessLevelRehabber) {
+	if !server.ensureAccess(w, r, enums.AccessLevelRehabber) {
 		return
 	}
 
@@ -174,7 +179,7 @@ func (server *Server) postCheckinHandler(w http.ResponseWriter, r *http.Request)
 			SpeciesID:  fields["species"],
 			CurrHomeID: pgtype.Int4{Int32: fields["home"], Valid: true},
 			Name:       name,
-			Status:     int32(StatusAdmitted),
+			Status:     int32(enums.StatusAdmitted),
 		})
 		if err != nil {
 			return err
@@ -183,7 +188,7 @@ func (server *Server) postCheckinHandler(w http.ResponseWriter, r *http.Request)
 		if _, err := q.AddPatientEvent(ctx, AddPatientEventParams{
 			PatientID: patientID,
 			AppuserID: commonData.User.AppuserID,
-			EventID:   int32(EventRegistered),
+			EventID:   int32(enums.EventRegistered),
 			HomeID:    fields["home"],
 			Note:      "",
 			Time:      pgtype.Timestamptz{Time: time.Now(), Valid: true},
@@ -281,7 +286,7 @@ func (server *Server) movePatientHandler(w http.ResponseWriter, r *http.Request)
 			PatientID:    patient,
 			AppuserID:    commonData.User.AppuserID,
 			HomeID:       newHomeID,
-			EventID:      int32(EventTransferredToOtherHome),
+			EventID:      int32(enums.EventTransferredToOtherHome),
 			AssociatedID: patientData.CurrHomeID,
 			Note:         "",
 			Time:         pgtype.Timestamptz{Time: time.Now(), Valid: true},
@@ -344,21 +349,21 @@ func (server *Server) postCheckoutHandler(w http.ResponseWriter, r *http.Request
 			return err
 		}
 
-		var event Event
+		var event enums.Event
 		var associatedID pgtype.Int4
 		switch status {
-		case int32(StatusDead):
-			event = EventDied
-		case int32(StatusDeleted):
-			event = EventDeleted
-		case int32(StatusEuthanized):
-			event = EventEuthanized
-		case int32(StatusReleased):
-			event = EventReleased
-		case int32(StatusTransferredOutsideOrganization):
-			event = EventTransferredOutsideOrganization
+		case int32(enums.StatusDead):
+			event = enums.EventDied
+		case int32(enums.StatusDeleted):
+			event = enums.EventDeleted
+		case int32(enums.StatusEuthanized):
+			event = enums.EventEuthanized
+		case int32(enums.StatusReleased):
+			event = enums.EventReleased
+		case int32(enums.StatusTransferredOutsideOrganization):
+			event = enums.EventTransferredOutsideOrganization
 		default:
-			event = EventStatusChanged
+			event = enums.EventStatusChanged
 			associatedID = pgtype.Int4{Int32: int32(status), Valid: true}
 		}
 
@@ -421,7 +426,7 @@ func (server *Server) postSetNameHandler(w http.ResponseWriter, r *http.Request)
 		if _, err := q.AddPatientEvent(ctx, AddPatientEventParams{
 			PatientID: patient,
 			HomeID:    patientData.CurrHomeID.Int32,
-			EventID:   int32(EventNameChanged),
+			EventID:   int32(enums.EventNameChanged),
 			Note:      fmt.Sprintf("'%s' -> '%s'", patientData.Name, newName),
 			AppuserID: commonData.User.AppuserID,
 			Time:      pgtype.Timestamptz{Time: time.Now(), Valid: true},
@@ -477,7 +482,7 @@ func (server *Server) ajaxTransferHandler(w http.ResponseWriter, r *http.Request
 				PatientID:    req.Patient,
 				AppuserID:    cd.User.AppuserID,
 				HomeID:       req.Receiver.ID,
-				EventID:      int32(EventTransferredToOtherHome),
+				EventID:      int32(enums.EventTransferredToOtherHome),
 				AssociatedID: patientData.CurrHomeID,
 				Note:         "",
 				Time:         pgtype.Timestamptz{Time: time.Now(), Valid: true},

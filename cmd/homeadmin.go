@@ -5,12 +5,14 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
+
+	"github.com/fugleadvokatene/bino/internal/view"
 )
 
 type HomeViewAdmin struct {
 	ID    int32
 	Name  string
-	Users []UserView
+	Users []view.User
 }
 
 func (hva *HomeViewAdmin) SetNameURL() string {
@@ -43,7 +45,7 @@ func (server *Server) getHomesHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// todo(perf): make it not O(N^2)
-	homeless := []UserView{}
+	homeless := []view.User{}
 	for _, user := range usersDB {
 		view := user.ToUserView()
 		found := false

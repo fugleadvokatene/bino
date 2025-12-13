@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/fugleadvokatene/bino/internal/view"
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
@@ -60,24 +61,22 @@ func (server *Server) getHomeHandler(w http.ResponseWriter, r *http.Request) {
 
 	HomePage(ctx, commonData, &DashboardData{
 		NonPreferredSpecies: otherSpecies,
-		Homes: SliceToSlice(homes, func(h Home) HomeView {
+		Homes: SliceToSlice(homes, func(h Home) view.Home {
 			return h.ToHomeView()
 		}),
-	}, &HomeView{
-		Home: homeData,
-		Users: SliceToSlice(users, func(u Appuser) UserView {
+	}, &view.Home{
+		ID:       homeData.ID,
+		Name:     homeData.Name,
+		Note:     homeData.Note,
+		Capacity: homeData.Capacity,
+		Users: SliceToSlice(users, func(u Appuser) view.User {
 			return u.ToUserView()
 		}),
-		Patients: SliceToSlice(patients, func(p GetCurrentPatientsForHomeRow) PatientView {
-			return PatientView{
-				ID:      p.ID,
-				Status:  p.Status,
-				Name:    p.Name,
-				Species: p.SpeciesName,
-			}
+		Patients: SliceToSlice(patients, func(p GetCurrentPatientsForHomeRow) view.Patient {
+			return p.ToPatientView()
 		}),
 		PreferredSpecies: preferredSpecies,
-		UnavailablePeriods: SliceToSlice(unavailablePeriods, func(in HomeUnavailable) PeriodView {
+		UnavailablePeriods: SliceToSlice(unavailablePeriods, func(in HomeUnavailable) view.Period {
 			return in.ToPeriodView()
 		}),
 	}).Render(r.Context(), w)
@@ -206,8 +205,8 @@ func (server *Server) addHomeUnavailablePeriodHandler(w http.ResponseWriter, r *
 		return
 	}
 
-	var fromV DateView
-	var toV DateView
+	var fromV view.Date
+	var toV view.Date
 	note, hasNote := values["unavailable-note"]
 
 	if n, err := fmt.Sscanf(values["unavailable-from"], "%d-%d-%d", &fromV.Year, &fromV.Month, &fromV.Day); err != nil || n != 3 {

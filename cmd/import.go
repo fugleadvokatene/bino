@@ -6,6 +6,8 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/fugleadvokatene/bino/internal/enums"
+	"github.com/fugleadvokatene/bino/internal/view"
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
@@ -49,7 +51,7 @@ func (server *Server) postImportHandler(w http.ResponseWriter, r *http.Request) 
 			for _, patient := range result.Patients {
 				addPatientParams.CurrHomeID = append(addPatientParams.CurrHomeID, patient.HomeID)
 				addPatientParams.Species = append(addPatientParams.Species, patient.SpeciesID)
-				addPatientParams.Status = append(addPatientParams.Status, int32(StatusAdmitted))
+				addPatientParams.Status = append(addPatientParams.Status, int32(enums.StatusAdmitted))
 				addPatientParams.JournalUrl = append(addPatientParams.JournalUrl, patient.URL)
 				addPatientParams.Name = append(addPatientParams.Name, patient.Name)
 
@@ -61,13 +63,13 @@ func (server *Server) postImportHandler(w http.ResponseWriter, r *http.Request) 
 			} else {
 				result.Notes = []string{fmt.Sprintf("Added %d patients", len(ids))}
 				addPatientRegisteredEventsParams := AddPatientRegisteredEventsParams{
-					EventID:   int32(EventRegistered),
+					EventID:   int32(enums.EventRegistered),
 					AppuserID: commonData.User.AppuserID,
 				}
 				for i, id := range ids {
 					addPatientRegisteredEventsParams.PatientID = append(addPatientRegisteredEventsParams.PatientID, id)
 					addPatientRegisteredEventsParams.HomeID = append(addPatientRegisteredEventsParams.HomeID, result.Patients[i].HomeID)
-					result.Notes = append(result.Notes, fmt.Sprintf("New patient: %s", PatientURL(id)))
+					result.Notes = append(result.Notes, fmt.Sprintf("New patient: %s", view.PatientURL(id)))
 					if result.Patients[i].URL == "" {
 						patientsRequiringJournal = append(patientsRequiringJournal, id)
 					}
@@ -194,7 +196,7 @@ func (server *Server) parseImportForm(r *http.Request) ImportRequest {
 			out.Notes = append(out.Notes, fmt.Sprintf("line %d: will create a new journal for %s", i, patientName))
 		} else {
 			if patients, err := server.Queries.GetPatientsByJournalURL(ctx, url); err == nil && len(patients) > 0 {
-				out.Notes = append(out.Notes, fmt.Sprintf("line %d: there is already a registered patient with this journal URL: %s", i, PatientURL(patients[0])))
+				out.Notes = append(out.Notes, fmt.Sprintf("line %d: there is already a registered patient with this journal URL: %s", i, view.PatientURL(patients[0])))
 				return out
 			}
 			out.Notes = append(out.Notes, fmt.Sprintf("line %d: will attach journal URL '%s' to %s", i, url, patientName))

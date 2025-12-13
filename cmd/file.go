@@ -9,6 +9,8 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/fugleadvokatene/bino/internal/enums"
+	"github.com/fugleadvokatene/bino/internal/view"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgtype"
 )
@@ -39,14 +41,14 @@ func (server *Server) fileHandler(w http.ResponseWriter, r *http.Request) {
 	fileView := file.ToFileView()
 
 	switch fileView.Accessibility {
-	case FileAccessibilityPublic:
-	case FileAccessibilityInternal:
+	case enums.FileAccessibilityPublic:
+	case enums.FileAccessibilityInternal:
 		_, err := LoadCommonData(ctx)
 		if err != nil {
 			ajaxError(w, r, err, http.StatusUnauthorized)
 			return
 		}
-	case FileAccessibilityPersonal:
+	case enums.FileAccessibilityPersonal:
 		data, err := LoadCommonData(ctx)
 		if err != nil || data.User.AppuserID != fileView.Creator {
 			ajaxError(w, r, err, http.StatusUnauthorized)
@@ -102,31 +104,31 @@ func (server *Server) filePage(w http.ResponseWriter, r *http.Request) {
 
 	files, err := server.Queries.GetFilesAccessibleByUser(ctx, GetFilesAccessibleByUserParams{
 		Creator:       data.User.AppuserID,
-		Accessibility: int32(FileAccessibilityPersonal),
+		Accessibility: int32(enums.FileAccessibilityPersonal),
 	})
 	if err != nil {
 		data.Error(data.Language.TODO("Failed to load files"), err)
 		files = nil
 	}
-	fileViews := SliceToSlice(files, func(in File) FileView {
+	fileViews := SliceToSlice(files, func(in File) view.File {
 		fv := in.ToFileView()
 		return fv
 	})
-	fileViewLookupByID := map[int32]*FileView{}
+	fileViewLookupByID := map[int32]*view.File{}
 	for i := range fileViews {
 		fileViewLookupByID[fileViews[i].ID] = &fileViews[i]
 	}
 
 	fileWikiAssociations, err := server.Queries.GetFileWikiAssociationsAccessibleByUser(ctx, GetFileWikiAssociationsAccessibleByUserParams{
 		Creator:       data.User.AppuserID,
-		Accessibility: int32(FileAccessibilityPersonal),
+		Accessibility: int32(enums.FileAccessibilityPersonal),
 	})
 	if err != nil {
 		data.Error(data.Language.TODO("Failed to get file wiki associations"), err)
 		fileWikiAssociations = nil
 	}
 	for _, fwa := range fileWikiAssociations {
-		fileViewLookupByID[fwa.FileID].WikiLinks = append(fileViewLookupByID[fwa.FileID].WikiLinks, WikiLinkView{
+		fileViewLookupByID[fwa.FileID].WikiLinks = append(fileViewLookupByID[fwa.FileID].WikiLinks, view.WikiLink{
 			ID:    fwa.WikiID,
 			Title: fwa.Title,
 		})
@@ -134,14 +136,14 @@ func (server *Server) filePage(w http.ResponseWriter, r *http.Request) {
 
 	filePatientAssociations, err := server.Queries.GetFilePatientAssociationsAccessibleByUser(ctx, GetFilePatientAssociationsAccessibleByUserParams{
 		Creator:       data.User.AppuserID,
-		Accessibility: int32(FileAccessibilityPersonal),
+		Accessibility: int32(enums.FileAccessibilityPersonal),
 	})
 	if err != nil {
 		data.Error(data.Language.TODO("Failed to get file patient associations"), err)
 		filePatientAssociations = nil
 	}
 	for _, fpa := range filePatientAssociations {
-		fileViewLookupByID[fpa.FileID].PatientLinks = append(fileViewLookupByID[fpa.FileID].PatientLinks, PatientView{
+		fileViewLookupByID[fpa.FileID].PatientLinks = append(fileViewLookupByID[fpa.FileID].PatientLinks, view.Patient{
 			ID:   fpa.PatientID,
 			Name: fpa.Name,
 		})
@@ -175,7 +177,7 @@ func (server *Server) filepondSubmit(w http.ResponseWriter, r *http.Request) {
 				Uuid:          uuid,
 				Creator:       data.User.AppuserID,
 				Created:       pgtype.Timestamptz{Time: time.Now(), Valid: true},
-				Accessibility: int32(FileAccessibilityInternal),
+				Accessibility: int32(enums.FileAccessibilityInternal),
 				Filename:      fileInfo.FileName,
 				Mimetype:      fileInfo.MIMEType,
 				Size:          fileInfo.Size,
@@ -214,7 +216,7 @@ func (server *Server) filepondProcess(w http.ResponseWriter, r *http.Request) {
 	}
 	defer file.Close()
 
-	result := server.FileBackend.Upload(ctx, file, FileInfo{
+	result := server.FileBackend.Upload(ctx, file, view.FileInfo{
 		FileName: header.Filename,
 		MIMEType: header.Header.Get("Content-Type"),
 		Size:     header.Size,

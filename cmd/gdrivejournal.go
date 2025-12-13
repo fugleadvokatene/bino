@@ -6,17 +6,19 @@ import (
 	"strings"
 	"time"
 
+	"github.com/fugleadvokatene/bino/internal/enums"
+	"github.com/fugleadvokatene/bino/internal/gdrive"
 	"google.golang.org/api/docs/v1"
 )
 
 type GDriveJournal struct {
-	Item    GDriveItem
+	Item    gdrive.Item
 	Content string
 }
 
 func (gdj *GDriveJournal) Validate() error {
 	errs := []error{}
-	for _, k := range TemplateValues() {
+	for _, k := range enums.TemplateValues() {
 		if !strings.Contains(gdj.Content, k.String()) {
 			errs = append(errs, fmt.Errorf("template is missing variable '%s'", k))
 		}
@@ -31,19 +33,19 @@ type GDriveTemplateVars struct {
 	BinoURL string
 }
 
-func (vars *GDriveTemplateVars) Replacement(template Template) string {
+func (vars *GDriveTemplateVars) Replacement(template enums.Template) string {
 	switch template {
-	case TemplateYYYY:
+	case enums.TemplateYYYY:
 		return fmt.Sprintf("%d", vars.Time.Year())
-	case TemplateMM:
+	case enums.TemplateMM:
 		return fmt.Sprintf("%02d", vars.Time.Month())
-	case TemplateDD:
+	case enums.TemplateDD:
 		return fmt.Sprintf("%02d", vars.Time.Day())
-	case TemplateName:
+	case enums.TemplateName:
 		return vars.Name
-	case TemplateSpecies:
+	case enums.TemplateSpecies:
 		return vars.Species
-	case TemplateBinoURL:
+	case enums.TemplateBinoURL:
 		return vars.BinoURL
 	default:
 		return template.String()
@@ -51,7 +53,7 @@ func (vars *GDriveTemplateVars) Replacement(template Template) string {
 }
 
 func (vars *GDriveTemplateVars) ReplaceRequests() *docs.BatchUpdateDocumentRequest {
-	requests := SliceToSlice(TemplateValues(), func(t Template) *docs.Request {
+	requests := SliceToSlice(enums.TemplateValues(), func(t enums.Template) *docs.Request {
 		return &docs.Request{
 			ReplaceAllText: &docs.ReplaceAllTextRequest{
 				ContainsText: &docs.SubstringMatchCriteria{
@@ -69,7 +71,7 @@ func (vars *GDriveTemplateVars) ReplaceRequests() *docs.BatchUpdateDocumentReque
 }
 
 func (vars *GDriveTemplateVars) ApplyToString(s string) string {
-	for _, t := range TemplateValues() {
+	for _, t := range enums.TemplateValues() {
 		s = strings.ReplaceAll(s, t.String(), vars.Replacement(t))
 	}
 	return s

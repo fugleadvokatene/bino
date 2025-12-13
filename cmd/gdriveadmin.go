@@ -5,6 +5,9 @@ import (
 	"fmt"
 	"maps"
 	"net/http"
+
+	"github.com/fugleadvokatene/bino/internal/gdrive"
+	"github.com/fugleadvokatene/bino/internal/view"
 )
 
 func (s *Server) getGDriveHandler(w http.ResponseWriter, r *http.Request) {
@@ -15,7 +18,7 @@ func (s *Server) getGDriveHandler(w http.ResponseWriter, r *http.Request) {
 	s.GDrivePage(ctx, commonData, info).Render(ctx, w)
 }
 
-func (s *Server) getExtraBinoUsers(ctx context.Context, selectedDir GDriveItem) map[string]UserView {
+func (s *Server) getExtraBinoUsers(ctx context.Context, selectedDir gdrive.Item) map[string]view.User {
 	users := s.getUserViews(ctx)
 	extraUsers := maps.Clone(users)
 	for _, perm := range selectedDir.Permissions {

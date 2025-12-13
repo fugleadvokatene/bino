@@ -8,6 +8,8 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/fugleadvokatene/bino/internal/language"
+	"github.com/fugleadvokatene/bino/internal/view"
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
@@ -109,7 +111,7 @@ func (server *Server) ajaxCalendarPatientEventsHandler(w http.ResponseWriter, r 
 		return
 	}
 	out := SliceToSlice(periods, func(in GetEventsForCalendarRow) FullCalendarEvent {
-		return in.ToFullCalendarEvent(ctx, server, commonData.Language)
+		return in.ToFullCalendarEvent(ctx, commonData.Language)
 	})
 	bin, err := json.Marshal(out)
 	if err != nil {
@@ -120,27 +122,27 @@ func (server *Server) ajaxCalendarPatientEventsHandler(w http.ResponseWriter, r 
 	w.Write(bin)
 }
 
-func (gupirr GetUnavailablePeriodsInRangeRow) ToFullCalendarEvent(language *Language) FullCalendarEvent {
+func (gupirr GetUnavailablePeriodsInRangeRow) ToFullCalendarEvent(language *language.Language) FullCalendarEvent {
 	return FullCalendarEvent{
 		ID:      fmt.Sprintf("unavailable/%d", gupirr.ID),
 		AllDay:  true,
 		Start:   gupirr.FromDate.Time.Format(timeFormatFullCalendar),
 		End:     gupirr.ToDate.Time.Format(timeFormatFullCalendar),
 		Title:   language.HomeIsUnavailable(gupirr.Name, gupirr.Note.String),
-		URL:     string(HomeURL(gupirr.HomeID)),
+		URL:     string(view.HomeURL(gupirr.HomeID)),
 		Display: "block",
 	}
 }
 
-func (gefcr GetEventsForCalendarRow) ToFullCalendarEvent(ctx context.Context, server *Server, language *Language) FullCalendarEvent {
+func (gefcr GetEventsForCalendarRow) ToFullCalendarEvent(ctx context.Context, language *language.Language) FullCalendarEvent {
 	t := gefcr.Time.Time.Format(timeFormatFullCalendar)
 	return FullCalendarEvent{
 		ID:      fmt.Sprintf("patientevent/%d", gefcr.ID),
 		AllDay:  false,
 		Start:   t,
 		End:     t,
-		Title:   fmt.Sprintf("%s: %s", gefcr.PatientName, language.FormatEvent(ctx, gefcr.EventID, gefcr.AssociatedID, server)),
-		URL:     PatientURL(gefcr.PatientID),
+		Title:   fmt.Sprintf("%s: %s", gefcr.PatientName, language.FormatEvent(ctx, gefcr.EventID, gefcr.AssociatedID)),
+		URL:     view.PatientURL(gefcr.PatientID),
 		Display: "list-item",
 	}
 }

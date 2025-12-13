@@ -7,6 +7,9 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+
+	"github.com/fugleadvokatene/bino/internal/enums"
+	"github.com/fugleadvokatene/bino/internal/language"
 )
 
 func (server *Server) adminRootHandler(w http.ResponseWriter, r *http.Request) {
@@ -20,13 +23,13 @@ func (server *Server) postLanguageHandler(w http.ResponseWriter, r *http.Request
 	ctx := r.Context()
 	commonData := MustLoadCommonData(ctx)
 
-	lang, err := ParseLanguageID(r.FormValue("language"))
+	lang, err := enums.ParseLanguageID(r.FormValue("language"))
 	if err == nil {
 		err = server.Queries.SetUserLanguage(ctx, SetUserLanguageParams{
 			AppuserID:  commonData.User.AppuserID,
 			LanguageID: int32(lang),
 		})
-		commonData.Language = Languages[int32(lang)]
+		commonData.Language = language.Languages[int32(lang)]
 	}
 
 	if err != nil {
@@ -72,7 +75,7 @@ func (server *Server) render404(w http.ResponseWriter, r *http.Request, commonDa
 	logError(r, err)
 }
 
-func (server *Server) ensureAccess(w http.ResponseWriter, r *http.Request, al AccessLevel) bool {
+func (server *Server) ensureAccess(w http.ResponseWriter, r *http.Request, al enums.AccessLevel) bool {
 	ctx := r.Context()
 	commonData := MustLoadCommonData(ctx)
 	hasAccess := commonData.User.AccessLevel >= al

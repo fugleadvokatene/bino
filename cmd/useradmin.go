@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/fugleadvokatene/bino/internal/view"
 	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/jackc/pgx/v5/pgtype"
 )
@@ -33,11 +34,11 @@ func (server *Server) userAdminHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	UserAdmin(data, SliceToSlice(homes, func(in Home) HomeView {
+	UserAdmin(data, SliceToSlice(homes, func(in Home) view.Home {
 		return in.ToHomeView()
-	}), SliceToSlice(users, func(in GetAppusersRow) UserView {
+	}), SliceToSlice(users, func(in GetAppusersRow) view.User {
 		return in.ToUserView()
-	}), SliceToSlice(invitations, func(in GetInvitationsRow) InvitationView {
+	}), SliceToSlice(invitations, func(in GetInvitationsRow) view.Invitation {
 		return in.ToInvitationView()
 	})).Render(ctx, w)
 }

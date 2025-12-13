@@ -2,6 +2,8 @@ package main
 
 import (
     "fmt"
+	"github.com/fugleadvokatene/bino/internal/enums"
+	"github.com/fugleadvokatene/bino/internal/language"
 )
 
 templ (page CRUDPage) Component(data *CommonData) {
@@ -14,8 +16,8 @@ templ (page CRUDPage) Component(data *CommonData) {
                     for _, key := range page.LangIndependent {
                         <th>{key}</th>
                     }
-                    for _, lang := range LanguageIDValues() {
-                        <th>{Languages[int32(lang)].Emoji}</th>
+                    for _, lang := range enums.LanguageIDValues() {
+                        <th>{language.Languages[int32(lang)].Emoji}</th>
                     }
                     <th><!-- Update button --></th>
                 </tr>
@@ -28,10 +30,10 @@ templ (page CRUDPage) Component(data *CommonData) {
     }
 }
 
-templ UpdateRow(data *CommonData,  id int32, obj interface{Name(id LanguageID) (string, bool)}) {
+templ UpdateRow(data *CommonData,  id int32, obj interface{Name(id enums.LanguageID) (string, bool)}) {
     <tr>
         {children...}
-        for _, lang := range LanguageIDValues()  {
+        for _, lang := range enums.LanguageIDValues()  {
             <td>
                 if name, ok := obj.Name(lang); ok {
                     <input class="form-control" data-field="lang" data-lang={fmt.Sprintf("%d", lang)} value={name}/>
@@ -52,9 +54,9 @@ templ UpdateRow(data *CommonData,  id int32, obj interface{Name(id LanguageID) (
 templ CreateRow(data *CommonData) {
     <tr>
         {children...}
-        for _, lang := range LanguageIDValues() {
+        for _, lang := range enums.LanguageIDValues() {
             <td>
-                <input class="form-control" value="" data-field="lang" data-lang={fmt.Sprintf("%d", lang)} placeholder={Languages[int32(lang)].SelfName}/>
+                <input class="form-control" value="" data-field="lang" data-lang={fmt.Sprintf("%d", lang)} placeholder={language.Languages[int32(lang)].SelfName}/>
                 </input>
             </td>
         }

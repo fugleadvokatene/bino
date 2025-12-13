@@ -5,13 +5,15 @@ import (
 	"fmt"
 	"log"
 	"time"
+
+	"github.com/fugleadvokatene/bino/internal/enums"
 )
 
 func background(
 	ctx context.Context,
 	queries *Queries,
 	fileBackend FileBackend,
-	systemLanguageID LanguageID,
+	systemLanguageID enums.LanguageID,
 ) {
 	for {
 		log.Printf("running background job: delete expired sessions")
@@ -73,7 +75,7 @@ func deleteOldStagedFiles(ctx context.Context, fileBackend FileBackend) (int, er
 	return n, nil
 }
 
-func suggestJournalURLs(ctx context.Context, queries *Queries, systemLanguage LanguageID) (int, error) {
+func suggestJournalURLs(ctx context.Context, queries *Queries, systemLanguage enums.LanguageID) (int, error) {
 	missing, err := queries.GetActivePatientsMissingJournal(ctx, int32(systemLanguage))
 	if err != nil {
 		return 0, fmt.Errorf("looking up patients: %w", err)

@@ -5,6 +5,8 @@ import (
 	"regexp"
 	"time"
 
+	"github.com/fugleadvokatene/bino/internal/enums"
+	"github.com/fugleadvokatene/bino/internal/view"
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
@@ -31,16 +33,15 @@ func (server *Server) getPatientHandler(w http.ResponseWriter, r *http.Request) 
 
 	commonData.Subtitle = patientData.Name
 
-	var home *HomeView
+	var home *view.Home
 	if patientData.CurrHomeID.Valid {
 		homeResult, err := server.Queries.GetHome(ctx, patientData.CurrHomeID.Int32)
 		if err != nil {
 			server.renderError(w, r, commonData, err)
 			return
 		}
-		home = &HomeView{
-			Home: homeResult,
-		}
+		h := homeResult.ToHomeView()
+		home = &h
 	}
 
 	homes, err := server.Queries.GetHomes(ctx)
@@ -55,33 +56,40 @@ func (server *Server) getPatientHandler(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	events := SliceToSlice(eventData, func(r GetEventsForPatientRow) EventView {
-		return EventView{
-			Row:     r,
-			TimeRel: commonData.Language.FormatTimeRel(r.Time.Time),
-			TimeAbs: commonData.Language.FormatTimeAbs(r.Time.Time),
-			Time:    r.Time.Time,
-			User: UserView{
+	events := SliceToSlice(eventData, func(r GetEventsForPatientRow) view.Event {
+		return view.Event{
+			ID:           r.ID,
+			PatientID:    r.PatientID,
+			HomeID:       r.HomeID,
+			Note:         r.Note,
+			EventID:      r.EventID,
+			AssociatedID: r.AssociatedID,
+			AppuserID:    r.AppuserID,
+			HomeName:     r.HomeName,
+			UserName:     r.UserName,
+			AvatarUrl:    r.AvatarUrl,
+			TimeRel:      commonData.Language.FormatTimeRel(r.Time.Time),
+			TimeAbs:      commonData.Language.FormatTimeAbs(r.Time.Time),
+			Time:         r.Time.Time,
+			User: view.User{
 				ID:           r.AppuserID,
 				Name:         r.UserName,
 				AvatarURL:    r.AvatarUrl.String,
 				HasAvatarURL: r.AvatarUrl.Valid,
 				Email:        "",
 			},
-			Home: HomeView{
-				Home: Home{
-					ID:   r.HomeID,
-					Name: r.HomeName,
-				},
+			Home: view.Home{
+				ID:   r.HomeID,
+				Name: r.HomeName,
 			},
 		}
 	})
 
-	PatientPage(ctx, commonData, PatientPageView{
+	PatientPage(ctx, commonData, view.PatientPage{
 		Patient: patientData.ToPatientView(),
 		Home:    home,
-		Homes: SliceToSlice(homes, func(home Home) HomeView {
-			return HomeView{Home: home}
+		Homes: SliceToSlice(homes, func(home Home) view.Home {
+			return home.ToHomeView()
 		}),
 		Events: events,
 	}, server).Render(ctx, w)
@@ -114,7 +122,7 @@ func (server *Server) createJournalHandler(w http.ResponseWriter, r *http.Reques
 
 	created, err := server.Queries.GetFirstEventOfTypeForPatient(ctx, GetFirstEventOfTypeForPatientParams{
 		PatientID: patient,
-		EventID:   int32(EventRegistered),
+		EventID:   int32(enums.EventRegistered),
 	})
 	if err != nil || !created.Valid {
 		LogR(r, "vad creation date, using current time. Err=%v", err)
@@ -148,7 +156,7 @@ func (server *Server) createJournalHandler(w http.ResponseWriter, r *http.Reques
 	if _, err := server.Queries.AddPatientEvent(ctx, AddPatientEventParams{
 		PatientID: patient,
 		HomeID:    patientData.CurrHomeID.Int32,
-		EventID:   int32(EventJournalCreated),
+		EventID:   int32(enums.EventJournalCreated),
 		AppuserID: commonData.User.AppuserID,
 		Time:      pgtype.Timestamptz{Time: time.Now(), Valid: true},
 	}); err != nil {
@@ -203,7 +211,7 @@ func (server *Server) attachJournalHandler(w http.ResponseWriter, r *http.Reques
 	if _, err := server.Queries.AddPatientEvent(ctx, AddPatientEventParams{
 		PatientID: patient,
 		HomeID:    patientData.CurrHomeID.Int32,
-		EventID:   int32(EventJournalAttached),
+		EventID:   int32(enums.EventJournalAttached),
 		AppuserID: commonData.User.AppuserID,
 		Time:      pgtype.Timestamptz{Time: time.Now(), Valid: true},
 	}); err != nil {

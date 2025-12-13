@@ -1,6 +1,9 @@
 package main
 
-templ FormerPatients(data *CommonData, patients []PatientView) {
+import "github.com/fugleadvokatene/bino/internal/view"
+import "github.com/fugleadvokatene/bino/internal/enums"
+
+templ FormerPatients(data *CommonData, patients []view.Patient) {
 	@Layout(data) {
         <h1>{data.Language.FormerPatients}</h1>
         @Card("dashboard-search", "shadow-sm", "mb-2") {
@@ -32,7 +35,7 @@ templ FormerPatients(data *CommonData, patients []PatientView) {
                         <tr class="filter-box">
                             <td><a href={templ.URL(p.URL())} class="filter-content">{p.Name}</a></td>
                             <td class="filter-content">{p.Species}</td>
-                            <td class="filter-content">{data.Language.Status[Status(p.Status)]}</td>
+                            <td class="filter-content">{data.Language.Status[enums.Status(p.Status)]}</td>
                             <td class="filter-content" data-sort-key={p.TimeCheckin.Unix()}>@CalendarLinkAbs(data.Language, p.TimeCheckin, "listDay")</td>
                             <td class="filter-content" data-sort-key={p.TimeCheckin.Unix()}>@CalendarLinkAbs(data.Language, p.TimeCheckout, "listDay")</td>
                         </tr>

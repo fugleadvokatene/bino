@@ -1,6 +1,10 @@
 package main
 
-import "net/http"
+import (
+	"net/http"
+
+	"github.com/fugleadvokatene/bino/internal/view"
+)
 
 func (server *Server) formerPatientsHandler(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
@@ -14,7 +18,7 @@ func (server *Server) formerPatientsHandler(w http.ResponseWriter, r *http.Reque
 
 	commonData.Subtitle = commonData.Language.FormerPatients
 
-	FormerPatients(commonData, SliceToSlice(patients, func(in GetFormerPatientsRow) PatientView {
+	FormerPatients(commonData, SliceToSlice(patients, func(in GetFormerPatientsRow) view.Patient {
 		return in.ToPatientView()
 	})).Render(ctx, w)
 }

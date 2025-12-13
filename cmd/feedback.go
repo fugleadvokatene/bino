@@ -4,7 +4,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"strings"
+
+	"github.com/fugleadvokatene/bino/internal/enums"
 )
 
 type Feedback struct {
@@ -13,7 +14,7 @@ type Feedback struct {
 }
 
 func (fb Feedback) CSSClass() string {
-	var maxFBT FB
+	var maxFBT enums.FB
 	for _, item := range fb.Items {
 		if item.Type > maxFBT {
 			maxFBT = item.Type
@@ -24,11 +25,7 @@ func (fb Feedback) CSSClass() string {
 
 type FeedbackItem struct {
 	Message string
-	Type    FB
-}
-
-func (fbt FB) CSSClass() string {
-	return "feedback-" + strings.ToLower(fbt.String())
+	Type    enums.FB
 }
 
 func (server *Server) setCookie(w http.ResponseWriter, r *http.Request, key string, value any) error {

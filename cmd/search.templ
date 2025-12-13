@@ -1,5 +1,8 @@
 package main
 
+import "github.com/fugleadvokatene/bino/internal/enums"
+import "github.com/fugleadvokatene/bino/internal/view"
+
 templ SearchPage(data *CommonData, result SearchResult, fallbackMsg string) {
 	@Layout(data) {
         <div class="search">
@@ -38,9 +41,9 @@ templ SearchPage(data *CommonData, result SearchResult, fallbackMsg string) {
 
                     <div class="mt-2">
                         <label>{data.Language.SearchTimePreference}</label>
-                        <label><input type="radio" name="time-preference" value={TimePreferenceNone.String()} checked?={result.Query.TimePreference==TimePreferenceNone}> {data.Language.SearchTimePreferenceNone}</label>
-                        <label><input type="radio" name="time-preference" value={TimePreferenceNewer.String()} checked?={result.Query.TimePreference==TimePreferenceNewer}> {data.Language.SearchTimePreferenceNewer}</label>
-                        <label><input type="radio" name="time-preference" value={TimePreferenceOlder.String()} checked?={result.Query.TimePreference==TimePreferenceOlder}> {data.Language.SearchTimePreferenceOlder}</label>
+                        <label><input type="radio" name="time-preference" value={enums.TimePreferenceNone.String()} checked?={result.Query.TimePreference==enums.TimePreferenceNone}> {data.Language.SearchTimePreferenceNone}</label>
+                        <label><input type="radio" name="time-preference" value={enums.TimePreferenceNewer.String()} checked?={result.Query.TimePreference==enums.TimePreferenceNewer}> {data.Language.SearchTimePreferenceNewer}</label>
+                        <label><input type="radio" name="time-preference" value={enums.TimePreferenceOlder.String()} checked?={result.Query.TimePreference==enums.TimePreferenceOlder}> {data.Language.SearchTimePreferenceOlder}</label>
                     </div>
                 </div>
             </form>
@@ -74,7 +77,7 @@ templ SearchMatches(data *CommonData, result SearchResult, fallbackMsg string) {
                                 {data.Language.MatchType[match.Type]}
                             </div>
                             <div class="match-extra-info">
-                                @match.ExtraInfo()
+                                @ExtraInfo(&match)
                             </div>
                         </div>
                     </div>
@@ -106,19 +109,19 @@ templ SearchMatches(data *CommonData, result SearchResult, fallbackMsg string) {
 }
 
 
-templ Runs(runs []HighlightRun, ellipsis bool) {
+templ Runs(runs []view.HighlightRun, ellipsis bool) {
     if ellipsis {
         …
     }
 	for _, run := range runs {
-		@run.Component()
+		@RunComponent(&run)
 	}
     if ellipsis {
         …
     }
 }
 
-templ (r *HighlightRun) Component() {
+templ RunComponent(r *view.HighlightRun) {
     if r.Hit {
         <mark class="hl">{r.Text}</mark>
     } else {
@@ -126,15 +129,15 @@ templ (r *HighlightRun) Component() {
     }
 }
 
-templ (mv *MatchView) ExtraInfo() {
+templ ExtraInfo(mv *view.Match) {
     switch mv.Type {
-        case MatchTypePatient:
+        case enums.MatchTypePatient:
             if info := parseJSON[SearchPatientInfo](mv.ExtraData); info != nil {
                 <span class="micro">
                     <a href={templ.URL(info.JournalURL)}>Gå til journal</a> i <a href={templ.URL(info.JournalInfo.FolderURL)}>{info.JournalInfo.FolderName}</a>
                 </span>
             }
-        case MatchTypeJournal:
+        case enums.MatchTypeJournal:
             if info := parseJSON[SearchJournalInfo](mv.ExtraData); info != nil {
                 <span class="micro">
                     <a href={templ.URL(info.FolderURL)}>{info.FolderName}</a>

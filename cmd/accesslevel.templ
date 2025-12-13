@@ -1,29 +1,31 @@
 package main
 
+import "github.com/fugleadvokatene/bino/internal/enums"
+
 templ AccessLevelPage(data *CommonData) {
     @Layout(data) {
         <div class="card p-2">
             <p>{data.Language.CapabilitiesYourAccessLevelIs} <strong>{int(data.User.AccessLevel)} - {data.Language.AccessLevels[data.User.AccessLevel]}</strong></p>
             <p>{data.Language.CapabilitiesExplanation}</p>
-            <h3>{data.Language.AccessLevels[AccessLevelNone]}</h3>
+            <h3>{data.Language.AccessLevels[enums.AccessLevelNone]}</h3>
             <ul>
                 for _, cap := range AccessLevelToCapabilities.None {
                     <li>{data.Language.Capabilities[cap]}</li>
                 }
             </ul>
-            <h3>{data.Language.AccessLevels[AccessLevelRehabber]}</h3>
+            <h3>{data.Language.AccessLevels[enums.AccessLevelRehabber]}</h3>
             <ul>
                 for _, cap := range AccessLevelToCapabilities.Rehabber {
                     <li>{data.Language.Capabilities[cap]}</li>
                 }
             </ul>
-            <h3>{data.Language.AccessLevels[AccessLevelCoordinator]}</h3>
+            <h3>{data.Language.AccessLevels[enums.AccessLevelCoordinator]}</h3>
             <ul>
                 for _, cap := range AccessLevelToCapabilities.Coordinator {
                     <li>{data.Language.Capabilities[cap]}</li>
                 }
             </ul>
-            <h3>{data.Language.AccessLevels[AccessLevelAdmin]}</h3>
+            <h3>{data.Language.AccessLevels[enums.AccessLevelAdmin]}</h3>
             <ul>
                 for _, cap := range AccessLevelToCapabilities.Admin {
                     <li>{data.Language.Capabilities[cap]}</li>

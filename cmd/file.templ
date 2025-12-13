@@ -2,9 +2,10 @@ package main
 
 import (
     "fmt"
+	"github.com/fugleadvokatene/bino/internal/view"
 )
 
-templ FileUploadPage(data *CommonData, files []FileView) {
+templ FileUploadPage(data *CommonData, files []view.File) {
     <!doctype html>
     <html lang="en">
     <head>
@@ -20,7 +21,7 @@ templ FileUploadPage(data *CommonData, files []FileView) {
                 <h1>{data.Language.FilesThatYouHaveUploaded}</h1>
                 <div class="file-list">
                     for _, file := range files {
-                        @file.Component(data)
+                        @FileViewComponent(data, &file)
                     }
                 </div>
             </div>
@@ -51,7 +52,7 @@ templ FileUploader(data *CommonData, url string) {
     </form>
 }
 
-templ (file *FileView) Component(data *CommonData) {
+templ FileViewComponent(data *CommonData, file *view.File) {
     <div class="card file-container mb-2">
         <div class="card-header d-flex justify-content-between">
             <div>

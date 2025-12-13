@@ -13,6 +13,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/fugleadvokatene/bino/internal/enums"
+	"github.com/fugleadvokatene/bino/internal/view"
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
@@ -37,7 +39,7 @@ func (server *Server) wikiMain(w http.ResponseWriter, r *http.Request) {
 	_ = WikiPageTempl(
 		data,
 		mainPage.ToWikiPageView(),
-		SliceToSlice(pages, func(in WikiPage) WikiLinkView {
+		SliceToSlice(pages, func(in WikiPage) view.WikiLink {
 			return in.ToWikiLinkView()
 		}),
 	).Render(ctx, w)
@@ -70,7 +72,7 @@ func (server *Server) wikiPage(w http.ResponseWriter, r *http.Request) {
 	_ = WikiPageTempl(
 		data,
 		page.ToWikiPageView(),
-		SliceToSlice(pages, func(in WikiPage) WikiLinkView {
+		SliceToSlice(pages, func(in WikiPage) view.WikiLink {
 			return in.ToWikiLinkView()
 		}),
 	).Render(ctx, w)
@@ -201,7 +203,7 @@ func (server *Server) wikiUploadImage(w http.ResponseWriter, r *http.Request) {
 	}
 	defer file.Close()
 
-	uploadResult := server.FileBackend.Upload(ctx, file, FileInfo{
+	uploadResult := server.FileBackend.Upload(ctx, file, view.FileInfo{
 		FileName: header.Filename,
 		MIMEType: header.Header.Get("Content-Type"),
 		Size:     header.Size,
@@ -226,7 +228,7 @@ func (server *Server) wikiUploadImage(w http.ResponseWriter, r *http.Request) {
 		Uuid:          uploadResult.UniqueID,
 		Creator:       MustLoadCommonData(ctx).User.AppuserID,
 		Created:       pgtype.Timestamptz{Time: time.Now(), Valid: true},
-		Accessibility: int32(FileAccessibilityInternal),
+		Accessibility: int32(enums.FileAccessibilityInternal),
 		Filename:      fileInfo.FileName,
 		Mimetype:      fileInfo.MIMEType,
 		Size:          fileInfo.Size,
@@ -237,7 +239,7 @@ func (server *Server) wikiUploadImage(w http.ResponseWriter, r *http.Request) {
 		return
 	} else {
 		resp.Success = 1
-		resp.File.URL = FileURL(fileID, fileInfo.FileName)
+		resp.File.URL = view.FileURL(fileID, fileInfo.FileName)
 	}
 
 	if err := server.Queries.AssociateFileWithWikiPage(ctx, AssociateFileWithWikiPageParams{
@@ -284,7 +286,7 @@ func (server *Server) wikiFetchImage(w http.ResponseWriter, r *http.Request) {
 	if fileID, err = server.parseFileURLFromSameSite(r, req.URL); err == nil {
 		if file, err := server.Queries.GetFileByID(ctx, fileID); err == nil {
 			resp.Success = 1
-			resp.File.URL = FileURL(fileID, file.PresentationFilename)
+			resp.File.URL = view.FileURL(fileID, file.PresentationFilename)
 		} else {
 			logError(r, fmt.Errorf("no such file ID '%d': %w", fileID, err))
 		}
@@ -310,7 +312,7 @@ func (server *Server) wikiFetchImage(w http.ResponseWriter, r *http.Request) {
 			Uuid:          uploadResult.UniqueID,
 			Creator:       MustLoadCommonData(ctx).User.AppuserID,
 			Created:       pgtype.Timestamptz{Time: time.Now(), Valid: true},
-			Accessibility: int32(FileAccessibilityInternal),
+			Accessibility: int32(enums.FileAccessibilityInternal),
 			Filename:      fileInfo.FileName,
 			Mimetype:      fileInfo.MIMEType,
 			Size:          fileInfo.Size,
@@ -321,7 +323,7 @@ func (server *Server) wikiFetchImage(w http.ResponseWriter, r *http.Request) {
 			return
 		} else {
 			resp.Success = 1
-			resp.File.URL = FileURL(fileID, fileInfo.FileName)
+			resp.File.URL = view.FileURL(fileID, fileInfo.FileName)
 		}
 	}
 
@@ -399,7 +401,7 @@ func (server *Server) uploadImageFromURL(ctx context.Context, url string) Upload
 		name = "file"
 	}
 
-	info := FileInfo{
+	info := view.FileInfo{
 		FileName: name,
 		MIMEType: ct,
 		Size:     int64(len(imgBin)),

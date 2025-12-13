@@ -1,6 +1,8 @@
 package main
 
-templ WikiPageTempl(data *CommonData, page WikiPageView, links []WikiLinkView) {
+import "github.com/fugleadvokatene/bino/internal/view"
+
+templ WikiPageTempl(data *CommonData, page view.WikiPage, links []view.WikiLink) {
     <!doctype html>
     <html lang="en">
     <head>

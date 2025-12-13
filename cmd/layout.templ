@@ -1,5 +1,10 @@
 package main
 
+import (
+    "github.com/fugleadvokatene/bino/internal/enums"
+    "github.com/fugleadvokatene/bino/internal/language"
+)
+
 templ FullLayout(data *CommonData) {
     <!doctype html>
     <html lang="en">
@@ -112,8 +117,8 @@ templ LanguageSelect(data *CommonData) {
     <div class="b-navbar-item">
         <form class="d-flex" action="/language" method="post">
             <select id="language-select" class="form-select" aria-label="Select language" name="language">
-                for _, language := range LanguageIDValues() {
-                    <option value={language} selected?={language == data.Language.ID}>{Languages[int32(language)].Emoji}</option>
+                for _, lang := range enums.LanguageIDValues() {
+                    <option value={lang} selected?={lang == data.Language.ID}>{language.Languages[int32(lang)].Emoji}</option>
                 }
             </select>
         </form>

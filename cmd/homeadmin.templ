@@ -1,6 +1,8 @@
 package main
 
-templ HomesPage(data *CommonData, homes []HomeViewAdmin, homeless []UserView) {
+import "github.com/fugleadvokatene/bino/internal/view"
+
+templ HomesPage(data *CommonData, homes []HomeViewAdmin, homeless []view.User) {
     @Layout(data) {
 
         // Create home-form
@@ -22,7 +24,7 @@ templ HomesPage(data *CommonData, homes []HomeViewAdmin, homeless []UserView) {
             <h2>{data.Language.HomesUnassignedUsers}</h2>
             @Card() {
                 for _, user := range homeless {
-                    @user.Component(data) {
+                    @UserComponent(data, &user) {
                         <form class="form-inline" action="/homes" method="POST">
                             <label>{data.Language.HomesAddToHome}</label>
                             <select class="form-control-color r-2 select-user" name="home-id">
@@ -46,7 +48,7 @@ templ HomesPage(data *CommonData, homes []HomeViewAdmin, homeless []UserView) {
                     <h2 class="editable" data-action={home.SetNameURL()}>{home.Name}</h2>
                     for _, user := range home.Users {
                         @Card() {
-                            @user.Component(data) {
+                            @UserComponent(data, &user) {
                                 // Move user to different home
                                 <form class="form-inline" action="/homes" method="POST">
                                     <label>{data.Language.GenericMoveTo}</label>
@@ -103,7 +105,7 @@ templ HomesPage(data *CommonData, homes []HomeViewAdmin, homeless []UserView) {
     @JSModule(data, "dashboard")
 }
 
-templ (u *UserView) Component(data *CommonData) {
+templ UserComponent(data *CommonData, u *view.User) {
     <table class="table tbl">
         <thead>
             <tr>

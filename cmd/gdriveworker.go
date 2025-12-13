@@ -8,6 +8,8 @@ import (
 	"sync"
 	"time"
 
+	"github.com/fugleadvokatene/bino/internal/enums"
+	"github.com/fugleadvokatene/bino/internal/gdrive"
 	"google.golang.org/api/drive/v3"
 )
 
@@ -29,7 +31,7 @@ type GDriveWorker struct {
 
 type GDriveTaskRequest struct {
 	Response chan GDriveTaskResponse
-	Type     GDriveTaskRequestID
+	Type     enums.GDriveTaskRequestID
 	Payload  any
 }
 
@@ -45,7 +47,7 @@ func newGDriveTaskRequest() GDriveTaskRequest {
 
 func newGDriveTaskRequestGetFile(id string) GDriveTaskRequest {
 	req := newGDriveTaskRequest()
-	req.Type = GDriveTaskRequestIDGetFile
+	req.Type = enums.GDriveTaskRequestIDGetFile
 	req.Payload = id
 	return req
 }
@@ -58,7 +60,7 @@ type payloadInviteUser struct {
 
 func newGDriveTaskRequestInviteUser(id, email, role string) GDriveTaskRequest {
 	req := newGDriveTaskRequest()
-	req.Type = GDriveTaskRequestIDInviteUser
+	req.Type = enums.GDriveTaskRequestIDInviteUser
 	req.Payload = payloadInviteUser{
 		ID:    id,
 		Email: email,
@@ -74,7 +76,7 @@ type payloadUpdateDocument struct {
 
 func newGDriveTaskRequestUpdateJournal(id string, updates []GDriveJournalUpdate) GDriveTaskRequest {
 	req := newGDriveTaskRequest()
-	req.Type = GDriveTaskRequestIDUpdateJournal
+	req.Type = enums.GDriveTaskRequestIDUpdateJournal
 	req.Payload = payloadUpdateDocument{
 		ID:      id,
 		Updates: updates,
@@ -90,21 +92,21 @@ type ListFilesParams struct {
 }
 
 type ListFilesResult struct {
-	Folder        GDriveItem
-	Files         []GDriveItem
+	Folder        gdrive.Item
+	Files         []gdrive.Item
 	NextPageToken string
 }
 
 func newGDriveTaskRequestListFiles(params ListFilesParams) GDriveTaskRequest {
 	req := newGDriveTaskRequest()
-	req.Type = GDriveTaskRequestIDListFiles
+	req.Type = enums.GDriveTaskRequestIDListFiles
 	req.Payload = params
 	return req
 }
 
 func newGDriveTaskRequestCreateJournal(vars GDriveTemplateVars) GDriveTaskRequest {
 	req := newGDriveTaskRequest()
-	req.Type = GDriveTaskRequestIDCreateJournal
+	req.Type = enums.GDriveTaskRequestIDCreateJournal
 	req.Payload = vars
 	return req
 }
@@ -156,16 +158,16 @@ func (resp GDriveTaskResponse) decodeError() error {
 	return nil
 }
 
-func (resp GDriveTaskResponse) decodeGetFile() (GDriveItem, error) {
+func (resp GDriveTaskResponse) decodeGetFile() (gdrive.Item, error) {
 	if err := resp.decodeError(); err != nil {
-		return GDriveItem{}, err
+		return gdrive.Item{}, err
 	}
-	if resp.Type != GDriveTaskRequestIDGetFile {
-		return GDriveItem{}, fmt.Errorf("decodeGetFile called on response of type %s", resp.Type.String())
+	if resp.Type != enums.GDriveTaskRequestIDGetFile {
+		return gdrive.Item{}, fmt.Errorf("decodeGetFile called on response of type %s", resp.Type.String())
 	}
-	item, ok := resp.Payload.(GDriveItem)
+	item, ok := resp.Payload.(gdrive.Item)
 	if !ok {
-		return GDriveItem{}, fmt.Errorf("decodeGetFile called with bad payload type %T", resp.Payload)
+		return gdrive.Item{}, fmt.Errorf("decodeGetFile called with bad payload type %T", resp.Payload)
 	}
 	return item, nil
 }
@@ -174,7 +176,7 @@ func (resp GDriveTaskResponse) decodeInviteUser() error {
 	if err := resp.decodeError(); err != nil {
 		return err
 	}
-	if resp.Type != GDriveTaskRequestIDInviteUser {
+	if resp.Type != enums.GDriveTaskRequestIDInviteUser {
 		return fmt.Errorf("decodeInviteUser called on response of type %s", resp.Type.String())
 	}
 	return nil
@@ -184,22 +186,22 @@ func (resp GDriveTaskResponse) decodeAppendUpdates() error {
 	if err := resp.decodeError(); err != nil {
 		return err
 	}
-	if resp.Type != GDriveTaskRequestIDUpdateJournal {
+	if resp.Type != enums.GDriveTaskRequestIDUpdateJournal {
 		return fmt.Errorf("decodeAppendUpdates called on response of type %s", resp.Type.String())
 	}
 	return nil
 }
 
-func (resp GDriveTaskResponse) decodeCreateJournal() (GDriveItem, error) {
+func (resp GDriveTaskResponse) decodeCreateJournal() (gdrive.Item, error) {
 	if err := resp.decodeError(); err != nil {
-		return GDriveItem{}, err
+		return gdrive.Item{}, err
 	}
-	if resp.Type != GDriveTaskRequestIDCreateJournal {
-		return GDriveItem{}, fmt.Errorf("decodeCreateJournal called on response of type %s", resp.Type.String())
+	if resp.Type != enums.GDriveTaskRequestIDCreateJournal {
+		return gdrive.Item{}, fmt.Errorf("decodeCreateJournal called on response of type %s", resp.Type.String())
 	}
-	item, ok := resp.Payload.(GDriveItem)
+	item, ok := resp.Payload.(gdrive.Item)
 	if !ok {
-		return GDriveItem{}, fmt.Errorf("decodeCreateJournal called with bad payload type %T", resp.Payload)
+		return gdrive.Item{}, fmt.Errorf("decodeCreateJournal called with bad payload type %T", resp.Payload)
 	}
 	return item, nil
 }
@@ -208,7 +210,7 @@ func (resp GDriveTaskResponse) decodeListFiles() (ListFilesResult, error) {
 	if err := resp.decodeError(); err != nil {
 		return ListFilesResult{}, err
 	}
-	if resp.Type != GDriveTaskRequestIDListFiles {
+	if resp.Type != enums.GDriveTaskRequestIDListFiles {
 		return ListFilesResult{}, fmt.Errorf("decodeListFiles called on response of type %s", resp.Type.String())
 	}
 	result, ok := resp.Payload.(ListFilesResult)
@@ -219,7 +221,7 @@ func (resp GDriveTaskResponse) decodeListFiles() (ListFilesResult, error) {
 }
 
 type GDriveTaskResponse struct {
-	Type    GDriveTaskRequestID
+	Type    enums.GDriveTaskRequestID
 	Error   error
 	Payload any
 }
@@ -252,9 +254,9 @@ func NewGDriveWorker(ctx context.Context, cfg GDriveConfig, g *GDrive) *GDriveWo
 }
 
 type GDriveConfigInfo struct {
-	JournalFolder GDriveItem
+	JournalFolder gdrive.Item
 	TemplateDoc   GDriveJournal
-	ExtraFolders  []GDriveItem
+	ExtraFolders  []gdrive.Item
 }
 
 func (w *GDriveWorker) GetGDriveConfigInfo() GDriveConfigInfo {
@@ -300,7 +302,7 @@ func (w *GDriveWorker) Exec(req GDriveTaskRequest) GDriveTaskResponse {
 	return <-req.Response
 }
 
-func (w *GDriveWorker) GetFile(id string) (GDriveItem, error) {
+func (w *GDriveWorker) GetFile(id string) (gdrive.Item, error) {
 	return w.Exec(newGDriveTaskRequestGetFile(id)).decodeGetFile()
 }
 
@@ -308,7 +310,7 @@ func (w *GDriveWorker) InviteUser(id, email, role string) error {
 	return w.Exec(newGDriveTaskRequestInviteUser(id, email, role)).decodeInviteUser()
 }
 
-func (w *GDriveWorker) CreateJournal(vars GDriveTemplateVars) (GDriveItem, error) {
+func (w *GDriveWorker) CreateJournal(vars GDriveTemplateVars) (gdrive.Item, error) {
 	return w.Exec(newGDriveTaskRequestCreateJournal(vars)).decodeCreateJournal()
 }
 
@@ -338,15 +340,15 @@ func (w *GDriveWorker) handleRequest(req GDriveTaskRequest) (resp GDriveTaskResp
 	}()
 
 	switch req.Type {
-	case GDriveTaskRequestIDGetFile:
+	case enums.GDriveTaskRequestIDGetFile:
 		return w.handleRequestGetFile(req)
-	case GDriveTaskRequestIDInviteUser:
+	case enums.GDriveTaskRequestIDInviteUser:
 		return w.handleRequestInviteUser(req)
-	case GDriveTaskRequestIDCreateJournal:
+	case enums.GDriveTaskRequestIDCreateJournal:
 		return w.handleRequestCreateJournal(req)
-	case GDriveTaskRequestIDListFiles:
+	case enums.GDriveTaskRequestIDListFiles:
 		return w.handleRequestListFiles(req)
-	case GDriveTaskRequestIDUpdateJournal:
+	case enums.GDriveTaskRequestIDUpdateJournal:
 		return w.handleRequestUpdateJournal(req)
 	}
 	return w.errorResponse(req, fmt.Errorf("unknown request type"))
@@ -464,10 +466,10 @@ func (w *GDriveWorker) handleRequestListFiles(req GDriveTaskRequest) GDriveTaskR
 	}
 
 	return GDriveTaskResponse{
-		Type: GDriveTaskRequestIDListFiles,
+		Type: enums.GDriveTaskRequestIDListFiles,
 		Payload: ListFilesResult{
 			Folder: folderItem,
-			Files: SliceToSlice(fileList.Files, func(in *drive.File) GDriveItem {
+			Files: SliceToSlice(fileList.Files, func(in *drive.File) gdrive.Item {
 				return GDriveItemFromFile(in, nil)
 			}),
 			NextPageToken: fileList.NextPageToken,

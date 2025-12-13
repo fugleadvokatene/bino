@@ -8,6 +8,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/fugleadvokatene/bino/internal/enums"
+	"github.com/fugleadvokatene/bino/internal/view"
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
@@ -18,7 +20,7 @@ const (
 type SearchQuery struct {
 	Mode           string
 	Query          string
-	TimePreference TimePreference
+	TimePreference enums.TimePreference
 	Page           int32
 	MinCreated     int64
 	MaxCreated     int64
@@ -67,11 +69,11 @@ func NewBasicSearchParams(q SearchQuery) SearchBasicParams {
 func NewSearchAdvancedParams(q SearchQuery) SearchAdvancedParams {
 	wRecency := float32(0.0)
 	switch q.TimePreference {
-	case TimePreferenceNewer:
+	case enums.TimePreferenceNewer:
 		wRecency = 3.0
-	case TimePreferenceOlder:
+	case enums.TimePreferenceOlder:
 		wRecency = -3.0
-	case TimePreferenceNone:
+	case enums.TimePreferenceNone:
 		wRecency = 0.0
 	}
 
@@ -98,7 +100,7 @@ func NewSearchAdvancedParams(q SearchQuery) SearchAdvancedParams {
 
 type SearchResult struct {
 	Query        SearchQuery
-	PageMatches  []MatchView
+	PageMatches  []view.Match
 	Offset       int32
 	TotalMatches int32
 	Milliseconds int
@@ -145,7 +147,7 @@ func (server *Server) doSearch(r *http.Request) (SearchResult, error) {
 	if t, err := time.Parse(formValues["updated-to"], time.DateOnly); err == nil {
 		maxUpdated = t.Unix()
 	}
-	timePref, _ := ParseTimePreference(strings.TrimSpace(formValues["time-preference"]))
+	timePref, _ := enums.ParseTimePreference(strings.TrimSpace(formValues["time-preference"]))
 	query := SearchQuery{
 		Query:          q,
 		Mode:           mode,
@@ -158,7 +160,7 @@ func (server *Server) doSearch(r *http.Request) (SearchResult, error) {
 		DebugRank:      formValues["debug-rank"] != "",
 	}
 
-	var matches []MatchView
+	var matches []view.Match
 	var totalMatches int32
 	var offset int32
 	t0 := time.Now()
@@ -168,7 +170,7 @@ func (server *Server) doSearch(r *http.Request) (SearchResult, error) {
 		if err != nil {
 			return SearchResult{Query: query}, err
 		}
-		matches = SliceToSlice(rows, func(in SearchAdvancedRow) MatchView {
+		matches = SliceToSlice(rows, func(in SearchAdvancedRow) view.Match {
 			return in.ToMatchView(q)
 		})
 		if searchParams.Offset > 0 || len(matches) >= int(searchParams.Limit) {
@@ -191,7 +193,7 @@ func (server *Server) doSearch(r *http.Request) (SearchResult, error) {
 		if err != nil {
 			return SearchResult{Query: query}, err
 		}
-		matches = SliceToSlice(rows, func(in SearchBasicRow) MatchView {
+		matches = SliceToSlice(rows, func(in SearchBasicRow) view.Match {
 			return in.ToMatchView()
 		})
 		if searchParams.Offset > 0 || len(matches) >= int(searchParams.Limit) {

@@ -1,15 +1,17 @@
 package main
 
+import "github.com/fugleadvokatene/bino/internal/enums"
+
 templ AdminRootPage(data *CommonData) {
 	@Layout(data) {
         <h1>{data.Language.AdminRoot}</h1>
         // TODO: make these check for capabilities instead
         <li class="card mb-1"><div class="card-header"><a href="/file">{data.Language.FilesUploadHeader}</a></div></li>
-        if data.User.AccessLevel >= AccessLevelCoordinator {
+        if data.User.AccessLevel >= enums.AccessLevelCoordinator {
             <li class="card mb-1"><div class="card-header"><a href="/species">{data.Language.AdminManageSpecies}</a></div></li>
             <li class="card mb-1"><div class="card-header"><a href="/import">{data.Language.ImportHeader}</a></div></li>
         }
-        if data.User.AccessLevel >= AccessLevelAdmin {
+        if data.User.AccessLevel >= enums.AccessLevelAdmin {
             <li class="card mb-1"><div class="card-header"><a href="/homes">{data.Language.AdminManageHomes}</a></div></li>
             <li class="card mb-1"><div class="card-header"><a href="/users">{data.Language.AdminManageUsers}</a></div></li>
             <li class="card mb-1"><div class="card-header"><a href="/gdrive">{data.Language.AdminManageGoogleDrive}</a></div></li>

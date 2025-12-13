@@ -2,6 +2,8 @@ package main
 
 import (
 	"net/http"
+
+	"github.com/fugleadvokatene/bino/internal/view"
 )
 
 func (server *Server) getUserHandler(w http.ResponseWriter, r *http.Request) {
@@ -28,7 +30,7 @@ func (server *Server) getUserHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	userView := user.ToUserView()
-	userView.Homes = SliceToSlice(homes, func(h Home) HomeView { return h.ToHomeView() })
+	userView.Homes = SliceToSlice(homes, func(h Home) view.Home { return h.ToHomeView() })
 
 	UserPage(ctx, commonData, userView).Render(r.Context(), w)
 }

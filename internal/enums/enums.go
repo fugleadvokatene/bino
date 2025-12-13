@@ -1,5 +1,7 @@
 //go:generate go tool go-enum --no-iota --values
-package main
+package enums
+
+import "strings"
 
 // All enums defined in one file since go-enum gets kinda slow
 // when scanning many files.
@@ -80,6 +82,10 @@ type Event int32
 // )
 type FB int32
 
+func (fbt FB) CSSClass() string {
+	return "feedback-" + strings.ToLower(fbt.String())
+}
+
 // ENUM(
 // Personal=0,
 // Internal=1,
@@ -111,6 +117,20 @@ type LanguageID int32
 // patient,
 // )
 type MatchType string
+
+// ENUM(
+//
+//	Unknown                        = 0,
+//	Admitted                       = 2,
+//	Released                       = 3,
+//	Dead                           = 4,
+//	Euthanized                     = 5,
+//	TransferredOutsideOrganization = 6,
+//	Adopted                        = 7,
+//	Deleted                        = 8,
+//
+// )
+type Status int32
 
 // ENUM(
 //

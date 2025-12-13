@@ -1,6 +1,11 @@
 package main
 
-templ UserAdmin(data *CommonData, homes []HomeView, users []UserView, invitations []InvitationView) {
+import (
+    "github.com/fugleadvokatene/bino/internal/enums"
+    "github.com/fugleadvokatene/bino/internal/view"
+)
+
+templ UserAdmin(data *CommonData, homes []view.Home, users []view.User, invitations []view.Invitation) {
 	@Layout(data) {
         <h1>{data.Language.AdminManageUsers}</h1>
         @Card() {
@@ -22,7 +27,7 @@ templ UserAdmin(data *CommonData, homes []HomeView, users []UserView, invitation
                                         <select class="form-control form-select" id="home" name="home" placeholder={data.Language.DashboardSelectHome}>
                                             <option value="0">{data.Language.GenericNone}</option>
                                             for _, home := range homes {
-                                                <option value={home.Home.ID}>{home.Home.Name}</option>
+                                                <option value={home.ID}>{home.Name}</option>
                                             }
                                         </select>
                                     </div>
@@ -32,9 +37,9 @@ templ UserAdmin(data *CommonData, homes []HomeView, users []UserView, invitation
                                         </a>
                                     </label>
                                     <div class="input-group">
-                                        <select class="form-control form-select" id="access-level" name="access-level" placeholder={AccessLevelRehabber}>
-                                            for _, al := range AccessLevelValues() {
-                                                <option value={al} selected?={al == AccessLevelRehabber}>{data.Language.AccessLevels[al]}</option>
+                                        <select class="form-control form-select" id="access-level" name="access-level" placeholder={enums.AccessLevelRehabber}>
+                                            for _, al := range enums.AccessLevelValues() {
+                                                <option value={al} selected?={al == enums.AccessLevelRehabber}>{data.Language.AccessLevels[al]}</option>
                                             }
                                         </select>
                                     </div>
@@ -66,7 +71,7 @@ templ UserAdmin(data *CommonData, homes []HomeView, users []UserView, invitation
                                     <td>{int(inv.AccessLevel)} - {data.Language.AccessLevels[inv.AccessLevel]}</td>
                                     <td>
                                         if inv.HomeID != 0 {
-                                            <a href={HomeURL(inv.HomeID)}>{inv.HomeName}</a>
+                                            <a href={view.HomeURL(inv.HomeID)}>{inv.HomeName}</a>
                                         } else {
                                             {data.Language.GenericNone}
                                         }
@@ -99,14 +104,14 @@ templ UserAdmin(data *CommonData, homes []HomeView, users []UserView, invitation
                                 <td>{u.Email}</td>
                                 <td>{int(u.AccessLevel)} - {data.Language.AccessLevels[u.AccessLevel]}</td>
                                 <td>
-                                    if u.ID != data.User.AppuserID && u.AccessLevel < AccessLevelAdmin{
+                                    if u.ID != data.User.AppuserID && u.AccessLevel < enums.AccessLevelAdmin{
                                         <a class="btn btn-danger" href={templ.URL(u.URLSuffix("confirm-scrub"))}>
                                             {data.Language.AdminScrubUserData}
                                         </a>
                                     }
                                 </td>
                                 <td>
-                                    if u.ID != data.User.AppuserID && u.AccessLevel < AccessLevelAdmin {
+                                    if u.ID != data.User.AppuserID && u.AccessLevel < enums.AccessLevelAdmin {
                                         <a class="btn btn-danger"href={templ.URL(u.URLSuffix("confirm-nuke"))}>
                                             {data.Language.AdminNukeUser}
                                         </a>
@@ -121,7 +126,7 @@ templ UserAdmin(data *CommonData, homes []HomeView, users []UserView, invitation
     }
 }
 
-templ UserConfirmScrubOrNuke(data *CommonData, user UserView, header, confirmMsg, dest, referer string) {
+templ UserConfirmScrubOrNuke(data *CommonData, user view.User, header, confirmMsg, dest, referer string) {
     @Layout(data) {
         <a href={templ.URL(referer)}>{data.Language.GenericGoBack}</a>
         <h1>{header}</h1>

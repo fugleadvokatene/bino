@@ -2,6 +2,7 @@ package main
 
 import (
     "fmt"
+	"github.com/fugleadvokatene/bino/internal/enums"
 )
 
 // NOTE: must not assume data.User exists
@@ -9,7 +10,7 @@ templ Privacy(data *CommonData, config PrivacyConfig) {
     @Layout(data) {
         <h1>{data.Language.FooterPrivacy}</h1>
         @Card() {
-            if data.Language.ID == LanguageIDEN {
+            if data.Language.ID == enums.LanguageIDEN {
                 <h2>1. About Bino</h2>
                 <p>
                     Bino was developed for idealistic reasons, and has no incentive to store, process or share any informasjon except exactly what is required for the website to function.
@@ -126,13 +127,13 @@ templ Privacy(data *CommonData, config PrivacyConfig) {
 
 templ TOS(data *CommonData) {
     @Layout(data) {
-        if data.Language.ID == LanguageIDEN {
+        if data.Language.ID == enums.LanguageIDEN {
             <h1>Terms of Service</h1>
         } else {
             <h1>Bruksvilkår</h1>
         }
         @Card() {
-            if data.Language.ID == LanguageIDEN {
+            if data.Language.ID == enums.LanguageIDEN {
                 <p>By logging into Bino, you agree to these terms of service:</p>
                 <p>1. The website is run according to Norwegian national law.</p>
                 <p>2. Your information is handled according to the <a href="/privacy">privacy policy</a>.</p>

@@ -2,9 +2,12 @@ package main
 
 import (
     "context"
+
+	"github.com/fugleadvokatene/bino/internal/view"
+	"github.com/fugleadvokatene/bino/internal/enums"
 )
 
-templ PatientPage(ctx context.Context, data *CommonData, view PatientPageView, server *Server) {
+templ PatientPage(ctx context.Context, data *CommonData, view view.PatientPage, server *Server) {
 	@Layout(data, "patient-page") {
         <h1 class="editable" data-action={view.Patient.URLSuffix("set-name")}>{view.Patient.Name}</h1>
         @Card() {
@@ -17,7 +20,7 @@ templ PatientPage(ctx context.Context, data *CommonData, view PatientPageView, s
                 </tr>
                 <tr>
                     <th>{data.Language.GenericStatus}</th>
-                    <td>{data.Language.Status[Status(view.Patient.Status)]}</td>
+                    <td>{data.Language.Status[enums.Status(view.Patient.Status)]}</td>
                 </tr>
                 <tr>
                     <th>{data.Language.GenericSpecies}</th>
@@ -26,7 +29,7 @@ templ PatientPage(ctx context.Context, data *CommonData, view PatientPageView, s
                 if view.Home != nil {
                     <tr>
                         <th>{data.Language.GenericHome}</th>
-                        <td>{view.Home.Home.Name}</td>
+                        <td>{view.Home.Name}</td>
                     </tr>
                 }
             </tbody>
@@ -37,7 +40,7 @@ templ PatientPage(ctx context.Context, data *CommonData, view PatientPageView, s
                 <tbody>
                     @PatientJournalUpdate(data, view.Patient, true)
 
-                    if !IsCheckoutStatus[Status(view.Patient.Status)] {
+                    if !enums.IsCheckoutStatus[enums.Status(view.Patient.Status)] {
                         @DashboardMove(data, view.Homes, view.Home, view.Patient)
                         @PatientCheckout(data, view.Patient)
                     }
@@ -60,11 +63,11 @@ templ PatientPage(ctx context.Context, data *CommonData, view PatientPageView, s
                         <td class="center">
                             @Avatar(event.User)
                         </td>
-                        <td>{data.Language.FormatEvent(ctx, event.Row.EventID, event.Row.AssociatedID, server)}</td>
-                        <td><a href={event.Home.URL()}>{event.Home.Home.Name}</a></td>
+                        <td>{data.Language.FormatEvent(ctx, event.EventID, event.AssociatedID)}</td>
+                        <td><a href={event.Home.URL()}>{event.Home.Name}</a></td>
                         <td>
                             <span class="editable editable-end" data-action={event.SetNoteURL()}>
-                                {event.Row.Note}
+                                {event.Note}
                             </span>
                         </td>
                     </tr>
@@ -75,7 +78,7 @@ templ PatientPage(ctx context.Context, data *CommonData, view PatientPageView, s
     }
 }
 
-templ PatientCheckout(data *CommonData, patient PatientView) {
+templ PatientCheckout(data *CommonData, patient view.Patient) {
     <tr>
         <th class="w-25">{data.Language.DashboardCheckOut}</th>
         <td>
@@ -90,7 +93,7 @@ templ PatientCheckout(data *CommonData, patient PatientView) {
                         <select autocomplete="off" class="form-control form-select form-select-sm" id={patient.CheckoutStatusID("")} name="status">
                             <option disabled selected>{data.Language.DashboardSelectCheckout}</option>
                             for statusID, status := range data.Language.Status {
-                                if IsCheckoutStatus[statusID] {
+                                if enums.IsCheckoutStatus[statusID] {
                                     <option value={int32(statusID)}>{status}</option>
                                 }
                             }
@@ -107,7 +110,7 @@ templ PatientCheckout(data *CommonData, patient PatientView) {
     </tr>
 }
 
-templ PatientJournalUpdate(data *CommonData, patient PatientView, unconditionallyShowAttachForm bool) {
+templ PatientJournalUpdate(data *CommonData, patient view.Patient, unconditionallyShowAttachForm bool) {
     <tr>
         <th class="w-25">{data.Language.GenericJournal}</th>
         <td>

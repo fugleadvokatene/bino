@@ -4,6 +4,8 @@ import (
     "time"
 
     "fmt"
+
+	"github.com/fugleadvokatene/bino/internal/language"
 )
 
 templ CalendarPage(data *CommonData, initialTime, initialView string) {
@@ -34,18 +36,18 @@ templ CalendarLink(formatter func(t time.Time) string, t time.Time, v string) {
     }
 }
 
-templ CalendarLinkAbs(lang *Language, t time.Time, v string) {
+templ CalendarLinkAbs(lang *language.Language, t time.Time, v string) {
     @CalendarLink(lang.FormatDateAbs, t, v)
 }
 
-templ CalendarLinkRel(lang *Language, t time.Time, v string) {
+templ CalendarLinkRel(lang *language.Language, t time.Time, v string) {
     @CalendarLink(lang.FormatTimeRel, t, v)
 }
 
-templ CalendarLinkRelWithAbsFallback(lang *Language, t time.Time, v string) {
+templ CalendarLinkRelWithAbsFallback(lang *language.Language, t time.Time, v string) {
     @CalendarLink(lang.FormatTimeRelWithAbsFallback, t, v)
 }
 
-templ CalendarLinkAbsWithRelParen(lang *Language, t time.Time, v string) {
+templ CalendarLinkAbsWithRelParen(lang *language.Language, t time.Time, v string) {
     @CalendarLink(lang.FormatTimeAbsWithRelParen, t, v)
 }

@@ -3,7 +3,7 @@
 
 // Built By: go install
 
-package main
+package enums
 
 import (
 	"errors"
@@ -687,6 +687,88 @@ func ParseMatchType(name string) (MatchType, error) {
 		return x, nil
 	}
 	return MatchType(""), fmt.Errorf("%s is %w", name, ErrInvalidMatchType)
+}
+
+const (
+	// StatusUnknown is a Status of type Unknown.
+	StatusUnknown Status = 0
+	// StatusAdmitted is a Status of type Admitted.
+	StatusAdmitted Status = 2
+	// StatusReleased is a Status of type Released.
+	StatusReleased Status = 3
+	// StatusDead is a Status of type Dead.
+	StatusDead Status = 4
+	// StatusEuthanized is a Status of type Euthanized.
+	StatusEuthanized Status = 5
+	// StatusTransferredOutsideOrganization is a Status of type TransferredOutsideOrganization.
+	StatusTransferredOutsideOrganization Status = 6
+	// StatusAdopted is a Status of type Adopted.
+	StatusAdopted Status = 7
+	// StatusDeleted is a Status of type Deleted.
+	StatusDeleted Status = 8
+)
+
+var ErrInvalidStatus = errors.New("not a valid Status")
+
+const _StatusName = "UnknownAdmittedReleasedDeadEuthanizedTransferredOutsideOrganizationAdoptedDeleted"
+
+// StatusValues returns a list of the values for Status
+func StatusValues() []Status {
+	return []Status{
+		StatusUnknown,
+		StatusAdmitted,
+		StatusReleased,
+		StatusDead,
+		StatusEuthanized,
+		StatusTransferredOutsideOrganization,
+		StatusAdopted,
+		StatusDeleted,
+	}
+}
+
+var _StatusMap = map[Status]string{
+	StatusUnknown:                        _StatusName[0:7],
+	StatusAdmitted:                       _StatusName[7:15],
+	StatusReleased:                       _StatusName[15:23],
+	StatusDead:                           _StatusName[23:27],
+	StatusEuthanized:                     _StatusName[27:37],
+	StatusTransferredOutsideOrganization: _StatusName[37:67],
+	StatusAdopted:                        _StatusName[67:74],
+	StatusDeleted:                        _StatusName[74:81],
+}
+
+// String implements the Stringer interface.
+func (x Status) String() string {
+	if str, ok := _StatusMap[x]; ok {
+		return str
+	}
+	return fmt.Sprintf("Status(%d)", x)
+}
+
+// IsValid provides a quick way to determine if the typed value is
+// part of the allowed enumerated values
+func (x Status) IsValid() bool {
+	_, ok := _StatusMap[x]
+	return ok
+}
+
+var _StatusValue = map[string]Status{
+	_StatusName[0:7]:   StatusUnknown,
+	_StatusName[7:15]:  StatusAdmitted,
+	_StatusName[15:23]: StatusReleased,
+	_StatusName[23:27]: StatusDead,
+	_StatusName[27:37]: StatusEuthanized,
+	_StatusName[37:67]: StatusTransferredOutsideOrganization,
+	_StatusName[67:74]: StatusAdopted,
+	_StatusName[74:81]: StatusDeleted,
+}
+
+// ParseStatus attempts to convert a string to a Status.
+func ParseStatus(name string) (Status, error) {
+	if x, ok := _StatusValue[name]; ok {
+		return x, nil
+	}
+	return Status(0), fmt.Errorf("%s is %w", name, ErrInvalidStatus)
 }
 
 const (

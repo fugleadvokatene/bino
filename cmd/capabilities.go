@@ -1,52 +1,56 @@
 package main
 
-import "slices"
+import (
+	"slices"
 
-var RequiredAccessLevel = map[Cap]AccessLevel{
-	CapViewAllActivePatients: AccessLevelNone,
-	CapViewAllFormerPatients: AccessLevelNone,
-	CapViewAllHomes:          AccessLevelNone,
-	CapViewAllUsers:          AccessLevelNone,
-	CapViewCalendar:          AccessLevelNone,
-	CapSearch:                AccessLevelNone,
-	CapSetOwnPreferences:     AccessLevelNone,
+	"github.com/fugleadvokatene/bino/internal/enums"
+)
 
-	CapCheckInPatient:       AccessLevelRehabber,
-	CapManageOwnPatients:    AccessLevelRehabber,
-	CapManageOwnHomes:       AccessLevelRehabber,
-	CapCreatePatientJournal: AccessLevelRehabber,
-	CapViewGDriveSettings:   AccessLevelRehabber,
-	CapManageAllPatients:    AccessLevelRehabber,
-	CapUploadFile:           AccessLevelRehabber,
+var RequiredAccessLevel = map[enums.Cap]enums.AccessLevel{
+	enums.CapViewAllActivePatients: enums.AccessLevelNone,
+	enums.CapViewAllFormerPatients: enums.AccessLevelNone,
+	enums.CapViewAllHomes:          enums.AccessLevelNone,
+	enums.CapViewAllUsers:          enums.AccessLevelNone,
+	enums.CapViewCalendar:          enums.AccessLevelNone,
+	enums.CapSearch:                enums.AccessLevelNone,
+	enums.CapSetOwnPreferences:     enums.AccessLevelNone,
 
-	CapViewAdminTools: AccessLevelCoordinator,
-	CapManageAllHomes: AccessLevelCoordinator,
-	CapManageSpecies:  AccessLevelCoordinator,
-	CapUseImportTool:  AccessLevelCoordinator,
-	CapEditWiki:       AccessLevelCoordinator,
+	enums.CapCheckInPatient:       enums.AccessLevelRehabber,
+	enums.CapManageOwnPatients:    enums.AccessLevelRehabber,
+	enums.CapManageOwnHomes:       enums.AccessLevelRehabber,
+	enums.CapCreatePatientJournal: enums.AccessLevelRehabber,
+	enums.CapViewGDriveSettings:   enums.AccessLevelRehabber,
+	enums.CapManageAllPatients:    enums.AccessLevelRehabber,
+	enums.CapUploadFile:           enums.AccessLevelRehabber,
 
-	CapManageUsers:    AccessLevelAdmin,
-	CapDeleteUsers:    AccessLevelAdmin,
-	CapInviteToGDrive: AccessLevelAdmin,
-	CapInviteToBino:   AccessLevelAdmin,
-	CapDebug:          AccessLevelAdmin,
+	enums.CapViewAdminTools: enums.AccessLevelCoordinator,
+	enums.CapManageAllHomes: enums.AccessLevelCoordinator,
+	enums.CapManageSpecies:  enums.AccessLevelCoordinator,
+	enums.CapUseImportTool:  enums.AccessLevelCoordinator,
+	enums.CapEditWiki:       enums.AccessLevelCoordinator,
+
+	enums.CapManageUsers:    enums.AccessLevelAdmin,
+	enums.CapDeleteUsers:    enums.AccessLevelAdmin,
+	enums.CapInviteToGDrive: enums.AccessLevelAdmin,
+	enums.CapInviteToBino:   enums.AccessLevelAdmin,
+	enums.CapDebug:          enums.AccessLevelAdmin,
 }
 
 var AccessLevelToCapabilities = func() (out struct {
-	None        []Cap
-	Rehabber    []Cap
-	Coordinator []Cap
-	Admin       []Cap
+	None        []enums.Cap
+	Rehabber    []enums.Cap
+	Coordinator []enums.Cap
+	Admin       []enums.Cap
 }) {
 	for cap, al := range RequiredAccessLevel {
 		switch al {
-		case AccessLevelNone:
+		case enums.AccessLevelNone:
 			out.None = append(out.None, cap)
-		case AccessLevelRehabber:
+		case enums.AccessLevelRehabber:
 			out.Rehabber = append(out.Rehabber, cap)
-		case AccessLevelCoordinator:
+		case enums.AccessLevelCoordinator:
 			out.Coordinator = append(out.Coordinator, cap)
-		case AccessLevelAdmin:
+		case enums.AccessLevelAdmin:
 			out.Admin = append(out.Admin, cap)
 		}
 	}
