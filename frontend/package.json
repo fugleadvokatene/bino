@@ -4,7 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "build": "node esbuild.config.js"
+    "build": "node esbuild.config.ts",
+    "format": "prettier . --write"
   },
   "type": "module",
   "keywords": [],
@@ -17,6 +18,8 @@
     "@editorjs/list": "^2.0.9",
     "@editorjs/simple-image": "^1.6.0",
     "@editorjs/table": "^2.4.5",
+    "@tiptap/core": "^3.13.0",
+    "@tiptap/starter-kit": "^3.13.0",
     "bootstrap": "^5.3.8",
     "filepond": "^4.32.10",
     "filepond-plugin-file-validate-size": "^2.2.8",
@@ -30,5 +33,10 @@
     "jquery": "^3.7.1",
     "lightbox2": "^2.11.5",
     "sortablejs": "^1.15.6"
+  },
+  "devDependencies": {
+    "@types/node": "^25.0.1",
+    "esbuild": "^0.27.1",
+    "prettier": "^3.7.4"
   }
 }

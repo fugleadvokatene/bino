@@ -5092,49 +5092,53 @@ var require_bootstrap_bundle = __commonJS({
   }
 });
 
-// common.js
+// common.ts
 var import_bootstrap = __toESM(require_bootstrap_bundle(), 1);
 
-// lang.js
+// lang.ts
 window.LN = JSON.parse(document.querySelector("body").dataset["lang"]);
 
-// editable.js
+// editable.ts
 var originals = /* @__PURE__ */ new WeakMap();
 document.addEventListener("click", (e) => {
-  const el = e.target.closest(".editable");
+  const target = e.target instanceof Element ? e.target : null;
+  const el = target?.closest(".editable");
   if (!el) return;
   const large = el.classList.contains("editable-lg");
-  const range = document.createRange();
-  range.selectNodeContents(el);
   const action = el.dataset.action;
-  const input = document.createElement(large ? "textarea" : "input");
+  if (!action) return;
+  const input = document.createElement(
+    large ? "textarea" : "input"
+  );
   input.name = "value";
-  input.value = el.textContent.trim();
-  if (!large) input.type = "text";
+  input.value = el.textContent?.trim() ?? "";
   input.classList.add("form-control");
   input.style.fontSize = getComputedStyle(el).fontSize;
   input.spellcheck = false;
-  input.autocomplete = false;
+  input.autocomplete = "off";
   input.autocorrect = false;
-  input.autocapitalize = false;
-  if (large) {
+  input.autocapitalize = "off";
+  if (input instanceof HTMLTextAreaElement) {
     input.rows = 5;
   } else {
+    input.type = "text";
     input.classList.add("w-75");
   }
   const submit = document.createElement("button");
   submit.type = "submit";
   submit.textContent = LN.GenericUpdate;
   submit.classList.add("btn", "btn-primary");
-  if (large) {
-    submit.classList.add("w-100");
-  }
+  if (large) submit.classList.add("w-100");
   const form = document.createElement("form");
   form.action = action;
   form.method = "POST";
   if (large) {
     const container = document.createElement("div");
-    container.classList.add("d-flex", "form-control-sm", "form-control-plaintext");
+    container.classList.add(
+      "d-flex",
+      "form-control-sm",
+      "form-control-plaintext"
+    );
     container.append(input);
     form.append(container, submit);
   } else {
@@ -5146,26 +5150,57 @@ document.addEventListener("click", (e) => {
   input.focus();
 });
 document.addEventListener("mousedown", (e) => {
-  const form = document.querySelector("form[action][style]");
+  const form = QuerySelector("form[action]");
   if (!form) return;
-  if (form.contains(e.target)) return;
+  if (e.target instanceof Node && form.contains(e.target)) return;
   const original = originals.get(form);
   if (!original) return;
   form.replaceWith(original);
 });
 document.addEventListener("submit", (e) => {
-  const form = e.target.closest("form[action]");
+  const target = e.target instanceof Element ? e.target : null;
+  const form = target?.closest("form[action]");
   if (!form) return;
   originals.delete(form);
 });
 
-// common.js
-document.getElementById("language-select").addEventListener("change", (event) => {
-  event.target.form.submit();
-});
-document.querySelectorAll(".closer").forEach((el) => el.addEventListener("click", function() {
-  this.parentElement.style.display = "none";
-}));
+// common.ts
+var QuerySelector = (sel, root = document) => root.querySelector(sel);
+var MustQuerySelector = (sel, root = document) => {
+  const v = QuerySelector(sel, root);
+  if (!v) {
+    throw new Error(`${sel} not found on ${root.nodeName}`);
+  }
+  return v;
+};
+var QuerySelectorAll = (sel, root = document) => Array.from(root.querySelectorAll(sel));
+var languageSelect = QuerySelector("#language-select");
+if (languageSelect) {
+  languageSelect.addEventListener("change", () => {
+    languageSelect.form?.submit();
+  });
+}
+QuerySelectorAll(".closer").forEach(
+  (el) => el.addEventListener("click", () => {
+    el.parentElement?.style.setProperty("display", "none");
+  })
+);
+var DataNumber = (el, key) => {
+  const v = Number(el.dataset[key]);
+  return Number.isNaN(v) ? null : v;
+};
+var MustDataNumber = (el, key) => {
+  const v = DataNumber(el, key);
+  if (v === null) throw new Error(`Invalid data-${key}`);
+  return v;
+};
+export {
+  DataNumber,
+  MustDataNumber,
+  MustQuerySelector,
+  QuerySelector,
+  QuerySelectorAll
+};
 /*! Bundled license information:
 
 bootstrap/dist/js/bootstrap.bundle.js:

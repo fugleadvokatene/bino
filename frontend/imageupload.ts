@@ -1,5 +1,4 @@
-
-import { MustQuerySelector } from './dom'
+import { MustQuerySelector } from './common'
 
 import 'filepond/dist/filepond.css'
 import 'filepond-plugin-image-preview/dist/filepond-plugin-image-preview.css'
@@ -34,15 +33,15 @@ FilePond.create(fileInput, {
   server: '/file/filepond',
   instantUpload: true,
   maxFileSize: '50MB',
-  onaddfilestart: _ => {
+  onaddfilestart: (_) => {
     fileSubmit.disabled = true
     fileSubmit.textContent = LN.FilesPleaseWait
   },
-  onprocessfiles: _ => {
+  onprocessfiles: () => {
     fileSubmit.disabled = false
     fileSubmit.textContent = LN.GenericSave
   }
-});
+})
 
 lightbox.option({
   alwaysShowNavOnTouchDevices: true,
@@ -51,4 +50,4 @@ lightbox.option({
   fitImagesInViewport: true,
   resizeDuration: 0,
   imageFadeDuration: 0
-});
+})

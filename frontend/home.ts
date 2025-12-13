@@ -1,7 +1,7 @@
 import Sortable from 'sortablejs'
-import { MustQuerySelector, QuerySelectorAll } from './dom'
+import { MustQuerySelector, QuerySelectorAll } from './common'
 
-const table = MustQuerySelector<HTMLElement>('#species-list');
+const table = MustQuerySelector<HTMLElement>('#species-list')
 
 const home = Number(table.dataset.home)
 if (Number.isNaN(home)) throw new Error('invalid home id')
@@ -9,7 +9,7 @@ if (Number.isNaN(home)) throw new Error('invalid home id')
 const reorder = async () => {
   const body = {
     ID: home,
-    Order: QuerySelectorAll<HTMLElement>('[data-id]', table).map(row =>
+    Order: QuerySelectorAll<HTMLElement>('[data-id]', table).map((row) =>
       Number(row.dataset.id)
     )
   }

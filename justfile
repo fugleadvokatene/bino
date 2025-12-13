@@ -12,10 +12,10 @@ enum:
 sass:
 	sass frontend/styles.scss cmd/static/gen.css -q
 
-vite:
-	cd frontend && npm run build
+frontend:
+	cd frontend && npm run format &&  npm run build
 
-gen: sqlc templ enum sass vite
+gen: sqlc templ enum sass frontend
 
 build: gen
 	go build -buildvcs -ldflags="-X 'main.BuildKey=$(tr -dc A-Za-z0-9 </dev/urandom | head -c 8)'" -o backend github.com/fugleadvokatene/bino/cmd

@@ -1,20 +1,21 @@
-import {rmSync} from 'fs';
-import { build } from 'esbuild';
+import { rmSync } from 'fs'
+import { build } from 'esbuild'
 
-rmSync('../cmd/static/bundle', { recursive: true, force: true });
+rmSync('../cmd/static/bundle', { recursive: true, force: true })
 
 build({
   entryPoints: [
-    'common.js',
-    'editor.js',
-    'editor2.js',
-    'search.js',
-    'speciesadmin.js',
-    'imageupload.ts',
-    'home.ts',
-    'reorder-patients.js',
-    'dashboard.js',
+    'common.ts',
+    'dashboard.ts',
+    'editable.ts',
+    'editor2.ts',
     'formerpatients.ts',
+    'home.ts',
+    'imageupload.ts',
+    'lang.ts',
+    'reorder-patients.ts',
+    'search.ts',
+    'speciesadmin.ts'
   ],
   outdir: '../cmd/static/bundle',
   bundle: true,
@@ -30,6 +31,6 @@ build({
     '.jpg': 'file',
     '.jpeg': 'file',
     '.svg': 'file',
-    '.css': 'css',
-  },
-});
+    '.css': 'css'
+  }
+})

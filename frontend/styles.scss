@@ -16,348 +16,363 @@ $mobilethreshold: 1000px;
 
 $dashboard-home-column: 350px;
 
-@use "node_modules/bootstrap/scss/bootstrap" with (
-    $enable-shadows: true,
-    $enable-rounded: false,
-    $primary: $primary,
-    $warning: $warning
+@use 'node_modules/bootstrap/scss/bootstrap' with (
+  $enable-shadows: true,
+  $enable-rounded: false,
+  $primary: $primary,
+  $warning: $warning
 );
 
 a {
-    color: $accent;
-    user-select: default !important;
-    touch-action: default !important;
-    cursor: pointer;
-    text-decoration: none;
+  color: $accent;
+  user-select: default !important;
+  touch-action: default !important;
+  cursor: pointer;
+  text-decoration: none;
 }
 
-a:hover{
-    text-decoration: underline;
+a:hover {
+  text-decoration: underline;
 }
 
 .dashboard-patient-card {
-    user-select: default !important;
-    touch-action: default !important;
-    cursor: pointer;
+  user-select: default !important;
+  touch-action: default !important;
+  cursor: pointer;
 }
 
 .pending-deletion {
   opacity: 0.5;
   background-color: mix($warning, $light, 75);
-  transition: opacity 0.3s, background-color 0.3s;
+  transition:
+    opacity 0.3s,
+    background-color 0.3s;
 }
 
-html, body {
-    height: 100%;
-    margin: 0;
+html,
+body {
+  height: 100%;
+  margin: 0;
 }
 
 :root {
-    --bs-body-font-family: 'Roboto', sans-serif;
-    font-optical-sizing: auto;
+  --bs-body-font-family: 'Roboto', sans-serif;
+  font-optical-sizing: auto;
 }
 
 body {
-    display: flex;
-    flex-direction: column;
-    background-color: $body;
-    color: $text;
+  display: flex;
+  flex-direction: column;
+  background-color: $body;
+  color: $text;
 }
 
 .nav-profile-picture {
-    height: 2.5em;
-    border-radius: 50%;
+  height: 2.5em;
+  border-radius: 50%;
 }
 
 .dashboard-head-profile {
-    height: 1.5em;
-    width: 1.5em;
-    background: $accent;
-    color: $light;
-    margin-left: 0.25em;
-    border-radius: 50%;
-    display: inline-flex;
-    justify-content: center;
-    align-content: center;
+  height: 1.5em;
+  width: 1.5em;
+  background: $accent;
+  color: $light;
+  margin-left: 0.25em;
+  border-radius: 50%;
+  display: inline-flex;
+  justify-content: center;
+  align-content: center;
 }
 
 .center {
-    text-align: center;
+  text-align: center;
 }
 
 .navbar-collapse.show {
-    @media (min-width: $mobilethreshold) {
-        display: flex;
-    }
-    @media (max-width: $mobilethreshold) {
-        display: grid !important;
-    }
+  @media (min-width: $mobilethreshold) {
+    display: flex;
+  }
+  @media (max-width: $mobilethreshold) {
+    display: grid !important;
+  }
 }
 
 #language-select {
-    width: 5em;
+  width: 5em;
 }
 
 .dashboard {
-    min-width: min(100%, $dashboard-home-column * 2);
-    @media (min-width: $mobilethreshold) {
-        display: flex;
-        user-select: none;
-        touch-action: none;
-        cursor: grab;
-        :active {
-            cursor: grabbing;
-        }
-        overflow: hidden;
-        margin-bottom: 1rem;
+  min-width: min(100%, $dashboard-home-column * 2);
+  @media (min-width: $mobilethreshold) {
+    display: flex;
+    user-select: none;
+    touch-action: none;
+    cursor: grab;
+    :active {
+      cursor: grabbing;
     }
-    @media (max-width: $mobilethreshold) {
-        display: block;
-    }
-    border: 1px solid $slightdark;
+    overflow: hidden;
+    margin-bottom: 1rem;
+  }
+  @media (max-width: $mobilethreshold) {
+    display: block;
+  }
+  border: 1px solid $slightdark;
 }
 
 .dashboard.dashboard-self {
-    min-width: min(100%, $dashboard-home-column);
-    @media (min-width: $mobilethreshold) {
-        margin-right: 0.5em;
-    }
-    @media (max-width: $mobilethreshold) {
-        margin-bottom: 0.5em;
-    }
+  min-width: min(100%, $dashboard-home-column);
+  @media (min-width: $mobilethreshold) {
+    margin-right: 0.5em;
+  }
+  @media (max-width: $mobilethreshold) {
+    margin-bottom: 0.5em;
+  }
 }
 
 .break-on-mobile {
-    display: none;
-    @media (min-width: $mobilethreshold) {
-        display: flex;
-    }
-    @media (max-width: $mobilethreshold) {
-        display: block;
-    }
+  display: none;
+  @media (min-width: $mobilethreshold) {
+    display: flex;
+  }
+  @media (max-width: $mobilethreshold) {
+    display: block;
+  }
 }
 
 .hide-on-mobile {
-    @media (max-width: $mobilethreshold) {
-        display: none;
-    }
+  @media (max-width: $mobilethreshold) {
+    display: none;
+  }
 }
 
 .b-container.dashboard-container {
-    cursor: grab;
-    :active {
-        cursor: grabbing;
-    }
-    @media (min-width: $mobilethreshold) {
-        display: flex;
-    }
-    @media (max-width: $mobilethreshold) {
-        display: block;
-    }
-    max-width: 96%;
+  cursor: grab;
+  :active {
+    cursor: grabbing;
+  }
+  @media (min-width: $mobilethreshold) {
+    display: flex;
+  }
+  @media (max-width: $mobilethreshold) {
+    display: block;
+  }
+  max-width: 96%;
 }
 
 .former-patients-container {
-    display: flex;
-    max-width: 96%;
+  display: flex;
+  max-width: 96%;
 }
 
 .main {
-    flex: 1;
+  flex: 1;
 }
 
 .brand-color {
-    color: $text;
+  color: $text;
 }
 
 .brand {
-    transition: color 0.5s ease;
-    color: $text;
-    text-decoration: none !important;
-    font-size: x-large;
-    font-weight: 100;
-    font-family: 'Hammersmith One';
+  transition: color 0.5s ease;
+  color: $text;
+  text-decoration: none !important;
+  font-size: x-large;
+  font-weight: 100;
+  font-family: 'Hammersmith One';
 }
 
 .brand-badge {
-    padding: 0.2rem 0.85rem 0 0.70rem;
+  padding: 0.2rem 0.85rem 0 0.7rem;
 }
 
 .mascot-container {
-    min-height: 125px;
-    justify-content: center;
-    display: flex;
-    @media (max-width: $mobilethreshold) {
-        display: none;
-    }
-    flex-grow: 1;
+  min-height: 125px;
+  justify-content: center;
+  display: flex;
+  @media (max-width: $mobilethreshold) {
+    display: none;
+  }
+  flex-grow: 1;
 }
 
 .mascot {
-    height: 100px;
-    border-radius: 50%;
-    align-self: center;
-    border: 5px solid $light;
+  height: 100px;
+  border-radius: 50%;
+  align-self: center;
+  border: 5px solid $light;
 }
 
 .display-name {
-    font-weight: bold
+  font-weight: bold;
 }
 
-.collapsing, .navbar-toggler, .navbar-collapse {
-    -webkit-transition: none !important;
-    transition: none !important;
+.collapsing,
+.navbar-toggler,
+.navbar-collapse {
+  -webkit-transition: none !important;
+  transition: none !important;
 }
 
 .navbar-toggler {
-    background-color: $light;
+  background-color: $light;
 }
 
 .navbar-collapse {
-    display: flex;
-    justify-content: right;
+  display: flex;
+  justify-content: right;
 }
 
 .b-navbar-item {
-    text-decoration: none;
-    padding: 0.5em;
+  text-decoration: none;
+  padding: 0.5em;
 }
 
 .b-navbar-item-text {
-    background-color: mix($dark, black, 75);
-    border-radius: 0.5em;
-    @media (min-width: $mobilethreshold) {
-        margin-right: 0.5em;
-    }
-    @media (max-width: $mobilethreshold) {
-        margin-top: 0.5em;        
-    }
+  background-color: mix($dark, black, 75);
+  border-radius: 0.5em;
+  @media (min-width: $mobilethreshold) {
+    margin-right: 0.5em;
+  }
+  @media (max-width: $mobilethreshold) {
+    margin-top: 0.5em;
+  }
 }
 
 .patient-table {
-    margin-bottom: 0;
+  margin-bottom: 0;
 }
 
 .logged-in-as {
-    margin-right: 1em;
+  margin-right: 1em;
 }
 
 .b-app {
-    width: 100%;
+  width: 100%;
 }
 
 .b-container {
-    max-width: $mobilethreshold;
-    width: 100%;
-    margin: auto;
+  max-width: $mobilethreshold;
+  width: 100%;
+  margin: auto;
 }
 
 .b-new-patient {
-    width: 100%;
-    margin: 1em;
+  width: 100%;
+  margin: 1em;
 }
 
 .checkbox {
-    padding: 0.1rem 0.5rem;
-    border: 0.2rem solid $accent;
-    background-color: mix($accent, $midgray, 75);
-    margin: 0.5rem;
-    color: black;
+  padding: 0.1rem 0.5rem;
+  border: 0.2rem solid $accent;
+  background-color: mix($accent, $midgray, 75);
+  margin: 0.5rem;
+  color: black;
 }
 
 .checkbox:hover {
-    background-color: $accent;
+  background-color: $accent;
 }
 
-.checkbox[data-hidden="true"] {
-    display: none;
+.checkbox[data-hidden='true'] {
+  display: none;
 }
 
 nav {
-    background-color: $dark;
-    padding: 0.5em !important;
-    margin-bottom: 0.5em;
-    a {
-        color: $text;
-    }
+  background-color: $dark;
+  padding: 0.5em !important;
+  margin-bottom: 0.5em;
+  a {
+    color: $text;
+  }
 }
 
-h1, h2, h3, h4, h5, h6 {
-    margin-bottom: 0.5rem;
-    margin-left: 0.5rem;
-    color: $dark;
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  margin-bottom: 0.5rem;
+  margin-left: 0.5rem;
+  color: $dark;
 }
 
-.b-card > h1, .b-card > h2, .b-card > h3, .b-card > h4, .b-card > h5, .b-card > h6 {
-    margin-left: 0;
+.b-card > h1,
+.b-card > h2,
+.b-card > h3,
+.b-card > h4,
+.b-card > h5,
+.b-card > h6 {
+  margin-left: 0;
 }
 
 .b-card {
-    padding: 1em !important;
-    margin-bottom: 0.5em !important;
-    background-color: $light;
+  padding: 1em !important;
+  margin-bottom: 0.5em !important;
+  background-color: $light;
 }
 
 .dashboard-home {
-    background-color: $light;
+  background-color: $light;
 
-    @media (min-width: $mobilethreshold) {    
-        margin-right: 0.5rem;
-        margin-bottom: 0;
-    }
-    @media (max-width: $mobilethreshold) {
-        margin-right: 0;
-        margin-bottom: 0.5rem;
-    }
+  @media (min-width: $mobilethreshold) {
+    margin-right: 0.5rem;
+    margin-bottom: 0;
+  }
+  @media (max-width: $mobilethreshold) {
+    margin-right: 0;
+    margin-bottom: 0.5rem;
+  }
 }
 
 .dashboard-home:last-of-type {
-    margin-right: 0 !important;
-    @media (max-width: $mobilethreshold) {
-        margin-bottom: 0 !important;
-    }
+  margin-right: 0 !important;
+  @media (max-width: $mobilethreshold) {
+    margin-bottom: 0 !important;
+  }
 }
 
 .dashboard-indicator {
-    min-width: 5px;
-    position: sticky;
-    top: 0;
-    margin-bottom: 1rem;
+  min-width: 5px;
+  position: sticky;
+  top: 0;
+  margin-bottom: 1rem;
 
-    @media (max-width: $mobilethreshold)  {
-        display: none !important;
-    }
+  @media (max-width: $mobilethreshold) {
+    display: none !important;
+  }
 }
 
 #dashboard-indicator-left {
-    background: linear-gradient(270deg, $slightdark, transparent);
-    left: 0;
+  background: linear-gradient(270deg, $slightdark, transparent);
+  left: 0;
 }
 
 #dashboard-indicator-right {
-    background: linear-gradient(90deg, $slightdark, transparent);
-    right: 0;
+  background: linear-gradient(90deg, $slightdark, transparent);
+  right: 0;
 }
 
 .home-note {
-    margin: 0rem;
-    margin-bottom: 0.5rem;
+  margin: 0rem;
+  margin-bottom: 0.5rem;
 }
 
 .home-note:last-of-type {
-    margin-bottom: 0;
+  margin-bottom: 0;
 }
 
 .card-header {
-    background-color: $midgray;
-    color: $light;
-    padding: 0.5rem;
-    color: black;
-    font-weight: bold;
+  background-color: $midgray;
+  color: $light;
+  padding: 0.5rem;
+  color: black;
+  font-weight: bold;
 }
 
 .dashboard-patient-list {
-    height: 100%;
+  height: 100%;
 }
 
 .drop-target {
@@ -366,245 +381,245 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .dashboard-patient-card {
-    padding: 0 !important;
+  padding: 0 !important;
 }
 
 .dashboard-form {
-    min-width: min(100%, 450px);
-    background-color: rgba(25, 135, 24, 0.25);
-    cursor: default;
-    :active {
-        cursor: default !important;
-    }
-    border: 1px solid $slightdark;
-    align-self: flex-start;  
-    margin-top: 0 !important;
-    margin-left: 0 !important;
-    margin-right: 1rem !important;
+  min-width: min(100%, 450px);
+  background-color: rgba(25, 135, 24, 0.25);
+  cursor: default;
+  :active {
+    cursor: default !important;
+  }
+  border: 1px solid $slightdark;
+  align-self: flex-start;
+  margin-top: 0 !important;
+  margin-left: 0 !important;
+  margin-right: 1rem !important;
 }
 
 .dashboard-left-sidebar {
-    min-width: min(100%, 450px);
-    margin-top: 0 !important;
-    margin-left: 0 !important;
-    flex: 1;  
-    align-self: flex-start;
-    display: flex;
-    flex-direction: column;
-    flex-grow: initial;
-    @media (min-width: $mobilethreshold) {
-        height: 100%;
-        margin-bottom: 1rem !important;
-        margin-right: 0.5em !important;
-    }
+  min-width: min(100%, 450px);
+  margin-top: 0 !important;
+  margin-left: 0 !important;
+  flex: 1;
+  align-self: flex-start;
+  display: flex;
+  flex-direction: column;
+  flex-grow: initial;
+  @media (min-width: $mobilethreshold) {
+    height: 100%;
+    margin-bottom: 1rem !important;
+    margin-right: 0.5em !important;
+  }
 }
 
 .former-patients-search-container {
-    min-width: min(100%, 150px);
-    margin-top: 0 !important;
-    margin-left: 0 !important;
-    margin-bottom: 1rem !important;
-    flex: 1;  
-    align-self: flex-start;  
+  min-width: min(100%, 150px);
+  margin-top: 0 !important;
+  margin-left: 0 !important;
+  margin-bottom: 1rem !important;
+  flex: 1;
+  align-self: flex-start;
 }
 
 .dashboard-filter {
-    background-color: rgb(193.5, 194.25, 203.75);
-    border: 1px solid $slightdark;
-    margin: 0 !important;
+  background-color: rgb(193.5, 194.25, 203.75);
+  border: 1px solid $slightdark;
+  margin: 0 !important;
 }
 
 .dashboard-search {
-    background-color: rgb(193.5, 194.25, 203.75);
-    border: 1px solid $slightdark;
+  background-color: rgb(193.5, 194.25, 203.75);
+  border: 1px solid $slightdark;
 }
 
 .active-search {
-    border: 2px solid $warning !important;
+  border: 2px solid $warning !important;
 }
 
 .dashboard-home {
-    min-width: min(100%, $dashboard-home-column);
+  min-width: min(100%, $dashboard-home-column);
 }
 
 .b-create-patient {
-    width: 100% !important;
-    margin-top: 0.5em !important;
+  width: 100% !important;
+  margin-top: 0.5em !important;
 }
 
 .select-user {
-    min-width: 25%;
+  min-width: 25%;
 }
 
 .footer {
-    bottom: 0;
-    width: 100%;
-    height: 60px;
-    line-height: 60px;
-    background-color: $dark;
-    a {
-        color: $text;
-    }
+  bottom: 0;
+  width: 100%;
+  height: 60px;
+  line-height: 60px;
+  background-color: $dark;
+  a {
+    color: $text;
+  }
 }
 
 .form-inline {
-    text-align: right;
-    margin-top: 1em;
-    margin-bottom: 0.5em;
+  text-align: right;
+  margin-top: 1em;
+  margin-bottom: 0.5em;
 }
 
 label {
-    user-select: none;
+  user-select: none;
 }
 
-input[data-field="latin"] {
-    font-style: italic;
+input[data-field='latin'] {
+  font-style: italic;
 }
 
 .patient-species-header {
-    font-weight: normal;
-    margin-right: 1em;
-    color: $dark;
+  font-weight: normal;
+  margin-right: 1em;
+  color: $dark;
 }
 
 .card-header-patient {
-    background-color: $lightprimary;
+  background-color: $lightprimary;
 }
 
 .patient-page {
-    width: 800px;
-    max-width: 98%;
+  width: 800px;
+  max-width: 98%;
 }
 
 .editable {
-    display: flex;
-    align-items: center;
-    cursor: pointer;
+  display: flex;
+  align-items: center;
+  cursor: pointer;
 }
 
 .editable::after {
-    content: '✏️';
-    transform: scaleX(-1);
-    margin-left: 0.5em;
-    font-size: 0.75em;
-    opacity: 0.8;
+  content: '✏️';
+  transform: scaleX(-1);
+  margin-left: 0.5em;
+  font-size: 0.75em;
+  opacity: 0.8;
 }
 
 pre {
-    white-space:pre-line;
+  white-space: pre-line;
 }
 
 #reload-google-folders {
-    margin: 0 auto 1rem;
+  margin: 0 auto 1rem;
 }
 
-.gdrive-doc-select[selected]{
-    background-color: $lightaccent;
+.gdrive-doc-select[selected] {
+  background-color: $lightaccent;
 }
 
 .feedback-list {
-    list-style-type: none;
-    padding-left: 0 !important;
+  list-style-type: none;
+  padding-left: 0 !important;
+  margin-bottom: 0;
+  .feedback-item {
+    margin-bottom: 0.5rem;
+  }
+  .feedback-item:last-child {
     margin-bottom: 0;
-    .feedback-item {
-        margin-bottom: 0.5rem;
-    }
-    .feedback-item:last-child {
-        margin-bottom: 0;
-    }
+  }
 }
 
 .b-card.feedback-info {
-    background-color: $midgray;
+  background-color: $midgray;
 }
 
 .b-card.feedback-success {
-    background-color: $lightaccent;
+  background-color: $lightaccent;
 }
 
 .b-card.feedback-warning {
-    background-color: $lightwarning;
+  background-color: $lightwarning;
 }
 
 .b-card.feedback-error {
-    background-color: $lightwarning;
+  background-color: $lightwarning;
 }
 
 .feedback-item.feedback-info::before {
-    content: 'ℹ️';
-    margin-right: 0.5em;
-    font-size: 1em;
+  content: 'ℹ️';
+  margin-right: 0.5em;
+  font-size: 1em;
 }
 
 .feedback-item.feedback-success::before {
-    content: '✅';
-    margin-right: 0.5em;
-    font-size: 1em;
+  content: '✅';
+  margin-right: 0.5em;
+  font-size: 1em;
 }
 
 .feedback-item.feedback-warning::before {
-    content: '⚠️';
-    margin-right: 0.5em;
-    font-size: 1em;
+  content: '⚠️';
+  margin-right: 0.5em;
+  font-size: 1em;
 }
 
 .feedback-item.feedback-error::before {
-    content: '❌';
-    margin-right: 0.5em;
-    font-size: 1em;
+  content: '❌';
+  margin-right: 0.5em;
+  font-size: 1em;
 }
 
 .feedback-container {
-    position: relative;
-    padding-right: 4em !important;
-    .closer {
-        position: absolute;
-        top: 1em;
-        right: 1em;
-        cursor: pointer;
-    }
+  position: relative;
+  padding-right: 4em !important;
+  .closer {
+    position: absolute;
+    top: 1em;
+    right: 1em;
+    cursor: pointer;
+  }
 }
 
 #filter-none {
-    color: $dark;
-    margin: auto;
+  color: $dark;
+  margin: auto;
 }
 
 .td-displayname {
-    max-width: 15em;
+  max-width: 15em;
 }
 
 .td-email {
-    max-width: 15em;
+  max-width: 15em;
 }
 
 .short-label {
-    width: 5em;
+  width: 5em;
 }
 
 legend {
-    font-weight: bold;
-    font-size: 1rem;
-    margin-bottom: 0;
+  font-weight: bold;
+  font-size: 1rem;
+  margin-bottom: 0;
 }
 
 #calendar {
-    @media (min-width: $mobilethreshold) {
-        min-width: $mobilethreshold * 0.95;
-    }
+  @media (min-width: $mobilethreshold) {
+    min-width: $mobilethreshold * 0.95;
+  }
 }
 
 .fc-daygrid-dot-event {
-    white-space: initial !important;
-    align-items: start;
+  white-space: initial !important;
+  align-items: start;
 }
 
 .fc-daygrid-event-dot {
-    display: none;
+  display: none;
 }
 
 .fc-toolbar-title {
-    text-transform: capitalize;
+  text-transform: capitalize;
 }
 
 mark.hl {
@@ -616,14 +631,14 @@ mark.hl {
 }
 
 .match-header {
-    display: flex;
-    justify-content: space-between;
-    gap: 2em;
-    padding: 0.2rem !important;
+  display: flex;
+  justify-content: space-between;
+  gap: 2em;
+  padding: 0.2rem !important;
 }
 
 .match-name {
-    align-content: center;
+  align-content: center;
 }
 
 .matches {
@@ -638,17 +653,17 @@ mark.hl {
   }
 }
 
-.search-advanced-options[data-show="false"] {
-    display: none;
+.search-advanced-options[data-show='false'] {
+  display: none;
 }
 
 .search-header {
-    color: $dark;
+  color: $dark;
 }
 
 .micro {
-    font-size: 0.75em;
-    font-weight: lighter;
+  font-size: 0.75em;
+  font-weight: lighter;
 }
 
 .icon-col {
@@ -656,42 +671,42 @@ mark.hl {
   white-space: nowrap;
 }
 
-#species-list{
-    width: 390px !important;
+#species-list {
+  width: 390px !important;
 }
 
-.species-list-row{
-    width: 390px !important;
+.species-list-row {
+  width: 390px !important;
 }
 
-.species-placeholder{
-    width: 390px !important;
+.species-placeholder {
+  width: 390px !important;
 }
 
 .debug-top,
 .debug-list {
-    list-style: none;
-    padding-left: 0;
-    margin: 0;
+  list-style: none;
+  padding-left: 0;
+  margin: 0;
 }
 
 .debug-item {
-    padding: 6px 0;
-    border-bottom: 1px solid #eee;
+  padding: 6px 0;
+  border-bottom: 1px solid #eee;
 }
 
 .debug-item:last-child {
-    border-bottom: none;
+  border-bottom: none;
 }
 
 .debug-name {
-    font-weight: bold;
+  font-weight: bold;
 }
 
 .debug-list {
-    margin-left: 16px;
-    border-left: 2px solid #eee;
-    padding-left: 12px;
+  margin-left: 16px;
+  border-left: 2px solid #eee;
+  padding-left: 12px;
 }
 
 .sortable-fallback {
@@ -704,14 +719,14 @@ mark.hl {
 }
 
 .filepond--credits {
-    // I gave the FilePond developer 15 dollars so I would feel OK about this.
-    // buymeacoffee.com/rikschennink/c/16242415
-    display: none;
+  // I gave the FilePond developer 15 dollars so I would feel OK about this.
+  // buymeacoffee.com/rikschennink/c/16242415
+  display: none;
 }
 
 .file-container {
-    max-width: 800px;
-    margin: auto;
+  max-width: 800px;
+  margin: auto;
 }
 
 .dark-on-hover:hover {
@@ -719,80 +734,93 @@ mark.hl {
 }
 
 .user-image-link {
-    max-width: 100%;
+  max-width: 100%;
 }
 
-.user-image, .user-video, .user-audio, .user-pdf {
-    max-width: 100%;
+.user-image,
+.user-video,
+.user-audio,
+.user-pdf {
+  max-width: 100%;
 }
 
 .user-pdf {
-    height: 600px;
+  height: 600px;
 }
 
 .user-metadata {
-    font-weight: normal;
+  font-weight: normal;
 }
 
 .file-container {
-    margin: auto;
+  margin: auto;
 }
 
 .card-gripper {
-    align-self: center;
-    color: $slightdark;
-    // increase hitbox
-    padding: 0.25em;
+  align-self: center;
+  color: $slightdark;
+  // increase hitbox
+  padding: 0.25em;
 
-    @media (max-width: $mobilethreshold) {
-        display: none !important;
-    }
+  @media (max-width: $mobilethreshold) {
+    display: none !important;
+  }
 }
 
 .editor-container {
-    max-width: 800px;
-    width: 99%;
-    color: $dark;
-    border: 1px solid $slightdark;
-    background: $light;
+  max-width: 800px;
+  width: 99%;
+  color: $dark;
+  border: 1px solid $slightdark;
+  background: $light;
 
-    @media (min-width: $mobilethreshold) {
-        height: calc(100% - 1em); 
-    }
+  @media (min-width: $mobilethreshold) {
+    height: calc(100% - 1em);
+  }
 }
 
-.form-switch > input[type="checkbox"] {
-    border-radius: 1em;
+.form-switch > input[type='checkbox'] {
+  border-radius: 1em;
 }
 
 .cdx-notifies {
-    color: $dark;
+  color: $dark;
 }
 
 // https://github.com/codex-team/editor.js/issues/724#issuecomment-1882601249
-.ce-block__content, .ce-toolbar__content { max-width: calc(100% - 100px) !important; } .cdx-block { max-width: 100% !important; }
-.codex-editor__loader { height: 38px !important; }
-.codex-editor__redactor { padding-bottom: 38px !important; }
+.ce-block__content,
+.ce-toolbar__content {
+  max-width: calc(100% - 100px) !important;
+}
+.cdx-block {
+  max-width: 100% !important;
+}
+.codex-editor__loader {
+  height: 38px !important;
+}
+.codex-editor__redactor {
+  padding-bottom: 38px !important;
+}
 
 .cdx-list {
-    --line-height: 1em !important;
+  --line-height: 1em !important;
 }
 
 .tc-table {
-    line-height: 1.2em !important;
+  line-height: 1.2em !important;
 }
 
 .tc-table {
-    border-top: 1px solid $slightdark !important;
-    border-left: 1px solid $slightdark !important;
+  border-top: 1px solid $slightdark !important;
+  border-left: 1px solid $slightdark !important;
 }
 
 .tc-row {
-    border-bottom: 1px solid $slightdark !important;
+  border-bottom: 1px solid $slightdark !important;
 }
 
 .tc-cell {
-    border-right: 1px solid $slightdark !important;
+  border-right: 1px solid $slightdark !important;
 }
 
 .tc-cell:focus {
@@ -809,7 +837,7 @@ mark.hl {
   flex-direction: column;
   background: #fafafa;
   overflow: hidden;
-  width:100%;
+  width: 100%;
   margin-bottom: 0.5em;
   height: max-content;
 }
@@ -819,7 +847,7 @@ mark.hl {
   flex-direction: column;
   background: #fafafa;
   overflow: hidden;
-  width:100%;
+  width: 100%;
 }
 
 .editor-toolbar {
@@ -846,7 +874,9 @@ mark.hl {
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: border-color 0.15s, background 0.15s;
+  transition:
+    border-color 0.15s,
+    background 0.15s;
 }
 
 .editor-toolbar-buttons button:hover {
@@ -873,10 +903,18 @@ mark.hl {
 }
 
 @keyframes ellipsis {
-  0%   { content: '.'; }
-  33%  { content: '..'; }
-  66%  { content: '...'; }
-  100% { content: ''; }
+  0% {
+    content: '.';
+  }
+  33% {
+    content: '..';
+  }
+  66% {
+    content: '...';
+  }
+  100% {
+    content: '';
+  }
 }
 
 #editorjs {
@@ -908,7 +946,7 @@ mark.hl {
 }
 
 .tiptap {
-    padding: 1em;
+  padding: 1em;
 }
 
 // GOOGLE LOGIN BUTTON BEGIN
@@ -936,8 +974,14 @@ mark.hl {
   padding: 0 12px;
   position: relative;
   text-align: center;
-  -webkit-transition: background-color .218s, border-color .218s, box-shadow .218s;
-  transition: background-color .218s, border-color .218s, box-shadow .218s;
+  -webkit-transition:
+    background-color 0.218s,
+    border-color 0.218s,
+    box-shadow 0.218s;
+  transition:
+    background-color 0.218s,
+    border-color 0.218s,
+    box-shadow 0.218s;
   vertical-align: middle;
   white-space: nowrap;
   width: auto;
@@ -977,8 +1021,8 @@ mark.hl {
 }
 
 .gsi-material-button .gsi-material-button-state {
-  -webkit-transition: opacity .218s;
-  transition: opacity .218s;
+  -webkit-transition: opacity 0.218s;
+  transition: opacity 0.218s;
   bottom: 0;
   left: 0;
   opacity: 0;
@@ -1001,15 +1045,19 @@ mark.hl {
   opacity: 38%;
 }
 
-.gsi-material-button:not(:disabled):active .gsi-material-button-state, 
+.gsi-material-button:not(:disabled):active .gsi-material-button-state,
 .gsi-material-button:not(:disabled):focus .gsi-material-button-state {
   background-color: #303030;
   opacity: 12%;
 }
 
 .gsi-material-button:not(:disabled):hover {
-  -webkit-box-shadow: 0 1px 2px 0 rgba(60, 64, 67, .30), 0 1px 3px 1px rgba(60, 64, 67, .15);
-  box-shadow: 0 1px 2px 0 rgba(60, 64, 67, .30), 0 1px 3px 1px rgba(60, 64, 67, .15);
+  -webkit-box-shadow:
+    0 1px 2px 0 rgba(60, 64, 67, 0.3),
+    0 1px 3px 1px rgba(60, 64, 67, 0.15);
+  box-shadow:
+    0 1px 2px 0 rgba(60, 64, 67, 0.3),
+    0 1px 3px 1px rgba(60, 64, 67, 0.15);
 }
 
 .gsi-material-button:not(:disabled):hover .gsi-material-button-state {

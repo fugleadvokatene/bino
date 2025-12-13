@@ -11640,7 +11640,8 @@ a:hover {
   transition: opacity 0.3s, background-color 0.3s;
 }
 
-html, body {
+html,
+body {
   height: 100%;
   margin: 0;
 }
@@ -11825,7 +11826,9 @@ body {
   font-weight: bold;
 }
 
-.collapsing, .navbar-toggler, .navbar-collapse {
+.collapsing,
+.navbar-toggler,
+.navbar-collapse {
   -webkit-transition: none !important;
   transition: none !important;
 }
@@ -11907,13 +11910,23 @@ nav a {
   color: rgb(245, 245, 250);
 }
 
-h1, h2, h3, h4, h5, h6 {
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
   margin-bottom: 0.5rem;
   margin-left: 0.5rem;
   color: rgb(60, 60, 80);
 }
 
-.b-card > h1, .b-card > h2, .b-card > h3, .b-card > h4, .b-card > h5, .b-card > h6 {
+.b-card > h1,
+.b-card > h2,
+.b-card > h3,
+.b-card > h4,
+.b-card > h5,
+.b-card > h6 {
   margin-left: 0;
 }
 
@@ -12352,7 +12365,10 @@ mark.hl {
   max-width: 100%;
 }
 
-.user-image, .user-video, .user-audio, .user-pdf {
+.user-image,
+.user-video,
+.user-audio,
+.user-pdf {
   max-width: 100%;
 }
 
@@ -12400,7 +12416,8 @@ mark.hl {
   color: rgb(60, 60, 80);
 }
 
-.ce-block__content, .ce-toolbar__content {
+.ce-block__content,
+.ce-toolbar__content {
   max-width: calc(100% - 100px) !important;
 }
 
