@@ -1,6 +1,7 @@
 package handlererror
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/fugleadvokatene/bino/internal/request"
@@ -21,4 +22,8 @@ func NotFound(w http.ResponseWriter, r *http.Request, err error) {
 	w.WriteHeader(http.StatusNotFound)
 	_ = NotFoundPage(cd, err.Error(), request.LastGoodURL(r)).Render(ctx, w)
 	request.LogError(r, err)
+}
+
+func PathNotFound(w http.ResponseWriter, r *http.Request) {
+	NotFound(w, r, fmt.Errorf("not found: %s %s", r.Method, r.RequestURI))
 }

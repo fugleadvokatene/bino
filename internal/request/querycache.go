@@ -2,6 +2,7 @@ package request
 
 import (
 	"context"
+	"log/slog"
 
 	"github.com/fugleadvokatene/bino/internal/model"
 )
@@ -14,7 +15,7 @@ func EmailToUserMapping(ctx context.Context, backend Backend) map[string]model.U
 	commonData := MustLoadCommonData(ctx)
 	if commonData.QueryCache.EmailToUser == nil {
 		if mapping, err := backend.EmailToUserMapping(ctx); err != nil {
-			LogCtx(ctx, "GetAppusers failed: %v", err)
+			LogCtx(ctx, slog.LevelError, "GetAppusers failed", "error", err)
 		} else {
 			commonData.QueryCache.EmailToUser = mapping
 		}

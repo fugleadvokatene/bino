@@ -3,6 +3,7 @@ package handlerfile
 import (
 	"errors"
 	"io"
+	"log/slog"
 	"net/http"
 	"strconv"
 
@@ -64,6 +65,6 @@ func (h *Read) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", fileView.MIMEType)
 	w.Header().Set("Content-Length", strconv.Itoa(int(fileView.Size)))
 	if _, err := io.Copy(w, rc); err != nil {
-		request.LogCtx(ctx, "failed to write out file: %v", err)
+		request.LogCtx(ctx, slog.LevelError, "failed to write out file: %v", err)
 	}
 }

@@ -2,7 +2,7 @@ package request
 
 import (
 	"fmt"
-	"log"
+	"log/slog"
 
 	"github.com/a-h/templ"
 	"github.com/fugleadvokatene/bino/internal/language"
@@ -28,12 +28,12 @@ type CommonData struct {
 }
 
 func (cd *CommonData) Error(msg string, err error) {
-	cd.Log("Showed user ERROR: err=%v, message to user=%s", err, msg)
+	cd.Log(slog.LevelWarn, "User saw an error", "error", err, "usermessage", msg)
 	cd.SetFeedback(model.FBError, msg)
 }
 
 func (cd *CommonData) Warning(msg string, err error) {
-	cd.Log("Showed user WARNING: err=%v, message to user=%s", err, msg)
+	cd.Log(slog.LevelWarn, "User saw a warning", "error", err, "usermessage", msg)
 	cd.SetFeedback(model.FBWarning, msg)
 }
 
@@ -77,7 +77,7 @@ func (cd *CommonData) Lang32() int32 {
 }
 
 // Log if the user has given explicit concent
-func (cd *CommonData) Log(format string, args ...any) {
+func (cd *CommonData) Log(level slog.Level, message string, args ...any) {
 	if cd == nil {
 		return
 	}
@@ -87,7 +87,7 @@ func (cd *CommonData) Log(format string, args ...any) {
 	if !cd.User.LoggingConsent {
 		return
 	}
-	log.Printf(format, args...)
+	slog.Log(cd.Cookies.R.Context(), level, message, args...)
 }
 
 type UserData struct {
@@ -114,7 +114,7 @@ func (u *UserData) HasHomeOrAccess(homeID int32, al model.AccessLevel) bool {
 
 func (cd *CommonData) SaveFeedback() {
 	if err := cd.Cookies.Set("feedback", "json", cd.Feedback); err != nil {
-		cd.Log("%v", err)
+		cd.Log(slog.LevelError, "Saving feedback cookie", "err", err)
 		return
 	}
 }

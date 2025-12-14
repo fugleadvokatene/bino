@@ -1,6 +1,7 @@
 package handlerpatient
 
 import (
+	"fmt"
 	"net/http"
 	"time"
 
@@ -50,7 +51,7 @@ func (h *createJournal) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		EventID:   int32(model.EventIDRegistered),
 	})
 	if err != nil || !created.Valid {
-		request.LogR(r, "vad creation date, using current time. Err=%v", err)
+		request.LogError(r, fmt.Errorf("bad creation time, using current time: %w", err))
 		created = pgtype.Timestamptz{Time: time.Now(), Valid: true}
 	}
 

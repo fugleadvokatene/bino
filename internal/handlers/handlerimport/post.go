@@ -3,6 +3,7 @@ package handlerimport
 import (
 	"context"
 	"fmt"
+	"log/slog"
 	"net/http"
 
 	"github.com/fugleadvokatene/bino/internal/db"
@@ -60,7 +61,7 @@ func (h *post) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := commonData.Cookies.Set("import-request", "json", &result); err != nil {
-		request.LogR(r, "setting import-request cookie: %v", err)
+		request.LogR(r, slog.LevelError, "setting import-request cookie: %v", err)
 	}
 
 	request.Redirect(w, r, "/import")

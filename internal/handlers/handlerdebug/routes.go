@@ -6,13 +6,11 @@ import (
 	"github.com/fugleadvokatene/bino/internal/route"
 )
 
-func Routes(
-	constInfo debug.ConstantInfo,
-) []route.Route {
+func Routes() []route.Route {
 	return []route.Route{
 		{
 			Path:    "GET /debug",
-			Handler: &page{ConstantInfo: constInfo},
+			Handler: &page{ConstantInfo: debug.NewRuntimeInfo()},
 			Cap:     model.CapDebug,
 		},
 	}

@@ -7,6 +7,7 @@ import (
 )
 
 var RequiredAccessLevel = map[model.Cap]model.AccessLevel{
+	model.CapLoggedIn:              model.AccessLevelNone,
 	model.CapViewAllActivePatients: model.AccessLevelNone,
 	model.CapViewAllFormerPatients: model.AccessLevelNone,
 	model.CapViewAllHomes:          model.AccessLevelNone,

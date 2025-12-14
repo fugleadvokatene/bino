@@ -25,6 +25,7 @@ type AccessLevel int32
 type Availability int
 
 // ENUM(
+// LoggedIn,
 // ViewAllActivePatients,
 // ViewAllFormerPatients,
 // ViewAllHomes,

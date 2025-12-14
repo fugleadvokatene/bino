@@ -3,6 +3,7 @@ package handlerdashboard
 import (
 	"context"
 	"fmt"
+	"log/slog"
 	"net/http"
 	"time"
 
@@ -108,7 +109,7 @@ func (h *checkin) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 	if suggestJournal {
 		if err := h.DB.SuggestJournalBasedOnSearch(ctx, patientID, name, systemSpeciesName, fields["home"]); err != nil {
-			request.LogCtx(ctx, "suggesting journal: %v", err)
+			request.LogCtx(ctx, slog.LevelError, "suggesting journal: %v", err)
 		}
 	}
 	request.RedirectToReferer(w, r)

@@ -319,10 +319,8 @@ func (w *Worker) AppendUpdates(id string, updates []JournalUpdate) error {
 func (w *Worker) worker(workerID int) {
 	for {
 		req := <-w.in
-		log.Printf("Worker %d received request: %s", workerID, req)
 		resp := w.handleRequest(req)
 		req.Response <- resp
-		log.Printf("Worker %d sent back response: %s", workerID, resp)
 	}
 }
 

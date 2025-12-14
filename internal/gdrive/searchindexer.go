@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"log/slog"
 	"strings"
 	"time"
 
@@ -50,17 +51,15 @@ func (w *Worker) searchIndexFolder(ctx context.Context, folderID string) {
 	for {
 		res, err := w.listFiles(ctx, folderID, pageToken)
 		if err != nil {
-			log.Printf("ERROR listing files: %s", err)
+			slog.Warn("Error listing files", "err", err)
 			return
 		}
 
-		log.Printf("START: converting %d files for %s", len(res.Files), res.Folder.Name)
 		for _, file := range res.Files {
 			if err := w.searchIndexFile(ctx, res.Folder, file); err != nil {
-				log.Printf("ERROR (%s): %s", file.Name, err.Error())
+				slog.Warn("Error converting file", "name", file.Name, "err", err)
 			}
 		}
-		log.Printf("DONE: converting files for %s", res.Folder.Name)
 
 		if res.NextPageToken == "" {
 			break
@@ -147,6 +146,8 @@ func (w *Worker) searchIndexFile(ctx context.Context, folder, file Item) error {
 	}); err != nil {
 		return fmt.Errorf("creating entry: %w", err)
 	}
+
+	slog.Info("Added search entry", "Header", info.headerField)
 
 	return nil
 }

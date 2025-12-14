@@ -135,63 +135,66 @@ func ParseAvailability(name string) (Availability, error) {
 }
 
 const (
+	// CapLoggedIn is a Cap of type LoggedIn.
+	CapLoggedIn Cap = 0
 	// CapViewAllActivePatients is a Cap of type ViewAllActivePatients.
-	CapViewAllActivePatients Cap = 0
+	CapViewAllActivePatients Cap = 1
 	// CapViewAllFormerPatients is a Cap of type ViewAllFormerPatients.
-	CapViewAllFormerPatients Cap = 1
+	CapViewAllFormerPatients Cap = 2
 	// CapViewAllHomes is a Cap of type ViewAllHomes.
-	CapViewAllHomes Cap = 2
+	CapViewAllHomes Cap = 3
 	// CapViewAllUsers is a Cap of type ViewAllUsers.
-	CapViewAllUsers Cap = 3
+	CapViewAllUsers Cap = 4
 	// CapViewCalendar is a Cap of type ViewCalendar.
-	CapViewCalendar Cap = 4
+	CapViewCalendar Cap = 5
 	// CapSearch is a Cap of type Search.
-	CapSearch Cap = 5
+	CapSearch Cap = 6
 	// CapSetOwnPreferences is a Cap of type SetOwnPreferences.
-	CapSetOwnPreferences Cap = 6
+	CapSetOwnPreferences Cap = 7
 	// CapCheckInPatient is a Cap of type CheckInPatient.
-	CapCheckInPatient Cap = 7
+	CapCheckInPatient Cap = 8
 	// CapManageOwnPatients is a Cap of type ManageOwnPatients.
-	CapManageOwnPatients Cap = 8
+	CapManageOwnPatients Cap = 9
 	// CapManageAllPatients is a Cap of type ManageAllPatients.
-	CapManageAllPatients Cap = 9
+	CapManageAllPatients Cap = 10
 	// CapManageOwnHomes is a Cap of type ManageOwnHomes.
-	CapManageOwnHomes Cap = 10
+	CapManageOwnHomes Cap = 11
 	// CapManageAllHomes is a Cap of type ManageAllHomes.
-	CapManageAllHomes Cap = 11
+	CapManageAllHomes Cap = 12
 	// CapCreatePatientJournal is a Cap of type CreatePatientJournal.
-	CapCreatePatientJournal Cap = 12
+	CapCreatePatientJournal Cap = 13
 	// CapManageSpecies is a Cap of type ManageSpecies.
-	CapManageSpecies Cap = 13
+	CapManageSpecies Cap = 14
 	// CapManageUsers is a Cap of type ManageUsers.
-	CapManageUsers Cap = 14
+	CapManageUsers Cap = 15
 	// CapDeleteUsers is a Cap of type DeleteUsers.
-	CapDeleteUsers Cap = 15
+	CapDeleteUsers Cap = 16
 	// CapViewAdminTools is a Cap of type ViewAdminTools.
-	CapViewAdminTools Cap = 16
+	CapViewAdminTools Cap = 17
 	// CapViewGDriveSettings is a Cap of type ViewGDriveSettings.
-	CapViewGDriveSettings Cap = 17
+	CapViewGDriveSettings Cap = 18
 	// CapInviteToGDrive is a Cap of type InviteToGDrive.
-	CapInviteToGDrive Cap = 18
+	CapInviteToGDrive Cap = 19
 	// CapInviteToBino is a Cap of type InviteToBino.
-	CapInviteToBino Cap = 19
+	CapInviteToBino Cap = 20
 	// CapUseImportTool is a Cap of type UseImportTool.
-	CapUseImportTool Cap = 20
+	CapUseImportTool Cap = 21
 	// CapDebug is a Cap of type Debug.
-	CapDebug Cap = 21
+	CapDebug Cap = 22
 	// CapUploadFile is a Cap of type UploadFile.
-	CapUploadFile Cap = 22
+	CapUploadFile Cap = 23
 	// CapEditWiki is a Cap of type EditWiki.
-	CapEditWiki Cap = 23
+	CapEditWiki Cap = 24
 )
 
 var ErrInvalidCap = errors.New("not a valid Cap")
 
-const _CapName = "ViewAllActivePatientsViewAllFormerPatientsViewAllHomesViewAllUsersViewCalendarSearchSetOwnPreferencesCheckInPatientManageOwnPatientsManageAllPatientsManageOwnHomesManageAllHomesCreatePatientJournalManageSpeciesManageUsersDeleteUsersViewAdminToolsViewGDriveSettingsInviteToGDriveInviteToBinoUseImportToolDebugUploadFileEditWiki"
+const _CapName = "LoggedInViewAllActivePatientsViewAllFormerPatientsViewAllHomesViewAllUsersViewCalendarSearchSetOwnPreferencesCheckInPatientManageOwnPatientsManageAllPatientsManageOwnHomesManageAllHomesCreatePatientJournalManageSpeciesManageUsersDeleteUsersViewAdminToolsViewGDriveSettingsInviteToGDriveInviteToBinoUseImportToolDebugUploadFileEditWiki"
 
 // CapValues returns a list of the values for Cap
 func CapValues() []Cap {
 	return []Cap{
+		CapLoggedIn,
 		CapViewAllActivePatients,
 		CapViewAllFormerPatients,
 		CapViewAllHomes,
@@ -220,30 +223,31 @@ func CapValues() []Cap {
 }
 
 var _CapMap = map[Cap]string{
-	CapViewAllActivePatients: _CapName[0:21],
-	CapViewAllFormerPatients: _CapName[21:42],
-	CapViewAllHomes:          _CapName[42:54],
-	CapViewAllUsers:          _CapName[54:66],
-	CapViewCalendar:          _CapName[66:78],
-	CapSearch:                _CapName[78:84],
-	CapSetOwnPreferences:     _CapName[84:101],
-	CapCheckInPatient:        _CapName[101:115],
-	CapManageOwnPatients:     _CapName[115:132],
-	CapManageAllPatients:     _CapName[132:149],
-	CapManageOwnHomes:        _CapName[149:163],
-	CapManageAllHomes:        _CapName[163:177],
-	CapCreatePatientJournal:  _CapName[177:197],
-	CapManageSpecies:         _CapName[197:210],
-	CapManageUsers:           _CapName[210:221],
-	CapDeleteUsers:           _CapName[221:232],
-	CapViewAdminTools:        _CapName[232:246],
-	CapViewGDriveSettings:    _CapName[246:264],
-	CapInviteToGDrive:        _CapName[264:278],
-	CapInviteToBino:          _CapName[278:290],
-	CapUseImportTool:         _CapName[290:303],
-	CapDebug:                 _CapName[303:308],
-	CapUploadFile:            _CapName[308:318],
-	CapEditWiki:              _CapName[318:326],
+	CapLoggedIn:              _CapName[0:8],
+	CapViewAllActivePatients: _CapName[8:29],
+	CapViewAllFormerPatients: _CapName[29:50],
+	CapViewAllHomes:          _CapName[50:62],
+	CapViewAllUsers:          _CapName[62:74],
+	CapViewCalendar:          _CapName[74:86],
+	CapSearch:                _CapName[86:92],
+	CapSetOwnPreferences:     _CapName[92:109],
+	CapCheckInPatient:        _CapName[109:123],
+	CapManageOwnPatients:     _CapName[123:140],
+	CapManageAllPatients:     _CapName[140:157],
+	CapManageOwnHomes:        _CapName[157:171],
+	CapManageAllHomes:        _CapName[171:185],
+	CapCreatePatientJournal:  _CapName[185:205],
+	CapManageSpecies:         _CapName[205:218],
+	CapManageUsers:           _CapName[218:229],
+	CapDeleteUsers:           _CapName[229:240],
+	CapViewAdminTools:        _CapName[240:254],
+	CapViewGDriveSettings:    _CapName[254:272],
+	CapInviteToGDrive:        _CapName[272:286],
+	CapInviteToBino:          _CapName[286:298],
+	CapUseImportTool:         _CapName[298:311],
+	CapDebug:                 _CapName[311:316],
+	CapUploadFile:            _CapName[316:326],
+	CapEditWiki:              _CapName[326:334],
 }
 
 // String implements the Stringer interface.
@@ -262,30 +266,31 @@ func (x Cap) IsValid() bool {
 }
 
 var _CapValue = map[string]Cap{
-	_CapName[0:21]:    CapViewAllActivePatients,
-	_CapName[21:42]:   CapViewAllFormerPatients,
-	_CapName[42:54]:   CapViewAllHomes,
-	_CapName[54:66]:   CapViewAllUsers,
-	_CapName[66:78]:   CapViewCalendar,
-	_CapName[78:84]:   CapSearch,
-	_CapName[84:101]:  CapSetOwnPreferences,
-	_CapName[101:115]: CapCheckInPatient,
-	_CapName[115:132]: CapManageOwnPatients,
-	_CapName[132:149]: CapManageAllPatients,
-	_CapName[149:163]: CapManageOwnHomes,
-	_CapName[163:177]: CapManageAllHomes,
-	_CapName[177:197]: CapCreatePatientJournal,
-	_CapName[197:210]: CapManageSpecies,
-	_CapName[210:221]: CapManageUsers,
-	_CapName[221:232]: CapDeleteUsers,
-	_CapName[232:246]: CapViewAdminTools,
-	_CapName[246:264]: CapViewGDriveSettings,
-	_CapName[264:278]: CapInviteToGDrive,
-	_CapName[278:290]: CapInviteToBino,
-	_CapName[290:303]: CapUseImportTool,
-	_CapName[303:308]: CapDebug,
-	_CapName[308:318]: CapUploadFile,
-	_CapName[318:326]: CapEditWiki,
+	_CapName[0:8]:     CapLoggedIn,
+	_CapName[8:29]:    CapViewAllActivePatients,
+	_CapName[29:50]:   CapViewAllFormerPatients,
+	_CapName[50:62]:   CapViewAllHomes,
+	_CapName[62:74]:   CapViewAllUsers,
+	_CapName[74:86]:   CapViewCalendar,
+	_CapName[86:92]:   CapSearch,
+	_CapName[92:109]:  CapSetOwnPreferences,
+	_CapName[109:123]: CapCheckInPatient,
+	_CapName[123:140]: CapManageOwnPatients,
+	_CapName[140:157]: CapManageAllPatients,
+	_CapName[157:171]: CapManageOwnHomes,
+	_CapName[171:185]: CapManageAllHomes,
+	_CapName[185:205]: CapCreatePatientJournal,
+	_CapName[205:218]: CapManageSpecies,
+	_CapName[218:229]: CapManageUsers,
+	_CapName[229:240]: CapDeleteUsers,
+	_CapName[240:254]: CapViewAdminTools,
+	_CapName[254:272]: CapViewGDriveSettings,
+	_CapName[272:286]: CapInviteToGDrive,
+	_CapName[286:298]: CapInviteToBino,
+	_CapName[298:311]: CapUseImportTool,
+	_CapName[311:316]: CapDebug,
+	_CapName[316:326]: CapUploadFile,
+	_CapName[326:334]: CapEditWiki,
 }
 
 // ParseCap attempts to convert a string to a Cap.

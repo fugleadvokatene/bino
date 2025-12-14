@@ -13,6 +13,11 @@ func Routes(
 ) []route.Route {
 	return []route.Route{
 		{
+			Path:    "GET /file/{id}/{filename}",
+			Handler: &Read{DB: db, FileBackend: fileBackend},
+			Cap:     model.CapLoggedIn,
+		},
+		{
 			Path:    "GET /file",
 			Handler: &uploadPage{DB: db},
 			Cap:     model.CapUploadFile,

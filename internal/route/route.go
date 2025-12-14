@@ -7,7 +7,8 @@ import (
 )
 
 type Route struct {
-	Path    string
-	Handler http.Handler
-	Cap     model.Cap
+	Path             string
+	Handler          http.Handler
+	Cap              model.Cap
+	LoggedOutHandler http.Handler
 }

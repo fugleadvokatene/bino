@@ -2,7 +2,7 @@ package background
 
 import (
 	"context"
-	"log"
+	"log/slog"
 	"time"
 
 	"github.com/fugleadvokatene/bino/internal/fs"
@@ -12,11 +12,11 @@ import (
 func RunJob[T any](what string, interval time.Duration, f func() (T, error)) {
 	for {
 		t0 := time.Now()
-		log.Printf("[Background job '%s'] Started", what)
+		slog.Info("Started background job", "what", what)
 		result, err := f()
 		elapsed := time.Since(t0)
 		next := max(0, interval-elapsed)
-		log.Printf("[Background job '%s'] Completed in %v, err=%v, result=%v, next=%v", what, elapsed.Round(time.Millisecond), err, result, next.Round(time.Second))
+		slog.Info("Completed background job", "what", what, "err", err, "result", result, "elapsed", elapsed.Round(time.Millisecond), "next", next.Round(time.Second))
 		time.Sleep(next)
 	}
 }

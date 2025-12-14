@@ -19,17 +19,17 @@ type Config struct {
 	SystemBaseURL  string
 }
 
-func Load(file string) (Config, error) {
+func Load(file string) (*Config, error) {
 	raw, err := os.ReadFile(file)
 	if err != nil {
-		return Config{}, fmt.Errorf("reading config file '%s': %w", file, err)
+		return nil, fmt.Errorf("reading config file '%s': %w", file, err)
 	}
 
 	var config Config
 	if err := json.Unmarshal(raw, &config); err != nil {
-		return Config{}, fmt.Errorf("corrupted config file '%s': %w", file, err)
+		return nil, fmt.Errorf("corrupted config file '%s': %w", file, err)
 	}
-	return config, nil
+	return &config, nil
 }
 
 func (config *Config) BinoURLForPatient(patient int32) string {

@@ -13,6 +13,11 @@ func Routes(
 ) []route.Route {
 	return []route.Route{
 		{
+			Path:             "GET /privacy",
+			Handler:          &Page{Config: config},
+			LoggedOutHandler: &Page{Config: config},
+		},
+		{
 			Path:    "POST /privacy",
 			Handler: &form{DB: db, Config: config},
 			Cap:     model.CapSetOwnPreferences,

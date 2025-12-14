@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"log/slog"
 
 	"github.com/fugleadvokatene/bino/internal/gdrive/url"
 	"github.com/fugleadvokatene/bino/internal/model"
@@ -22,7 +23,7 @@ func (db *Database) SuggestJournalURLs(ctx context.Context, systemLanguage model
 	for _, row := range missing {
 		err := db.SuggestJournalBasedOnSearch(ctx, row.ID, row.Name, row.Species, row.CurrHomeID.Int32)
 		if err != nil {
-			log.Printf("couldn't suggest journal for %s: %v", row.Name, err)
+			slog.Warn("couldn't suggest journal", "name", row.Name, "err", err)
 			continue
 		} else {
 			n += 1

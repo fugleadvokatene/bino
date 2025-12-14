@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"os"
 
 	"github.com/gorilla/sessions"
 )
@@ -12,15 +13,20 @@ type CookieStore struct {
 	Backend *sessions.CookieStore
 }
 
-func NewCookieStore(sessionKey []byte) CookieStore {
+func New(sessionKeyLocation string) (*CookieStore, error) {
+	sessionKey, err := os.ReadFile(sessionKeyLocation)
+	if err != nil {
+		return nil, err
+	}
+
 	backend := sessions.NewCookieStore(sessionKey)
 	backend.Options.HttpOnly = true
 	backend.Options.SameSite = http.SameSiteLaxMode
 	backend.Options.Secure = true
 
-	return CookieStore{
+	return &CookieStore{
 		Backend: backend,
-	}
+	}, nil
 }
 func (c *CookieStore) Set(w http.ResponseWriter, r *http.Request, key string, subkey string, value any) error {
 	// Try to marshal the feedback we have now

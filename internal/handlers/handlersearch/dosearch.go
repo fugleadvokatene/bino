@@ -2,6 +2,7 @@ package handlersearch
 
 import (
 	"errors"
+	"fmt"
 	"net/http"
 	"strconv"
 	"strings"
@@ -89,7 +90,7 @@ func doSearch(r *http.Request, db *dblib.Database) (dblib.SearchResult, error) {
 				Lang:         searchParams.Lang,
 			})
 			if err != nil {
-				request.LogR(r, "counting: %s", err.Error())
+				request.LogError(r, fmt.Errorf("counting: %w", err))
 				totalMatches = int32(len(matches))
 			}
 		} else {
@@ -111,7 +112,7 @@ func doSearch(r *http.Request, db *dblib.Database) (dblib.SearchResult, error) {
 				Lang:  searchParams.Lang,
 			})
 			if err != nil {
-				request.LogR(r, "counting: %s", err.Error())
+				request.LogError(r, fmt.Errorf("counting: %w", err))
 				totalMatches = int32(len(matches))
 			}
 		} else {

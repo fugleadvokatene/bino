@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"log/slog"
 	"net/http"
 	"os"
 	"runtime"
@@ -56,27 +57,27 @@ func GetDebugInfo(ctx context.Context, runtimeInfo ConstantInfo) []DebugInfo {
 	// Machine info
 	avg, err := load.Avg()
 	if err != nil {
-		request.LogCtx(ctx, "getting machine Avg: %v", err)
+		request.LogCtx(ctx, slog.LevelWarn, "getting machine Avg", "err", err)
 	}
 	u, err := disk.Usage("/")
 	if err != nil {
-		request.LogCtx(ctx, "getting machine Disk usage: %v", err)
+		request.LogCtx(ctx, slog.LevelWarn, "getting machine Disk usage", "err", err)
 	}
 	h, err := host.Info()
 	if err != nil {
-		request.LogCtx(ctx, "getting machine Info: %v", err)
+		request.LogCtx(ctx, slog.LevelWarn, "getting machine Info", "err", err)
 	}
 	users, err := host.Users()
 	if err != nil {
-		request.LogCtx(ctx, "getting machine Users: %v", err)
+		request.LogCtx(ctx, slog.LevelWarn, "getting machine Users", "err", err)
 	}
 	cwd, err := os.Getwd()
 	if err != nil {
-		request.LogCtx(ctx, "getting machine Getwd: %v", err)
+		request.LogCtx(ctx, slog.LevelWarn, "getting machine Getwd", "err", err)
 	}
 	mem, err := mem.VirtualMemory()
 	if err != nil {
-		request.LogCtx(ctx, "getting machine VirtualMemory: %v", err)
+		request.LogCtx(ctx, slog.LevelWarn, "getting machine VirtualMemory", "err", err)
 	}
 
 	// Build info

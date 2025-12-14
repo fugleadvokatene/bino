@@ -3,6 +3,7 @@ package request
 import (
 	"context"
 	"fmt"
+	"log/slog"
 	"net/http"
 
 	"github.com/fugleadvokatene/bino/internal/cookies"
@@ -17,7 +18,7 @@ const (
 func WithCommonData(ctx context.Context, cd *CommonData, cookieStore *cookies.CookieStore, w http.ResponseWriter, r *http.Request) context.Context {
 	var feedback Feedback
 	if _, err := cookieStore.Eat(w, r, "feedback", "json", &feedback); err != nil {
-		cd.Log("failed to unmarshal feedback cookie: %v", err)
+		cd.Log(slog.LevelError, "Error eating feedback cookie", "err", err)
 		return ctx
 	}
 
