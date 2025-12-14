@@ -9,11 +9,11 @@ import (
 	"github.com/fugleadvokatene/bino/internal/sql"
 )
 
-type SetNote struct {
+type setNote struct {
 	DB *db.Database
 }
 
-func (h *SetNote) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+func (h *setNote) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
 	homeID, err := request.GetPathID(r, "home")

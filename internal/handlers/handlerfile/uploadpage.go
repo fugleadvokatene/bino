@@ -10,11 +10,11 @@ import (
 	"github.com/fugleadvokatene/bino/internal/sql"
 )
 
-type UploadPage struct {
+type uploadPage struct {
 	DB *db.Database
 }
 
-func (h *UploadPage) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+func (h *uploadPage) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	data := request.MustLoadCommonData(ctx)
 

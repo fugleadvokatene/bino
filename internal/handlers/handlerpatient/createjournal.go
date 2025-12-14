@@ -14,13 +14,13 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
-type CreateJournal struct {
+type createJournal struct {
 	DB           *db.Database
 	GDriveWorker *gdrive.Worker
 	Config       *config.Config
 }
 
-func (h *CreateJournal) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+func (h *createJournal) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	commonData := request.MustLoadCommonData(ctx)
 

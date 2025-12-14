@@ -14,11 +14,11 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
-type Invite struct {
+type invite struct {
 	DB *db.Database
 }
 
-func (h *Invite) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+func (h *invite) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	data := request.MustLoadCommonData(ctx)
 

@@ -8,11 +8,11 @@ import (
 	"github.com/fugleadvokatene/bino/internal/request"
 )
 
-type SetNote struct {
+type setNote struct {
 	DB *db.Database
 }
 
-func (h *SetNote) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+func (h *setNote) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
 	event, err := request.GetPathID(r, "event")

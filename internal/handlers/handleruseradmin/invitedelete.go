@@ -8,11 +8,11 @@ import (
 	"github.com/fugleadvokatene/bino/internal/request"
 )
 
-type InviteDelete struct {
+type inviteDelete struct {
 	DB *db.Database
 }
 
-func (h *InviteDelete) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+func (h *inviteDelete) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	data := request.MustLoadCommonData(ctx)
 

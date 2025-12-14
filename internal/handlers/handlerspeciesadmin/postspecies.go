@@ -8,11 +8,11 @@ import (
 	"github.com/fugleadvokatene/bino/internal/sql"
 )
 
-type PostSpecies struct {
+type postSpecies struct {
 	DB *db.Database
 }
 
-func (h *PostSpecies) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+func (h *postSpecies) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	type reqT struct {
 		Latin     string
 		Languages map[int32]string

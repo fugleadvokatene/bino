@@ -19,7 +19,7 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
-type FetchImage struct {
+type fetchImage struct {
 	DB          *db.Database
 	FileBackend fs.FileStorage
 }
@@ -36,7 +36,7 @@ type WikiImageResponse struct {
 	} `json:"file"`
 }
 
-func (h *FetchImage) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+func (h *fetchImage) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
 	var resp WikiImageResponse

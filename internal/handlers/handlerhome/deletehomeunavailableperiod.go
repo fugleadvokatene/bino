@@ -8,11 +8,11 @@ import (
 	"github.com/fugleadvokatene/bino/internal/request"
 )
 
-type DeleteHomeUnavailablePeriod struct {
+type deleteHomeUnavailablePeriod struct {
 	DB *db.Database
 }
 
-func (h *DeleteHomeUnavailablePeriod) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+func (h *deleteHomeUnavailablePeriod) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
 	periodID, err := request.GetPathID(r, "period")

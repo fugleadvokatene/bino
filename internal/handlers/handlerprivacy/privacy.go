@@ -20,12 +20,12 @@ func (h *Page) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	_ = Privacy(commonData, h.Config).Render(ctx, w)
 }
 
-type Form struct {
+type form struct {
 	Config privacy.Config
 	DB     *db.Database
 }
 
-func (h *Form) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+func (h *form) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	commonData := request.MustLoadCommonData(ctx)
 

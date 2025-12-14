@@ -8,11 +8,11 @@ import (
 	"github.com/fugleadvokatene/bino/internal/request"
 )
 
-type AcceptSuggestedJournal struct {
+type acceptSuggestedJournal struct {
 	DB *db.Database
 }
 
-func (h *AcceptSuggestedJournal) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+func (h *acceptSuggestedJournal) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	commonData := request.MustLoadCommonData(ctx)
 

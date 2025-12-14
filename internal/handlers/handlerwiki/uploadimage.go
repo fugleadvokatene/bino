@@ -14,12 +14,12 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
-type UploadImage struct {
+type uploadImage struct {
 	DB          *db.Database
 	FileBackend fs.FileStorage
 }
 
-func (h *UploadImage) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+func (h *uploadImage) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	data := request.MustLoadCommonData(ctx)
 

@@ -12,11 +12,11 @@ import (
 	"github.com/fugleadvokatene/bino/internal/sql"
 )
 
-type Form struct {
+type form struct {
 	DB *db.Database
 }
 
-func (h *Form) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+func (h *form) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	formID, err := request.GetFormValue(r, "form-id")
 	if err != nil {
 		handlererror.Error(w, r, err)
@@ -33,7 +33,7 @@ func (h *Form) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (h *Form) postHomeCreateHome(w http.ResponseWriter, r *http.Request) {
+func (h *form) postHomeCreateHome(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
 	name, err := request.GetFormValue(r, "name")
@@ -51,7 +51,7 @@ func (h *Form) postHomeCreateHome(w http.ResponseWriter, r *http.Request) {
 	request.RedirectToReferer(w, r)
 }
 
-func (h *Form) postHomeAddUser(w http.ResponseWriter, r *http.Request) {
+func (h *form) postHomeAddUser(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
 	optionalFields, _ := request.GetFormValues(r, "remove-from-current", "curr-home-id")

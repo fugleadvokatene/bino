@@ -9,12 +9,12 @@ import (
 	"github.com/fugleadvokatene/bino/internal/request"
 )
 
-type DoScrubOrNuke struct {
+type doScrubOrNuke struct {
 	Nuke bool
 	DB   *db.Database
 }
 
-func (h *DoScrubOrNuke) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+func (h *doScrubOrNuke) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	data := request.MustLoadCommonData(ctx)
 

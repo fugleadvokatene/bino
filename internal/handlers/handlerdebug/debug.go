@@ -7,11 +7,11 @@ import (
 	"github.com/fugleadvokatene/bino/internal/request"
 )
 
-type Page struct {
+type page struct {
 	ConstantInfo debug.ConstantInfo
 }
 
-func (h *Page) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+func (h *page) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	data := request.MustLoadCommonData(ctx)
 

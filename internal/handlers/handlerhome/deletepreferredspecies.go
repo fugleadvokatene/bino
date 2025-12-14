@@ -9,11 +9,11 @@ import (
 	"github.com/fugleadvokatene/bino/internal/sql"
 )
 
-type DeletePreferredSpecies struct {
+type deletePreferredSpecies struct {
 	DB *db.Database
 }
 
-func (h *DeletePreferredSpecies) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+func (h *deletePreferredSpecies) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
 	id, err := request.GetPathID(r, "home")

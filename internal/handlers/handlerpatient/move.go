@@ -13,11 +13,11 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
-type Move struct {
+type move struct {
 	DB *db.Database
 }
 
-func (h *Move) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+func (h *move) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	commonData := request.MustLoadCommonData(ctx)
 

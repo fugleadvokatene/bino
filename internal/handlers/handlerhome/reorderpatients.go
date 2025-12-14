@@ -14,11 +14,11 @@ type ReorderRequest struct {
 	Order []int32
 }
 
-type AjaxReorderHandler struct {
+type ajaxReorderHandler struct {
 	DB *db.Database
 }
 
-func (h *AjaxReorderHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+func (h *ajaxReorderHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	handlerjson.Handler(h.DB, w, r, func(db *db.Database, req ReorderRequest) error {
 		ctx := r.Context()
 		return sortPatients(ctx, h.DB, req)

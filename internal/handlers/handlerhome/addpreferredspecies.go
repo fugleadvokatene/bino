@@ -9,11 +9,11 @@ import (
 	"github.com/fugleadvokatene/bino/internal/sql"
 )
 
-type AddPreferredSpecies struct {
+type addPreferredSpecies struct {
 	DB *db.Database
 }
 
-func (h *AddPreferredSpecies) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+func (h *addPreferredSpecies) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
 	id, err := request.GetPathID(r, "home")

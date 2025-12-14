@@ -8,11 +8,11 @@ import (
 	"github.com/fugleadvokatene/bino/internal/request"
 )
 
-type GetSpecies struct {
+type getSpecies struct {
 	DB *db.Database
 }
 
-func (h *GetSpecies) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+func (h *getSpecies) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	commonData := request.MustLoadCommonData(ctx)
 

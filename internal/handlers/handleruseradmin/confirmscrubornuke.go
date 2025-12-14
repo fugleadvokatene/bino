@@ -8,12 +8,12 @@ import (
 	"github.com/fugleadvokatene/bino/internal/request"
 )
 
-type ConfirmScrubOrNuke struct {
+type confirmScrubOrNuke struct {
 	Nuke bool
 	DB   *db.Database
 }
 
-func (h *ConfirmScrubOrNuke) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+func (h *confirmScrubOrNuke) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	data := request.MustLoadCommonData(ctx)
 

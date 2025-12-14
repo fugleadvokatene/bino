@@ -9,11 +9,11 @@ import (
 	"github.com/fugleadvokatene/bino/internal/sql"
 )
 
-type Save struct {
+type save struct {
 	DB *db.Database
 }
 
-func (h *Save) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+func (h *save) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	data := request.MustLoadCommonData(ctx)
 

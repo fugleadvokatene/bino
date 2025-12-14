@@ -12,11 +12,11 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
-type AddHomeUnavailablePeriod struct {
+type addHomeUnavailablePeriod struct {
 	DB *db.Database
 }
 
-func (h *AddHomeUnavailablePeriod) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+func (h *addHomeUnavailablePeriod) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	commonData := request.MustLoadCommonData(ctx)
 

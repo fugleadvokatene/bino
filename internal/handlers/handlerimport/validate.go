@@ -7,11 +7,11 @@ import (
 	"github.com/fugleadvokatene/bino/internal/request"
 )
 
-type Validate struct {
+type validate struct {
 	DB *db.Database
 }
 
-func (h *Validate) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+func (h *validate) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	commonData := request.MustLoadCommonData(ctx)
 

@@ -13,11 +13,11 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
-type Checkout struct {
+type checkout struct {
 	DB *db.Database
 }
 
-func (h *Checkout) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+func (h *checkout) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	commonData := request.MustLoadCommonData(ctx)
 

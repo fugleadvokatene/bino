@@ -11,11 +11,11 @@ import (
 	"github.com/fugleadvokatene/bino/internal/sql"
 )
 
-type GetUser struct {
+type getUser struct {
 	DB *db.Database
 }
 
-func (h *GetUser) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+func (h *getUser) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	commonData := request.MustLoadCommonData(ctx)
 

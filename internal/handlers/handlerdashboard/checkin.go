@@ -17,13 +17,13 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
-type Checkin struct {
+type checkin struct {
 	DB           *db.Database
 	Config       *config.Config
 	GDriveWorker *gdrive.Worker
 }
 
-func (h *Checkin) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+func (h *checkin) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	commonData := request.MustLoadCommonData(ctx)
 

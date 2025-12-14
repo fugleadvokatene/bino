@@ -17,12 +17,12 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
-type FilepondSubmit struct {
+type filepondSubmit struct {
 	DB          *db.Database
 	FileBackend fs.FileStorage
 }
 
-func (h *FilepondSubmit) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+func (h *filepondSubmit) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	data := request.MustLoadCommonData(ctx)
 
@@ -67,12 +67,12 @@ func (h *FilepondSubmit) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	request.Redirect(w, r, "/file")
 }
 
-type FilepondProcess struct {
+type filepondProcess struct {
 	FileBackend fs.FileStorage
 }
 
 // https://pqina.nl/filepond/docs/api/server/#process
-func (h *FilepondProcess) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+func (h *filepondProcess) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	data := request.MustLoadCommonData(ctx)
 
@@ -106,12 +106,12 @@ func (h *FilepondProcess) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte(result.UniqueID))
 }
 
-type FilepondRevert struct {
+type filepondRevert struct {
 	FileBackend fs.FileStorage
 }
 
 // https://pqina.nl/filepond/docs/api/server/#revert
-func (h *FilepondRevert) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+func (h *filepondRevert) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
 	in, err := io.ReadAll(r.Body)
@@ -128,12 +128,12 @@ func (h *FilepondRevert) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/plain")
 }
 
-type FilepondRestore struct {
+type filepondRestore struct {
 	FileBackend fs.FileStorage
 }
 
 // https://pqina.nl/filepond/docs/api/server/#restore
-func (h *FilepondRestore) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+func (h *filepondRestore) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
 	id, err := request.GetPathValue(r, "id")

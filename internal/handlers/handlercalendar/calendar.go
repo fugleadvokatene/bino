@@ -11,10 +11,10 @@ import (
 	"github.com/fugleadvokatene/bino/internal/request"
 )
 
-type Page struct {
+type page struct {
 }
 
-func (h *Page) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+func (h *page) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	commonData := request.MustLoadCommonData(ctx)
 
@@ -32,11 +32,11 @@ func (h *Page) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	_ = CalendarPage(commonData, initialtime, initialview).Render(ctx, w)
 }
 
-type AjaxAway struct {
+type ajaxAway struct {
 	DB *db.Database
 }
 
-func (h *AjaxAway) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+func (h *ajaxAway) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	commonData := request.MustLoadCommonData(ctx)
 
@@ -61,11 +61,11 @@ func (h *AjaxAway) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	w.Write(bin)
 }
 
-type AjaxPatientEvents struct {
+type ajaxPatientEvents struct {
 	DB *db.Database
 }
 
-func (h *AjaxPatientEvents) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+func (h *ajaxPatientEvents) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	commonData := request.MustLoadCommonData(ctx)
 

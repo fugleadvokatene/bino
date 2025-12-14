@@ -9,11 +9,11 @@ import (
 	"github.com/fugleadvokatene/bino/internal/sql"
 )
 
-type SetFilename struct {
+type setFilename struct {
 	DB *db.Database
 }
 
-func (h *SetFilename) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+func (h *setFilename) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
 	id, err := request.GetPathID(r, "id")

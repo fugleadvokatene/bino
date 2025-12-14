@@ -7,11 +7,11 @@ import (
 	"github.com/fugleadvokatene/bino/internal/request"
 )
 
-type Live struct {
+type live struct {
 	DB *db.Database
 }
 
-func (h *Live) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+func (h *live) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	commonData := request.MustLoadCommonData(ctx)
 

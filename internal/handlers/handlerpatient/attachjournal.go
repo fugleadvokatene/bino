@@ -13,11 +13,11 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
-type AttachJournal struct {
+type attachJournal struct {
 	DB *db.Database
 }
 
-func (h *AttachJournal) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+func (h *attachJournal) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	commonData := request.MustLoadCommonData(ctx)
 

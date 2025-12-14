@@ -9,12 +9,12 @@ import (
 	"github.com/fugleadvokatene/bino/internal/request"
 )
 
-type Invite struct {
+type invite struct {
 	Worker *gdrive.Worker
 	Config *gdrive.Config
 }
 
-func (h *Invite) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+func (h *invite) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	commonData := request.MustLoadCommonData(ctx)
 

@@ -10,11 +10,11 @@ import (
 	"github.com/fugleadvokatene/bino/internal/sql"
 )
 
-type SetTitle struct {
+type setTitle struct {
 	DB *db.Database
 }
 
-func (h *SetTitle) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+func (h *setTitle) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
 	id, err := request.GetPathID(r, "id")

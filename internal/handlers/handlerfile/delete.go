@@ -8,12 +8,12 @@ import (
 	"github.com/fugleadvokatene/bino/internal/request"
 )
 
-type Delete struct {
+type delete_ struct {
 	DB          *db.Database
 	FileBackend fs.FileStorage
 }
 
-func (h Delete) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+func (h delete_) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	data := request.MustLoadCommonData(ctx)
 

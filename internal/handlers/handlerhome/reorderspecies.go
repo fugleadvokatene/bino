@@ -11,11 +11,11 @@ import (
 	"github.com/fugleadvokatene/bino/internal/sql"
 )
 
-type ReorderSpecies struct {
+type reorderSpecies struct {
 	DB *db.Database
 }
 
-func (h *ReorderSpecies) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+func (h *reorderSpecies) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
 	id, err := request.GetPathID(r, "home")

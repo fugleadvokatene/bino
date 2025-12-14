@@ -14,11 +14,11 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
-type SetName struct {
+type setName struct {
 	DB *db.Database
 }
 
-func (h *SetName) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+func (h *setName) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	commonData := request.MustLoadCommonData(ctx)
 
