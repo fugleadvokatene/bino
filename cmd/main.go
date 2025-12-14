@@ -22,6 +22,7 @@ import (
 	"github.com/fugleadvokatene/bino/internal/handlers/handlerdebug"
 	"github.com/fugleadvokatene/bino/internal/handlers/handlererror"
 	"github.com/fugleadvokatene/bino/internal/handlers/handlerevent"
+	"github.com/fugleadvokatene/bino/internal/handlers/handlerfeatureflag"
 	"github.com/fugleadvokatene/bino/internal/handlers/handlerfile"
 	"github.com/fugleadvokatene/bino/internal/handlers/handlerformerpatients"
 	"github.com/fugleadvokatene/bino/internal/handlers/handlergdriveadmin"
@@ -36,6 +37,7 @@ import (
 	"github.com/fugleadvokatene/bino/internal/handlers/handlerrecover"
 	"github.com/fugleadvokatene/bino/internal/handlers/handlersearch"
 	"github.com/fugleadvokatene/bino/internal/handlers/handlerspeciesadmin"
+	"github.com/fugleadvokatene/bino/internal/handlers/handlertos"
 	"github.com/fugleadvokatene/bino/internal/handlers/handleruser"
 	"github.com/fugleadvokatene/bino/internal/handlers/handleruseradmin"
 	"github.com/fugleadvokatene/bino/internal/handlers/handlerwiki"
@@ -124,8 +126,8 @@ func realMain() error {
 		[]route.Route{
 			{
 				Path:             "GET /{$}",
-				Handler:          &handlerdashboard.Page{DB: db},
-				LoggedOutHandler: &handlerlogin.Login{},
+				Handler:          &handlerdashboard.Page{DB: db, MascotURL: config.MascotURL},
+				LoggedOutHandler: handlerlogin.New(config.Organization, config.MascotURL),
 			},
 		},
 		handleraccess.Routes(),
@@ -134,6 +136,7 @@ func realMain() error {
 		handlerdashboard.Routes(db, gdriveWorker, config),
 		handlerdebug.Routes(),
 		handlerevent.Routes(db),
+		handlerfeatureflag.Routes(db),
 		handlerfile.Routes(db, fileBackend),
 		handlerformerpatients.Routes(db),
 		handlergdriveadmin.Routes(db, gdriveWorker),
@@ -145,6 +148,7 @@ func realMain() error {
 		handlerprivacy.Routes(db, config.Privacy),
 		handlersearch.Routes(db),
 		handlerspeciesadmin.Routes(db),
+		handlertos.Routes(),
 		handleruser.Routes(db),
 		handleruseradmin.Routes(db),
 		handlerwiki.Routes(db, fileBackend),

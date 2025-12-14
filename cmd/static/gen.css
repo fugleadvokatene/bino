@@ -11802,21 +11802,20 @@ body {
 }
 
 .mascot-container {
-  min-height: 125px;
+  min-height: 175px;
   justify-content: center;
   display: flex;
-}
-@media (max-width: 1000px) {
-  .mascot-container {
-    display: none;
-  }
-}
-.mascot-container {
   flex-grow: 1;
 }
 
+@media (max-width: 1000px) {
+  .mascot-container[hide-on-mobile] {
+    display: none;
+  }
+}
+
 .mascot {
-  height: 100px;
+  height: 150px;
   border-radius: 50%;
   align-self: center;
   border: 5px solid rgb(238, 239, 245);

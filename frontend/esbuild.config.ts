@@ -9,6 +9,7 @@ build({
     'dashboard.ts',
     'editable.ts',
     'editor2.ts',
+    'ff.ts',
     'formerpatients.ts',
     'home.ts',
     'imageupload.ts',

@@ -30,11 +30,12 @@ var RequiredAccessLevel = map[model.Cap]model.AccessLevel{
 	model.CapUseImportTool:  model.AccessLevelCoordinator,
 	model.CapEditWiki:       model.AccessLevelCoordinator,
 
-	model.CapManageUsers:    model.AccessLevelAdmin,
-	model.CapDeleteUsers:    model.AccessLevelAdmin,
-	model.CapInviteToGDrive: model.AccessLevelAdmin,
-	model.CapInviteToBino:   model.AccessLevelAdmin,
-	model.CapDebug:          model.AccessLevelAdmin,
+	model.CapManageUsers:        model.AccessLevelAdmin,
+	model.CapDeleteUsers:        model.AccessLevelAdmin,
+	model.CapInviteToGDrive:     model.AccessLevelAdmin,
+	model.CapInviteToBino:       model.AccessLevelAdmin,
+	model.CapDebug:              model.AccessLevelAdmin,
+	model.CapManageFeatureFlags: model.AccessLevelAdmin,
 }
 
 var AccessLevelToCapabilities = func() (out struct {

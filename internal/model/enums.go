@@ -50,6 +50,7 @@ type Availability int
 // Debug,
 // UploadFile,
 // EditWiki,
+// ManageFeatureFlags,
 // )
 type Cap int32
 

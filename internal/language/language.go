@@ -83,6 +83,9 @@ type Language struct {
 	ErrorPageInstructions string
 	ErrorSettingLanguage  string
 
+	FFAdmin  string
+	FFCreate string
+
 	FilesUploadHeader        string
 	FilesPleaseWait          string
 	FilesThatYouHaveUploaded string
@@ -156,6 +159,8 @@ type Language struct {
 	GenericSave         string
 	GenericUnauthorized string
 	GenericEdit         string
+	GenericUser         string
+	GenericEnabled      string
 
 	HomesArchiveHome               string
 	HomesAddToHome                 string
@@ -397,6 +402,9 @@ var NO = &Language{
 	ErrorPageInstructions: "Det skjedde noe feil under lasting av siden. Feilen har blitt logget og vil bli undersøkt. Send melding til administrator for hjelp. Den tekniske feilmeldingen følger under.",
 	ErrorSettingLanguage:  "Kunne ikke oppdatere språk",
 
+	FFAdmin:  "Konfigurer feature flags",
+	FFCreate: "Lag nytt feature flag",
+
 	FilesUploadHeader:        "Last opp filer",
 	FilesPleaseWait:          "Laster opp filer...",
 	FilesThatYouHaveUploaded: "Filer du har lastet opp",
@@ -468,6 +476,8 @@ var NO = &Language{
 	GenericSave:         "Lagre",
 	GenericUnauthorized: "Du har ikke lov til å gjøre dette",
 	GenericEdit:         "Rediger",
+	GenericUser:         "Bruker",
+	GenericEnabled:      "Slått på",
 
 	HomesAddToHome:                 "Legg til",
 	HomesArchiveHome:               "Arkiver rehabhjem",
@@ -530,7 +540,7 @@ var NO = &Language{
 		model.StatusTransferredOutsideOrganization: "Overført til annet tiltak",
 		model.StatusDead:                           "Død",
 		model.StatusEuthanized:                     "Avlivet",
-		model.StatusDeleted:                        "Slettet",
+		model.StatusDeleted:                        "Feilregistrert",
 	},
 
 	Event: map[model.EventID]string{
@@ -695,6 +705,9 @@ var EN = &Language{
 	ErrorPageInstructions: "An error occurred while loading the page. The error has been logged and will be investigated. Send a message to the site admin for help. The technical error message is as follows.",
 	ErrorSettingLanguage:  "Failed to update language",
 
+	FFAdmin:  "Configure feature flags",
+	FFCreate: "Create feature flag",
+
 	FilesUploadHeader:        "Upload files",
 	FilesPleaseWait:          "Uploading...",
 	FilesThatYouHaveUploaded: "Files you have uploaded",
@@ -768,6 +781,8 @@ var EN = &Language{
 	GenericSave:         "Save",
 	GenericUnauthorized: "Unauthorized.",
 	GenericEdit:         "Edit",
+	GenericUser:         "User",
+	GenericEnabled:      "Enabled",
 
 	HomesAddToHome:                 "Add",
 	HomesArchiveHome:               "Archive rehab home",

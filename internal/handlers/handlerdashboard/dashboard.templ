@@ -14,14 +14,13 @@ templ DashboardPage(
     defaultSelectedSpecies int32,
     selfHome *model.Home,
     homes []model.Home,
+    mascotURL string,
 ) {
 	@templbase.Layout(data, "dashboard-container") {
         <div class="dashboard-left-sidebar">
             @DashboardForm(data, defaultSelectedSpecies, selfHome, homes)
             @DashboardSearch(data)
-            <div class="mascot-container">
-                <img class="mascot shadow-sm" src={data.StaticFile("mascot.jpg")}>
-            </div>
+            @templbase.Mascot(data, mascotURL, true)
         </div>
         if selfHome.ID != 0 {
             @DashboardSelf(data, selfHome, homes)

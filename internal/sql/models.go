@@ -27,6 +27,11 @@ type AppuserLanguage struct {
 	LanguageID int32
 }
 
+type FeatureFlag struct {
+	Flag      string
+	AppuserID int32
+}
+
 type File struct {
 	ID                   int32
 	Uuid                 string

@@ -32,6 +32,11 @@ func Authenticate(
 		preferredHome = homes[0]
 	}
 
+	featureFlags, err := auth.db.GetFeatureFlagsForUser(ctx, user.ID)
+	if err != nil {
+		featureFlags = nil
+	}
+
 	loggingConsent := user.LoggingConsent.Valid && user.LoggingConsent.Time.After(time.Now())
 
 	userData := request.UserData{
@@ -44,6 +49,7 @@ func Authenticate(
 		PreferredHome:   preferredHome.ToHomeView(),
 		LoggingConsent:  loggingConsent,
 		AccessLevel:     model.AccessLevel(user.AccessLevel),
+		FeatureFlags:    featureFlags,
 	}
 
 	commonData := request.CommonData{

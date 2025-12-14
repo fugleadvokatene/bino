@@ -51,6 +51,6 @@ func (db *Database) SuggestJournalBasedOnSearch(ctx context.Context, id int32, n
 			ID:    id,
 		})
 	} else {
-		return fmt.Errorf("invalid journal URL")
+		return fmt.Errorf("invalid journal URL '%s'", results[0].AssociatedUrl.String)
 	}
 }

@@ -92,8 +92,16 @@ templ Navbar(data *request.CommonData) {
             if data.User != nil {
                 <div class="collapse navbar-collapse" id="navbarSupportedContent">
                     @NavbarPageLink(data.Language.NavbarDashboard, "/")
-                    @NavbarPageLink(data.Language.Calendar, "/calendar", "hide-on-mobile")
-                    @NavbarPageLink(data.Language.WikiHeader, "/wiki")
+                    if data.FeatureFlag("Calendar") {
+                        if data.FeatureFlag("Calendar on mobile") {
+                            @NavbarPageLink(data.Language.Calendar, "/calendar")
+                        } else {
+                            @NavbarPageLink(data.Language.Calendar, "/calendar", "hide-on-mobile")
+                        }
+                    }
+                    if data.FeatureFlag("Wiki") {
+                        @NavbarPageLink(data.Language.WikiHeader, "/wiki")
+                    }
                     @NavbarPageLink(data.Language.FormerPatients, "/former-patients")
                     @NavbarPageLink(data.Language.AdminRoot, "/admin")
                     @FullTextSearch(data)
@@ -253,4 +261,14 @@ templ UserComponent(data *request.CommonData, u *model.User) {
         </tbody>
     </table>
     { children... }
+}
+
+templ Mascot(data *request.CommonData, mascotURL string, hideOnMobile bool) {
+    <div class="mascot-container" hide-on-mobile?={hideOnMobile}>
+        if mascotURL == "" {
+            <img class="mascot shadow-sm" src={data.StaticFile("mascot.png")}>
+        } else {
+            <img class="mascot shadow-sm" src={mascotURL}>
+        }
+    </div>
 }

@@ -17,6 +17,8 @@ type Config struct {
 	GoogleDrive    gdrive.Config
 	SystemLanguage model.LanguageID
 	SystemBaseURL  string
+	Organization   string
+	MascotURL      string
 }
 
 func Load(file string) (*Config, error) {

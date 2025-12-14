@@ -5,6 +5,7 @@ import (
 	"log/slog"
 
 	"github.com/a-h/templ"
+	"github.com/fugleadvokatene/bino/internal/generic"
 	"github.com/fugleadvokatene/bino/internal/language"
 	"github.com/fugleadvokatene/bino/internal/model"
 )
@@ -100,6 +101,7 @@ type UserData struct {
 	HasAvatarURL    bool
 	HasGDriveAccess bool
 	AccessLevel     model.AccessLevel
+	FeatureFlags    generic.Set[string]
 }
 
 func (u *UserData) HasHomeOrAccess(homeID int32, al model.AccessLevel) bool {
@@ -117,4 +119,9 @@ func (cd *CommonData) SaveFeedback() {
 		cd.Log(slog.LevelError, "Saving feedback cookie", "err", err)
 		return
 	}
+}
+
+func (cd *CommonData) FeatureFlag(flag string) bool {
+	_, found := cd.User.FeatureFlags[flag]
+	return found
 }

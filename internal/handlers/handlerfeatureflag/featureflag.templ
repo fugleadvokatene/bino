@@ -1,0 +1,49 @@
+package handlerfeatureflag
+
+import "github.com/fugleadvokatene/bino/internal/templbase"
+import "github.com/fugleadvokatene/bino/internal/model"
+import "github.com/fugleadvokatene/bino/internal/request"
+
+templ Page(data *request.CommonData, ff *model.FeatureFlagsState) {
+    @templbase.Layout(data) {
+        <h1>{data.Language.FFAdmin}</h1>
+        <div class="card b-card">
+            <h2>{data.Language.FFCreate}</h2>
+            @templbase.Form("/ff/create", "POST", "form-control d-flex") {
+                <input type="text" name="flag" class="form-control"/>
+                <button type="submit" class="btn btn-success">{data.Language.FFCreate}</button>
+            }
+        </div>
+        for _, flag := range ff.Flags {
+            <div class="card b-card">
+                <h2>{flag.Flag}</h2>
+                <table class="table table-striped small">
+                    <thead>
+                        <tr>
+                            <th>{data.Language.GenericUser}</th>
+                            <th>{data.Language.GenericEnabled}</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        for _, user := range flag.Users {
+                            <tr>
+                                <td>{user.UserName}</td>
+                                <td>
+                                    <input type="checkbox" class="ff-checkbox" data-flag={flag.Flag} data-user={user.UserID} checked?={user.Enabled}/>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                    <tfoot>
+                        <tr>
+                            <th colspan="2">
+                                @templbase.SingleButtonForm(flag.DeleteURL(), data.Language.GenericDelete, "POST", "btn-danger w-100")
+                            </th>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+        }
+    }
+    @templbase.JSModule(data, "ff")
+}

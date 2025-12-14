@@ -7,10 +7,19 @@ import (
 )
 
 type Login struct {
+	org       string
+	mascotURL string
+}
+
+func New(org, mascotURL string) http.Handler {
+	return &Login{
+		org:       org,
+		mascotURL: mascotURL,
+	}
 }
 
 func (h *Login) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	commonData := request.MustLoadCommonData(ctx)
-	_ = LoginPage(commonData).Render(ctx, w)
+	_ = LoginPage(commonData, h.org, h.mascotURL).Render(ctx, w)
 }

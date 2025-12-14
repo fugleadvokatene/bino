@@ -12,7 +12,8 @@ import (
 )
 
 type Page struct {
-	DB *db.Database
+	DB        *db.Database
+	MascotURL string
 }
 
 func (h *Page) ServeHTTP(w http.ResponseWriter, r *http.Request) {
@@ -94,5 +95,5 @@ func (h *Page) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		defaultSpecies = preferredSpecies[0].ID
 	}
 
-	_ = DashboardPage(commonData, defaultSpecies, &preferredHomeView, homeViews).Render(r.Context(), w)
+	_ = DashboardPage(commonData, defaultSpecies, &preferredHomeView, homeViews, h.MascotURL).Render(r.Context(), w)
 }

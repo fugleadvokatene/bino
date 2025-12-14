@@ -3,10 +3,13 @@ package handlerlogin
 import "github.com/fugleadvokatene/bino/internal/request"
 import "github.com/fugleadvokatene/bino/internal/templbase"
 
-templ LoginPage(data *request.CommonData) {
+templ LoginPage(data *request.CommonData, organization string, mascotURL string) {
     @templbase.Layout(data) {
         @templbase.Card() {
             <p>Bino is a patient management system for distributed wildlife rescues.</p>
+            if organization != "" {
+                <p>This is the Bino board for <strong>{organization}</strong>.</p>
+            }
             <p>You can log in using your Google account. Click the button below to sign in.</p>
             <button class="gsi-material-button m-auto">
                 <div class="gsi-material-button-state"></div>
@@ -24,5 +27,6 @@ templ LoginPage(data *request.CommonData) {
                 </div>
             </button>
         }
+        @templbase.Mascot(data, mascotURL, false)
     }
 }

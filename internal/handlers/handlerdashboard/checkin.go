@@ -39,7 +39,7 @@ func (h *checkin) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 
 	createJournal := false
-	if _, err := request.GetFormValue(r, "journal-action"); err == nil {
+	if _, err := request.GetFormValue(r, "create-journal"); err == nil {
 		createJournal = true
 	}
 
@@ -109,7 +109,7 @@ func (h *checkin) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 	if suggestJournal {
 		if err := h.DB.SuggestJournalBasedOnSearch(ctx, patientID, name, systemSpeciesName, fields["home"]); err != nil {
-			request.LogCtx(ctx, slog.LevelError, "suggesting journal: %v", err)
+			request.LogCtx(ctx, slog.LevelWarn, "suggesting journal", "error", err)
 		}
 	}
 	request.RedirectToReferer(w, r)

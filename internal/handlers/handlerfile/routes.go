@@ -11,11 +11,13 @@ func Routes(
 	db *db.Database,
 	fileBackend fs.FileStorage,
 ) []route.Route {
+	readHandler := &Read{DB: db, FileBackend: fileBackend}
 	return []route.Route{
 		{
-			Path:    "GET /file/{id}/{filename}",
-			Handler: &Read{DB: db, FileBackend: fileBackend},
-			Cap:     model.CapLoggedIn,
+			Path:             "GET /file/{id}/{filename}",
+			Handler:          readHandler,
+			Cap:              model.CapLoggedIn,
+			LoggedOutHandler: readHandler,
 		},
 		{
 			Path:    "GET /file",
