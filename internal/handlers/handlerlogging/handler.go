@@ -20,17 +20,23 @@ func New(handler http.Handler) http.Handler {
 
 func (h *LoggingHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	start := time.Now()
-	h.handler.ServeHTTP(w, r)
 	r.ParseForm()
 	items := []any{
 		"method", r.Method,
 		"path", r.URL.Path,
-		"elapsed", time.Since(start),
 	}
 	for k, v := range r.Form {
 		items = append(items, k, v)
 	}
 
+	request.LogR(
+		r,
+		slog.LevelDebug,
+		"HTTP request started",
+		items...,
+	)
+	h.handler.ServeHTTP(w, r)
+	items = append(items, "elapsed", time.Since(start))
 	request.LogR(
 		r,
 		slog.LevelDebug,

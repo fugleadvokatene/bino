@@ -1539,7 +1539,7 @@ func Mascot(data *request.CommonData, mascotURL string, hideOnMobile bool) templ
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var77 string
-			templ_7745c5c3_Var77, templ_7745c5c3_Err = templ.JoinStringErrs(data.StaticFile("mascot.png"))
+			templ_7745c5c3_Var77, templ_7745c5c3_Err = templ.JoinStringErrs(data.StaticFile("mascot.jpg"))
 			if templ_7745c5c3_Err != nil {
 				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/templbase/layout.templ`, Line: 269, Col: 76}
 			}

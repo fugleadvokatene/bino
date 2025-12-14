@@ -5,10 +5,12 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"log/slog"
 	"net/http"
 	"os"
 
 	"github.com/fugleadvokatene/bino/internal/model"
+	"github.com/fugleadvokatene/bino/internal/request"
 	"github.com/google/uuid"
 )
 
@@ -244,6 +246,8 @@ func (lfs *LocalFileStorage) ListTemp(ctx context.Context) (out ListTempResult) 
 }
 
 func (lfs *LocalFileStorage) ReadTemp(ctx context.Context, id string) (out ReadResult) {
+	cd := request.MustLoadCommonData(ctx)
+
 	if err := uuid.Validate(id); err != nil {
 		return ReadResult{
 			Error:          fmt.Errorf("'%s' is not a valid UUID: %w", id, err),
@@ -284,7 +288,8 @@ func (lfs *LocalFileStorage) ReadTemp(ctx context.Context, id string) (out ReadR
 		}
 	}
 
-	if stat.Size() > MaxImageSize {
+	if size := stat.Size(); size > MaxImageSize {
+		cd.Log(slog.LevelWarn, "file too large", "size", size, "maxsize", MaxImageSize)
 		file.Close()
 		return ReadResult{
 			Error:          fmt.Errorf("file too large"),

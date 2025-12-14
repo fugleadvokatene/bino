@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"log/slog"
 	"net/http"
 	"strconv"
 	"time"
@@ -79,6 +80,7 @@ func (h *filepondProcess) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	// Parse multipart form with reasonable max memory
 	err := r.ParseMultipartForm(fs.MaxImageSize)
 	if err != nil {
+		data.Log(slog.LevelWarn, "file too large?", "err", err, "maxsize", fs.MaxImageSize)
 		request.AjaxError(w, r, err, http.StatusRequestEntityTooLarge)
 		return
 	}

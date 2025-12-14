@@ -1,6 +1,7 @@
 package request
 
 import (
+	"context"
 	"fmt"
 	"log/slog"
 
@@ -80,16 +81,19 @@ func (cd *CommonData) Lang32() int32 {
 // Log if the user has given explicit concent
 func (cd *CommonData) Log(level slog.Level, message string, args ...any) {
 	if cd == nil {
+		fmt.Printf("cd is nil\n")
 		return
 	}
 	if cd.User == nil {
+		fmt.Printf("user is nil\n")
 		return
 	}
 	if !cd.User.LoggingConsent {
+		fmt.Printf("user has loggingconsent=0\n")
 		return
 	}
 	args = append(args, "user", cd.User.DisplayName)
-	slog.Log(cd.Cookies.R.Context(), level, message, args...)
+	slog.Log(context.Background(), level, message, args...)
 }
 
 type UserData struct {

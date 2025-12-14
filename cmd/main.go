@@ -59,10 +59,10 @@ func main() {
 func realMain() error {
 	// Set up logging
 	slog.SetDefault(slog.New(
-		tint.NewHandler(os.Stderr, &tint.Options{
+		tint.NewHandler(os.Stdout, &tint.Options{
 			Level:      slog.LevelDebug,
 			TimeFormat: time.Kitchen,
-			NoColor:    !isatty.IsTerminal(os.Stderr.Fd()),
+			NoColor:    !isatty.IsTerminal(os.Stdout.Fd()),
 		}),
 	))
 	slog.Info("Hello, Bino.")
