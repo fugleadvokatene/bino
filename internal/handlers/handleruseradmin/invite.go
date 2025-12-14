@@ -27,6 +27,11 @@ func (h *invite) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		email, err = request.GetFormValue(r, "email")
 	}
 
+	var home int32
+	if err == nil {
+		home, err = request.GetFormID(r, "home")
+	}
+
 	if err != nil {
 		handlererror.Error(w, r, err)
 		return
@@ -48,6 +53,7 @@ func (h *invite) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			Email:   pgtype.Text{String: email, Valid: true},
 			Created: pgtype.Timestamptz{Time: now, Valid: true},
 			Expires: pgtype.Timestamptz{Time: expires, Valid: true},
+			Home:    pgtype.Int4{Int32: home, Valid: true},
 		}); err != nil {
 			if pgErr, ok := err.(*pgconn.PgError); ok && pgErr.Code == "23505" {
 				// Conflicting invite key

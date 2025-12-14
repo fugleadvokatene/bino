@@ -115,12 +115,14 @@ INSERT INTO invitation (
   id,
   email,
   expires,
-  created
+  created,
+  home
 ) VALUES (
   $1,
   $2,
   $3,
-  $4
+  $4,
+  $5
 )
 `
 
@@ -129,6 +131,7 @@ type InsertInvitationParams struct {
 	Email   pgtype.Text
 	Expires pgtype.Timestamptz
 	Created pgtype.Timestamptz
+	Home    pgtype.Int4
 }
 
 func (q *Queries) InsertInvitation(ctx context.Context, arg InsertInvitationParams) error {
@@ -137,6 +140,7 @@ func (q *Queries) InsertInvitation(ctx context.Context, arg InsertInvitationPara
 		arg.Email,
 		arg.Expires,
 		arg.Created,
+		arg.Home,
 	)
 	return err
 }
