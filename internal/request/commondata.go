@@ -88,6 +88,7 @@ func (cd *CommonData) Log(level slog.Level, message string, args ...any) {
 	if !cd.User.LoggingConsent {
 		return
 	}
+	args = append(args, "user", cd.User.DisplayName)
 	slog.Log(cd.Cookies.R.Context(), level, message, args...)
 }
 
