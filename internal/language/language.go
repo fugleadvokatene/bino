@@ -789,7 +789,7 @@ var EN = &Language{
 	HomesCreateHome:                "Create new rehab home",
 	HomesCreateHomeNote:            "The name is usually that of a person, but there can be multiple people in a rehab home.",
 	HomesEmptyHome:                 "There are no users in this rehab home.",
-	HomesHomeName:                  "Name",
+	HomesHomeName:                  "Rehab home",
 	HomesRemoveFromCurrent:         "Remove from this rehab home",
 	HomesUnassignedUsers:           "Users that are not associated with any rehab homes",
 	HomesViewHomes:                 "Rehab homes",
