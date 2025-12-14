@@ -1,0 +1,8 @@
+erDiagram
+    WikiPage }o--|| User : "Wiki page is created by a user"
+    WikiPage ||--|{ WikiRevision : "Wiki page has one or more revisions"
+    WikiRevision }o--|| User : "Wiki revision has an editor"
+    File }o--o{ WikiPage : "File may be associated with one or more wiki pages"
+    File }o--o{ Patient : "File may be associated with one or more patients"
+    File }o--|| User : "File is created by a user"
+    

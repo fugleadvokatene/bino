@@ -15,11 +15,21 @@ For now, bino uses Google Drive for actual patient journals, and users must have
 
 ### Architecture
 
+#### Data model
+
+These are the most important entities in the data model managed by Bino:
+
+![](doc/img/erd-main.png)
+
+Wiki and file subsystem:
+
+![](doc/img/erd-wiki.png)
+
+#### Backend
+
 This is a backend-heavy application; keeping data in sync between the server and client is usually
 solved by having the page reload, either by a form or with `location.reload()`.
 There are a few exceptions where the frontend is more interactive: searching and filtering, calendar, and wiki. Off the shelf libraries are used for this (TipTap, calendar.js, htmx).
-
-#### Backend
 
 The backend starts up a webserver and runs a few periodic background jobs
 that keep the search index in sync and delete stale data (expired sessions and invitations). 
