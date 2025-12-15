@@ -7,13 +7,12 @@ build({
   entryPoints: [
     'common.ts',
     'dashboard.ts',
-    'editable.ts',
+    'sharedscript.ts',
     'editor2.ts',
     'ff.ts',
     'formerpatients.ts',
     'home.ts',
     'imageupload.ts',
-    'lang.ts',
     'reorder-patients.ts',
     'search.ts',
     'speciesadmin.ts'

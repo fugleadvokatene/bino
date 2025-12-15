@@ -5092,7 +5092,7 @@ var require_bootstrap_bundle = __commonJS({
   }
 });
 
-// common.ts
+// sharedscript.ts
 var import_bootstrap = __toESM(require_bootstrap_bundle(), 1);
 
 // lang.ts

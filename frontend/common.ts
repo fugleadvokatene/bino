@@ -1,7 +1,3 @@
-import 'bootstrap/dist/js/bootstrap.bundle'
-import './lang.js'
-import './editable.js'
-
 // Typed querySelector
 export const QuerySelector = <T extends Element>(
   sel: string,

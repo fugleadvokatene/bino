@@ -36,6 +36,7 @@ templ Head(data *request.CommonData) {
         <title>🕊️ bino – {data.Subtitle}</title>
     }
     <link href={data.StaticFile("gen.css")} rel="stylesheet">
+    @JSModule(data, "sharedscript")
     <script src="https://kit.fontawesome.com/9e1149297d.js" crossorigin="anonymous"></script>
 }
 
