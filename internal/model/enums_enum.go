@@ -187,11 +187,13 @@ const (
 	CapEditWiki Cap = 24
 	// CapManageFeatureFlags is a Cap of type ManageFeatureFlags.
 	CapManageFeatureFlags Cap = 25
+	// CapHardDeletePatient is a Cap of type HardDeletePatient.
+	CapHardDeletePatient Cap = 26
 )
 
 var ErrInvalidCap = errors.New("not a valid Cap")
 
-const _CapName = "LoggedInViewAllActivePatientsViewAllFormerPatientsViewAllHomesViewAllUsersViewCalendarSearchSetOwnPreferencesCheckInPatientManageOwnPatientsManageAllPatientsManageOwnHomesManageAllHomesCreatePatientJournalManageSpeciesManageUsersDeleteUsersViewAdminToolsViewGDriveSettingsInviteToGDriveInviteToBinoUseImportToolDebugUploadFileEditWikiManageFeatureFlags"
+const _CapName = "LoggedInViewAllActivePatientsViewAllFormerPatientsViewAllHomesViewAllUsersViewCalendarSearchSetOwnPreferencesCheckInPatientManageOwnPatientsManageAllPatientsManageOwnHomesManageAllHomesCreatePatientJournalManageSpeciesManageUsersDeleteUsersViewAdminToolsViewGDriveSettingsInviteToGDriveInviteToBinoUseImportToolDebugUploadFileEditWikiManageFeatureFlagsHardDeletePatient"
 
 // CapValues returns a list of the values for Cap
 func CapValues() []Cap {
@@ -222,6 +224,7 @@ func CapValues() []Cap {
 		CapUploadFile,
 		CapEditWiki,
 		CapManageFeatureFlags,
+		CapHardDeletePatient,
 	}
 }
 
@@ -252,6 +255,7 @@ var _CapMap = map[Cap]string{
 	CapUploadFile:            _CapName[316:326],
 	CapEditWiki:              _CapName[326:334],
 	CapManageFeatureFlags:    _CapName[334:352],
+	CapHardDeletePatient:     _CapName[352:369],
 }
 
 // String implements the Stringer interface.
@@ -296,6 +300,7 @@ var _CapValue = map[string]Cap{
 	_CapName[316:326]: CapUploadFile,
 	_CapName[326:334]: CapEditWiki,
 	_CapName[334:352]: CapManageFeatureFlags,
+	_CapName[352:369]: CapHardDeletePatient,
 }
 
 // ParseCap attempts to convert a string to a Cap.

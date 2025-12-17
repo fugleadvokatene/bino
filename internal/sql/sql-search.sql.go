@@ -12,6 +12,23 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
+const deleteSearchEntriesByNamespaceAndURL = `-- name: DeleteSearchEntriesByNamespaceAndURL :exec
+DELETE FROM search
+WHERE
+  (ns = $1)
+  AND (associated_url = $2)
+`
+
+type DeleteSearchEntriesByNamespaceAndURLParams struct {
+	Namespace string
+	Url       pgtype.Text
+}
+
+func (q *Queries) DeleteSearchEntriesByNamespaceAndURL(ctx context.Context, arg DeleteSearchEntriesByNamespaceAndURLParams) error {
+	_, err := q.db.Exec(ctx, deleteSearchEntriesByNamespaceAndURL, arg.Namespace, arg.Url)
+	return err
+}
+
 const deleteSearchEntry = `-- name: DeleteSearchEntry :exec
 DELETE
 FROM search

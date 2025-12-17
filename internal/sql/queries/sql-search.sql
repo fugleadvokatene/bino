@@ -191,3 +191,10 @@ WHERE search_match_advanced(
   sqlc.narg('min_updated')::timestamptz,
   sqlc.narg('max_updated')::timestamptz
 );
+
+-- name: DeleteSearchEntriesByNamespaceAndURL :exec
+DELETE FROM search
+WHERE
+  (ns = @namespace)
+  AND (associated_url = @url)
+;

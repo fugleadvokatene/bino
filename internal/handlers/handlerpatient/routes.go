@@ -30,6 +30,11 @@ func Routes(
 			Cap:     model.CapManageOwnPatients,
 		},
 		{
+			Path:    "POST /patient/{patient}/delete",
+			Handler: &delete_{DB: db},
+			Cap:     model.CapHardDeletePatient,
+		},
+		{
 			Path:    "POST /patient/{patient}/set-name",
 			Handler: &setName{DB: db},
 			Cap:     model.CapManageOwnPatients,

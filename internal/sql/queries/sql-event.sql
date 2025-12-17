@@ -31,6 +31,11 @@ WHERE pe.patient_id = $1
 ORDER BY pe.time
 ;
 
+-- name: DeleteEventsForPatient :exec
+DELETE FROM patient_event
+WHERE patient_id = $1
+;
+
 -- name: GetEventsForCalendar :many
 SELECT
   pe.*,

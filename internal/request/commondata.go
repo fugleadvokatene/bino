@@ -6,6 +6,7 @@ import (
 	"log/slog"
 
 	"github.com/a-h/templ"
+	"github.com/fugleadvokatene/bino/internal/capabilities"
 	"github.com/fugleadvokatene/bino/internal/generic"
 	"github.com/fugleadvokatene/bino/internal/language"
 	"github.com/fugleadvokatene/bino/internal/model"
@@ -113,10 +114,15 @@ func (u *UserData) HasHomeOrAccess(homeID int32, al model.AccessLevel) bool {
 	if u.PreferredHome.ID == homeID {
 		return true
 	}
-	if u.AccessLevel >= al {
-		return true
-	}
-	return false
+	return u.HasAccess(al)
+}
+
+func (u *UserData) HasAccess(al model.AccessLevel) bool {
+	return u.AccessLevel >= al
+}
+
+func (u *UserData) HasCapability(cap model.Cap) bool {
+	return u.HasAccess(capabilities.RequiredAccessLevel[cap])
 }
 
 func (cd *CommonData) SaveFeedback() {

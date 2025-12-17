@@ -114,6 +114,11 @@ SELECT * FROM patient
 WHERE id = $1
 ;
 
+-- name: DeletePatient :exec
+DELETE FROM patient
+WHERE id = $1
+;
+
 -- name: GetPatientWithSpecies :one
 SELECT p.*, sl.name AS species_name FROM patient AS p
 JOIN species_language AS sl
@@ -168,4 +173,9 @@ WHERE id = $1
 -- name: AssociateFileWithPatient :exec
 INSERT INTO file_patient (file_id, patient_id)
 VALUES (@file_id, @patient_id)
+;
+
+-- name: DeleteFileAssociationsForPatient :exec
+DELETE FROM file_patient
+WHERE patient_id = $1
 ;

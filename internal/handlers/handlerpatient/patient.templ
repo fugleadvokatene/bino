@@ -42,7 +42,11 @@ templ PatientPage(ctx context.Context, data *request.CommonData, page model.Pati
                 <tbody>
                     @PatientJournalUpdate(data, page.Patient, true)
 
-                    if !model.IsCheckoutStatus[model.Status(page.Patient.Status)] {
+                    if model.IsCheckoutStatus[model.Status(page.Patient.Status)] {
+                        if data.User.HasCapability(model.CapHardDeletePatient) {
+                            @PatientHardDelete(data, page.Patient)
+                        }
+                    } else {
                         @PatientMove(data, page.Homes, page.Home, page.Patient)
                         @PatientCheckout(data, page.Patient)
                     }
@@ -79,6 +83,24 @@ templ PatientPage(ctx context.Context, data *request.CommonData, page model.Pati
         }
         @templbase.JSModule(data, "editable")
     }
+}
+
+templ PatientHardDelete(data *request.CommonData, patient model.Patient) {
+    <tr>
+    <th class="w-25">{data.Language.GenericDelete}</th>
+    <td>
+        @PatientHardDeleteButton(data, patient)
+    </td>
+    </tr>
+}
+
+templ PatientHardDeleteButton(data *request.CommonData, patient model.Patient) {
+    @templbase.SingleButtonForm(
+        patient.URLSuffix("delete"),
+        data.Language.GenericDelete,
+        "POST",
+        "btn-danger",
+    )
 }
 
 templ PatientCheckout(data *request.CommonData, patient model.Patient) {

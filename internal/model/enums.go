@@ -51,6 +51,7 @@ type Availability int
 // UploadFile,
 // EditWiki,
 // ManageFeatureFlags,
+// HardDeletePatient,
 // )
 type Cap int32
 

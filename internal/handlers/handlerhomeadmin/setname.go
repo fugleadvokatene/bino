@@ -9,12 +9,13 @@ import (
 	"github.com/fugleadvokatene/bino/internal/sql"
 )
 
-type SetName struct {
+type setName struct {
 	DB *db.Database
 }
 
-func (h *SetName) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+func (h *setName) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
+	cd := request.MustLoadCommonData(ctx)
 
 	home, err := request.GetPathID(r, "home")
 	if err != nil {
@@ -36,6 +37,8 @@ func (h *SetName) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		handlererror.Error(w, r, err)
 		return
 	}
+
+	cd.Info(cd.Language.HomeNameWasUpdated)
 
 	request.RedirectToReferer(w, r)
 }

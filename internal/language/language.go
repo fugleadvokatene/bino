@@ -182,6 +182,7 @@ type Language struct {
 	HomeUnavailableIndefinitely    string
 	HomeUnavailableFromInstruction string
 	HomeUnavailableToInstruction   string
+	HomeNameWasUpdated             string
 
 	ImportHeader   string
 	ImportPatients string
@@ -198,6 +199,7 @@ type Language struct {
 	PatientEventNote      string
 	PatientEventUser      string
 	PatientEventHome      string
+	PatientWasDeleted     string
 
 	UserHomes      string
 	UserIsHomeless string
@@ -498,6 +500,7 @@ var NO = &Language{
 	HomeUnavailableIndefinitely:    "Utilgjengelig på ubestemt tid.",
 	HomeUnavailableFromInstruction: "Datoen du blir utilgjengelig.",
 	HomeUnavailableToInstruction:   "Siste dato du er utilgjengelig.",
+	HomeNameWasUpdated:             "Endret navn på rehabhjemmet.",
 
 	ImportHeader:   "Importverktøy",
 	ImportPatients: "Importer pasienter",
@@ -519,6 +522,7 @@ var NO = &Language{
 	PatientEventNote:      "Notis",
 	PatientEventUser:      "Endret av",
 	PatientEventHome:      "Rehabhjem",
+	PatientWasDeleted:     "Pasienten ble slettet.",
 
 	UserHomes:      "Tilkoblede rehabhjem",
 	UserIsHomeless: "Ingen tilkoblede rehabhjem",
@@ -803,6 +807,7 @@ var EN = &Language{
 	HomeUnavailableIndefinitely:    "Unavailable until further notice.",
 	HomeUnavailableFromInstruction: "The date when you become unavailable.",
 	HomeUnavailableToInstruction:   "The last date when you are unavailable.",
+	HomeNameWasUpdated:             "Rehab home name was updated.",
 
 	ImportHeader:   "Importer",
 	ImportPatients: "Importe patients",
@@ -821,6 +826,7 @@ var EN = &Language{
 	PatientEventNote:      "Note",
 	PatientEventUser:      "User",
 	PatientEventHome:      "Home",
+	PatientWasDeleted:     "Pasienten ble slettet.",
 
 	UserHomes:      "Associated rehab homes",
 	UserIsHomeless: "No associated rehab homes",

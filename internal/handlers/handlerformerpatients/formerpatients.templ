@@ -4,6 +4,7 @@ import "github.com/fugleadvokatene/bino/internal/model"
 import "github.com/fugleadvokatene/bino/internal/request"
 import "github.com/fugleadvokatene/bino/internal/templbase"
 import "github.com/fugleadvokatene/bino/internal/handlers/handlercalendar"
+import "github.com/fugleadvokatene/bino/internal/handlers/handlerpatient"
 
 templ FormerPatientsPage(data *request.CommonData, patients []model.Patient) {
 	@templbase.Layout(data) {
@@ -37,7 +38,12 @@ templ FormerPatientsPage(data *request.CommonData, patients []model.Patient) {
                         <tr class="filter-box">
                             <td><a href={templ.URL(p.URL())} class="filter-content">{p.Name}</a></td>
                             <td class="filter-content">{p.Species}</td>
-                            <td class="filter-content">{data.Language.Status[model.Status(p.Status)]}</td>
+                            <td class="filter-content">
+                                {data.Language.Status[model.Status(p.Status)]}
+                                if model.Status(p.Status) == model.StatusDeleted {
+                                    @handlerpatient.PatientHardDeleteButton(data, p)
+                                }
+                            </td>
                             <td class="filter-content" data-sort-key={p.TimeCheckin.Unix()}>@handlercalendar.CalendarLinkAbs(data.Language, p.TimeCheckin, "listDay")</td>
                             <td class="filter-content" data-sort-key={p.TimeCheckin.Unix()}>@handlercalendar.CalendarLinkAbs(data.Language, p.TimeCheckout, "listDay")</td>
                         </tr>

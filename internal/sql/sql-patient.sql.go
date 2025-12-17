@@ -136,6 +136,26 @@ func (q *Queries) DeclineSuggestedJournal(ctx context.Context, id int32) error {
 	return err
 }
 
+const deleteFileAssociationsForPatient = `-- name: DeleteFileAssociationsForPatient :exec
+DELETE FROM file_patient
+WHERE patient_id = $1
+`
+
+func (q *Queries) DeleteFileAssociationsForPatient(ctx context.Context, patientID int32) error {
+	_, err := q.db.Exec(ctx, deleteFileAssociationsForPatient, patientID)
+	return err
+}
+
+const deletePatient = `-- name: DeletePatient :exec
+DELETE FROM patient
+WHERE id = $1
+`
+
+func (q *Queries) DeletePatient(ctx context.Context, id int32) error {
+	_, err := q.db.Exec(ctx, deletePatient, id)
+	return err
+}
+
 const getActivePatients = `-- name: GetActivePatients :many
 SELECT
   p.id,
