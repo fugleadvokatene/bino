@@ -20,13 +20,15 @@ INSERT INTO invitation (
   email,
   expires,
   created,
-  home
+  home,
+  access_level
 ) VALUES (
   @id,
   @email,
   @expires,
   @created,
-  @home
+  @home,
+  @accessLevel
 );
 
 -- name: DeleteInvitation :exec

@@ -38,7 +38,7 @@ func (h *Page) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	homes, err := h.DB.Q.GetHomes(ctx)
+	homes, err := h.DB.Homes(ctx)
 	if err != nil {
 		handlererror.Error(w, r, err)
 		return
@@ -56,32 +56,27 @@ func (h *Page) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	homeViews := generic.SliceToSlice(homes, func(h sql.Home) model.Home {
-		return model.Home{
-			ID:       h.ID,
-			Capacity: h.Capacity,
-			Name:     h.Name,
-			Note:     h.Note,
-			Patients: generic.SliceToSlice(generic.FilterSlice(patients, func(p sql.GetActivePatientsRow) bool {
-				return p.CurrHomeID.Valid && p.CurrHomeID.Int32 == h.ID
-			}), func(p sql.GetActivePatientsRow) model.Patient {
-				return p.ToPatientView()
-			}),
-			Users: generic.SliceToSlice(generic.FilterSlice(users, func(u sql.GetAppusersRow) bool {
-				return u.HomeID.Valid && u.HomeID.Int32 == h.ID
-			}), func(u sql.GetAppusersRow) model.User {
-				return u.ToUserView()
-			}),
-			UnavailablePeriods: generic.SliceToSlice(generic.FilterSlice(unavailablePeriods, func(p sql.HomeUnavailable) bool {
-				return p.HomeID == h.ID
-			}), func(in sql.HomeUnavailable) model.Period {
-				return in.ToPeriodView()
-			}),
-		}
+	homeViews := generic.SliceToSlice(homes, func(h model.Home) model.Home {
+		h.Patients = generic.SliceToSlice(generic.FilterSlice(patients, func(p sql.GetActivePatientsRow) bool {
+			return p.CurrHomeID.Valid && p.CurrHomeID.Int32 == h.ID
+		}), func(p sql.GetActivePatientsRow) model.Patient {
+			return p.ToModel()
+		})
+		h.Users = generic.SliceToSlice(generic.FilterSlice(users, func(u sql.GetAppusersRow) bool {
+			return u.HomeID.Valid && u.HomeID.Int32 == h.ID
+		}), func(u sql.GetAppusersRow) model.User {
+			return u.ToModel()
+		})
+		h.UnavailablePeriods = generic.SliceToSlice(generic.FilterSlice(unavailablePeriods, func(p sql.HomeUnavailable) bool {
+			return p.HomeID == h.ID
+		}), func(in sql.HomeUnavailable) model.Period {
+			return in.ToModel()
+		})
+		return h
 	})
 
 	var preferredHomeView model.Home
-	if preferredHomeIdx := generic.Find(homes, func(h sql.Home) bool {
+	if preferredHomeIdx := generic.Find(homes, func(h model.Home) bool {
 		return h.ID == commonData.User.PreferredHome.ID
 	}); preferredHomeIdx != -1 {
 		preferredHomeView = homeViews[preferredHomeIdx]

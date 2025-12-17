@@ -38,8 +38,8 @@ func (h *getUser) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	userView := user.ToUserView()
-	userView.Homes = generic.SliceToSlice(homes, func(h sql.Home) model.Home { return h.ToHomeView() })
+	userView := user.ToModel()
+	userView.Homes = generic.SliceToSlice(homes, func(h sql.Home) model.Home { return h.ToModel() })
 
 	UserPage(ctx, commonData, userView).Render(r.Context(), w)
 }

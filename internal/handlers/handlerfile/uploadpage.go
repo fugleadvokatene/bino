@@ -29,7 +29,7 @@ func (h *uploadPage) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		files = nil
 	}
 	fileViews := generic.SliceToSlice(files, func(in sql.File) model.File {
-		fv := in.ToFileView()
+		fv := in.ToModel()
 		return fv
 	})
 	fileViewLookupByID := map[int32]*model.File{}

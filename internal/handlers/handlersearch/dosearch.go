@@ -81,7 +81,7 @@ func doSearch(r *http.Request, db *dblib.Database) (dblib.SearchResult, error) {
 			return dblib.SearchResult{Query: query}, err
 		}
 		matches = generic.SliceToSlice(rows, func(in sql.SearchAdvancedRow) model.Match {
-			return in.ToMatchView(q)
+			return in.ToModel(q)
 		})
 		if searchParams.Offset > 0 || len(matches) >= int(searchParams.Limit) {
 			totalMatches, err = db.Q.SearchAdvancedCount(r.Context(), sql.SearchAdvancedCountParams{
@@ -104,7 +104,7 @@ func doSearch(r *http.Request, db *dblib.Database) (dblib.SearchResult, error) {
 			return dblib.SearchResult{Query: query}, err
 		}
 		matches = generic.SliceToSlice(rows, func(in sql.SearchBasicRow) model.Match {
-			return in.ToMatchView()
+			return in.ToModel()
 		})
 		if searchParams.Offset > 0 || len(matches) >= int(searchParams.Limit) {
 			totalMatches, err = db.Q.SearchBasicCount(r.Context(), sql.SearchBasicCountParams{

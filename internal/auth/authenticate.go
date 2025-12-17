@@ -46,7 +46,7 @@ func Authenticate(
 		AvatarURL:       user.AvatarUrl.String,
 		HasAvatarURL:    user.AvatarUrl.Valid,
 		HasGDriveAccess: user.HasGdriveAccess,
-		PreferredHome:   preferredHome.ToHomeView(),
+		PreferredHome:   preferredHome.ToModel(),
 		LoggingConsent:  loggingConsent,
 		AccessLevel:     model.AccessLevel(user.AccessLevel),
 		FeatureFlags:    featureFlags,

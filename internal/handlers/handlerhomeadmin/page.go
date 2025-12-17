@@ -41,7 +41,7 @@ func (h *page) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	// todo(perf): make it not O(N^2)
 	homeless := []model.User{}
 	for _, user := range usersDB {
-		view := user.ToUserView()
+		view := user.ToModel()
 		found := false
 		if user.HomeID.Valid {
 			for i, home := range homesDB {

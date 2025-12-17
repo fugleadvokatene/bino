@@ -36,11 +36,13 @@ func Routes(
 			Cap:     model.CapDeleteUsers,
 		},
 		{
+			// Invite-form
 			Path:    "POST /invite",
 			Handler: &invite{DB: db},
 			Cap:     model.CapInviteToBino,
 		},
 		{
+			// Invite-form on GDriveAdmin
 			Path:    "POST /invite/{email}",
 			Handler: &invite{DB: db},
 			Cap:     model.CapInviteToBino,

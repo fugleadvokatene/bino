@@ -58,21 +58,6 @@ func SliceToSlice[TIn any, TOut any](in []TIn, f func(TIn) TOut) []TOut {
 	return out
 }
 
-func SliceToSliceErr[TIn any, TOut any](in []TIn, f func(TIn) (TOut, error)) ([]TOut, error) {
-	if in == nil {
-		return nil, fmt.Errorf("called SliceToSliceErr on nil slice")
-	}
-	out := make([]TOut, len(in))
-	for i, v := range in {
-		vOut, err := f(v)
-		if err != nil {
-			return nil, err
-		}
-		out[i] = vOut
-	}
-	return out, nil
-}
-
 func SliceToMapErr[TIn any, KOut comparable, VOut any](in []TIn, f func(int, TIn) (KOut, VOut, error)) (map[KOut]VOut, error) {
 	if in == nil {
 		return nil, fmt.Errorf("called SliceToMapErr on nil slice")

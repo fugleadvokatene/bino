@@ -38,7 +38,7 @@ func (h *Read) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	fileView := file.ToFileView()
+	fileView := file.ToModel()
 
 	switch fileView.Accessibility {
 	case model.FileAccessibilityPublic:

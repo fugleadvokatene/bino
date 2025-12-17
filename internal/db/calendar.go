@@ -5,8 +5,8 @@ import (
 	"time"
 
 	"github.com/fugleadvokatene/bino/internal/calendar"
-	"github.com/fugleadvokatene/bino/internal/generic"
 	"github.com/fugleadvokatene/bino/internal/language"
+	"github.com/fugleadvokatene/bino/internal/model"
 	"github.com/fugleadvokatene/bino/internal/sql"
 	"github.com/jackc/pgx/v5/pgtype"
 )
@@ -19,9 +19,7 @@ func (db *Database) GetUnavailablePeriodsInRange(ctx context.Context, start, end
 	if err != nil {
 		return nil, err
 	}
-	return generic.SliceToSlice(periods, func(in sql.GetUnavailablePeriodsInRangeRow) calendar.Event {
-		return in.ToFullCalendarEvent(lang)
-	}), nil
+	return model.SliceToModelArg(periods, lang), nil
 }
 
 func (db *Database) GetEventsForCalendar(ctx context.Context, start, end time.Time, lang *language.Language) ([]calendar.Event, error) {
@@ -32,7 +30,5 @@ func (db *Database) GetEventsForCalendar(ctx context.Context, start, end time.Ti
 	if err != nil {
 		return nil, err
 	}
-	return generic.SliceToSlice(periods, func(in sql.GetEventsForCalendarRow) calendar.Event {
-		return in.ToFullCalendarEvent(lang)
-	}), nil
+	return model.SliceToModelArg(periods, lang), nil
 }

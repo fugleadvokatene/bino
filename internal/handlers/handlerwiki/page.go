@@ -41,9 +41,9 @@ func (h *page) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	_ = WikiPageTempl(
 		data,
-		page.ToWikiPageView(),
+		page.ToModel(),
 		generic.SliceToSlice(pages, func(in sql.WikiPage) model.WikiLink {
-			return in.ToWikiLinkView()
+			return in.ToModel()
 		}),
 	).Render(ctx, w)
 }

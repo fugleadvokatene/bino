@@ -11,7 +11,7 @@ import (
 
 // ---- Home
 
-func (h Home) ToHomeView() model.Home {
+func (h Home) ToModel() model.Home {
 	return model.Home{
 		ID:       h.ID,
 		Capacity: h.Capacity,
@@ -22,7 +22,7 @@ func (h Home) ToHomeView() model.Home {
 
 // ---- Patient
 
-func (in GetCurrentPatientsForHomeRow) ToPatientView() model.Patient {
+func (in GetCurrentPatientsForHomeRow) ToModel() model.Patient {
 	return model.Patient{
 		ID:      in.ID,
 		Status:  in.Status,
@@ -31,7 +31,7 @@ func (in GetCurrentPatientsForHomeRow) ToPatientView() model.Patient {
 	}
 }
 
-func (in GetFormerPatientsRow) ToPatientView() model.Patient {
+func (in GetFormerPatientsRow) ToModel() model.Patient {
 	return model.Patient{
 		ID:                    in.ID,
 		Status:                in.Status,
@@ -44,7 +44,7 @@ func (in GetFormerPatientsRow) ToPatientView() model.Patient {
 	}
 }
 
-func (in GetPatientWithSpeciesRow) ToPatientView() model.Patient {
+func (in GetPatientWithSpeciesRow) ToModel() model.Patient {
 	return model.Patient{
 		ID:                    in.ID,
 		Status:                in.Status,
@@ -58,7 +58,7 @@ func (in GetPatientWithSpeciesRow) ToPatientView() model.Patient {
 	}
 }
 
-func (in GetActivePatientsRow) ToPatientView() model.Patient {
+func (in GetActivePatientsRow) ToModel() model.Patient {
 	return model.Patient{
 		ID:                    in.ID,
 		Species:               in.Species,
@@ -74,7 +74,7 @@ func (in GetActivePatientsRow) ToPatientView() model.Patient {
 
 // ---- User
 
-func (user GetAppusersRow) ToUserView() model.User {
+func (user GetAppusersRow) ToModel() model.User {
 	return model.User{
 		ID:           user.ID,
 		Name:         user.DisplayName,
@@ -85,7 +85,7 @@ func (user GetAppusersRow) ToUserView() model.User {
 	}
 }
 
-func (user Appuser) ToUserView() model.User {
+func (user Appuser) ToModel() model.User {
 	return model.User{
 		ID:           user.ID,
 		Name:         user.DisplayName,
@@ -96,7 +96,7 @@ func (user Appuser) ToUserView() model.User {
 	}
 }
 
-func (user GetUserRow) ToUserView() model.User {
+func (user GetUserRow) ToModel() model.User {
 	return model.User{
 		ID:           user.ID,
 		Name:         user.DisplayName,
@@ -109,7 +109,7 @@ func (user GetUserRow) ToUserView() model.User {
 
 // ---- Invitation
 
-func (inv GetInvitationsRow) ToInvitationView() model.Invitation {
+func (inv GetInvitationsRow) ToModel() model.Invitation {
 	return model.Invitation{
 		ID:          inv.ID,
 		Email:       inv.Email.String,
@@ -123,7 +123,7 @@ func (inv GetInvitationsRow) ToInvitationView() model.Invitation {
 
 // ---- Preferred species
 
-func (in GetPreferredSpeciesForHomeRow) ToSpeciesView() model.Species {
+func (in GetPreferredSpeciesForHomeRow) ToModel() model.Species {
 	return model.Species{
 		ID:        in.SpeciesID,
 		Name:      in.Name,
@@ -131,7 +131,7 @@ func (in GetPreferredSpeciesForHomeRow) ToSpeciesView() model.Species {
 	}
 }
 
-func (in GetSpeciesWithLanguageRow) ToSpeciesView(preferred bool) model.Species {
+func (in GetSpeciesWithLanguageRow) ToModel(preferred bool) model.Species {
 	return model.Species{
 		ID:        in.SpeciesID,
 		Name:      in.Name,
@@ -141,7 +141,7 @@ func (in GetSpeciesWithLanguageRow) ToSpeciesView(preferred bool) model.Species 
 
 // ---- Period
 
-func (in HomeUnavailable) ToPeriodView() model.Period {
+func (in HomeUnavailable) ToModel() model.Period {
 	return model.Period{
 		ID:     in.ID,
 		HomeID: in.HomeID,
@@ -153,7 +153,7 @@ func (in HomeUnavailable) ToPeriodView() model.Period {
 
 // ---- Match
 
-func (in *SearchBasicRow) ToMatchView() model.Match {
+func (in *SearchBasicRow) ToModel() model.Match {
 	headerRuns := model.ParseHeadline(in.HeaderHeadline)
 	bodyRuns := model.ParseHeadline(in.BodyHeadline)
 
@@ -167,7 +167,7 @@ func (in *SearchBasicRow) ToMatchView() model.Match {
 	}
 }
 
-func (in *SearchAdvancedRow) ToMatchView(q string) model.Match {
+func (in *SearchAdvancedRow) ToModel(q string) model.Match {
 	headerRuns := model.ParseHeadline(in.HeaderHeadline)
 	if !hasHit(headerRuns) {
 		headerRuns = model.HighlightFallback(in.Header, q)
@@ -216,7 +216,7 @@ func ParseJSON[T any](extraData string) *T {
 
 // ---- File
 
-func (in *File) ToFileView() model.File {
+func (in *File) ToModel() model.File {
 	return model.File{
 		ID:                   in.ID,
 		Creator:              in.Creator,
@@ -232,14 +232,14 @@ func (in *File) ToFileView() model.File {
 
 // ---- Wiki
 
-func (in *WikiPage) ToWikiLinkView() model.WikiLink {
+func (in *WikiPage) ToModel() model.WikiLink {
 	return model.WikiLink{
 		ID:    in.ID,
 		Title: in.Title,
 	}
 }
 
-func (in *GetWikiMainPageRow) ToWikiPageView() model.WikiPage {
+func (in *GetWikiMainPageRow) ToModel() model.WikiPage {
 	return model.WikiPage{
 		ID:      in.ID,
 		Title:   in.Title,
@@ -247,7 +247,7 @@ func (in *GetWikiMainPageRow) ToWikiPageView() model.WikiPage {
 	}
 }
 
-func (in *GetLastWikiRevisionRow) ToWikiPageView() model.WikiPage {
+func (in *GetLastWikiRevisionRow) ToModel() model.WikiPage {
 	return model.WikiPage{
 		ID:      in.ID,
 		Title:   in.Title,
@@ -255,7 +255,7 @@ func (in *GetLastWikiRevisionRow) ToWikiPageView() model.WikiPage {
 	}
 }
 
-func (gupirr GetUnavailablePeriodsInRangeRow) ToFullCalendarEvent(language *language.Language) calendar.Event {
+func (gupirr GetUnavailablePeriodsInRangeRow) ToModel(language *language.Language) calendar.Event {
 	return calendar.Event{
 		ID:      fmt.Sprintf("unavailable/%d", gupirr.ID),
 		AllDay:  true,
@@ -267,7 +267,7 @@ func (gupirr GetUnavailablePeriodsInRangeRow) ToFullCalendarEvent(language *lang
 	}
 }
 
-func (gefcr GetEventsForCalendarRow) ToFullCalendarEvent(language *language.Language) calendar.Event {
+func (gefcr GetEventsForCalendarRow) ToModel(language *language.Language) calendar.Event {
 	t := gefcr.Time.Time.Format(calendar.TimeFormatFullCalendar)
 	return calendar.Event{
 		ID:      fmt.Sprintf("patientevent/%d", gefcr.ID),

@@ -43,7 +43,7 @@ func (h *page) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			handlererror.Error(w, r, err)
 			return
 		}
-		h := homeResult.ToHomeView()
+		h := homeResult.ToModel()
 		home = &h
 	}
 
@@ -89,10 +89,10 @@ func (h *page) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	})
 
 	PatientPage(ctx, commonData, model.PatientPage{
-		Patient: patientData.ToPatientView(),
+		Patient: patientData.ToModel(),
 		Home:    home,
 		Homes: generic.SliceToSlice(homes, func(home sql.Home) model.Home {
-			return home.ToHomeView()
+			return home.ToModel()
 		}),
 		Events: events,
 	}).Render(ctx, w)

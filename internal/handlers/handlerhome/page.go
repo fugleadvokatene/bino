@@ -68,7 +68,7 @@ func (h *page) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 
 	HomePage(ctx, commonData, generic.SliceToSlice(homes, func(h sql.Home) model.Home {
-		return h.ToHomeView()
+		return h.ToModel()
 	}),
 		&model.Home{
 			ID:       homeData.ID,
@@ -76,15 +76,15 @@ func (h *page) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			Note:     homeData.Note,
 			Capacity: homeData.Capacity,
 			Users: generic.SliceToSlice(users, func(u sql.Appuser) model.User {
-				return u.ToUserView()
+				return u.ToModel()
 			}),
 			Patients: generic.SliceToSlice(patients, func(p sql.GetCurrentPatientsForHomeRow) model.Patient {
-				return p.ToPatientView()
+				return p.ToModel()
 			}),
 			PreferredSpecies:    preferredSpecies,
 			NonPreferredSpecies: otherSpecies,
 			UnavailablePeriods: generic.SliceToSlice(unavailablePeriods, func(in sql.HomeUnavailable) model.Period {
-				return in.ToPeriodView()
+				return in.ToModel()
 			}),
 		}).Render(r.Context(), w)
 }

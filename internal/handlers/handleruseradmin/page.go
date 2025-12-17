@@ -38,10 +38,10 @@ func (h *page) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 
 	UserAdmin(data, generic.SliceToSlice(homes, func(in sql.Home) model.Home {
-		return in.ToHomeView()
+		return in.ToModel()
 	}), generic.SliceToSlice(users, func(in sql.GetAppusersRow) model.User {
-		return in.ToUserView()
+		return in.ToModel()
 	}), generic.SliceToSlice(invitations, func(in sql.GetInvitationsRow) model.Invitation {
-		return in.ToInvitationView()
+		return in.ToModel()
 	})).Render(ctx, w)
 }

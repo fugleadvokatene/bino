@@ -22,16 +22,19 @@ func (h *invite) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	data := request.MustLoadCommonData(ctx)
 
-	email, err := request.GetPathValue(r, "email")
+	email, err := request.GetFormValue(r, "email")
 	if err != nil {
-		email, err = request.GetFormValue(r, "email")
+		handlererror.Error(w, r, err)
+		return
 	}
 
-	var home int32
-	if err == nil {
-		home, err = request.GetFormID(r, "home")
+	home, err := request.GetFormID(r, "home")
+	if err != nil {
+		handlererror.Error(w, r, err)
+		return
 	}
 
+	accessLevel, err := request.GetFormID(r, "access-level")
 	if err != nil {
 		handlererror.Error(w, r, err)
 		return
@@ -49,11 +52,12 @@ func (h *invite) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 		// Try to insert
 		if err := h.DB.Q.InsertInvitation(ctx, sql.InsertInvitationParams{
-			ID:      code,
-			Email:   pgtype.Text{String: email, Valid: true},
-			Created: pgtype.Timestamptz{Time: now, Valid: true},
-			Expires: pgtype.Timestamptz{Time: expires, Valid: true},
-			Home:    pgtype.Int4{Int32: home, Valid: true},
+			ID:          code,
+			Email:       pgtype.Text{String: email, Valid: true},
+			Created:     pgtype.Timestamptz{Time: now, Valid: true},
+			Expires:     pgtype.Timestamptz{Time: expires, Valid: true},
+			Home:        pgtype.Int4{Int32: home, Valid: true},
+			Accesslevel: accessLevel,
 		}); err != nil {
 			if pgErr, ok := err.(*pgconn.PgError); ok && pgErr.Code == "23505" {
 				// Conflicting invite key

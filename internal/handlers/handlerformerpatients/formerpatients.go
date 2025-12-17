@@ -28,6 +28,6 @@ func (h *page) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	commonData.Subtitle = commonData.Language.FormerPatients
 
 	FormerPatientsPage(commonData, generic.SliceToSlice(patients, func(in sql.GetFormerPatientsRow) model.Patient {
-		return in.ToPatientView()
+		return in.ToModel()
 	})).Render(ctx, w)
 }

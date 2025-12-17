@@ -16,20 +16,16 @@ func (db *Database) GetSpeciesForUser(ctx context.Context, user int32, languageI
 	if err != nil {
 		return nil, nil, err
 	}
-	preferredSpecies := generic.SliceToSlice(preferredSpeciesRows, func(in sql.GetPreferredSpeciesForHomeRow) model.Species {
-		return in.ToSpeciesView()
-	})
+	preferredSpecies := model.SliceToModel(preferredSpeciesRows)
 
 	otherSpeciesRows, err := db.Q.GetSpeciesWithLanguage(ctx, int32(languageID))
 	if err != nil {
 		return nil, nil, err
 	}
-	otherSpecies := generic.SliceToSlice(generic.FilterSlice(otherSpeciesRows, func(in sql.GetSpeciesWithLanguageRow) bool {
+	otherSpecies := model.SliceToModelArg(generic.FilterSlice(otherSpeciesRows, func(in sql.GetSpeciesWithLanguageRow) bool {
 		return generic.Find(preferredSpecies, func(preferred model.Species) bool {
 			return preferred.ID == in.SpeciesID
 		}) == -1
-	}), func(in sql.GetSpeciesWithLanguageRow) model.Species {
-		return in.ToSpeciesView(false)
-	})
+	}), false)
 	return preferredSpecies, otherSpecies, nil
 }

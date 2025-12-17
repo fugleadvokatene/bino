@@ -38,5 +38,5 @@ func (h *confirmScrubOrNuke) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		dest = "nuke"
 	}
 
-	UserConfirmScrubOrNuke(data, user.ToUserView(), header, confirmMsg, dest, r.Referer()).Render(ctx, w)
+	UserConfirmScrubOrNuke(data, user.ToModel(), header, confirmMsg, dest, r.Referer()).Render(ctx, w)
 }
