@@ -11721,6 +11721,18 @@ body {
   border: 1px solid rgb(126.75, 127.125, 141.875);
 }
 
+@media (min-width: 1000px) {
+  .dashboard.dashboard-other {
+    cursor: grab;
+  }
+  .dashboard.dashboard-other :active {
+    cursor: grabbing;
+  }
+  .dashboard.dashboard-other {
+    overflow-x: scroll;
+  }
+}
+
 .dashboard.dashboard-self {
   min-width: min(100%, 350px);
 }

@@ -892,7 +892,7 @@ func DashboardHomes(data *request.CommonData, homes []model.Home) templ.Componen
 			templ_7745c5c3_Var45 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 62, "<div class=\"dashboard-indicator invisible\" id=\"dashboard-indicator-left\"></div><div class=\"dashboard search-container\">")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 62, "<div class=\"dashboard-indicator invisible\" id=\"dashboard-indicator-left\"></div><div class=\"dashboard dashboard-other search-container\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

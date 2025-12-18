@@ -176,7 +176,7 @@ templ DashboardSelf(data *request.CommonData,selfHome *model.Home, homes []model
 
 templ DashboardHomes(data *request.CommonData, homes []model.Home) {
     <div class="dashboard-indicator invisible" id="dashboard-indicator-left"></div>
-    <div class="dashboard search-container">
+    <div class="dashboard dashboard-other search-container">
         for _, home := range homes {
             <div class="dashboard-home card filter-box"> 
                 @DashboardHomeCard(data, homes, &home)

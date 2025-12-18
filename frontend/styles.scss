@@ -120,6 +120,16 @@ body {
   border: 1px solid $slightdark;
 }
 
+.dashboard.dashboard-other {
+  @media (min-width: $mobilethreshold) {
+    cursor: grab;
+    :active {
+      cursor: grabbing;
+    }
+    overflow-x: scroll;
+  }
+}
+
 .dashboard.dashboard-self {
   min-width: min(100%, $dashboard-home-column);
   @media (min-width: $mobilethreshold) {
