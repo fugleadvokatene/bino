@@ -604,8 +604,8 @@ func PatientCheckout(data *request.CommonData, patient model.Patient) templ.Comp
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			for statusID, status := range data.Language.Status {
-				if model.IsCheckoutStatus[statusID] {
+			for _, statusID := range model.StatusValues() {
+				if status, ok := data.Language.Status[statusID]; ok && model.IsCheckoutStatus[statusID] {
 					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 42, "<option value=\"")
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err

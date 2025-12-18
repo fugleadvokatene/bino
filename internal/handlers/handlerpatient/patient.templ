@@ -117,8 +117,8 @@ templ PatientCheckout(data *request.CommonData, patient model.Patient) {
                         <label for={patient.CheckoutStatusID("#")} class="input-group-text">{data.Language.GenericStatus}</label>
                         <select autocomplete="off" class="form-control form-select form-select-sm" id={patient.CheckoutStatusID("")} name="status">
                             <option disabled selected>{data.Language.DashboardSelectCheckout}</option>
-                            for statusID, status := range data.Language.Status {
-                                if model.IsCheckoutStatus[statusID] {
+                            for _, statusID := range model.StatusValues() {
+                                if status, ok := data.Language.Status[statusID]; ok && model.IsCheckoutStatus[statusID] {
                                     <option value={int32(statusID)}>{status}</option>
                                 }
                             }
