@@ -25,6 +25,15 @@ Wiki and file subsystem:
 
 ![](doc/img/erd-wiki.png)
 
+File lifetime:
+
+![](doc/img/file-lifetime.png)
+
+Files are initially uploaded to a folder in the staging area.
+This is so that if something goes wrong and upload only succeds partially, it can be cleaned up later.
+If all went ok with upload, files are commited by renaming the folder. Commited files are never deleted.
+Files are published by creating an entry in the database. This gives the file an URL, owner, accessibility etc.
+
 #### Backend
 
 This is a backend-heavy application; keeping data in sync between the server and client is usually

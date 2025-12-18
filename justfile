@@ -52,3 +52,4 @@ mmd:
 	mmdc -i doc/backend.mmd -o doc/img/backend.png
 	mmdc -i doc/erd-main.mmd -o doc/img/erd-main.png
 	mmdc -i doc/erd-wiki.mmd -o doc/img/erd-wiki.png
+	mmdc -i doc/file-lifetime.mmd -o doc/img/file-lifetime.png

@@ -58,11 +58,22 @@ func SliceToSlice[TIn any, TOut any](in []TIn, f func(TIn) TOut) []TOut {
 	return out
 }
 
+func MapToSlice[KIn comparable, VIn any, TOut any](in map[KIn]VIn, f func(KIn, VIn) TOut) []TOut {
+	if in == nil {
+		return nil
+	}
+	out := make([]TOut, 0, len(in))
+	for k, v := range in {
+		out = append(out, f(k, v))
+	}
+	return out
+}
+
 func SliceToMapErr[TIn any, KOut comparable, VOut any](in []TIn, f func(int, TIn) (KOut, VOut, error)) (map[KOut]VOut, error) {
 	if in == nil {
 		return nil, fmt.Errorf("called SliceToMapErr on nil slice")
 	}
-	out := make(map[KOut]VOut)
+	out := make(map[KOut]VOut, len(in))
 	for i, vin := range in {
 		k, vout, err := f(i, vin)
 		if err != nil {
@@ -93,6 +104,24 @@ func Find[TIn any](in []TIn, f func(v TIn) bool) int {
 		}
 	}
 	return -1
+}
+
+func FindKey[KIn comparable, VIn any](in map[KIn]VIn, f func(k KIn, v VIn) bool) (KIn, bool) {
+	for k, v := range in {
+		if f(k, v) {
+			return k, true
+		}
+	}
+	return *new(KIn), false
+}
+
+func FindValue[KIn comparable, VIn any](in map[KIn]VIn, f func(k KIn, v VIn) bool) (VIn, bool) {
+	for k, v := range in {
+		if f(k, v) {
+			return v, true
+		}
+	}
+	return *new(VIn), false
 }
 
 func MoveToFront[T any](in []T, j int) {

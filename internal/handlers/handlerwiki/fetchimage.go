@@ -1,14 +1,10 @@
 package handlerwiki
 
 import (
-	"bytes"
-	"context"
 	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
-	"path"
-	"strings"
 	"time"
 
 	"github.com/fugleadvokatene/bino/internal/db"
@@ -38,6 +34,7 @@ type WikiImageResponse struct {
 
 func (h *fetchImage) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
+	data := request.MustLoadCommonData(ctx)
 
 	var resp WikiImageResponse
 	defer func() {
@@ -77,7 +74,7 @@ func (h *fetchImage) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if resp.Success == 0 {
-		uploadResult := uploadImageFromURL(ctx, req.URL, h.FileBackend)
+		uploadResult := fs.UploadImageFromURL(ctx, req.URL, h.FileBackend, data.User.AppuserID)
 		if uploadResult.Error != nil {
 			request.LogError(r, fmt.Errorf("uploading image: %w", err))
 			w.WriteHeader(http.StatusInternalServerError)
@@ -92,7 +89,7 @@ func (h *fetchImage) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		}
 
 		fileInfo := commitResult.Commited[uploadResult.UniqueID]
-		fileID, err = h.DB.Q.RegisterFile(ctx, sql.RegisterFileParams{
+		fileID, err = h.DB.Q.PublishFile(ctx, sql.PublishFileParams{
 			Uuid:          uploadResult.UniqueID,
 			Creator:       request.MustLoadCommonData(ctx).User.AppuserID,
 			Created:       pgtype.Timestamptz{Time: time.Now(), Valid: true},
@@ -119,48 +116,4 @@ func (h *fetchImage) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.WriteHeader(http.StatusOK)
-}
-
-func uploadImageFromURL(ctx context.Context, url string, backend fs.FileStorage) fs.UploadResult {
-	data := request.MustLoadCommonData(ctx)
-
-	resp, err := http.Get(url)
-	if err != nil {
-		return fs.UploadResult{Error: err}
-	}
-	defer resp.Body.Close()
-
-	if resp.StatusCode != http.StatusOK {
-		return fs.UploadResult{Error: fmt.Errorf("server response: %w", resp.StatusCode)}
-	}
-
-	imgBin, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return fs.UploadResult{Error: err}
-	}
-
-	ct := resp.Header.Get("Content-Type")
-	if ct == "" {
-		return fs.UploadResult{Error: fmt.Errorf("missing content type")}
-	}
-	if !strings.HasPrefix(ct, "image/") {
-		return fs.UploadResult{Error: fmt.Errorf("not an image: %s", ct)}
-	}
-
-	name := path.Base(resp.Request.URL.Path)
-	if name == "" || name == "/" {
-		name = "file"
-	}
-
-	info := model.FileInfo{
-		FileName: name,
-		MIMEType: ct,
-		Size:     int64(len(imgBin)),
-		Created:  time.Now(),
-		Creator:  data.User.AppuserID,
-	}
-
-	r := bytes.NewReader(imgBin)
-	result := backend.Upload(ctx, r, info)
-	return result
 }

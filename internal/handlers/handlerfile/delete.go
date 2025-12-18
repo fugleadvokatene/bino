@@ -37,7 +37,7 @@ func (h delete_) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := h.DB.Q.DeregisterFile(ctx, id); err != nil {
+	if err := h.DB.Q.UnpublishFile(ctx, id); err != nil {
 		data.Error(data.Language.GenericFailed, err)
 		request.RedirectToReferer(w, r)
 		return

@@ -5,6 +5,7 @@ import (
 	"log/slog"
 	"time"
 
+	"github.com/fugleadvokatene/bino/internal/db"
 	"github.com/fugleadvokatene/bino/internal/fs"
 	"github.com/fugleadvokatene/bino/internal/model"
 )
@@ -21,22 +22,16 @@ func RunJob[T any](what string, interval time.Duration, f func() (T, error)) {
 	}
 }
 
-type Backend interface {
-	DeleteStaleSessions(ctx context.Context) (int64, error)
-	DeleteExpiredInvitations(ctx context.Context) (int64, error)
-	RemoveFalseFileWikiLinks(ctx context.Context) (int64, error)
-	SuggestJournalURLs(ctx context.Context, languageID model.LanguageID) (int64, error)
-}
-
 func StartJobs(
 	ctx context.Context,
-	backend Backend,
+	db *db.Database,
 	fileBackend fs.FileStorage,
 	systemLanguageID model.LanguageID,
 ) {
-	go RunJob("Delete stale sessions", time.Hour, func() (any, error) { return backend.DeleteStaleSessions(ctx) })
-	go RunJob("Delete expired invitations", time.Hour, func() (any, error) { return backend.DeleteExpiredInvitations(ctx) })
+	go RunJob("Delete stale sessions", time.Hour, func() (any, error) { return db.DeleteStaleSessions(ctx) })
+	go RunJob("Delete expired invitations", time.Hour, func() (any, error) { return db.DeleteExpiredInvitations(ctx) })
 	go RunJob("Delete old staged files", time.Hour, func() (any, error) { return fs.DeleteOldStagedFiles(ctx, fileBackend, 24*time.Hour) })
-	go RunJob("Delete false Wiki links", time.Hour, func() (any, error) { return backend.RemoveFalseFileWikiLinks(ctx) })
-	go RunJob("Suggest journal URLs", time.Hour, func() (any, error) { return backend.SuggestJournalURLs(ctx, systemLanguageID) })
+	go RunJob("Delete false Wiki links", time.Hour, func() (any, error) { return db.RemoveFalseFileWikiLinks(ctx) })
+	go RunJob("Suggest journal URLs", time.Hour, func() (any, error) { return db.SuggestJournalURLs(ctx, systemLanguageID) })
+	go RunJob("Store user avatars", time.Hour, func() (any, error) { return db.StoreUserAvatars(ctx, fileBackend) })
 }

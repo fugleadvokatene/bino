@@ -73,7 +73,7 @@ func (h *uploadImage) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 
 	fileInfo := commitResult.Commited[uploadResult.UniqueID]
-	fileID, err := h.DB.Q.RegisterFile(ctx, sql.RegisterFileParams{
+	fileID, err := h.DB.Q.PublishFile(ctx, sql.PublishFileParams{
 		Uuid:          uploadResult.UniqueID,
 		Creator:       request.MustLoadCommonData(ctx).User.AppuserID,
 		Created:       pgtype.Timestamptz{Time: time.Now(), Valid: true},

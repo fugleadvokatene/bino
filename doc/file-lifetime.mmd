@@ -1,0 +1,10 @@
+---
+title: File lifetime
+---
+stateDiagram-v2
+    Nonexistent --> Staged: file uploaded and metadata created in ./tmp/{uuid}
+    Staged --> Nonexistent: older than 24 hours - cleaned up by background job
+    Staged --> Commited: mv ./tmp/{uuid} ./file/{uuid}
+    Commited --> Published: entry created in db
+    Published --> Commited: entry deleted in db
+    Commited --> Nonexistent: rm -rf ./file/{uuid}

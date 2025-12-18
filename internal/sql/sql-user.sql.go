@@ -262,6 +262,37 @@ func (q *Queries) GetUserIDByEmail(ctx context.Context, email string) (int32, er
 	return id, err
 }
 
+const getUsersWithGoogleStoredAvatars = `-- name: GetUsersWithGoogleStoredAvatars :many
+SELECT id, avatar_url
+FROM appuser
+WHERE avatar_url LIKE '%googleusercontent.com%'
+`
+
+type GetUsersWithGoogleStoredAvatarsRow struct {
+	ID        int32
+	AvatarUrl pgtype.Text
+}
+
+func (q *Queries) GetUsersWithGoogleStoredAvatars(ctx context.Context) ([]GetUsersWithGoogleStoredAvatarsRow, error) {
+	rows, err := q.db.Query(ctx, getUsersWithGoogleStoredAvatars)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetUsersWithGoogleStoredAvatarsRow
+	for rows.Next() {
+		var i GetUsersWithGoogleStoredAvatarsRow
+		if err := rows.Scan(&i.ID, &i.AvatarUrl); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const removeHomesForAppuser = `-- name: RemoveHomesForAppuser :exec
 DELETE
 FROM home_appuser
@@ -372,5 +403,21 @@ func (q *Queries) UpdateUser(ctx context.Context, arg UpdateUserParams) error {
 		arg.GoogleSub,
 		arg.AvatarUrl,
 	)
+	return err
+}
+
+const updateUserAvatar = `-- name: UpdateUserAvatar :exec
+UPDATE appuser
+SET avatar_url = $1
+WHERE id = $2
+`
+
+type UpdateUserAvatarParams struct {
+	Url pgtype.Text
+	ID  int32
+}
+
+func (q *Queries) UpdateUserAvatar(ctx context.Context, arg UpdateUserAvatarParams) error {
+	_, err := q.db.Exec(ctx, updateUserAvatar, arg.Url, arg.ID)
 	return err
 }

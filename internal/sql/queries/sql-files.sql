@@ -1,4 +1,4 @@
--- name: RegisterFile :one
+-- name: PublishFile :one
 INSERT
 INTO file
   (uuid, accessibility, creator, created, filename, presentation_filename, mimetype, size)
@@ -7,7 +7,7 @@ VALUES
 RETURNING id
 ;
 
--- name: DeregisterFile :exec
+-- name: UnpublishFile :exec
 DELETE
 FROM file
 WHERE id = @id

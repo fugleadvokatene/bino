@@ -43,14 +43,14 @@ func (h *Read) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	switch fileView.Accessibility {
 	case model.FileAccessibilityPublic:
 	case model.FileAccessibilityInternal:
-		_, err := request.LoadCommonData(ctx)
-		if err != nil {
+		cd, err := request.LoadCommonData(ctx)
+		if err != nil || cd == nil || cd.User == nil {
 			request.AjaxError(w, r, err, http.StatusUnauthorized)
 			return
 		}
 	case model.FileAccessibilityPersonal:
-		data, err := request.LoadCommonData(ctx)
-		if err != nil || data.User.AppuserID != fileView.Creator {
+		cd, err := request.LoadCommonData(ctx)
+		if err != nil || cd.User.AppuserID != fileView.Creator {
 			request.AjaxError(w, r, err, http.StatusUnauthorized)
 			return
 		}

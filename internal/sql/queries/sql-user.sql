@@ -125,3 +125,15 @@ DELETE
 FROM appuser_language
 WHERE appuser_id = $1
 ;
+
+-- name: GetUsersWithGoogleStoredAvatars :many
+SELECT id, avatar_url
+FROM appuser
+WHERE avatar_url LIKE '%googleusercontent.com%'
+;
+
+-- name: UpdateUserAvatar :exec
+UPDATE appuser
+SET avatar_url = @url
+WHERE id = @id
+;

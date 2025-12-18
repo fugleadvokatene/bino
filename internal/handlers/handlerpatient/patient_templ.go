@@ -1309,7 +1309,7 @@ func GoToPatientPage(data *request.CommonData, patient model.Patient) templ.Comp
 		var templ_7745c5c3_Var68 string
 		templ_7745c5c3_Var68, templ_7745c5c3_Err = templ.JoinStringErrs(data.Language.GenericDetails)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handlers/handlerpatient/patient.templ`, Line: 240, Col: 54}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handlers/handlerpatient/patient.templ`, Line: 239, Col: 54}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var68))
 		if templ_7745c5c3_Err != nil {
@@ -1322,7 +1322,7 @@ func GoToPatientPage(data *request.CommonData, patient model.Patient) templ.Comp
 		var templ_7745c5c3_Var69 templ.SafeURL
 		templ_7745c5c3_Var69, templ_7745c5c3_Err = templ.JoinURLErrs(templ.URL(patient.URL()))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handlers/handlerpatient/patient.templ`, Line: 242, Col: 45}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handlers/handlerpatient/patient.templ`, Line: 241, Col: 45}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var69))
 		if templ_7745c5c3_Err != nil {
@@ -1335,7 +1335,7 @@ func GoToPatientPage(data *request.CommonData, patient model.Patient) templ.Comp
 		var templ_7745c5c3_Var70 string
 		templ_7745c5c3_Var70, templ_7745c5c3_Err = templ.JoinStringErrs(data.Language.DashboardGoToPatientPage)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handlers/handlerpatient/patient.templ`, Line: 243, Col: 55}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handlers/handlerpatient/patient.templ`, Line: 242, Col: 55}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var70))
 		if templ_7745c5c3_Err != nil {
@@ -1377,7 +1377,7 @@ func CheckoutForm(data *request.CommonData, patient model.Patient) templ.Compone
 		var templ_7745c5c3_Var72 string
 		templ_7745c5c3_Var72, templ_7745c5c3_Err = templ.JoinStringErrs(data.Language.DashboardCheckOut)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handlers/handlerpatient/patient.templ`, Line: 252, Col: 57}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handlers/handlerpatient/patient.templ`, Line: 251, Col: 57}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var72))
 		if templ_7745c5c3_Err != nil {
@@ -1406,7 +1406,7 @@ func CheckoutForm(data *request.CommonData, patient model.Patient) templ.Compone
 			var templ_7745c5c3_Var74 string
 			templ_7745c5c3_Var74, templ_7745c5c3_Err = templ.JoinStringErrs(patient.CheckoutStatusID("#"))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handlers/handlerpatient/patient.templ`, Line: 260, Col: 61}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handlers/handlerpatient/patient.templ`, Line: 259, Col: 61}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var74))
 			if templ_7745c5c3_Err != nil {
@@ -1419,7 +1419,7 @@ func CheckoutForm(data *request.CommonData, patient model.Patient) templ.Compone
 			var templ_7745c5c3_Var75 string
 			templ_7745c5c3_Var75, templ_7745c5c3_Err = templ.JoinStringErrs(data.Language.GenericStatus)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handlers/handlerpatient/patient.templ`, Line: 260, Col: 128}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handlers/handlerpatient/patient.templ`, Line: 259, Col: 128}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var75))
 			if templ_7745c5c3_Err != nil {
@@ -1432,7 +1432,7 @@ func CheckoutForm(data *request.CommonData, patient model.Patient) templ.Compone
 			var templ_7745c5c3_Var76 string
 			templ_7745c5c3_Var76, templ_7745c5c3_Err = templ.JoinStringErrs(patient.CheckoutStatusID(""))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handlers/handlerpatient/patient.templ`, Line: 261, Col: 127}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handlers/handlerpatient/patient.templ`, Line: 260, Col: 127}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var76))
 			if templ_7745c5c3_Err != nil {
@@ -1445,7 +1445,7 @@ func CheckoutForm(data *request.CommonData, patient model.Patient) templ.Compone
 			var templ_7745c5c3_Var77 string
 			templ_7745c5c3_Var77, templ_7745c5c3_Err = templ.JoinStringErrs(data.Language.DashboardSelectCheckout)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handlers/handlerpatient/patient.templ`, Line: 262, Col: 88}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handlers/handlerpatient/patient.templ`, Line: 261, Col: 88}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var77))
 			if templ_7745c5c3_Err != nil {
@@ -1464,7 +1464,7 @@ func CheckoutForm(data *request.CommonData, patient model.Patient) templ.Compone
 					var templ_7745c5c3_Var78 string
 					templ_7745c5c3_Var78, templ_7745c5c3_Err = templ.JoinStringErrs(int32(statusID))
 					if templ_7745c5c3_Err != nil {
-						return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handlers/handlerpatient/patient.templ`, Line: 265, Col: 62}
+						return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handlers/handlerpatient/patient.templ`, Line: 264, Col: 62}
 					}
 					_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var78))
 					if templ_7745c5c3_Err != nil {
@@ -1477,7 +1477,7 @@ func CheckoutForm(data *request.CommonData, patient model.Patient) templ.Compone
 					var templ_7745c5c3_Var79 string
 					templ_7745c5c3_Var79, templ_7745c5c3_Err = templ.JoinStringErrs(status)
 					if templ_7745c5c3_Err != nil {
-						return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handlers/handlerpatient/patient.templ`, Line: 265, Col: 71}
+						return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handlers/handlerpatient/patient.templ`, Line: 264, Col: 71}
 					}
 					_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var79))
 					if templ_7745c5c3_Err != nil {
@@ -1496,7 +1496,7 @@ func CheckoutForm(data *request.CommonData, patient model.Patient) templ.Compone
 			var templ_7745c5c3_Var80 string
 			templ_7745c5c3_Var80, templ_7745c5c3_Err = templ.JoinStringErrs(patient.CheckoutNoteID("#"))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handlers/handlerpatient/patient.templ`, Line: 271, Col: 59}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handlers/handlerpatient/patient.templ`, Line: 270, Col: 59}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var80))
 			if templ_7745c5c3_Err != nil {
@@ -1509,7 +1509,7 @@ func CheckoutForm(data *request.CommonData, patient model.Patient) templ.Compone
 			var templ_7745c5c3_Var81 string
 			templ_7745c5c3_Var81, templ_7745c5c3_Err = templ.JoinStringErrs(data.Language.GenericNote)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handlers/handlerpatient/patient.templ`, Line: 271, Col: 124}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handlers/handlerpatient/patient.templ`, Line: 270, Col: 124}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var81))
 			if templ_7745c5c3_Err != nil {
@@ -1522,7 +1522,7 @@ func CheckoutForm(data *request.CommonData, patient model.Patient) templ.Compone
 			var templ_7745c5c3_Var82 string
 			templ_7745c5c3_Var82, templ_7745c5c3_Err = templ.JoinStringErrs(patient.CheckoutNoteID(""))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handlers/handlerpatient/patient.templ`, Line: 272, Col: 109}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handlers/handlerpatient/patient.templ`, Line: 271, Col: 109}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var82))
 			if templ_7745c5c3_Err != nil {

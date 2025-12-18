@@ -328,6 +328,12 @@ func (lfs *LocalFileStorage) Commit(ctx context.Context, ids []string) CommitRes
 	defer dir.Close()
 
 	for _, id := range ids {
+		if id == "" {
+			out.Error = fmt.Errorf("got empty uuid")
+			out.Failed = append(out.Failed, id)
+			slog.Warn("Empty UUID")
+			continue
+		}
 		tmpDir := lfs.TmpDirectory + "/" + id
 		mainDir := lfs.MainDirectory + "/" + id
 		if err := os.Rename(tmpDir, mainDir); err != nil {

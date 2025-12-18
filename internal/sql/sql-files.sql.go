@@ -12,17 +12,6 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
-const deregisterFile = `-- name: DeregisterFile :exec
-DELETE
-FROM file
-WHERE id = $1
-`
-
-func (q *Queries) DeregisterFile(ctx context.Context, id int32) error {
-	_, err := q.db.Exec(ctx, deregisterFile, id)
-	return err
-}
-
 const getAllFileWikiAssociations = `-- name: GetAllFileWikiAssociations :many
 SELECT file_id, wiki_id from file_wiki
 `
@@ -202,7 +191,7 @@ func (q *Queries) GetFilesAccessibleByUser(ctx context.Context, arg GetFilesAcce
 	return items, nil
 }
 
-const registerFile = `-- name: RegisterFile :one
+const publishFile = `-- name: PublishFile :one
 INSERT
 INTO file
   (uuid, accessibility, creator, created, filename, presentation_filename, mimetype, size)
@@ -211,7 +200,7 @@ VALUES
 RETURNING id
 `
 
-type RegisterFileParams struct {
+type PublishFileParams struct {
 	Uuid          string
 	Accessibility int32
 	Creator       int32
@@ -221,8 +210,8 @@ type RegisterFileParams struct {
 	Size          int64
 }
 
-func (q *Queries) RegisterFile(ctx context.Context, arg RegisterFileParams) (int32, error) {
-	row := q.db.QueryRow(ctx, registerFile,
+func (q *Queries) PublishFile(ctx context.Context, arg PublishFileParams) (int32, error) {
+	row := q.db.QueryRow(ctx, publishFile,
 		arg.Uuid,
 		arg.Accessibility,
 		arg.Creator,
@@ -255,6 +244,17 @@ where fw.file_id = u.file_id
 
 func (q *Queries) RemoveFalseFileWikiLinks(ctx context.Context) (pgconn.CommandTag, error) {
 	return q.db.Exec(ctx, removeFalseFileWikiLinks)
+}
+
+const unpublishFile = `-- name: UnpublishFile :exec
+DELETE
+FROM file
+WHERE id = $1
+`
+
+func (q *Queries) UnpublishFile(ctx context.Context, id int32) error {
+	_, err := q.db.Exec(ctx, unpublishFile, id)
+	return err
 }
 
 const updatePresentationFilename = `-- name: UpdatePresentationFilename :exec

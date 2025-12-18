@@ -44,7 +44,7 @@ func (h *filepondSubmit) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if err := h.DB.Transaction(ctx, func(ctx context.Context, db *db.Database) error {
 		errs := []error{}
 		for uuid, fileInfo := range result.Commited {
-			_, err := h.DB.Q.RegisterFile(ctx, sql.RegisterFileParams{
+			_, err := h.DB.Q.PublishFile(ctx, sql.PublishFileParams{
 				Uuid:          uuid,
 				Creator:       data.User.AppuserID,
 				Created:       pgtype.Timestamptz{Time: time.Now(), Valid: true},
