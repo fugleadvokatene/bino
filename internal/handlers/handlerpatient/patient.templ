@@ -146,11 +146,11 @@ templ PatientJournalUpdate(data *request.CommonData, patient model.Patient, unco
                     {data.Language.DashboardGoToJournal}
                 </a>
             } else {
-                <p class="mb-0 small">{data.Language.GDriveNoJournalForPatient}</p>
+                <p class="mb-0 micro">{data.Language.GDriveNoJournalForPatient}</p>
                 @templbase.SingleButtonForm(data, patient.URLSuffix("create-journal"), data.Language.GDriveCreateJournalForPatient, "POST", "btn-primary", "d-flex", "flex-column", "center", "mb-2")
             }
             if patient.JournalURL == "" || unconditionallyShowAttachForm  {
-                <p class="mb-0 small">{data.Language.GDriveSelectExistingJournalInstruction}</p>
+                <p class="mb-0 micro">{data.Language.GDriveSelectExistingJournalInstruction}</p>
                 @templbase.Form(
                     data,
                     patient.URLSuffix("attach-journal"),
@@ -160,7 +160,7 @@ templ PatientJournalUpdate(data *request.CommonData, patient model.Patient, unco
                     <form-group class="d-flex justify-content-between form-control-sm input-group-sm form-control-plaintext">
                         <label for={patient.AttachJournalID("#")} class="input-group-text short-label">{data.Language.GenericURL}</label>
                         <input autocomplete="off" type="text" class="form-control" id={patient.AttachJournalID("")} name="url"></input>
-                        @templbase.Button("submit", "fa-link", data.Language.GenericUpdate)
+                        @templbase.Button("submit", "fa-link", "")
                     </form-group>
                 }
                 if patient.SuggestedJournalTitle != "" && patient.SuggestedJournalURL != "" {
@@ -200,7 +200,7 @@ templ PatientMove(data *request.CommonData, homes []model.Home, home *model.Home
 
 
 templ PatientCard(data *request.CommonData, homes []model.Home, home *model.Home, patient model.Patient) {
-    <div class="card b-card dashboard-patient-card m-2 filter-box shadow-sm" id={patient.CardID("#")} data-patient-id={patient.ID}>
+    <div class="card b-card dashboard-patient-card m-0 filter-box shadow-sm" id={patient.CardID("#")} data-patient-id={patient.ID}>
         <div class="card-header card-header-patient d-flex justify-content-between">
             <div>
                 if data.User.HasHomeOrAccess(home.ID, model.AccessLevelCoordinator) {

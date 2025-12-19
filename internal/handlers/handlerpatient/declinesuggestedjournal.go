@@ -23,6 +23,8 @@ func (h *declineSuggestedJournal) ServeHTTP(w http.ResponseWriter, r *http.Reque
 	}
 	if err := h.DB.Q.DeclineSuggestedJournal(ctx, patient); err != nil {
 		commonData.Warning(commonData.Language.TODO("failed to decline suggested journal"), err)
+	} else {
+		commonData.Info(commonData.Language.GenericSuccess)
 	}
 	request.RedirectToReferer(w, r)
 }

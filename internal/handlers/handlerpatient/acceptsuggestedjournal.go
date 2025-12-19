@@ -23,6 +23,8 @@ func (h *acceptSuggestedJournal) ServeHTTP(w http.ResponseWriter, r *http.Reques
 	}
 	if err := h.DB.Q.AcceptSuggestedJournal(ctx, patient); err != nil {
 		commonData.Warning(commonData.Language.TODO("failed to accept suggested journal"), err)
+	} else {
+		commonData.Info(commonData.Language.GenericSuccess)
 	}
 	request.RedirectToReferer(w, r)
 }

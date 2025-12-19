@@ -14,7 +14,7 @@ $lighterror: mix(red, $light, 45);
 
 $mobilethreshold: 1000px;
 
-$dashboard-home-column: 350px;
+$dashboard-home-column: 300px;
 
 @use 'node_modules/bootstrap/scss/bootstrap' with (
   $enable-shadows: true,
@@ -133,7 +133,7 @@ body {
 .dashboard.dashboard-self {
   min-width: min(100%, $dashboard-home-column);
   @media (min-width: $mobilethreshold) {
-    margin-right: 0.5em;
+    margin-right: 0.2em;
   }
   @media (max-width: $mobilethreshold) {
     margin-bottom: 0.5em;
@@ -321,8 +321,8 @@ h6 {
 }
 
 .b-card {
-  padding: 1em !important;
-  margin-bottom: 0.5em !important;
+  padding: 1em;
+  margin-bottom: 0.5em;
   background-color: $light;
 }
 
@@ -379,7 +379,7 @@ h6 {
 .card-header {
   background-color: $midgray;
   color: $light;
-  padding: 0.5rem;
+  padding: 0.38rem;
   color: black;
   font-weight: bold;
 }
@@ -398,7 +398,7 @@ h6 {
 }
 
 .dashboard-form {
-  min-width: min(100%, 450px);
+  min-width: min(100%, 350px);
   background-color: rgba(25, 135, 24, 0.25);
   cursor: default;
   :active {
@@ -412,7 +412,7 @@ h6 {
 }
 
 .dashboard-left-sidebar {
-  min-width: min(100%, 450px);
+  min-width: min(100%, 350px);
   margin-top: 0 !important;
   margin-left: 0 !important;
   flex: 1;
@@ -676,7 +676,6 @@ mark.hl {
 
 .micro {
   font-size: 0.75em;
-  font-weight: lighter;
 }
 
 .icon-col {
