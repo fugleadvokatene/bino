@@ -200,6 +200,7 @@ type Language struct {
 	PatientEventUser      string
 	PatientEventHome      string
 	PatientWasDeleted     string
+	PatientEdit           string
 
 	UserHomes      string
 	UserIsHomeless string
@@ -534,6 +535,7 @@ var NO = &Language{
 	PatientEventUser:      "Endret av",
 	PatientEventHome:      "Rehabhjem",
 	PatientWasDeleted:     "Pasienten ble slettet.",
+	PatientEdit:           "Endre",
 
 	UserHomes:      "Tilkoblede rehabhjem",
 	UserIsHomeless: "Ingen tilkoblede rehabhjem",
@@ -838,6 +840,7 @@ var EN = &Language{
 	PatientEventUser:      "User",
 	PatientEventHome:      "Home",
 	PatientWasDeleted:     "Pasienten ble slettet.",
+	PatientEdit:           "Edit",
 
 	UserHomes:      "Associated rehab homes",
 	UserIsHomeless: "No associated rehab homes",
