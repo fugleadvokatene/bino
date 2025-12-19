@@ -137,7 +137,7 @@ templ ExtraInfo(mv *model.Match) {
         case model.MatchTypePatient:
             if info := sql.ParseJSON[db.SearchPatientInfo](mv.ExtraData); info != nil {
                 <span class="micro">
-                    <a href={templ.URL(info.JournalURL)}>Gå til journal</a> i <a href={templ.URL(info.JournalInfo.FolderURL)}>{info.JournalInfo.FolderName}</a>
+                    <a href={templ.URL(info.JournalURL)}>Journal</a> i <a href={templ.URL(info.JournalInfo.FolderURL)}>{info.JournalInfo.FolderName}</a>
                 </span>
             }
         case model.MatchTypeJournal:

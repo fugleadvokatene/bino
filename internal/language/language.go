@@ -391,8 +391,8 @@ var NO = &Language{
 	CheckinYouAreHomeless:  "Du kan ikke sjekke inn pasienter ennå fordi du ikke er koblet til et rehabhjem.",
 
 	DashboardNoPatientsInHome:      "Ingen pasienter",
-	DashboardGoToJournal:           "Gå til pasientjournal i Google Drive",
-	DashboardGoToPatientPage:       "Gå til pasientside",
+	DashboardGoToJournal:           "Til journal i GDrive",
+	DashboardGoToPatientPage:       "Til pasientside",
 	DashboardCheckOut:              "Sjekk ut",
 	DashboardSearch:                "Søk på pasienter",
 	DashboardSearchExplanation:     "Skriv i tekstboksten under for å finne pasienter basert på navn eller art.",
@@ -696,7 +696,7 @@ var EN = &Language{
 	CheckinYouAreHomeless:  "You can't check in patients yet because you're not connected to a rehab home.",
 
 	DashboardNoPatientsInHome:      "No patients",
-	DashboardGoToJournal:           "Go to patient journal in Google Drive",
+	DashboardGoToJournal:           "Go to journal in GDrive",
 	DashboardGoToPatientPage:       "Go to patient page",
 	DashboardCheckOut:              "Checkout",
 	DashboardSearch:                "Search for patients",

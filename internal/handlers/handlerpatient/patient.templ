@@ -179,11 +179,12 @@ templ PatientMove(data *request.CommonData, homes []model.Home, home *model.Home
     <tr>
         <th class="w-25">{data.Language.GenericMoveTo}</th>
         <td>
-            <form
-                action={templ.URL(patient.URLSuffix("move"))}
-                method="POST"
-                class="form-control-sm form-control-plaintext d-flex justify-content-between"
-            >
+            @templbase.Form(
+                data,
+                templ.URL(patient.URLSuffix("move")),
+                "POST",
+                "form-control-sm form-control-plaintext d-flex justify-content-between"
+            ) {
                 <select autocomplete="off" class="form-control form-select form-select-sm" name="home">
                     <option value="" disabled selected>{data.Language.DashboardSelectHome}</option>
                     for _, otherHome := range homes {
@@ -193,7 +194,7 @@ templ PatientMove(data *request.CommonData, homes []model.Home, home *model.Home
                     }
                 </select>
                 @templbase.Button("submit", "fa-angles-right", data.Language.GenericMove)
-            </form>
+            }
         </td>
     </tr>
 }
