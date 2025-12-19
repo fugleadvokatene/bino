@@ -2,9 +2,12 @@ package request
 
 import (
 	"context"
+	"errors"
 	"log/slog"
 	"net/http"
 )
+
+var badLogErrorCall = errors.New("called LogError on nil err")
 
 // Log from request if the user has given explicit concent
 func LogR(r *http.Request, level slog.Level, format string, args ...any) {
@@ -21,5 +24,8 @@ func LogCtx(ctx context.Context, level slog.Level, message string, args ...any) 
 }
 
 func LogError(r *http.Request, err error) {
-	LogR(r, slog.LevelWarn, "method", r.Method, "path", r.URL.Path, "error", err)
+	if err == nil {
+		err = badLogErrorCall
+	}
+	LogR(r, slog.LevelWarn, err.Error(), "method", r.Method, "path", r.URL.Path)
 }

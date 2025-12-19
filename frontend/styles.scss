@@ -117,7 +117,7 @@ body {
   @media (max-width: $mobilethreshold) {
     display: block;
   }
-  border: 1px solid $slightdark;
+  border: 2px solid $slightdark;
 }
 
 .dashboard.dashboard-other {
@@ -404,7 +404,7 @@ h6 {
   :active {
     cursor: default !important;
   }
-  border: 1px solid $slightdark;
+  border: 2px solid mix(green, $slightdark, 50);
   align-self: flex-start;
   margin-top: 0 !important;
   margin-left: 0 !important;
@@ -444,7 +444,7 @@ h6 {
 
 .dashboard-search {
   background-color: rgb(193.5, 194.25, 203.75);
-  border: 1px solid $slightdark;
+  border: 2px solid $slightdark;
 }
 
 .active-search {

@@ -1,6 +1,8 @@
 package handlerdashboard
 
 import (
+	"context"
+
 	"github.com/fugleadvokatene/bino/internal/config"
 	"github.com/fugleadvokatene/bino/internal/db"
 	"github.com/fugleadvokatene/bino/internal/gdrive"
@@ -9,6 +11,7 @@ import (
 )
 
 func Routes(
+	backgroundCtx context.Context,
 	db *db.Database,
 	worker *gdrive.Worker,
 	config *config.Config,
@@ -16,7 +19,7 @@ func Routes(
 	return []route.Route{
 		{
 			Path:    "POST /checkin",
-			Handler: &checkin{DB: db, GDriveWorker: worker, Config: config},
+			Handler: &checkin{BackgroundCtx: backgroundCtx, DB: db, GDriveWorker: worker, Config: config},
 			Cap:     model.CapCheckInPatient,
 		},
 	}

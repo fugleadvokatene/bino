@@ -229,6 +229,17 @@ type Language struct {
 	CapabilitiesHeader            string
 }
 
+func (l *Language) CheckinSuccessful(name string) string {
+	switch l.ID {
+	case model.LanguageIDNO:
+		return fmt.Sprintf("%s er sjekket inn.", name)
+	case model.LanguageIDEN:
+		fallthrough
+	default:
+		return fmt.Sprintf("%s was checked in successfully.", name)
+	}
+}
+
 func (l *Language) HomeUnavailableUntil(dv model.Date) string {
 	switch l.ID {
 	case model.LanguageIDNO:

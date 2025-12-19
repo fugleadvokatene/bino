@@ -12,6 +12,7 @@ import (
 	"github.com/fugleadvokatene/bino/internal/gdrive"
 	"github.com/fugleadvokatene/bino/internal/handlers/handleraccess"
 	"github.com/fugleadvokatene/bino/internal/handlers/handlererror"
+	"github.com/fugleadvokatene/bino/internal/language"
 	"github.com/fugleadvokatene/bino/internal/model"
 	"github.com/fugleadvokatene/bino/internal/request"
 	"github.com/fugleadvokatene/bino/internal/sql"
@@ -19,9 +20,10 @@ import (
 )
 
 type checkin struct {
-	DB           *db.Database
-	Config       *config.Config
-	GDriveWorker *gdrive.Worker
+	BackgroundCtx context.Context
+	DB            *db.Database
+	Config        *config.Config
+	GDriveWorker  *gdrive.Worker
 }
 
 func (h *checkin) ServeHTTP(w http.ResponseWriter, r *http.Request) {
@@ -87,32 +89,59 @@ func (h *checkin) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	go func() {
-		suggestJournal := true
-		if createJournal {
-			if item, err := h.GDriveWorker.CreateJournal(gdrive.TemplateVars{
-				Time:    time.Now(),
-				Name:    name,
-				Species: systemSpeciesName,
-				BinoURL: h.Config.BinoURLForPatient(patientID),
-			}); err != nil {
-				slog.Warn(commonData.Language.GDriveCreateJournalFailed, "error", err)
-			} else {
-				if tag, err := h.DB.Q.SetPatientJournal(context.Background(), sql.SetPatientJournalParams{
-					ID:         patientID,
-					JournalUrl: pgtype.Text{String: item.DocumentURL(), Valid: true},
-				}); err != nil || tag.RowsAffected() == 0 {
-					slog.Warn(commonData.Language.GDriveCreateJournalFailed, "error", err)
-				} else {
-					suggestJournal = false
-				}
-			}
-		}
-		if suggestJournal {
-			if err := h.DB.SuggestJournalBasedOnSearch(context.Background(), patientID, name, systemSpeciesName, fields["home"]); err != nil {
-				slog.Warn("suggesting journal", "error", err)
-			}
-		}
-	}()
+	// Create or suggest journal off-request
+	go h.createOrSuggestJournal(
+		commonData.Language,
+		name,
+		systemSpeciesName,
+		patientID,
+		fields["home"],
+		createJournal,
+	)
+
+	commonData.Info(commonData.Language.CheckinSuccessful(name))
+
 	request.RedirectToReferer(w, r)
+}
+
+func (h *checkin) createOrSuggestJournal(
+	language *language.Language,
+	name string,
+	systemSpeciesName string,
+	patientID int32,
+	homeID int32,
+	tryCreate bool,
+) {
+	ctx := h.BackgroundCtx
+	suggestJournal := true
+	if tryCreate {
+		if item, err := h.GDriveWorker.CreateJournal(gdrive.TemplateVars{
+			Time:    time.Now(),
+			Name:    name,
+			Species: systemSpeciesName,
+			BinoURL: h.Config.BinoURLForPatient(patientID),
+		}); err != nil {
+			slog.Warn(language.GDriveCreateJournalFailed, "error", err)
+		} else {
+			if tag, err := h.DB.Q.SetPatientJournal(ctx, sql.SetPatientJournalParams{
+				ID:         patientID,
+				JournalUrl: pgtype.Text{String: item.DocumentURL(), Valid: true},
+			}); err != nil || tag.RowsAffected() == 0 {
+				slog.Warn(language.GDriveCreateJournalFailed, "error", err)
+			} else {
+				suggestJournal = false
+			}
+		}
+	}
+	if suggestJournal {
+		if err := h.DB.SuggestJournalBasedOnSearch(
+			ctx,
+			patientID,
+			name,
+			systemSpeciesName,
+			homeID,
+		); err != nil {
+			slog.Warn("suggesting journal", "error", err)
+		}
+	}
 }
