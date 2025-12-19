@@ -21,6 +21,16 @@ QuerySelectorAll(".closer").forEach(
 );
 
 // dashboard.ts
+var restoreScrollState = (elem) => {
+  const v = Number(sessionStorage.getItem("board-scroll-left"));
+  if (!Number.isNaN(v)) {
+    elem.scrollLeft = v;
+  }
+};
+var storeScrollState = (elem) => {
+  sessionStorage.setItem("board-scroll-left", String(elem.scrollLeft));
+  console.log("stored scroll state", elem);
+};
 var captureScroll = (elem) => {
   let dragging = false;
   let lastX = 0;
@@ -62,6 +72,7 @@ var captureScroll = (elem) => {
     dragging = false;
     elem.releasePointerCapture(pid);
     pid = null;
+    storeScrollState(elem);
   };
   elem.addEventListener("pointerup", end);
   elem.addEventListener("pointercancel", end);
@@ -69,34 +80,18 @@ var captureScroll = (elem) => {
 };
 var setupBoard = (elem) => {
   captureScroll(elem);
-  const K = "board-scroll-left";
-  const F = "board-restore-once";
-  const restore = () => {
-    if (sessionStorage.getItem(F) === "1") {
-      const v = Number(sessionStorage.getItem(K));
-      if (!Number.isNaN(v)) elem.scrollLeft = v;
-    }
-    sessionStorage.removeItem(F);
-    sessionStorage.removeItem(K);
-  };
   if (document.readyState === "loading") {
-    window.addEventListener("DOMContentLoaded", restore, { once: true });
+    window.addEventListener(
+      "DOMContentLoaded",
+      (_) => restoreScrollState(elem),
+      { once: true }
+    );
   } else {
-    restore();
+    restoreScrollState(elem);
   }
-  document.addEventListener(
-    "submit",
-    (e) => {
-      if (e.target instanceof HTMLFormElement) {
-        sessionStorage.setItem(F, "1");
-        sessionStorage.setItem(K, String(elem.scrollLeft));
-      }
-    },
-    true
-  );
 };
 if (matchMedia("(width >= 1000px)").matches) {
-  QuerySelectorAll(".dashboard").forEach(setupBoard);
+  setupBoard(QuerySelector(".dashboard-other"));
 }
 var filterDashboard = () => {
   const input = MustQuerySelector("#dashboard-search");
