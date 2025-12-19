@@ -148,7 +148,7 @@ templ DashboardForm(
            
             <div class="form-group">
                 <div class="form-check-inline">
-                    <input autocomplete="off" type="checkbox" name="create-journal" id="create-journal" checked>
+                    <input autocomplete="off" type="checkbox" name="create-journal" id="create-journal" checked?={!data.FeatureFlag("Default no create journal")}>
                     <label for="create-journal">
                         {data.Language.GDriveCreateJournalForPatient}
                     </label>
