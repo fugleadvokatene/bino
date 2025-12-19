@@ -40,7 +40,7 @@ templ PatientPage(ctx context.Context, data *request.CommonData, page model.Pati
             <h2>Oppdater</h2>
             <table class="patient-table table table-bordered mb-2">
                 <tbody>
-                    @PatientJournalUpdate(data, page.Patient, true)
+                    @PatientJournalUpdate(data, page.Patient)
 
                     if model.IsCheckoutStatus[model.Status(page.Patient.Status)] {
                         if data.User.HasCapability(model.CapHardDeletePatient) {
@@ -137,7 +137,7 @@ templ PatientCheckout(data *request.CommonData, patient model.Patient) {
     </tr>
 }
 
-templ PatientJournalUpdate(data *request.CommonData, patient model.Patient, unconditionallyShowAttachForm bool) {
+templ PatientJournalUpdate(data *request.CommonData, patient model.Patient) {
     <tr>
         <th class="w-25">{data.Language.GenericJournal}</th>
         <td>
@@ -149,7 +149,6 @@ templ PatientJournalUpdate(data *request.CommonData, patient model.Patient, unco
                 <p class="mb-0 micro">{data.Language.GDriveNoJournalForPatient}</p>
                 @templbase.SingleButtonForm(data, patient.URLSuffix("create-journal"), data.Language.GDriveCreateJournalForPatient, "POST", "btn-primary", "d-flex", "flex-column", "center", "mb-2")
             }
-            if patient.JournalURL == "" || unconditionallyShowAttachForm  {
                 <p class="mb-0 micro">{data.Language.GDriveSelectExistingJournalInstruction}</p>
                 @templbase.Form(
                     data,
@@ -170,7 +169,6 @@ templ PatientJournalUpdate(data *request.CommonData, patient model.Patient, unco
                         @templbase.SingleButtonForm(data, patient.URLSuffix("decline-suggested-journal"), data.Language.GDriveDeclineSuggestedJournal, "POST", "btn-warning", "d-flex", "flex-column", "center", "mb-2")
                     </div>
                 }
-            }
         </td>
     </tr>
 }
@@ -233,7 +231,9 @@ templ PatientTable(
 ) {
     <table class="patient-table table table-bordered">
         <tbody>
-            @PatientJournalUpdate(data, patient, false)
+            if patient.JournalURL == "" {
+                @PatientJournalUpdate(data, patient)
+            }
             @PatientMove(data, homes, home, patient)
             @CheckoutForm(data, patient)
         </tbody>
