@@ -10,7 +10,7 @@ import (
 
 type delete_ struct {
 	DB          *db.Database
-	FileBackend fs.FileStorage
+	FileBackend *fs.LocalFileStorage
 }
 
 func (h delete_) ServeHTTP(w http.ResponseWriter, r *http.Request) {

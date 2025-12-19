@@ -13,7 +13,7 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
-func (db *Database) StoreUserAvatars(ctx context.Context, backend fs.FileStorage) (int64, error) {
+func (db *Database) StoreUserAvatars(ctx context.Context, backend *fs.LocalFileStorage) (int64, error) {
 	// Get users that currently have their avatar stored on googleusercontent.com, these may disappear at any time
 	users, err := db.Q.GetUsersWithGoogleStoredAvatars(ctx)
 	if err != nil {

@@ -13,7 +13,7 @@ import (
 	"github.com/fugleadvokatene/bino/internal/model"
 )
 
-func UploadImageFromURL(ctx context.Context, url string, backend FileStorage, creatorID int32) UploadResult {
+func UploadImageFromURL(ctx context.Context, url string, backend *LocalFileStorage, creatorID int32) UploadResult {
 	resp, err := http.Get(url)
 	if err != nil {
 		return UploadResult{Error: err}

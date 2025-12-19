@@ -25,7 +25,7 @@ func RunJob[T any](what string, interval time.Duration, f func() (T, error)) {
 func StartJobs(
 	ctx context.Context,
 	db *db.Database,
-	fileBackend fs.FileStorage,
+	fileBackend *fs.LocalFileStorage,
 	systemLanguageID model.LanguageID,
 ) {
 	go RunJob("Delete stale sessions", time.Hour, func() (any, error) { return db.DeleteStaleSessions(ctx) })

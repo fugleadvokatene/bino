@@ -17,7 +17,7 @@ import (
 
 type fetchImage struct {
 	DB          *db.Database
-	FileBackend fs.FileStorage
+	FileBackend *fs.LocalFileStorage
 }
 
 type WikiFetchImageRequest struct {

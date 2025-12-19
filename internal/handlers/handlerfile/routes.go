@@ -9,7 +9,7 @@ import (
 
 func Routes(
 	db *db.Database,
-	fileBackend fs.FileStorage,
+	fileBackend *fs.LocalFileStorage,
 ) []route.Route {
 	readHandler := &Read{DB: db, FileBackend: fileBackend}
 	return []route.Route{

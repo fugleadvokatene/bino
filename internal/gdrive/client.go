@@ -17,8 +17,8 @@ import (
 )
 
 var (
-	ReDeleteImages = regexp.MustCompile(`<data:image/[a-zA-Z]+;base64,[^>]+>`)
-	ReUnbold       = regexp.MustCompile(`\*\*(.*?)\*\*`)
+	ReImages = regexp.MustCompile(`<data:image/[a-zA-Z]+;base64,[^>]+>`)
+	ReUnbold = regexp.MustCompile(`\*\*(.*?)\*\*`)
 )
 
 const (
@@ -141,7 +141,7 @@ func (g *Client) ExportDocument(id string) (Journal, error) {
 		return Journal{}, err
 	}
 
-	content = ReDeleteImages.ReplaceAll(content, []byte{})
+	content = ReImages.ReplaceAll(content, []byte{})
 	content = ReUnbold.ReplaceAll(content, []byte("$1"))
 
 	return Journal{

@@ -20,7 +20,7 @@ import (
 
 type filepondSubmit struct {
 	DB          *db.Database
-	FileBackend fs.FileStorage
+	FileBackend *fs.LocalFileStorage
 }
 
 func (h *filepondSubmit) ServeHTTP(w http.ResponseWriter, r *http.Request) {
@@ -69,7 +69,7 @@ func (h *filepondSubmit) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 }
 
 type filepondProcess struct {
-	FileBackend fs.FileStorage
+	FileBackend *fs.LocalFileStorage
 }
 
 // https://pqina.nl/filepond/docs/api/server/#process
@@ -109,7 +109,7 @@ func (h *filepondProcess) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 }
 
 type filepondRevert struct {
-	FileBackend fs.FileStorage
+	FileBackend *fs.LocalFileStorage
 }
 
 // https://pqina.nl/filepond/docs/api/server/#revert
@@ -131,7 +131,7 @@ func (h *filepondRevert) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 }
 
 type filepondRestore struct {
-	FileBackend fs.FileStorage
+	FileBackend *fs.LocalFileStorage
 }
 
 // https://pqina.nl/filepond/docs/api/server/#restore

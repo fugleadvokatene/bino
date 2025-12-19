@@ -50,25 +50,6 @@ type ListTempResult struct {
 	Error error
 }
 
-type FileStorage interface {
-	// Upload to temporary storage
-	Upload(ctx context.Context, data io.Reader, fileInfo model.FileInfo) UploadResult
-	// Delete from temporary storage
-	DeleteTemp(ctx context.Context, ID string) DeleteResult
-	// Read file from temporary storage
-	ReadTemp(ctx context.Context, ID string) ReadResult
-	// List files in temporary storage
-	ListTemp(ctx context.Context) ListTempResult
-	// Commit files from temporary storage to real storage
-	Commit(ctx context.Context, IDs []string) CommitResult
-	// Open file
-	Open(ctx context.Context, ID string, fileInfo model.FileInfo) (io.ReadCloser, error)
-	// Delete file
-	Delete(ctx context.Context, ID string) DeleteResult
-}
-
-// LOCAL FILE API
-
 type LocalFileStorage struct {
 	MainDirectory string
 	TmpDirectory  string
@@ -167,7 +148,7 @@ func (lfs *LocalFileStorage) Upload(ctx context.Context, data io.Reader, fileInf
 	}
 }
 
-func (lfs *LocalFileStorage) delete(ctx context.Context, dirname string, id string) (out DeleteResult) {
+func (lfs *LocalFileStorage) delete(_ context.Context, dirname string, id string) (out DeleteResult) {
 	if err := uuid.Validate(id); err != nil {
 		return DeleteResult{
 			Error:          fmt.Errorf("'%s' is not a valid UUID: %w", id, err),

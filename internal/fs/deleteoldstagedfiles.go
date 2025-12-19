@@ -6,7 +6,7 @@ import (
 	"time"
 )
 
-func DeleteOldStagedFiles(ctx context.Context, fileBackend FileStorage, maxAge time.Duration) (int, error) {
+func DeleteOldStagedFiles(ctx context.Context, fileBackend *LocalFileStorage, maxAge time.Duration) (int, error) {
 	tempFiles := fileBackend.ListTemp(ctx)
 	if tempFiles.Error != nil {
 		return 0, tempFiles.Error

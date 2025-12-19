@@ -16,7 +16,7 @@ import (
 
 type Read struct {
 	DB          *db.Database
-	FileBackend fs.FileStorage
+	FileBackend *fs.LocalFileStorage
 }
 
 func (h *Read) ServeHTTP(w http.ResponseWriter, r *http.Request) {

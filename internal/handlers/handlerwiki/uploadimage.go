@@ -16,7 +16,7 @@ import (
 
 type uploadImage struct {
 	DB          *db.Database
-	FileBackend fs.FileStorage
+	FileBackend *fs.LocalFileStorage
 }
 
 func (h *uploadImage) ServeHTTP(w http.ResponseWriter, r *http.Request) {
