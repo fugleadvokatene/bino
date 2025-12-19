@@ -207,6 +207,9 @@ templ PatientCard(data *request.CommonData, homes []model.Home, home *model.Home
                     <i class="fa-solid fa-grip-vertical card-gripper dark-on-hover"></i>
                 }
                 <a href={templ.URL(patient.URL())} class="filter-content must-be-clickable">{patient.Name}</a>
+                if patient.JournalURL != "" {
+                    <a href={templ.URL(patient.JournalURL)} class="must-be-clickable ml-1 journal-link-icon"><i class="fa-brands fa-google-drive"></i></a>
+                }
             </div>
             <div>
                 <span class="patient-species-header filter-content">{patient.Species}</span>    
@@ -231,9 +234,7 @@ templ PatientTable(
     <table class="patient-table table table-bordered">
         <tbody>
             @GoToPatientPage(data, patient)
-            if data.User.HasGDriveAccess {
-                @PatientJournalUpdate(data, patient, false)
-            }
+            @PatientJournalUpdate(data, patient, false)
             @PatientMove(data, homes, home, patient)
             @CheckoutForm(data, patient)
         </tbody>
