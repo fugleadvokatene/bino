@@ -29,7 +29,6 @@ var restoreScrollState = (elem) => {
 };
 var storeScrollState = (elem) => {
   sessionStorage.setItem("board-scroll-left", String(elem.scrollLeft));
-  console.log("stored scroll state", elem);
 };
 var captureScroll = (elem) => {
   let dragging = false;
@@ -123,3 +122,36 @@ document.addEventListener("input", (e) => {
   }
 });
 document.addEventListener("DOMContentLoaded", filterDashboard);
+function loadState() {
+  try {
+    return JSON.parse(sessionStorage.getItem("expand-state") || "{}");
+  } catch {
+    return {};
+  }
+}
+function saveState(state) {
+  sessionStorage.setItem("expand-state", JSON.stringify(state));
+}
+document.addEventListener("DOMContentLoaded", function() {
+  const state = loadState();
+  document.querySelectorAll(".card-content[id]").forEach((el) => {
+    const content = el;
+    if (content.id in state) {
+      content.hidden = state[content.id];
+    }
+  });
+});
+document.addEventListener("click", function(e) {
+  const target = e.target;
+  if (!target) return;
+  const btn = target.closest(".expander");
+  if (!btn) return;
+  const selector = btn.dataset.target;
+  if (!selector) return;
+  const content = document.querySelector(selector);
+  if (!content || !content.id) return;
+  content.hidden = !content.hidden;
+  const state = loadState();
+  state[content.id] = content.hidden;
+  saveState(state);
+});

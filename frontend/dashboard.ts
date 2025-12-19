@@ -9,7 +9,6 @@ const restoreScrollState = (elem: HTMLElement) => {
 
 const storeScrollState = (elem: HTMLElement) => {
   sessionStorage.setItem('board-scroll-left', String(elem.scrollLeft))
-  console.log('stored scroll state', elem)
 }
 
 const captureScroll = (elem: HTMLElement) => {
@@ -128,3 +127,46 @@ document.addEventListener('input', (e) => {
 })
 
 document.addEventListener('DOMContentLoaded', filterDashboard)
+
+function loadExpandState() {
+  try {
+    return JSON.parse(sessionStorage.getItem('expand-state') || '{}')
+  } catch {
+    return {}
+  }
+}
+
+function saveExpandState(state: any) {
+  sessionStorage.setItem('expand-state', JSON.stringify(state))
+}
+
+document.addEventListener('DOMContentLoaded', function () {
+  const state = loadExpandState()
+
+  document.querySelectorAll('.card-content[id]').forEach((el) => {
+    const content = el as HTMLElement
+    if (content.id in state) {
+      content.hidden = state[content.id]
+    }
+  })
+})
+
+document.addEventListener('click', function (e) {
+  const target = e.target as HTMLElement | null
+  if (!target) return
+
+  const btn = target.closest('.expander') as HTMLElement | null
+  if (!btn) return
+
+  const selector = btn.dataset.target
+  if (!selector) return
+
+  const content = document.querySelector(selector) as HTMLElement | null
+  if (!content || !content.id) return
+
+  content.hidden = !content.hidden
+
+  const state = loadExpandState()
+  state[content.id] = content.hidden
+  saveExpandState(state)
+})
