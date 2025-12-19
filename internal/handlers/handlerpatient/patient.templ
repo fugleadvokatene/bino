@@ -233,7 +233,6 @@ templ PatientTable(
 ) {
     <table class="patient-table table table-bordered">
         <tbody>
-            @GoToPatientPage(data, patient)
             @PatientJournalUpdate(data, patient, false)
             @PatientMove(data, homes, home, patient)
             @CheckoutForm(data, patient)
