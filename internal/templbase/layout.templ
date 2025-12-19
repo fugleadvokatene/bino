@@ -11,7 +11,7 @@ templ FullLayout(data *request.CommonData) {
         @Head(data)
     </head>
     if data != nil {
-        <body data-lang={templ.JSONString(data.Language)}>
+        <body data-lang={templ.JSONString(data.Language)} data-csrf={data.User.CSRFToken}>
             @Body(data) {
                 { children... }
             }

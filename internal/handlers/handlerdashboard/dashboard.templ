@@ -211,7 +211,7 @@ templ DashboardHomeCard(data *request.CommonData, homes []model.Home, home *mode
         <div class={"mb-0", "filter-content", templbase.ClassIf(data.User.HasHomeOrAccess(home.ID, model.AccessLevelCoordinator), "editable", "editable-lg")} data-action={home.URLSuffix("set-note")}>
             <div class="d-block">
                 for _, p := range strings.Split(home.Note, "\n") {
-                    <p class="home-note">{p}</p>
+                    <p class="home-note micro">{p}</p>
                 }
             </div>
         </div>

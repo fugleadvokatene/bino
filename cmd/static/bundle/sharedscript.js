@@ -5139,6 +5139,10 @@ document.addEventListener("click", (e) => {
     input.type = "text";
     input.classList.add("w-75");
   }
+  const csrf = document.createElement("input");
+  csrf.name = "csrf";
+  csrf.value = document.body.dataset["csrf"];
+  csrf.type = "hidden";
   const submit = document.createElement("button");
   submit.type = "submit";
   submit.textContent = LN.GenericUpdate;
@@ -5155,10 +5159,10 @@ document.addEventListener("click", (e) => {
       "form-control-plaintext"
     );
     container.append(input);
-    form.append(container, submit);
+    form.append(container, submit, csrf);
   } else {
     form.classList.add("d-flex", "form-control-sm", "form-control-plaintext");
-    form.append(input, submit);
+    form.append(input, submit, csrf);
   }
   originals.set(form, el.cloneNode(true));
   el.replaceWith(form);
