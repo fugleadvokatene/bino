@@ -122,18 +122,18 @@ document.addEventListener("input", (e) => {
   }
 });
 document.addEventListener("DOMContentLoaded", filterDashboard);
-function loadState() {
+function loadExpandState() {
   try {
     return JSON.parse(sessionStorage.getItem("expand-state") || "{}");
   } catch {
     return {};
   }
 }
-function saveState(state) {
+function saveExpandState(state) {
   sessionStorage.setItem("expand-state", JSON.stringify(state));
 }
 document.addEventListener("DOMContentLoaded", function() {
-  const state = loadState();
+  const state = loadExpandState();
   document.querySelectorAll(".card-content[id]").forEach((el) => {
     const content = el;
     if (content.id in state) {
@@ -151,7 +151,7 @@ document.addEventListener("click", function(e) {
   const content = document.querySelector(selector);
   if (!content || !content.id) return;
   content.hidden = !content.hidden;
-  const state = loadState();
+  const state = loadExpandState();
   state[content.id] = content.hidden;
-  saveState(state);
+  saveExpandState(state);
 });

@@ -722,14 +722,14 @@ func ExtraInfo(mv *model.Match) templ.Component {
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 61, "\">Gå til journal</a> i <a href=\"")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 61, "\">Journal</a> i <a href=\"")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
 				var templ_7745c5c3_Var37 templ.SafeURL
 				templ_7745c5c3_Var37, templ_7745c5c3_Err = templ.JoinURLErrs(templ.URL(info.JournalInfo.FolderURL))
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handlers/handlersearch/search.templ`, Line: 140, Col: 125}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handlers/handlersearch/search.templ`, Line: 140, Col: 117}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var37))
 				if templ_7745c5c3_Err != nil {
@@ -742,7 +742,7 @@ func ExtraInfo(mv *model.Match) templ.Component {
 				var templ_7745c5c3_Var38 string
 				templ_7745c5c3_Var38, templ_7745c5c3_Err = templ.JoinStringErrs(info.JournalInfo.FolderName)
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handlers/handlersearch/search.templ`, Line: 140, Col: 155}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handlers/handlersearch/search.templ`, Line: 140, Col: 147}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var38))
 				if templ_7745c5c3_Err != nil {

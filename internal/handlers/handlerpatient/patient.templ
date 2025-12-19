@@ -181,9 +181,9 @@ templ PatientMove(data *request.CommonData, homes []model.Home, home *model.Home
         <td>
             @templbase.Form(
                 data,
-                templ.URL(patient.URLSuffix("move")),
+                patient.URLSuffix("move"),
                 "POST",
-                "form-control-sm form-control-plaintext d-flex justify-content-between"
+                "form-control-sm form-control-plaintext d-flex justify-content-between",
             ) {
                 <select autocomplete="off" class="form-control form-select form-select-sm" name="home">
                     <option value="" disabled selected>{data.Language.DashboardSelectHome}</option>
