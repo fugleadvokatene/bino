@@ -1,0 +1,68 @@
+version: "2"
+run:
+  concurrency: 4
+  go: "1.17"
+  modules-download-mode: readonly
+  issues-exit-code: 0
+  tests: true
+  allow-parallel-runners: true
+output:
+  formats:
+    text:
+      path: stdout
+      print-linter-name: true
+      print-issued-lines: true
+  path-prefix: ""
+linters:
+  default: none
+  enable:
+    - bodyclose
+    - errcheck
+    - errorlint
+    - gosec
+    - govet
+    - ineffassign
+    - makezero
+    - staticcheck
+    - unused
+  settings:
+    errcheck:
+      check-type-assertions: true
+      check-blank: false
+      exclude-functions:
+        - (net/http.ResponseWriter).Write
+        - (github.com/a-h/templ.Component).Render
+    errorlint:
+      errorf: true
+      asserts: true
+      comparison: true
+    gosec:
+      excludes:
+        - G108
+        - G115
+      concurrency: 12
+    staticcheck:
+      checks:
+        - all
+  exclusions:
+    generated: lax
+    presets:
+      - comments
+      - common-false-positives
+      - legacy
+      - std-error-handling
+    rules:
+      - linters:
+          - gosec
+        path: _test\.go
+      - path: (.+)\.go$
+        text: declaration of "(err|ctx)" shadows declaration at
+issues:
+  uniq-by-line: true
+  fix: false
+severity:
+  default: error
+  rules:
+    - linters:
+        - staticcheck
+      severity: warning

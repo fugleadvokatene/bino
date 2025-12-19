@@ -16,7 +16,7 @@ templ UserAdmin(data *request.CommonData, homes []model.Home, users []model.User
                     <tbody>
                         <tr>
                             <td colspan="2">
-                                @templbase.Form("/invite", "POST") {
+                                @templbase.Form(data, "/invite", "POST") {
                                     <label for="email">{data.Language.GenericEmail}</label>
                                     <div class="input-group">
                                         <input id="email" class="form-control" name="email" placeholder={data.Language.AdminEmailAddress} autocomplete="off" data-1p-ignore data-lpignore="true" data-bwignore="true" data-protonpass-ignore="true"></input>
@@ -77,7 +77,7 @@ templ UserAdmin(data *request.CommonData, homes []model.Home, users []model.User
                                             {data.Language.GenericNone}
                                         }
                                     </td>
-                                    <td>@templbase.SingleButtonForm(inv.DeleteURL(), data.Language.GenericDelete, "POST", "btn-danger")</td>
+                                    <td>@templbase.SingleButtonForm(data, inv.DeleteURL(), data.Language.GenericDelete, "POST", "btn-danger")</td>
                                 </tr>
                             }
                         </tbody>
@@ -133,7 +133,7 @@ templ UserConfirmScrubOrNuke(data *request.CommonData, user model.User, header, 
         <h1>{header}</h1>
         @templbase.Card() {
             <p>{confirmMsg} ({user.Email})</p>
-            @templbase.Form(user.URLSuffix(dest), "POST", "form-control", "d-flex", "p-0") {
+            @templbase.Form(data, user.URLSuffix(dest), "POST", "form-control", "d-flex", "p-0") {
                 <div class="input-group">
                     <input class="input w-75" name="confirm-email" value={data.Language.GenericEmail} autocomplete="off" data-1p-ignore data-lpignore="true" data-bwignore="true" data-protonpass-ignore="true"></input>
                     <button type="submit" class="btn btn-danger w-25">{data.Language.GenericConfirm}</button>

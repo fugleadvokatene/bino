@@ -137,6 +137,7 @@ type Session struct {
 	AppuserID int32
 	Expires   pgtype.Timestamptz
 	LastSeen  pgtype.Timestamptz
+	Csrf      pgtype.Text
 }
 
 // Each row is a species

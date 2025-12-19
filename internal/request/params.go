@@ -60,6 +60,26 @@ func GetFormMultiValue(r *http.Request, field string) ([]string, error) {
 	if err := r.ParseForm(); err != nil {
 		return nil, fmt.Errorf("parsing form: %w", err)
 	}
+
+	if data, err := LoadCommonData(r.Context()); err == nil {
+		if data.User == nil {
+			return nil, fmt.Errorf("form submitted by user that wasn't logged in")
+		}
+		if !data.User.CSRFCheckPassed {
+			csrf, ok := r.Form["csrf"]
+			if !ok {
+				return nil, fmt.Errorf("missing CSRF token in request")
+			}
+			if len(csrf) > 1 {
+				return nil, fmt.Errorf("%d CSRF tokens in request", len(csrf))
+			}
+			if csrf[0] != data.User.CSRFToken {
+				return nil, fmt.Errorf("CSRF check failed")
+			}
+			data.User.CSRFCheckPassed = true
+		}
+	}
+
 	values, ok := r.Form[field]
 	if !ok {
 		return nil, fmt.Errorf("missing form value '%s'", field)

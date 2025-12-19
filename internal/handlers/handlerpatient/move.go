@@ -47,7 +47,7 @@ func (h *move) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			return err
 		}
 
-		db.Q.AddPatientEvent(ctx, sql.AddPatientEventParams{
+		if _, err := db.Q.AddPatientEvent(ctx, sql.AddPatientEventParams{
 			PatientID:    patient,
 			AppuserID:    commonData.User.AppuserID,
 			HomeID:       newHomeID,
@@ -55,7 +55,9 @@ func (h *move) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			AssociatedID: patientData.CurrHomeID,
 			Note:         "",
 			Time:         pgtype.Timestamptz{Time: time.Now(), Valid: true},
-		})
+		}); err != nil {
+			return err
+		}
 
 		return nil
 	}); err != nil {

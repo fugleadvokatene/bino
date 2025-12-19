@@ -19,7 +19,7 @@ func Authenticate(
 ) (request.CommonData, error) {
 	ctx := r.Context()
 
-	user, err := GetUser(w, r, auth)
+	user, session, err := GetUser(w, r, auth)
 
 	if err != nil {
 		loginRedirectHandler.ServeHTTP(w, r)
@@ -50,6 +50,8 @@ func Authenticate(
 		LoggingConsent:  loggingConsent,
 		AccessLevel:     model.AccessLevel(user.AccessLevel),
 		FeatureFlags:    featureFlags,
+		CSRFToken:       session.Csrf.String,
+		CSRFCheckPassed: false,
 	}
 
 	commonData := request.CommonData{

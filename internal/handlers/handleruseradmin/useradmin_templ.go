@@ -297,7 +297,7 @@ func UserAdmin(data *request.CommonData, homes []model.Home, users []model.User,
 					}
 					return nil
 				})
-				templ_7745c5c3_Err = templbase.Form("/invite", "POST").Render(templ.WithChildren(ctx, templ_7745c5c3_Var6), templ_7745c5c3_Buffer)
+				templ_7745c5c3_Err = templbase.Form(data, "/invite", "POST").Render(templ.WithChildren(ctx, templ_7745c5c3_Var6), templ_7745c5c3_Buffer)
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
@@ -478,7 +478,7 @@ func UserAdmin(data *request.CommonData, homes []model.Home, users []model.User,
 						if templ_7745c5c3_Err != nil {
 							return templ_7745c5c3_Err
 						}
-						templ_7745c5c3_Err = templbase.SingleButtonForm(inv.DeleteURL(), data.Language.GenericDelete, "POST", "btn-danger").Render(ctx, templ_7745c5c3_Buffer)
+						templ_7745c5c3_Err = templbase.SingleButtonForm(data, inv.DeleteURL(), data.Language.GenericDelete, "POST", "btn-danger").Render(ctx, templ_7745c5c3_Buffer)
 						if templ_7745c5c3_Err != nil {
 							return templ_7745c5c3_Err
 						}
@@ -907,7 +907,7 @@ func UserConfirmScrubOrNuke(data *request.CommonData, user model.User, header, c
 					}
 					return nil
 				})
-				templ_7745c5c3_Err = templbase.Form(user.URLSuffix(dest), "POST", "form-control", "d-flex", "p-0").Render(templ.WithChildren(ctx, templ_7745c5c3_Var54), templ_7745c5c3_Buffer)
+				templ_7745c5c3_Err = templbase.Form(data, user.URLSuffix(dest), "POST", "form-control", "d-flex", "p-0").Render(templ.WithChildren(ctx, templ_7745c5c3_Var54), templ_7745c5c3_Buffer)
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}

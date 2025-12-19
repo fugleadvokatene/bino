@@ -17,6 +17,9 @@ func (h *post) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	commonData := request.MustLoadCommonData(ctx)
 
+	// Ignore CSRF in this instance (ajax form, harmless)
+	commonData.User.CSRFCheckPassed = true
+
 	lang, err := model.ParseLanguageID(r.FormValue("language"))
 	if err == nil {
 		err = h.DB.SetUserLanguage(ctx, commonData.User.AppuserID, lang)

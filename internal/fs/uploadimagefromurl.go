@@ -1,56 +1,43 @@
 package fs
 
 import (
-	"bytes"
 	"context"
 	"fmt"
-	"io"
-	"net/http"
+	"net/url"
 	"path"
 	"strings"
 	"time"
 
 	"github.com/fugleadvokatene/bino/internal/model"
+	"github.com/fugleadvokatene/bino/internal/security"
 )
 
-func UploadImageFromURL(ctx context.Context, url string, backend *LocalFileStorage, creatorID int32) UploadResult {
-	resp, err := http.Get(url)
+func UploadImageFromURL(ctx context.Context, rawURL string, backend *LocalFileStorage, creatorID int32) UploadResult {
+	r, fetchInfo, err := security.Fetch(ctx, rawURL, func(ct string) error {
+		if !strings.HasPrefix(ct, "image/") {
+			return fmt.Errorf("not an image: %s", ct)
+		}
+		return nil
+	})
 	if err != nil {
 		return UploadResult{Error: err}
 	}
-	defer resp.Body.Close()
-
-	if resp.StatusCode != http.StatusOK {
-		return UploadResult{Error: fmt.Errorf("server response: %d", resp.StatusCode)}
-	}
-
-	imgBin, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return UploadResult{Error: err}
-	}
-
-	ct := resp.Header.Get("Content-Type")
-	if ct == "" {
-		return UploadResult{Error: fmt.Errorf("missing content type")}
-	}
-	if !strings.HasPrefix(ct, "image/") {
-		return UploadResult{Error: fmt.Errorf("not an image: %s", ct)}
-	}
-
-	name := path.Base(resp.Request.URL.Path)
-	if name == "" || name == "/" {
-		name = "file"
+	name := "file.img"
+	if u, err := url.Parse(rawURL); err == nil {
+		nameFromURL := security.SanitizeFilename(path.Base(u.Path), fetchInfo.ContentType)
+		if nameFromURL != "" && nameFromURL != "/" {
+			name = nameFromURL
+		}
 	}
 
 	info := model.FileInfo{
 		FileName: name,
-		MIMEType: ct,
-		Size:     int64(len(imgBin)),
+		MIMEType: fetchInfo.ContentType,
+		Size:     fetchInfo.ContentLength,
 		Created:  time.Now(),
 		Creator:  creatorID,
 	}
 
-	r := bytes.NewReader(imgBin)
 	result := backend.Upload(ctx, r, info)
 	return result
 }

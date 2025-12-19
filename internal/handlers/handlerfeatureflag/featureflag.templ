@@ -9,7 +9,7 @@ templ Page(data *request.CommonData, ff *model.FeatureFlagsState) {
         <h1>{data.Language.FFAdmin}</h1>
         <div class="card b-card">
             <h2>{data.Language.FFCreate}</h2>
-            @templbase.Form("/ff/create", "POST", "form-control d-flex") {
+            @templbase.Form(data, "/ff/create", "POST", "form-control d-flex") {
                 <input type="text" name="flag" class="form-control"/>
                 <button type="submit" class="btn btn-success">{data.Language.FFCreate}</button>
             }
@@ -37,7 +37,7 @@ templ Page(data *request.CommonData, ff *model.FeatureFlagsState) {
                     <tfoot>
                         <tr>
                             <th colspan="2">
-                                @templbase.SingleButtonForm(flag.DeleteURL(), data.Language.GenericDelete, "POST", "btn-danger w-100")
+                                @templbase.SingleButtonForm(data, flag.DeleteURL(), data.Language.GenericDelete, "POST", "btn-danger w-100")
                             </th>
                         </tr>
                     </tfoot>

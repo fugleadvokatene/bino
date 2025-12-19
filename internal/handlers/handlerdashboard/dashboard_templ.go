@@ -820,7 +820,7 @@ func DashboardForm(
 				}
 				return nil
 			})
-			templ_7745c5c3_Err = templbase.Form("/checkin", "POST").Render(templ.WithChildren(ctx, templ_7745c5c3_Var23), templ_7745c5c3_Buffer)
+			templ_7745c5c3_Err = templbase.Form(data, "/checkin", "POST").Render(templ.WithChildren(ctx, templ_7745c5c3_Var23), templ_7745c5c3_Buffer)
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}

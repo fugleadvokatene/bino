@@ -576,7 +576,7 @@ func GDrivePage(
 							}
 							return nil
 						})
-						templ_7745c5c3_Err = templbase.Form(fmt.Sprintf("/invite/%s", p.Email), "POST").Render(templ.WithChildren(ctx, templ_7745c5c3_Var25), templ_7745c5c3_Buffer)
+						templ_7745c5c3_Err = templbase.Form(data, fmt.Sprintf("/invite/%s", p.Email), "POST").Render(templ.WithChildren(ctx, templ_7745c5c3_Var25), templ_7745c5c3_Buffer)
 						if templ_7745c5c3_Err != nil {
 							return templ_7745c5c3_Err
 						}
@@ -670,7 +670,7 @@ func GDrivePage(
 							return templ_7745c5c3_Err
 						}
 						if gdrive.UserCanShare(ctx, info.JournalFolder, data.User.Email) {
-							templ_7745c5c3_Err = templbase.SingleButtonForm(fmt.Sprintf("/gdrive/invite/%s", user.Email), data.Language.GDriveGiveAccess, "POST", "btn-primary").Render(ctx, templ_7745c5c3_Buffer)
+							templ_7745c5c3_Err = templbase.SingleButtonForm(data, fmt.Sprintf("/gdrive/invite/%s", user.Email), data.Language.GDriveGiveAccess, "POST", "btn-primary").Render(ctx, templ_7745c5c3_Buffer)
 							if templ_7745c5c3_Err != nil {
 								return templ_7745c5c3_Err
 							}

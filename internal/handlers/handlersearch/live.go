@@ -15,6 +15,9 @@ func (h *live) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	commonData := request.MustLoadCommonData(ctx)
 
+	// Ignore CSRF in this instance (ajax form, arguably harmless)
+	commonData.User.CSRFCheckPassed = true
+
 	result, err := doSearch(r, h.DB)
 	if err != nil {
 		emptySearch(w, r, result, err.Error(), false)

@@ -36,7 +36,7 @@ templ FileUploadPage(data *request.CommonData, files []model.File) {
 }
 
 templ FileUploader(data *request.CommonData, url string) {
-    <form action={templ.URL(url)} method="POST">
+    @templbase.Form(data, url, "POST") {
         <input type="file" 
             class="filepond m-0"
             name="filepond"
@@ -51,7 +51,7 @@ templ FileUploader(data *request.CommonData, url string) {
             class="btn btn-success w-100"
             id="general-file-submit"
         >{data.Language.GenericSave}</button>
-    </form>
+    }
 }
 
 templ FileViewComponent(data *request.CommonData, file *model.File) {
@@ -69,6 +69,7 @@ templ FileViewComponent(data *request.CommonData, file *model.File) {
             </div>
             if len(file.WikiLinks) == 0 && len(file.PatientLinks) == 0 {
                 @templbase.SingleButtonForm(
+                    data,
                     fmt.Sprintf("/file/%d/delete", file.ID),
                     "⛔",
                     "POST",

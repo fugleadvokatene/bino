@@ -3,6 +3,7 @@ package handlerimport
 import (
 	"net/http"
 
+	"github.com/fugleadvokatene/bino/internal/generic"
 	"github.com/fugleadvokatene/bino/internal/request"
 )
 
@@ -16,7 +17,9 @@ func (h *page) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	commonData.Subtitle = commonData.Language.ImportHeader
 
 	var ir ImportRequest
-	commonData.Cookies.Get("import-request", "json", &ir)
+	if found, err := commonData.Cookies.Get("import-request", "json", &ir); err != nil || !found {
+		generic.Clear(&ir)
+	}
 
 	_ = ImportPage(commonData, ir).Render(ctx, w)
 }

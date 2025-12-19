@@ -2,6 +2,7 @@ package handleruseradmin
 
 import (
 	"crypto/rand"
+	"errors"
 	"fmt"
 	"net/http"
 	"time"
@@ -59,7 +60,8 @@ func (h *invite) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			Home:        pgtype.Int4{Int32: home, Valid: true},
 			Accesslevel: accessLevel,
 		}); err != nil {
-			if pgErr, ok := err.(*pgconn.PgError); ok && pgErr.Code == "23505" {
+			var pgErr pgconn.PgError
+			if ok := errors.As(err, &pgErr); ok && pgErr.Code == "23505" {
 				// Conflicting invite key
 				continue
 			} else {

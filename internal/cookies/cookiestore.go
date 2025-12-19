@@ -50,7 +50,7 @@ func (c *CookieStore) Get(r *http.Request, key string, subkey string, value any)
 	// Get the feedback cookie and destroy it
 	sess, err := c.Backend.Get(r, key)
 	if err != nil {
-		return false, fmt.Errorf("failed to decode cookie session: %v", err)
+		return false, fmt.Errorf("failed to decode cookie session: %w", err)
 	}
 
 	// Try to get the cookie
@@ -71,14 +71,14 @@ func (c *CookieStore) Eat(w http.ResponseWriter, r *http.Request, key string, su
 	// Get the feedback cookie and destroy it
 	sess, err := c.Backend.Get(r, key)
 	if err != nil {
-		return false, fmt.Errorf("failed to decode cookie session: %v", err)
+		return false, fmt.Errorf("failed to decode cookie session: %w", err)
 	}
 
 	// Try to get the cookie, eat it regardless
 	str, ok := sess.Values[subkey].(string)
 	sess.Options.MaxAge = -1
 	if err := sess.Save(r, w); err != nil {
-		return false, fmt.Errorf("deleting cookie '%s': %v", key, err)
+		return false, fmt.Errorf("deleting cookie '%s': %w", key, err)
 	}
 	if !ok {
 		return false, nil

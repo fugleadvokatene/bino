@@ -2,8 +2,17 @@ package generic
 
 type Set[T comparable] map[T]struct{}
 
-func NewSet[T comparable]() Set[T] {
-	return make(Set[T])
+func NewSet[T comparable](elems ...T) Set[T] {
+	out := make(Set[T])
+	for _, elem := range elems {
+		out[elem] = struct{}{}
+	}
+	return out
+}
+
+func (s Set[T]) Contains(elem T) bool {
+	_, found := s[elem]
+	return found
 }
 
 func SliceToSet[U any, T comparable](in []U, f func(in U) T) Set[T] {

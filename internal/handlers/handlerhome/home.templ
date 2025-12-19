@@ -75,6 +75,7 @@ templ UnavailableEditor(data *request.CommonData, view *model.Home) {
                             <td><span>{period.Note}</span></td>
                             <td>
                                 @templbase.SingleButtonForm(
+                                    data,
                                     period.DeleteURL(),
                                     data.Language.GenericDelete,
                                     "POST",
@@ -90,6 +91,7 @@ templ UnavailableEditor(data *request.CommonData, view *model.Home) {
 
     <h4>{data.Language.GenericAdd}</h4>
     @templbase.Form(
+        data,
         view.URLSuffix("add-unavailable"),
         "POST",
         "card p-2",
@@ -122,6 +124,7 @@ templ UnavailableEditor(data *request.CommonData, view *model.Home) {
 
 templ CapacityForm(data *request.CommonData, view *model.Home) {
     @templbase.Form(
+        data,
         view.URLSuffix("set-capacity"),
         "POST",
     ) {
@@ -144,6 +147,7 @@ templ PreferredSpecies(data *request.CommonData, view *model.Home) {
                 <td>{species.Name}</td>
                 <td class="icon-col">
                     @templbase.SingleButtonForm(
+                        data,
                         fmt.Sprintf("/home/%d/species/delete/%d", view.ID, species.ID),
                         "⛔",
                         "POST",
@@ -157,6 +161,7 @@ templ PreferredSpecies(data *request.CommonData, view *model.Home) {
         <tr>
             <td colspan="3">
                 @templbase.Form(
+                 data,
                     view.URLSuffix("species/add"),
                     "POST",
                     "form-control-sm",

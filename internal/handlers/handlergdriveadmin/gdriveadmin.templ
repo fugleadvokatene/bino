@@ -62,7 +62,7 @@ templ GDrivePage(
                         if view := request.LookupUserByEmail(ctx, db, p.Email); view.Valid() {
                             @templbase.Avatar(view)
                         } else {
-                            @templbase.Form(fmt.Sprintf("/invite/%s", p.Email),  "POST") {
+                            @templbase.Form(data, fmt.Sprintf("/invite/%s", p.Email), "POST") {
                                 <label class="small" for="access-level">{data.Language.AccessLevel}</label>
                                 <select autocomplete="off" class="form-control form-select" name="access-level" id="access-level">
                                     for _, al := range model.AccessLevelValues() {
@@ -105,7 +105,7 @@ templ GDrivePage(
                         
                         <td>
                         if gdrive.UserCanShare(ctx, info.JournalFolder, data.User.Email) {
-                            @templbase.SingleButtonForm(fmt.Sprintf("/gdrive/invite/%s", user.Email), data.Language.GDriveGiveAccess, "POST", "btn-primary")
+                            @templbase.SingleButtonForm(data, fmt.Sprintf("/gdrive/invite/%s", user.Email), data.Language.GDriveGiveAccess, "POST", "btn-primary")
                         }
                         </td>
                     </tr>

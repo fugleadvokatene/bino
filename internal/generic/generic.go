@@ -138,3 +138,7 @@ func Any[T any](in []T, f func(in T) bool) bool {
 	}
 	return false
 }
+
+func Clear[T any](in *T) {
+	*in = *(new(T))
+}

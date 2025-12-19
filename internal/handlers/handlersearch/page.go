@@ -15,6 +15,9 @@ func (h *page) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	commonData := request.MustLoadCommonData(ctx)
 
+	// Ignore CSRF in this instance (ajax form, arguably harmless)
+	commonData.User.CSRFCheckPassed = true
+
 	commonData.Subtitle = commonData.Language.GenericSearch
 
 	result, err := doSearch(r, h.DB)

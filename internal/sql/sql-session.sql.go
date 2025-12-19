@@ -27,7 +27,7 @@ func (q *Queries) DeleteStaleSessions(ctx context.Context) (pgconn.CommandTag, e
 }
 
 const getSession = `-- name: GetSession :one
-SELECT id, appuser_id, expires, last_seen
+SELECT id, appuser_id, expires, last_seen, csrf
 FROM session
 WHERE id = $1
 `
@@ -40,23 +40,30 @@ func (q *Queries) GetSession(ctx context.Context, id string) (Session, error) {
 		&i.AppuserID,
 		&i.Expires,
 		&i.LastSeen,
+		&i.Csrf,
 	)
 	return i, err
 }
 
 const insertSession = `-- name: InsertSession :exec
-INSERT INTO session (id, appuser_id, expires, last_seen)
-VALUES ($1, $2, $3, NOW())
+INSERT INTO session (id, appuser_id, expires, last_seen, csrf)
+VALUES ($1, $2, $3, NOW(), $4)
 `
 
 type InsertSessionParams struct {
 	ID        string
 	AppuserID int32
 	Expires   pgtype.Timestamptz
+	Csrf      pgtype.Text
 }
 
 func (q *Queries) InsertSession(ctx context.Context, arg InsertSessionParams) error {
-	_, err := q.db.Exec(ctx, insertSession, arg.ID, arg.AppuserID, arg.Expires)
+	_, err := q.db.Exec(ctx, insertSession,
+		arg.ID,
+		arg.AppuserID,
+		arg.Expires,
+		arg.Csrf,
+	)
 	return err
 }
 
@@ -91,6 +98,22 @@ WHERE id = $1
 
 func (q *Queries) RevokeSession(ctx context.Context, id string) error {
 	_, err := q.db.Exec(ctx, revokeSession, id)
+	return err
+}
+
+const updateSessionCSRF = `-- name: UpdateSessionCSRF :exec
+UPDATE session
+SET csrf = $2
+WHERE id = $1
+`
+
+type UpdateSessionCSRFParams struct {
+	ID   string
+	Csrf pgtype.Text
+}
+
+func (q *Queries) UpdateSessionCSRF(ctx context.Context, arg UpdateSessionCSRFParams) error {
+	_, err := q.db.Exec(ctx, updateSessionCSRF, arg.ID, arg.Csrf)
 	return err
 }
 

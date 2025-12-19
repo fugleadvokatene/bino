@@ -33,7 +33,7 @@ templ WikiPageTempl(data *request.CommonData, page model.WikiPage, links []model
                     }
                     <div class="card card-header mb-2">
                         <span>Create article</span>
-                        @templbase.Form("/wiki/create", "POST") {
+                        @templbase.Form(data, "/wiki/create", "POST") {
                             <div class="input-group">
                                 <input id="title" name="title" class="form-control"></input>
                                 @templbase.Button("submit", "fa-file-circle-plus", data.Language.GenericAdd)

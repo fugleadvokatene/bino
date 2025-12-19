@@ -205,14 +205,15 @@ templ UserTimeLong(rel, abs string) {
     {abs} ({rel})
 }
 
-templ SingleButtonForm(url string, buttonText string, method string, btnClass string, formClasses ...string) {
-    @Form(url, method, formClasses...) {
+templ SingleButtonForm(data *request.CommonData, url string, buttonText string, method string, btnClass string, formClasses ...string) {
+    @Form(data, url, method, formClasses...) {
         <button type="submit" class={"btn btn-sm", btnClass}>{buttonText}</button>
     }
 }
 
-templ Form(url string, method string, formClasses ...string) {
+templ Form(data *request.CommonData, url string, method string, formClasses ...string) {
     <form action={templ.URL(url)} method={method} class={formClasses} autocomplete="off">
+        <input type="hidden" value={data.User.CSRFToken} name="csrf">
         {children...}
     </form>
 }

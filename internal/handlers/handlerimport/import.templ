@@ -11,25 +11,26 @@ templ ImportPage(data *request.CommonData, req ImportRequest) {
             <p>Each line in the textarea should have the following format: <code>Name, Species, Home, JournalURL</code></p>
             <p>You can omit the last parts (Home and URL). If there is no JournalURL, I will create a journal for that one. If there is also no Home, I will assume you want to add them to your own rehab home.</p>
             <p>This textarea is auto-saved, so you can leave and continue your work at any time.</p>
-            <form action="/import" method="POST" autocomplete="off">
+            @templbase.Form(data, "/import", "POST") {
                 <div class="form-group">
-                <textarea
-                    name="txt"
-                    class="form-control"
-                    rows="10"
-                    hx-get="/import/validation"
-                    hx-trigger="input changed delay:100ms"
-                    hx-target="#import-validation"
-                    hx-swap="outerHTML"
-                    hx-on:htmx:afterOnLoad="document.querySelector('.b-create-patient').disabled = !this.closest('form').querySelector('.import-ok')"
-                >
-                {req.Txt}
-                </textarea>
+                    <textarea
+                        name="txt"
+                        class="form-control"
+                        rows="10"
+                        hx-get="/import/validation"
+                        hx-trigger="input changed delay:100ms"
+                        hx-target="#import-validation"
+                        hx-swap="outerHTML"
+                        hx-on:htmx:afterOnLoad="document.querySelector('.b-create-patient').disabled = !this.closest('form').querySelector('.import-ok')"
+                    >
+                    {req.Txt}
+                    </textarea>
                 </div>
                 <p>
                     @ImportValidation(data, req)
                 </p>
-            </form>
+            }
+                
         </div>
         <script src="https://cdn.jsdelivr.net/npm/htmx.org@2.0.8/dist/htmx.min.js" integrity="sha384-/TgkGk7p307TH7EXJDuUlgG3Ce1UVolAOFopFekQkkXihi5u/6OCvVKyz1W+idaz" crossorigin="anonymous"></script>
     }

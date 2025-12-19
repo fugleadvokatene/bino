@@ -30,7 +30,7 @@ func NewLoginOptionalHandler(
 }
 
 func (h *withLoginOptional) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	_, err := GetUser(w, r, h.loggedInHandler.auth)
+	_, _, err := GetUser(w, r, h.loggedInHandler.auth)
 	if err == nil {
 		h.loggedInHandler.ServeHTTP(w, r)
 		return

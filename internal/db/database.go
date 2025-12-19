@@ -2,6 +2,7 @@ package db
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	"github.com/fugleadvokatene/bino/internal/sql"
@@ -26,7 +27,7 @@ func (db *Database) Transaction(ctx context.Context, f func(ctx context.Context,
 	if err == nil {
 		err = tx.Commit(ctx)
 	} else {
-		tx.Rollback(ctx)
+		err = errors.Join(err, tx.Rollback(ctx))
 	}
 	return err
 }

@@ -20,10 +20,17 @@ func New(handler http.Handler) http.Handler {
 
 func (h *LoggingHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	start := time.Now()
-	r.ParseForm()
 	items := []any{
 		"method", r.Method,
 		"path", r.URL.Path,
+	}
+	if err := r.ParseForm(); err != nil {
+		request.LogR(
+			r,
+			slog.LevelWarn,
+			"Couldn't parse form",
+			items...,
+		)
 	}
 	for k, v := range r.Form {
 		items = append(items, k, v)

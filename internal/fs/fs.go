@@ -82,7 +82,7 @@ func (lfs *LocalFileStorage) Upload(ctx context.Context, data io.Reader, fileInf
 	defer dir.Close()
 
 	// Create UUID subdirectory
-	if err := dir.Mkdir(id, os.ModePerm); err != nil {
+	if err := dir.Mkdir(id, 0700); err != nil {
 		return UploadResult{
 			Error:          fmt.Errorf("creating file directory: %w", err),
 			HTTPStatusCode: http.StatusInternalServerError,
@@ -94,6 +94,12 @@ func (lfs *LocalFileStorage) Upload(ctx context.Context, data io.Reader, fileInf
 	if err != nil {
 		return UploadResult{
 			Error:          fmt.Errorf("creating metadata.json: %w", err),
+			HTTPStatusCode: http.StatusInternalServerError,
+		}
+	}
+	if err := metaFile.Chmod(0600); err != nil {
+		return UploadResult{
+			Error:          fmt.Errorf("chmod metadata.json 0600: %w", err),
 			HTTPStatusCode: http.StatusInternalServerError,
 		}
 	}
@@ -127,6 +133,12 @@ func (lfs *LocalFileStorage) Upload(ctx context.Context, data io.Reader, fileInf
 			out.UniqueID = ""
 		}
 	}()
+	if err := file.Chmod(0600); err != nil {
+		return UploadResult{
+			Error:          fmt.Errorf("chmod file 0600: %w", err),
+			HTTPStatusCode: http.StatusInternalServerError,
+		}
+	}
 
 	// Copy file data
 	if n, err := io.Copy(file, data); err != nil {

@@ -107,7 +107,7 @@ templ DashboardForm(
     homes []model.Home,
 ) {
     @templbase.Card("dashboard-form", "shadow-sm") {
-        @templbase.Form("/checkin", "POST") {
+        @templbase.Form(data, "/checkin", "POST") {
             <legend for="dashboard-form">{data.Language.CheckinLegend}</legend>
             <div class="form-group">
                 <label>{data.Language.CheckinPatientName}</label>

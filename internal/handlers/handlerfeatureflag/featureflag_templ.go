@@ -106,7 +106,7 @@ func Page(data *request.CommonData, ff *model.FeatureFlagsState) templ.Component
 				}
 				return nil
 			})
-			templ_7745c5c3_Err = templbase.Form("/ff/create", "POST", "form-control d-flex").Render(templ.WithChildren(ctx, templ_7745c5c3_Var5), templ_7745c5c3_Buffer)
+			templ_7745c5c3_Err = templbase.Form(data, "/ff/create", "POST", "form-control d-flex").Render(templ.WithChildren(ctx, templ_7745c5c3_Var5), templ_7745c5c3_Buffer)
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
@@ -217,7 +217,7 @@ func Page(data *request.CommonData, ff *model.FeatureFlagsState) templ.Component
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
-				templ_7745c5c3_Err = templbase.SingleButtonForm(flag.DeleteURL(), data.Language.GenericDelete, "POST", "btn-danger w-100").Render(ctx, templ_7745c5c3_Buffer)
+				templ_7745c5c3_Err = templbase.SingleButtonForm(data, flag.DeleteURL(), data.Language.GenericDelete, "POST", "btn-danger w-100").Render(ctx, templ_7745c5c3_Buffer)
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}

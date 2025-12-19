@@ -5,13 +5,19 @@ WHERE id = $1
 ;
 
 -- name: InsertSession :exec
-INSERT INTO session (id, appuser_id, expires, last_seen)
-VALUES ($1, $2, $3, NOW())
+INSERT INTO session (id, appuser_id, expires, last_seen, csrf)
+VALUES ($1, $2, $3, NOW(), $4)
 ;
 
 -- name: UpdateSessionLastSeen :exec
 UPDATE session
 SET last_seen = NOW()
+WHERE id = $1
+;
+
+-- name: UpdateSessionCSRF :exec
+UPDATE session
+SET csrf = $2
 WHERE id = $1
 ;
 

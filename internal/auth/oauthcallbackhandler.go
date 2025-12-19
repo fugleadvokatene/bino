@@ -129,6 +129,7 @@ func (h *oauthCallbackHandler) ServeHTTP(
 		ID:        sessionID,
 		AppuserID: userID,
 		Expires:   pgtype.Timestamptz{Time: time.Now().AddDate(0, 1, 0), Valid: true},
+		Csrf:      pgtype.Text{String: rand.Text(), Valid: true},
 	}); err != nil {
 		http.Error(w, "creating session failed", http.StatusInternalServerError)
 		return

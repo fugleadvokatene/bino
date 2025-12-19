@@ -108,6 +108,8 @@ type UserData struct {
 	HasGDriveAccess bool
 	AccessLevel     model.AccessLevel
 	FeatureFlags    generic.Set[string]
+	CSRFToken       string
+	CSRFCheckPassed bool
 }
 
 func (u *UserData) HasHomeOrAccess(homeID int32, al model.AccessLevel) bool {
