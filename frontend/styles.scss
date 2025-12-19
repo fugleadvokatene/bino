@@ -1116,3 +1116,12 @@ a[href]:not(.journal-link-icon):not(
   content: ' '
     url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAYAAACNMs+9AAAAVklEQVR4Xn3PgQkAMQhDUXfqTu7kTtkpd5RA8AInfArtQ2iRXFWT2QedAfttj2FsPIOE1eCOlEuoWWjgzYaB/IkeGOrxXhqB+uA9Bfcm0lAZuh+YIeAD+cAqSz4kCMUAAAAASUVORK5CYII=);
 }
+
+.journal-link-icon {
+  color: $accent;
+  border: 1px solid $accent;
+  border-radius: 25%;
+}
+.journal-link-icon:hover {
+  background-color: $lightaccent;
+}
