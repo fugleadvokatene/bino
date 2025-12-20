@@ -1,5 +1,5 @@
 -- name: GetInvitation :one
-SELECT id
+SELECT *
 FROM invitation
 WHERE email = $1
   AND expires > NOW()

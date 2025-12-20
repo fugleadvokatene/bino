@@ -5,11 +5,11 @@ import (
 	"crypto/rand"
 	"encoding/json"
 	"fmt"
+	"log/slog"
 	"net/http"
 	"time"
 
 	"github.com/fugleadvokatene/bino/internal/db"
-	"github.com/fugleadvokatene/bino/internal/model"
 	"github.com/fugleadvokatene/bino/internal/sql"
 	"github.com/jackc/pgx/v5/pgtype"
 )
@@ -103,14 +103,19 @@ func (h *oauthCallbackHandler) ServeHTTP(
 				Email:       claims.Email,
 				GoogleSub:   claims.Sub,
 				AvatarUrl:   pgtype.Text{String: claims.Picture, Valid: claims.Picture != ""},
-				AccessLevel: int32(model.AccessLevelCoordinator),
+				AccessLevel: invitation.AccessLevel,
 			}); err != nil {
 				return err
 			} else {
 				userID = createdUserID
 			}
-			if err := h.auth.db.Q.DeleteInvitation(ctx, invitation); err != nil {
-				return err
+			if invitation.Home.Valid {
+				if err := h.auth.db.Q.AddUserToHome(ctx, sql.AddUserToHomeParams{HomeID: invitation.Home.Int32, AppuserID: userID}); err != nil {
+					slog.Error("Couldn't add user to home", "home", invitation.Home.Int32, "User", userID)
+				}
+			}
+			if err := h.auth.db.Q.DeleteInvitation(ctx, invitation.ID); err != nil {
+				slog.Error("Couldn't delete invitation", "invitation", invitation)
 			}
 			return nil
 		}); err != nil {

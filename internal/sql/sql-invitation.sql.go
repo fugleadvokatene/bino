@@ -42,17 +42,24 @@ func (q *Queries) DeleteInvitationByEmail(ctx context.Context, email pgtype.Text
 }
 
 const getInvitation = `-- name: GetInvitation :one
-SELECT id
+SELECT id, email, expires, created, access_level, home
 FROM invitation
 WHERE email = $1
   AND expires > NOW()
 `
 
-func (q *Queries) GetInvitation(ctx context.Context, email pgtype.Text) (string, error) {
+func (q *Queries) GetInvitation(ctx context.Context, email pgtype.Text) (Invitation, error) {
 	row := q.db.QueryRow(ctx, getInvitation, email)
-	var id string
-	err := row.Scan(&id)
-	return id, err
+	var i Invitation
+	err := row.Scan(
+		&i.ID,
+		&i.Email,
+		&i.Expires,
+		&i.Created,
+		&i.AccessLevel,
+		&i.Home,
+	)
+	return i, err
 }
 
 const getInvitations = `-- name: GetInvitations :many
