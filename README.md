@@ -131,3 +131,14 @@ just run
 There are also some other commands in the justfile if you want to just build or just
 run sqlc etc.
 
+## Security
+
+Some features are turned off by default for security reasons, and can be configured in `config.json`
+
+### `security.AllowUserDefinedHTTPRequests`
+
+Defaults to false. If set, enables background jobs that fetch an image based on a user-provided URL.
+
+This can in principle be used for SSRF (although there are basic guards in place; see `security/httpclient.go`).
+So admin must have a certain level of trust that users will not try to use this feature maliciously.
+These features are only available after a successful login.

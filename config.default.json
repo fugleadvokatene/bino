@@ -26,5 +26,8 @@
         ]
     },
     "SystemLanguage": 1,
-    "SystemBaseURL": "bino.<your-domain>"
+    "SystemBaseURL": "bino.<your-domain>",
+    "Security": {
+        "AllowUserDefinedHTTPRequests": false
+    }
 }

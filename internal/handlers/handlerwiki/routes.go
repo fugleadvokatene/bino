@@ -5,13 +5,15 @@ import (
 	"github.com/fugleadvokatene/bino/internal/fs"
 	"github.com/fugleadvokatene/bino/internal/model"
 	"github.com/fugleadvokatene/bino/internal/route"
+	"github.com/fugleadvokatene/bino/internal/security"
 )
 
 func Routes(
 	db *db.Database,
 	fileBackend *fs.LocalFileStorage,
+	secConf *security.Config,
 ) []route.Route {
-	return []route.Route{
+	routes := []route.Route{
 		{
 			Path:    "GET /wiki",
 			Handler: &main{DB: db},
@@ -38,14 +40,17 @@ func Routes(
 			Cap:     model.CapEditWiki,
 		},
 		{
-			Path:    "POST /wiki/fetchimage/{id}",
-			Handler: &fetchImage{DB: db, FileBackend: fileBackend},
-			Cap:     model.CapEditWiki,
-		},
-		{
 			Path:    "POST /wiki/uploadimage/{id}",
 			Handler: &uploadImage{DB: db, FileBackend: fileBackend},
 			Cap:     model.CapEditWiki,
 		},
 	}
+	if secConf.AllowUserDefinedHTTPRequests {
+		routes = append(routes, route.Route{
+			Path:    "POST /wiki/fetchimage/{id}",
+			Handler: &fetchImage{DB: db, FileBackend: fileBackend},
+			Cap:     model.CapEditWiki,
+		})
+	}
+	return routes
 }

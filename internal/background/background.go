@@ -8,6 +8,7 @@ import (
 	"github.com/fugleadvokatene/bino/internal/db"
 	"github.com/fugleadvokatene/bino/internal/fs"
 	"github.com/fugleadvokatene/bino/internal/model"
+	"github.com/fugleadvokatene/bino/internal/security"
 )
 
 func RunJob[T any](what string, interval time.Duration, f func() (T, error)) {
@@ -27,11 +28,14 @@ func StartJobs(
 	db *db.Database,
 	fileBackend *fs.LocalFileStorage,
 	systemLanguageID model.LanguageID,
+	secConf *security.Config,
 ) {
 	go RunJob("Delete stale sessions", time.Hour, func() (any, error) { return db.DeleteStaleSessions(ctx) })
 	go RunJob("Delete expired invitations", time.Hour, func() (any, error) { return db.DeleteExpiredInvitations(ctx) })
 	go RunJob("Delete old staged files", time.Hour, func() (any, error) { return fs.DeleteOldStagedFiles(ctx, fileBackend, 24*time.Hour) })
 	go RunJob("Delete false Wiki links", time.Hour, func() (any, error) { return db.RemoveFalseFileWikiLinks(ctx) })
 	go RunJob("Suggest journal URLs", time.Hour, func() (any, error) { return db.SuggestJournalURLs(ctx, systemLanguageID) })
-	go RunJob("Store user avatars", time.Hour, func() (any, error) { return db.StoreUserAvatars(ctx, fileBackend) })
+	if secConf.AllowUserDefinedHTTPRequests {
+		go RunJob("Store user avatars", time.Hour, func() (any, error) { return db.StoreUserAvatars(ctx, fileBackend) })
+	}
 }

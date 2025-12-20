@@ -8,6 +8,7 @@ import (
 	"github.com/fugleadvokatene/bino/internal/gdrive"
 	"github.com/fugleadvokatene/bino/internal/model"
 	"github.com/fugleadvokatene/bino/internal/privacy"
+	"github.com/fugleadvokatene/bino/internal/security"
 )
 
 type Config struct {
@@ -19,6 +20,7 @@ type Config struct {
 	SystemBaseURL  string
 	Organization   string
 	MascotURL      string
+	Security       security.Config
 }
 
 func Load(file string) (*Config, error) {

@@ -108,7 +108,7 @@ func realMain() error {
 	fileBackend := fs.NewLocalFileStorage(ctx, "file", "tmp")
 
 	// Start all background jobs
-	background.StartJobs(ctx, db, fileBackend, config.SystemLanguage)
+	background.StartJobs(ctx, db, fileBackend, config.SystemLanguage, &config.Security)
 
 	// Set up authentication
 	authenticator, err := auth.New(ctx, config.Auth, db)
@@ -151,7 +151,7 @@ func realMain() error {
 		handlertos.Routes(),
 		handleruser.Routes(db),
 		handleruseradmin.Routes(db),
-		handlerwiki.Routes(db, fileBackend),
+		handlerwiki.Routes(db, fileBackend, &config.Security),
 	} {
 		for _, route := range routes {
 			handler := route.Handler
