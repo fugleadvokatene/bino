@@ -6,3 +6,4 @@ cache.db
 .env
 tmp/
 file/
+e2e/e2e

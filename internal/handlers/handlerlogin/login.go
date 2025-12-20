@@ -6,6 +6,11 @@ import (
 	"github.com/fugleadvokatene/bino/internal/request"
 )
 
+const (
+	// e2e test checks that this text is present
+	SignInWithGoogle = "Sign in with Google"
+)
+
 type Login struct {
 	org       string
 	mascotURL string

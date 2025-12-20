@@ -17,11 +17,19 @@ frontend:
 
 gen: sqlc templ enum sass frontend
 
-build: gen
+build-backend: gen
 	go build -buildvcs -ldflags="-X 'main.BuildKey=$(tr -dc A-Za-z0-9 </dev/urandom | head -c 8)'" -o backend github.com/fugleadvokatene/bino/cmd
 
-run: build
+build-e2e:
+	go build -o ./e2e github.com/fugleadvokatene/bino/e2e
+
+build: build-backend build-e2e
+
+run: build-backend
 	./backend
+
+e2e: build-e2e
+	./e2e/e2e
 
 init_tables:
 	psql -U bino -d bino -h localhost -f sql/migrations/000_init.sql
@@ -47,6 +55,8 @@ pull-release:
 	git branch -D tmp
 	go build -buildvcs -ldflags="-X 'main.BuildKey=$(tr -dc A-Za-z0-9 </dev/urandom | head -c 8)'" -o backend github.com/fugleadvokatene/bino/cmd
 	sudo systemctl restart bino-backend
+	go build -o e2e github.com/fugleadvokatene/bino/e2e
+	./e2e/e2e
 
 mmd:
 	mmdc -i doc/backend.mmd -o doc/img/backend.png
