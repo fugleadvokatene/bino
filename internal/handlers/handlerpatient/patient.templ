@@ -185,8 +185,11 @@ templ PatientMove(data *request.CommonData, homes []model.Home, home *model.Home
             ) {
                 <select autocomplete="off" class="form-control form-select form-select-sm" name="home">
                     <option value="" disabled selected>{data.Language.DashboardSelectHome}</option>
+                    if !patient.HasCurrentHome || (data.User.PreferredHome.ID != patient.CurrentHomeID) {
+                        <option value={data.User.PreferredHome.ID}>{data.User.PreferredHome.Name}</option>
+                    }
                     for _, otherHome := range homes {
-                        if home == nil || otherHome.ID != home.ID {
+                        if !patient.HasCurrentHome || otherHome.ID != patient.CurrentHomeID {
                             <option value={otherHome.ID}>{otherHome.Name}</option>
                         }
                     }

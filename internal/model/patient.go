@@ -19,6 +19,8 @@ type Patient struct {
 	TimeCheckout          time.Time
 	SuggestedJournalURL   string
 	SuggestedJournalTitle string
+	CurrentHomeID         int32
+	HasCurrentHome        bool
 }
 
 func (pv Patient) CollapseID(prefix string) string {

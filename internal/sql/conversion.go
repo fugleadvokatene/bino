@@ -24,10 +24,16 @@ func (h Home) ToModel() model.Home {
 
 func (in GetCurrentPatientsForHomeRow) ToModel() model.Patient {
 	return model.Patient{
-		ID:      in.ID,
-		Status:  in.Status,
-		Name:    in.Name,
-		Species: in.SpeciesName,
+		ID:                    in.ID,
+		Status:                in.Status,
+		Name:                  in.Name,
+		Species:               in.SpeciesName,
+		TimeCheckin:           in.TimeCheckin.Time,
+		TimeCheckout:          in.TimeCheckout.Time,
+		SuggestedJournalURL:   in.SuggestedJournalUrl.String,
+		SuggestedJournalTitle: in.SuggestedJournalTitle.String,
+		CurrentHomeID:         in.CurrHomeID.Int32,
+		HasCurrentHome:        in.CurrHomeID.Valid,
 	}
 }
 
@@ -41,6 +47,8 @@ func (in GetFormerPatientsRow) ToModel() model.Patient {
 		TimeCheckout:          in.TimeCheckout.Time,
 		SuggestedJournalURL:   in.SuggestedJournalUrl.String,
 		SuggestedJournalTitle: in.SuggestedJournalTitle.String,
+		CurrentHomeID:         in.CurrHomeID.Int32,
+		HasCurrentHome:        in.CurrHomeID.Valid,
 	}
 }
 
@@ -55,6 +63,8 @@ func (in GetPatientWithSpeciesRow) ToModel() model.Patient {
 		TimeCheckout:          in.TimeCheckout.Time,
 		SuggestedJournalURL:   in.SuggestedJournalUrl.String,
 		SuggestedJournalTitle: in.SuggestedJournalTitle.String,
+		CurrentHomeID:         in.CurrHomeID.Int32,
+		HasCurrentHome:        in.CurrHomeID.Valid,
 	}
 }
 
@@ -69,6 +79,8 @@ func (in GetActivePatientsRow) ToModel() model.Patient {
 		TimeCheckout:          in.TimeCheckout.Time,
 		SuggestedJournalURL:   in.SuggestedJournalUrl.String,
 		SuggestedJournalTitle: in.SuggestedJournalTitle.String,
+		CurrentHomeID:         in.CurrHomeID.Int32,
+		HasCurrentHome:        in.CurrHomeID.Valid,
 	}
 }
 
