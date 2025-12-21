@@ -11816,8 +11816,8 @@ body {
 .mascot-container {
   min-height: 175px;
   justify-content: center;
-  display: flex;
-  flex-grow: 1;
+  display: grid;
+  margin: auto;
 }
 
 @media (max-width: 1000px) {
@@ -11831,6 +11831,12 @@ body {
   border-radius: 50%;
   align-self: center;
   border: 5px solid rgb(238, 239, 245);
+}
+
+.mascot-text {
+  color: rgb(126.75, 127.125, 141.875);
+  font-size: 0.6em;
+  margin: auto;
 }
 
 .display-name {
