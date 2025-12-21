@@ -52,6 +52,7 @@ type Availability int
 // EditWiki,
 // ManageFeatureFlags,
 // HardDeletePatient,
+// Live,
 // )
 type Cap int32
 
@@ -149,3 +150,12 @@ type Template string
 
 // ENUM(None = 0, Newer, Older)
 type TimePreference int
+
+// ENUM(
+//
+//	Unknown,
+//	Hello,
+//	JournalCreated,
+//
+// )
+type LiveEventType string

@@ -30,6 +30,7 @@ import (
 	"github.com/fugleadvokatene/bino/internal/handlers/handlerhomeadmin"
 	"github.com/fugleadvokatene/bino/internal/handlers/handlerimport"
 	"github.com/fugleadvokatene/bino/internal/handlers/handlerlanguage"
+	"github.com/fugleadvokatene/bino/internal/handlers/handlerlive"
 	"github.com/fugleadvokatene/bino/internal/handlers/handlerlogging"
 	"github.com/fugleadvokatene/bino/internal/handlers/handlerlogin"
 	"github.com/fugleadvokatene/bino/internal/handlers/handlerpatient"
@@ -41,6 +42,7 @@ import (
 	"github.com/fugleadvokatene/bino/internal/handlers/handleruser"
 	"github.com/fugleadvokatene/bino/internal/handlers/handleruseradmin"
 	"github.com/fugleadvokatene/bino/internal/handlers/handlerwiki"
+	"github.com/fugleadvokatene/bino/internal/live"
 	"github.com/fugleadvokatene/bino/internal/route"
 	"github.com/fugleadvokatene/bino/internal/sql"
 	"github.com/joho/godotenv"
@@ -107,6 +109,9 @@ func realMain() error {
 	// Set up file backend
 	fileBackend := fs.NewLocalFileStorage(ctx, "file", "tmp")
 
+	// Set up broker
+	broker := live.NewBroker(ctx)
+
 	// Start all background jobs
 	background.StartJobs(ctx, db, fileBackend, config.SystemLanguage, &config.Security)
 
@@ -150,6 +155,7 @@ func realMain() error {
 		handlerspeciesadmin.Routes(db),
 		handlertos.Routes(),
 		handleruser.Routes(db),
+		handlerlive.Routes(broker),
 		handleruseradmin.Routes(db),
 		handlerwiki.Routes(db, fileBackend, &config.Security),
 	} {

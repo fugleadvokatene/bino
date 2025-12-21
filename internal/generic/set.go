@@ -5,9 +5,13 @@ type Set[T comparable] map[T]struct{}
 func NewSet[T comparable](elems ...T) Set[T] {
 	out := make(Set[T])
 	for _, elem := range elems {
-		out[elem] = struct{}{}
+		out.Add(elem)
 	}
 	return out
+}
+
+func (s Set[T]) Add(elem T) {
+	s[elem] = struct{}{}
 }
 
 func (s Set[T]) Contains(elem T) bool {

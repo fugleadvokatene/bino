@@ -15,6 +15,7 @@ var RequiredAccessLevel = map[model.Cap]model.AccessLevel{
 	model.CapViewCalendar:          model.AccessLevelNone,
 	model.CapSearch:                model.AccessLevelNone,
 	model.CapSetOwnPreferences:     model.AccessLevelNone,
+	model.CapLive:                  model.AccessLevelNone,
 
 	model.CapCheckInPatient:       model.AccessLevelRehabber,
 	model.CapManageOwnPatients:    model.AccessLevelRehabber,

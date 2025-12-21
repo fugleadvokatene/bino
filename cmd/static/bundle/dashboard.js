@@ -155,3 +155,10 @@ document.addEventListener("click", function(e) {
   state[content.id] = content.hidden;
   saveExpandState(state);
 });
+var source = new EventSource("/live");
+source.onmessage = (event) => {
+  console.log(event.type, event.data);
+};
+source.onerror = () => {
+  source.close();
+};

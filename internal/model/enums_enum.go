@@ -189,11 +189,13 @@ const (
 	CapManageFeatureFlags Cap = 25
 	// CapHardDeletePatient is a Cap of type HardDeletePatient.
 	CapHardDeletePatient Cap = 26
+	// CapLive is a Cap of type Live.
+	CapLive Cap = 27
 )
 
 var ErrInvalidCap = errors.New("not a valid Cap")
 
-const _CapName = "LoggedInViewAllActivePatientsViewAllFormerPatientsViewAllHomesViewAllUsersViewCalendarSearchSetOwnPreferencesCheckInPatientManageOwnPatientsManageAllPatientsManageOwnHomesManageAllHomesCreatePatientJournalManageSpeciesManageUsersDeleteUsersViewAdminToolsViewGDriveSettingsInviteToGDriveInviteToBinoUseImportToolDebugUploadFileEditWikiManageFeatureFlagsHardDeletePatient"
+const _CapName = "LoggedInViewAllActivePatientsViewAllFormerPatientsViewAllHomesViewAllUsersViewCalendarSearchSetOwnPreferencesCheckInPatientManageOwnPatientsManageAllPatientsManageOwnHomesManageAllHomesCreatePatientJournalManageSpeciesManageUsersDeleteUsersViewAdminToolsViewGDriveSettingsInviteToGDriveInviteToBinoUseImportToolDebugUploadFileEditWikiManageFeatureFlagsHardDeletePatientLive"
 
 // CapValues returns a list of the values for Cap
 func CapValues() []Cap {
@@ -225,6 +227,7 @@ func CapValues() []Cap {
 		CapEditWiki,
 		CapManageFeatureFlags,
 		CapHardDeletePatient,
+		CapLive,
 	}
 }
 
@@ -256,6 +259,7 @@ var _CapMap = map[Cap]string{
 	CapEditWiki:              _CapName[326:334],
 	CapManageFeatureFlags:    _CapName[334:352],
 	CapHardDeletePatient:     _CapName[352:369],
+	CapLive:                  _CapName[369:373],
 }
 
 // String implements the Stringer interface.
@@ -301,6 +305,7 @@ var _CapValue = map[string]Cap{
 	_CapName[326:334]: CapEditWiki,
 	_CapName[334:352]: CapManageFeatureFlags,
 	_CapName[352:369]: CapHardDeletePatient,
+	_CapName[369:373]: CapLive,
 }
 
 // ParseCap attempts to convert a string to a Cap.
@@ -660,6 +665,52 @@ func ParseLanguageID(name string) (LanguageID, error) {
 		return x, nil
 	}
 	return LanguageID(0), fmt.Errorf("%s is %w", name, ErrInvalidLanguageID)
+}
+
+const (
+	// LiveEventTypeUnknown is a LiveEventType of type Unknown.
+	LiveEventTypeUnknown LiveEventType = "Unknown"
+	// LiveEventTypeHello is a LiveEventType of type Hello.
+	LiveEventTypeHello LiveEventType = "Hello"
+	// LiveEventTypeJournalCreated is a LiveEventType of type JournalCreated.
+	LiveEventTypeJournalCreated LiveEventType = "JournalCreated"
+)
+
+var ErrInvalidLiveEventType = errors.New("not a valid LiveEventType")
+
+// LiveEventTypeValues returns a list of the values for LiveEventType
+func LiveEventTypeValues() []LiveEventType {
+	return []LiveEventType{
+		LiveEventTypeUnknown,
+		LiveEventTypeHello,
+		LiveEventTypeJournalCreated,
+	}
+}
+
+// String implements the Stringer interface.
+func (x LiveEventType) String() string {
+	return string(x)
+}
+
+// IsValid provides a quick way to determine if the typed value is
+// part of the allowed enumerated values
+func (x LiveEventType) IsValid() bool {
+	_, err := ParseLiveEventType(string(x))
+	return err == nil
+}
+
+var _LiveEventTypeValue = map[string]LiveEventType{
+	"Unknown":        LiveEventTypeUnknown,
+	"Hello":          LiveEventTypeHello,
+	"JournalCreated": LiveEventTypeJournalCreated,
+}
+
+// ParseLiveEventType attempts to convert a string to a LiveEventType.
+func ParseLiveEventType(name string) (LiveEventType, error) {
+	if x, ok := _LiveEventTypeValue[name]; ok {
+		return x, nil
+	}
+	return LiveEventType(""), fmt.Errorf("%s is %w", name, ErrInvalidLiveEventType)
 }
 
 const (
