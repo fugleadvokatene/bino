@@ -199,8 +199,8 @@ body {
 .mascot-container {
   min-height: 175px;
   justify-content: center;
-  display: flex;
-  flex-grow: 1;
+  display: grid;
+  margin: auto;
 }
 
 .mascot-container[hide-on-mobile] {
@@ -214,6 +214,12 @@ body {
   border-radius: 50%;
   align-self: center;
   border: 5px solid $light;
+}
+
+.mascot-text {
+  color: $slightdark;
+  font-size: 0.6em;
+  margin: auto;
 }
 
 .display-name {
