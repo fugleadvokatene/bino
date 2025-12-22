@@ -210,8 +210,9 @@ templ PatientCard(data *request.CommonData, homes []model.Home, home *model.Home
                 <a href={templ.URL(patient.URL())} class="filter-content must-be-clickable">{patient.Name}</a>
             </div>
             <div>
-                if patient.JournalURL != "" {
-                    <a href={templ.URL(patient.JournalURL)} class="must-be-clickable m-1 journal-link-icon"><i class="fa-brands fa-google-drive"></i></a>
+                if patient.JournalURL != "" || patient.JournalPending {
+                    // Must be on one line to avoid whitespace issue...
+                    <a href={templ.URL(patient.JournalURL)} data-patient-id={patient.ID} class="journal-link-icon"><i data-patient-id={patient.ID} class={"link-icon-exists fa-brands fa-google-drive", templbase.ClassIf(patient.JournalURL == "" || patient.JournalPending, "d-none")}></i><i data-patient-id={patient.ID} class={"link-icon-pending fa-solid fa-spinner spin-8", templbase.ClassIf(patient.JournalURL != "" || !patient.JournalPending, "d-none")}></i></a>
                 }
                 <span class="patient-species-header filter-content">{patient.Species}</span>    
                 <button

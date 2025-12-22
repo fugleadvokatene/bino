@@ -34,6 +34,7 @@ func (in GetCurrentPatientsForHomeRow) ToModel() model.Patient {
 		SuggestedJournalTitle: in.SuggestedJournalTitle.String,
 		CurrentHomeID:         in.CurrHomeID.Int32,
 		HasCurrentHome:        in.CurrHomeID.Valid,
+		JournalPending:        in.JournalPending,
 	}
 }
 
@@ -49,6 +50,7 @@ func (in GetFormerPatientsRow) ToModel() model.Patient {
 		SuggestedJournalTitle: in.SuggestedJournalTitle.String,
 		CurrentHomeID:         in.CurrHomeID.Int32,
 		HasCurrentHome:        in.CurrHomeID.Valid,
+		JournalPending:        in.JournalPending,
 	}
 }
 
@@ -65,6 +67,7 @@ func (in GetPatientWithSpeciesRow) ToModel() model.Patient {
 		SuggestedJournalTitle: in.SuggestedJournalTitle.String,
 		CurrentHomeID:         in.CurrHomeID.Int32,
 		HasCurrentHome:        in.CurrHomeID.Valid,
+		JournalPending:        in.JournalPending,
 	}
 }
 
@@ -81,6 +84,7 @@ func (in GetActivePatientsRow) ToModel() model.Patient {
 		SuggestedJournalTitle: in.SuggestedJournalTitle.String,
 		CurrentHomeID:         in.CurrHomeID.Int32,
 		HasCurrentHome:        in.CurrHomeID.Valid,
+		JournalPending:        in.JournalPending,
 	}
 }
 

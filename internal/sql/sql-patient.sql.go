@@ -25,16 +25,17 @@ func (q *Queries) AcceptSuggestedJournal(ctx context.Context, id int32) error {
 }
 
 const addPatient = `-- name: AddPatient :one
-INSERT INTO patient (species_id, name, curr_home_id, status, time_checkin)
-VALUES ($1, $2, $3, $4, NOW())
+INSERT INTO patient (species_id, name, curr_home_id, status, time_checkin, journal_pending)
+VALUES ($1, $2, $3, $4, NOW(), $5)
 RETURNING id
 `
 
 type AddPatientParams struct {
-	SpeciesID  int32
-	Name       string
-	CurrHomeID pgtype.Int4
-	Status     int32
+	SpeciesID      int32
+	Name           string
+	CurrHomeID     pgtype.Int4
+	Status         int32
+	JournalPending bool
 }
 
 func (q *Queries) AddPatient(ctx context.Context, arg AddPatientParams) (int32, error) {
@@ -43,6 +44,7 @@ func (q *Queries) AddPatient(ctx context.Context, arg AddPatientParams) (int32, 
 		arg.Name,
 		arg.CurrHomeID,
 		arg.Status,
+		arg.JournalPending,
 	)
 	var id int32
 	err := row.Scan(&id)
@@ -167,7 +169,8 @@ SELECT
   p.time_checkout,
   COALESCE(sl.name, '???') AS species,
   p.suggested_journal_title,
-  p.suggested_journal_url
+  p.suggested_journal_url,
+  p.journal_pending
 FROM patient AS p
 LEFT JOIN species_language AS sl
     ON sl.species_id = p.species_id
@@ -187,6 +190,7 @@ type GetActivePatientsRow struct {
 	Species               string
 	SuggestedJournalTitle pgtype.Text
 	SuggestedJournalUrl   pgtype.Text
+	JournalPending        bool
 }
 
 func (q *Queries) GetActivePatients(ctx context.Context, languageID int32) ([]GetActivePatientsRow, error) {
@@ -209,6 +213,7 @@ func (q *Queries) GetActivePatients(ctx context.Context, languageID int32) ([]Ge
 			&i.Species,
 			&i.SuggestedJournalTitle,
 			&i.SuggestedJournalUrl,
+			&i.JournalPending,
 		); err != nil {
 			return nil, err
 		}
@@ -239,6 +244,7 @@ WHERE curr_home_id IS NOT NULL
   AND language_id = $1
   AND (suggested_journal_title IS NULL OR suggested_journal_url IS NULL)
   AND (journal_url IS NULL OR journal_url='') 
+  AND NOT journal_pending
 ORDER BY p.curr_home_id, p.sort_order, p.id
 `
 
@@ -287,7 +293,7 @@ func (q *Queries) GetActivePatientsMissingJournal(ctx context.Context, languageI
 }
 
 const getCurrentPatientsForHome = `-- name: GetCurrentPatientsForHome :many
-SELECT p.id, p.species_id, p.curr_home_id, p.name, p.status, p.journal_url, p.sort_order, p.time_checkin, p.time_checkout, p.suggested_journal_url, p.suggested_journal_title, sl.name AS species_name FROM patient AS p
+SELECT p.id, p.species_id, p.curr_home_id, p.name, p.status, p.journal_url, p.sort_order, p.time_checkin, p.time_checkout, p.suggested_journal_url, p.suggested_journal_title, p.journal_pending, sl.name AS species_name FROM patient AS p
 JOIN species_language AS sl
   ON sl.species_id = p.species_id
 WHERE p.curr_home_id = $1
@@ -312,6 +318,7 @@ type GetCurrentPatientsForHomeRow struct {
 	TimeCheckout          pgtype.Timestamptz
 	SuggestedJournalUrl   pgtype.Text
 	SuggestedJournalTitle pgtype.Text
+	JournalPending        bool
 	SpeciesName           string
 }
 
@@ -336,6 +343,7 @@ func (q *Queries) GetCurrentPatientsForHome(ctx context.Context, arg GetCurrentP
 			&i.TimeCheckout,
 			&i.SuggestedJournalUrl,
 			&i.SuggestedJournalTitle,
+			&i.JournalPending,
 			&i.SpeciesName,
 		); err != nil {
 			return nil, err
@@ -359,7 +367,8 @@ SELECT
   p.time_checkout,
   COALESCE(sl.name, '???') AS species,
   p.suggested_journal_title,
-  p.suggested_journal_url
+  p.suggested_journal_url,
+  p.journal_pending
 FROM patient AS p
 LEFT JOIN species_language AS sl
   ON sl.species_id = p.species_id
@@ -379,6 +388,7 @@ type GetFormerPatientsRow struct {
 	Species               string
 	SuggestedJournalTitle pgtype.Text
 	SuggestedJournalUrl   pgtype.Text
+	JournalPending        bool
 }
 
 func (q *Queries) GetFormerPatients(ctx context.Context, languageID int32) ([]GetFormerPatientsRow, error) {
@@ -401,6 +411,7 @@ func (q *Queries) GetFormerPatients(ctx context.Context, languageID int32) ([]Ge
 			&i.Species,
 			&i.SuggestedJournalTitle,
 			&i.SuggestedJournalUrl,
+			&i.JournalPending,
 		); err != nil {
 			return nil, err
 		}
@@ -413,7 +424,7 @@ func (q *Queries) GetFormerPatients(ctx context.Context, languageID int32) ([]Ge
 }
 
 const getPatient = `-- name: GetPatient :one
-SELECT id, species_id, curr_home_id, name, status, journal_url, sort_order, time_checkin, time_checkout, suggested_journal_url, suggested_journal_title FROM patient
+SELECT id, species_id, curr_home_id, name, status, journal_url, sort_order, time_checkin, time_checkout, suggested_journal_url, suggested_journal_title, journal_pending FROM patient
 WHERE id = $1
 `
 
@@ -432,12 +443,13 @@ func (q *Queries) GetPatient(ctx context.Context, id int32) (Patient, error) {
 		&i.TimeCheckout,
 		&i.SuggestedJournalUrl,
 		&i.SuggestedJournalTitle,
+		&i.JournalPending,
 	)
 	return i, err
 }
 
 const getPatientWithSpecies = `-- name: GetPatientWithSpecies :one
-SELECT p.id, p.species_id, p.curr_home_id, p.name, p.status, p.journal_url, p.sort_order, p.time_checkin, p.time_checkout, p.suggested_journal_url, p.suggested_journal_title, sl.name AS species_name FROM patient AS p
+SELECT p.id, p.species_id, p.curr_home_id, p.name, p.status, p.journal_url, p.sort_order, p.time_checkin, p.time_checkout, p.suggested_journal_url, p.suggested_journal_title, p.journal_pending, sl.name AS species_name FROM patient AS p
 JOIN species_language AS sl
   ON sl.species_id = p.species_id
 WHERE p.id = $1
@@ -461,6 +473,7 @@ type GetPatientWithSpeciesRow struct {
 	TimeCheckout          pgtype.Timestamptz
 	SuggestedJournalUrl   pgtype.Text
 	SuggestedJournalTitle pgtype.Text
+	JournalPending        bool
 	SpeciesName           string
 }
 
@@ -479,6 +492,7 @@ func (q *Queries) GetPatientWithSpecies(ctx context.Context, arg GetPatientWithS
 		&i.TimeCheckout,
 		&i.SuggestedJournalUrl,
 		&i.SuggestedJournalTitle,
+		&i.JournalPending,
 		&i.SpeciesName,
 	)
 	return i, err
@@ -529,7 +543,7 @@ func (q *Queries) MovePatient(ctx context.Context, arg MovePatientParams) error 
 
 const setPatientJournal = `-- name: SetPatientJournal :execresult
 UPDATE patient
-SET journal_url = $2
+SET journal_url=$2, journal_pending=FALSE
 WHERE id = $1
 `
 
@@ -540,6 +554,32 @@ type SetPatientJournalParams struct {
 
 func (q *Queries) SetPatientJournal(ctx context.Context, arg SetPatientJournalParams) (pgconn.CommandTag, error) {
 	return q.db.Exec(ctx, setPatientJournal, arg.ID, arg.JournalUrl)
+}
+
+const setPatientJournalNotPendingIfOlderThan5Minutes = `-- name: SetPatientJournalNotPendingIfOlderThan5Minutes :execresult
+UPDATE patient
+SET journal_pending = FALSE
+WHERE journal_pending AND time_checkin < NOW() - INTERVAL '5 minutes'
+`
+
+func (q *Queries) SetPatientJournalNotPendingIfOlderThan5Minutes(ctx context.Context) (pgconn.CommandTag, error) {
+	return q.db.Exec(ctx, setPatientJournalNotPendingIfOlderThan5Minutes)
+}
+
+const setPatientJournalPending = `-- name: SetPatientJournalPending :exec
+UPDATE patient
+SET journal_pending=$2
+WHERE id = $1
+`
+
+type SetPatientJournalPendingParams struct {
+	ID             int32
+	JournalPending bool
+}
+
+func (q *Queries) SetPatientJournalPending(ctx context.Context, arg SetPatientJournalPendingParams) error {
+	_, err := q.db.Exec(ctx, setPatientJournalPending, arg.ID, arg.JournalPending)
+	return err
 }
 
 const setPatientName = `-- name: SetPatientName :exec

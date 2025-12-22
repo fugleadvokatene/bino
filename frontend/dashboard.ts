@@ -172,10 +172,29 @@ document.addEventListener('click', function (e) {
 })
 
 const source = new EventSource('/live')
-
-source.onmessage = (event) => {
-  console.log(event.type, event.data)
+declare global {
+  interface EventSourceEventMap {
+    Hello: MessageEvent<string>
+    JournalCreated: MessageEvent<string>
+  }
 }
+source.addEventListener('Hello', (event: string) => {
+  console.log(event)
+})
+
+source.addEventListener('JournalCreated', (event: string) => {
+  console.log(event)
+  let parsed = JSON.parse(event.data)
+  QuerySelector<HTMLAnchorElement>(
+    `a.journal-link-icon[data-patient-id="${parsed.PatientID}"]`
+  ).href = parsed.JournalURL
+  QuerySelector(
+    `.link-icon-pending[data-patient-id="${parsed.PatientID}"]`
+  ).classList.add('d-none')
+  QuerySelector(
+    `.link-icon-exists[data-patient-id="${parsed.PatientID}"]`
+  ).classList.remove('d-none')
+})
 
 source.onerror = () => {
   source.close()

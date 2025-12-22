@@ -12736,4 +12736,17 @@ a[href]:not(.journal-link-icon):not(:where([href^="#"], [href^="/"]:not([href^="
   background-color: rgb(202.3, 224.15, 222.5);
 }
 
+.spin-8 {
+  animation: spin 1s steps(8) infinite;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
 /*# sourceMappingURL=gen.css.map */

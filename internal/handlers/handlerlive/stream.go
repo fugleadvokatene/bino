@@ -1,6 +1,7 @@
 package handlerlive
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/fugleadvokatene/bino/internal/live"
@@ -21,8 +22,6 @@ func (h *stream) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	// Set up client connection
 	clientConnection := live.NewClientConnection(ctx, h.broker)
-	defer func() {
-	}()
 
 	// Configure as SSE
 	w.Header().Set("Content-Type", "text/event-stream")
@@ -36,11 +35,7 @@ func (h *stream) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			h.broker.Disconnect(clientConnection)
 			return
 		case event := <-clientConnection.RX:
-			w.Write([]byte("event: "))
-			w.Write([]byte(event.Type))
-			w.Write([]byte("\ndata: "))
-			w.Write(event.Data)
-			w.Write([]byte("\n\n"))
+			fmt.Fprintf(w, "event: %s\ndata: %s\n\n", event.Type, string(event.Data))
 
 			flusher.Flush()
 		}

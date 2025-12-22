@@ -16,3 +16,8 @@ func (db *Database) RemoveFalseFileWikiLinks(ctx context.Context) (int64, error)
 	tag, err := db.Q.RemoveFalseFileWikiLinks(ctx)
 	return tag.RowsAffected(), err
 }
+
+func (db *Database) UnsetOldPendingStatus(ctx context.Context) (int64, error) {
+	tag, err := db.Q.SetPatientJournalNotPendingIfOlderThan5Minutes(ctx)
+	return tag.RowsAffected(), err
+}

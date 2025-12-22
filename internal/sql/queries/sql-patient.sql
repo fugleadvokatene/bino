@@ -9,7 +9,8 @@ SELECT
   p.time_checkout,
   COALESCE(sl.name, '???') AS species,
   p.suggested_journal_title,
-  p.suggested_journal_url
+  p.suggested_journal_url,
+  p.journal_pending
 FROM patient AS p
 LEFT JOIN species_language AS sl
     ON sl.species_id = p.species_id
@@ -37,6 +38,7 @@ WHERE curr_home_id IS NOT NULL
   AND language_id = $1
   AND (suggested_journal_title IS NULL OR suggested_journal_url IS NULL)
   AND (journal_url IS NULL OR journal_url='') 
+  AND NOT journal_pending
 ORDER BY p.curr_home_id, p.sort_order, p.id
 ;
 
@@ -77,7 +79,8 @@ SELECT
   p.time_checkout,
   COALESCE(sl.name, '???') AS species,
   p.suggested_journal_title,
-  p.suggested_journal_url
+  p.suggested_journal_url,
+  p.journal_pending
 FROM patient AS p
 LEFT JOIN species_language AS sl
   ON sl.species_id = p.species_id
@@ -87,8 +90,8 @@ ORDER BY p.id DESC
 ;
 
 -- name: AddPatient :one
-INSERT INTO patient (species_id, name, curr_home_id, status, time_checkin)
-VALUES ($1, $2, $3, $4, NOW())
+INSERT INTO patient (species_id, name, curr_home_id, status, time_checkin, journal_pending)
+VALUES ($1, $2, $3, $4, NOW(), $5)
 RETURNING id
 ;
 
@@ -150,8 +153,20 @@ WHERE id = $1
 
 -- name: SetPatientJournal :execresult
 UPDATE patient
-SET journal_url = $2
+SET journal_url=$2, journal_pending=FALSE
 WHERE id = $1
+;
+
+-- name: SetPatientJournalPending :exec
+UPDATE patient
+SET journal_pending=$2
+WHERE id = $1
+;
+
+-- name: SetPatientJournalNotPendingIfOlderThan5Minutes :execresult
+UPDATE patient
+SET journal_pending = FALSE
+WHERE journal_pending AND time_checkin < NOW() - INTERVAL '5 minutes'
 ;
 
 -- name: UpdatePatientSortOrder :exec

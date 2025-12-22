@@ -21,6 +21,7 @@ type Patient struct {
 	SuggestedJournalTitle string
 	CurrentHomeID         int32
 	HasCurrentHome        bool
+	JournalPending        bool
 }
 
 func (pv Patient) CollapseID(prefix string) string {

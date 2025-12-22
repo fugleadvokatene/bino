@@ -1125,3 +1125,16 @@ a[href]:not(.journal-link-icon):not(
 .journal-link-icon:hover {
   background-color: $lightaccent;
 }
+
+.spin-8 {
+  animation: spin 1s steps(8) infinite;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}

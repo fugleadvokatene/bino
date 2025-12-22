@@ -14,3 +14,8 @@ type Event struct {
 func (e Event) String() string {
 	return fmt.Sprintf("{Type:%s Data:%s}", e.Type, string(e.Data))
 }
+
+type JournalCreated struct {
+	PatientID  int32
+	JournalURL string
+}

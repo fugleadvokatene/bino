@@ -104,6 +104,7 @@ type Patient struct {
 	TimeCheckout          pgtype.Timestamptz
 	SuggestedJournalUrl   pgtype.Text
 	SuggestedJournalTitle pgtype.Text
+	JournalPending        bool
 }
 
 // Each row represents an event that has occurred to a specific patient

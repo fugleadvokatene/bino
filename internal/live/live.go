@@ -2,6 +2,7 @@ package live
 
 import (
 	"context"
+	"encoding/json"
 	"log/slog"
 	"time"
 
@@ -26,7 +27,7 @@ func NewBroker(ctx context.Context) *Broker {
 	go broker.worker(ctx)
 
 	// Enable for debug if needed
-	// go broker.DebugTimer()
+	// go broker.DebugTimer(ctx)
 
 	return broker
 }
@@ -39,8 +40,23 @@ func (b *Broker) Disconnect(client *ClientConnection) {
 	b.disconnect <- client
 }
 
-func (b *Broker) Publish(data Event) {
-	b.rx <- data
+func (b *Broker) JournalCreated(ctx context.Context, patientID int32, url string) {
+	b.publish(ctx, model.LiveEventTypeJournalCreated, JournalCreated{
+		PatientID:  patientID,
+		JournalURL: url,
+	})
+}
+
+func (b *Broker) publish(ctx context.Context, eventType model.LiveEventType, data any) {
+	slog.DebugContext(ctx, "Publish", "eventType", eventType, "data", data)
+
+	bdata, err := json.Marshal(data)
+	if err != nil {
+		slog.ErrorContext(ctx, "Couldn't encode event", "eventType", eventType, "data", data)
+		return
+	}
+
+	b.rx <- Event{Type: eventType, Data: bdata}
 }
 
 func (b *Broker) worker(ctx context.Context) {
@@ -75,9 +91,9 @@ func (b *Broker) doWithRecover(ctx context.Context) {
 	}
 }
 
-func (b *Broker) DebugTimer() {
+func (b *Broker) DebugTimer(ctx context.Context) {
 	for {
 		time.Sleep(time.Second)
-		b.Publish(Event{Type: model.LiveEventTypeHello, Data: []byte("timer")})
+		b.publish(ctx, model.LiveEventTypeHello, "timer")
 	}
 }

@@ -13,6 +13,7 @@ import (
 	"github.com/fugleadvokatene/bino/internal/handlers/handleraccess"
 	"github.com/fugleadvokatene/bino/internal/handlers/handlererror"
 	"github.com/fugleadvokatene/bino/internal/language"
+	"github.com/fugleadvokatene/bino/internal/live"
 	"github.com/fugleadvokatene/bino/internal/model"
 	"github.com/fugleadvokatene/bino/internal/request"
 	"github.com/fugleadvokatene/bino/internal/sql"
@@ -24,6 +25,7 @@ type checkin struct {
 	DB            *db.Database
 	Config        *config.Config
 	GDriveWorker  *gdrive.Worker
+	Broker        *live.Broker
 }
 
 func (h *checkin) ServeHTTP(w http.ResponseWriter, r *http.Request) {
@@ -64,10 +66,11 @@ func (h *checkin) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if err := h.DB.Transaction(ctx, func(ctx context.Context, db *db.Database) error {
 		var err error
 		patientID, err = db.Q.AddPatient(ctx, sql.AddPatientParams{
-			SpeciesID:  fields["species"],
-			CurrHomeID: pgtype.Int4{Int32: fields["home"], Valid: true},
-			Name:       name,
-			Status:     int32(model.StatusAdmitted),
+			SpeciesID:      fields["species"],
+			CurrHomeID:     pgtype.Int4{Int32: fields["home"], Valid: true},
+			Name:           name,
+			Status:         int32(model.StatusAdmitted),
+			JournalPending: createJournal,
 		})
 		if err != nil {
 			return err
@@ -113,7 +116,6 @@ func (h *checkin) createOrSuggestJournal(
 	tryCreate bool,
 ) {
 	ctx := h.BackgroundCtx
-	suggestJournal := true
 	if tryCreate {
 		if item, err := h.GDriveWorker.CreateJournal(gdrive.TemplateVars{
 			Time:    time.Now(),
@@ -129,19 +131,27 @@ func (h *checkin) createOrSuggestJournal(
 			}); err != nil || tag.RowsAffected() == 0 {
 				slog.Warn(language.GDriveCreateJournalFailed, "error", err)
 			} else {
-				suggestJournal = false
+				// Give the page a little time to load and set up the event source
+				time.Sleep(time.Second)
+
+				h.Broker.JournalCreated(ctx, patientID, item.DocumentURL())
+				return
 			}
 		}
 	}
-	if suggestJournal {
-		if err := h.DB.SuggestJournalBasedOnSearch(
-			ctx,
-			patientID,
-			name,
-			systemSpeciesName,
-			homeID,
-		); err != nil {
-			slog.Warn("suggesting journal", "error", err)
-		}
+	if err := h.DB.SuggestJournalBasedOnSearch(
+		ctx,
+		patientID,
+		name,
+		systemSpeciesName,
+		homeID,
+	); err != nil {
+		slog.Warn("suggesting journal", "error", err)
+	}
+	if err := h.DB.Q.SetPatientJournalPending(ctx, sql.SetPatientJournalPendingParams{
+		ID:             patientID,
+		JournalPending: false,
+	}); err != nil {
+		slog.Warn("suggesting journal", "error", err)
 	}
 }
