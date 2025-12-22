@@ -3,6 +3,7 @@ package fs
 import (
 	"fmt"
 	"image"
+	"math"
 	"os"
 	"path"
 	"strings"
@@ -10,7 +11,6 @@ import (
 	// Register supported image formats
 	_ "image/gif"
 	"image/jpeg"
-	_ "image/jpeg"
 	_ "image/png"
 
 	_ "golang.org/x/image/webp" // decode only
@@ -20,9 +20,9 @@ import (
 )
 
 const (
-	AreaSmall  = float32(64.0 * 64.0)
-	AreaMedium = float32(400.0 * 400.0)
-	AreaLarge  = float32(800.0 * 800.0)
+	AreaSmall  = 64.0 * 64.0
+	AreaMedium = 400.0 * 400.0
+	AreaLarge  = 800.0 * 800.0
 )
 
 func ConvertImage(
@@ -47,25 +47,26 @@ func ConvertImage(
 
 	// Compute new size based on original size and target area
 	rect := img.Bounds()
-	origWidth := float32(rect.Dx())
-	origHeight := float32(rect.Dy())
+	origWidth := float64(rect.Dx())
+	origHeight := float64(rect.Dy())
 	origArea := origWidth * origHeight
 	if origArea < 1.0 {
 		return fmt.Errorf("image has no pixels")
 	}
-	var scaleFactor float32
+	var scaleFactor float64
 	switch size {
 	case model.ImageSizeLarge:
-		scaleFactor = AreaLarge / origArea
+		scaleFactor = math.Sqrt(AreaLarge / origArea)
 	case model.ImageSizeMedium:
-		scaleFactor = AreaMedium / origArea
+		scaleFactor = math.Sqrt(AreaMedium / origArea)
 	case model.ImageSizeSmall:
-		scaleFactor = AreaLarge / origArea
+		scaleFactor = math.Sqrt(AreaSmall / origArea)
 	default:
 		return fmt.Errorf("unknown size '%s'", size)
 	}
 	newWidth := origWidth * scaleFactor
 	newHeight := origHeight * scaleFactor
+	fmt.Printf("%s sf: %f, w: %d->%d, h: %d->%d\n", size, scaleFactor, int(origWidth), int(newWidth), int(origHeight), int(newHeight))
 
 	// Do the resizing operation
 	filter := gift.New(
@@ -76,12 +77,14 @@ func ConvertImage(
 
 	// Store resized image
 	dir, filename := path.Split(originalPath)
-	newPath := path.Join(dir, strings.TrimSuffix(filename, path.Ext(filename))+"-"+size.String())
+	newPath := path.Join(dir, strings.TrimSuffix(filename, path.Ext(filename))+"-"+size.String()+".jpg")
 	out, err := os.Create(newPath)
 	if err != nil {
 		return fmt.Errorf("failed to create target destination '%s': %w", newPath, err)
 	}
-	if err := jpeg.Encode(out, resizedImg, nil); err != nil {
+	if err := jpeg.Encode(out, resizedImg, &jpeg.Options{
+		Quality: 85,
+	}); err != nil {
 		return fmt.Errorf("failed to encode resized image as jpeg: %w", err)
 	}
 	return nil

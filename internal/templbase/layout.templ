@@ -268,11 +268,11 @@ templ UserComponent(data *request.CommonData, u *model.User) {
 templ Mascot(data *request.CommonData, mascotURL string, hideOnMobile bool) {
     <div class="mascot-container" hide-on-mobile?={hideOnMobile}>
         if mascotURL == "" {
-            <img class="mascot shadow-sm" src={data.StaticFile("mascot.jpg")}>
+            <img class="mascot shadow-sm" src={data.StaticFile("mascot-Medium.jpg")}>
+            <p class="mascot-text m">Mascot by <a href="https://www.instagram.com/toiletpigeon">Toilet Pigeon</a></p>
+            <p class="mascot-text">Used with permission</p>
         } else {
             <img class="mascot shadow-sm" src={mascotURL}>
         }
-        <p class="mascot-text m">Mascot by <a href="https://www.instagram.com/toiletpigeon">Toilet Pigeon</a></p>
-        <p class="mascot-text">Used with permission</p>
     </div>
 }

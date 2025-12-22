@@ -27,6 +27,7 @@
     },
     "SystemLanguage": 1,
     "SystemBaseURL": "bino.<your-domain>",
+    "MascotURL": "",
     "Security": {
         "AllowUserDefinedHTTPRequests": false
     }

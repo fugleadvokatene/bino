@@ -2,6 +2,13 @@
 
 bino is a web application for managing patients in distributed wildlife rescues that have many independent facilities/shelters (referred to as "homes").
 
+<p align="center">
+    <img src="cmd/static/mascot-Medium.jpg" alt="Bino project mascot" width="300">
+</p>
+<p align="center">
+    <em><small>Mascot used with permission from <a href="https://www.instagram.com/toiletpigeon/">@toiletpigeon</a></small></em>
+</p>
+
 For now, bino uses Google Drive for actual patient journals, and users must have Google accounts.
 
 ## Development

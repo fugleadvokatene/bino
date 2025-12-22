@@ -1573,15 +1573,15 @@ func Mascot(data *request.CommonData, mascotURL string, hideOnMobile bool) templ
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var79 string
-			templ_7745c5c3_Var79, templ_7745c5c3_Err = templ.JoinStringErrs(data.StaticFile("mascot.jpg"))
+			templ_7745c5c3_Var79, templ_7745c5c3_Err = templ.JoinStringErrs(data.StaticFile("mascot-Medium.jpg"))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/templbase/layout.templ`, Line: 271, Col: 76}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/templbase/layout.templ`, Line: 271, Col: 83}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var79))
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 98, "\">")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 98, "\"><p class=\"mascot-text m\">Mascot by <a href=\"https://www.instagram.com/toiletpigeon\">Toilet Pigeon</a></p><p class=\"mascot-text\">Used with permission</p>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
@@ -1593,7 +1593,7 @@ func Mascot(data *request.CommonData, mascotURL string, hideOnMobile bool) templ
 			var templ_7745c5c3_Var80 string
 			templ_7745c5c3_Var80, templ_7745c5c3_Err = templ.JoinStringErrs(mascotURL)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/templbase/layout.templ`, Line: 273, Col: 56}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/templbase/layout.templ`, Line: 275, Col: 56}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var80))
 			if templ_7745c5c3_Err != nil {
@@ -1604,7 +1604,7 @@ func Mascot(data *request.CommonData, mascotURL string, hideOnMobile bool) templ
 				return templ_7745c5c3_Err
 			}
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 101, "<p class=\"mascot-text m\">Mascot by <a href=\"https://www.instagram.com/toiletpigeon\">Toilet Pigeon</a></p><p class=\"mascot-text\">Used with permission</p></div>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 101, "</div>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
