@@ -4,11 +4,11 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/fugleadvokatene/bino/internal/live"
+	"github.com/fugleadvokatene/bino/internal/sse"
 )
 
 type stream struct {
-	broker *live.Broker
+	broker *sse.Broker
 }
 
 func (h *stream) ServeHTTP(w http.ResponseWriter, r *http.Request) {
@@ -21,7 +21,7 @@ func (h *stream) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Set up client connection
-	clientConnection := live.NewClientConnection(ctx, h.broker)
+	clientConnection := sse.NewClientConnection(ctx, h.broker)
 
 	// Configure as SSE
 	w.Header().Set("Content-Type", "text/event-stream")

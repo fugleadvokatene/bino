@@ -1,4 +1,4 @@
-package live
+package sse
 
 import (
 	"context"

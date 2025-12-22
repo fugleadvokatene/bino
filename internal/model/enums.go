@@ -159,3 +159,13 @@ type TimePreference int
 //
 // )
 type LiveEventType string
+
+// ENUM(
+//
+//	Original,
+//	Large,
+//	Medium,
+//	Small,
+//
+// )
+type ImageSize string

@@ -13,10 +13,10 @@ import (
 	"github.com/fugleadvokatene/bino/internal/handlers/handleraccess"
 	"github.com/fugleadvokatene/bino/internal/handlers/handlererror"
 	"github.com/fugleadvokatene/bino/internal/language"
-	"github.com/fugleadvokatene/bino/internal/live"
 	"github.com/fugleadvokatene/bino/internal/model"
 	"github.com/fugleadvokatene/bino/internal/request"
 	"github.com/fugleadvokatene/bino/internal/sql"
+	"github.com/fugleadvokatene/bino/internal/sse"
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
@@ -25,7 +25,7 @@ type checkin struct {
 	DB            *db.Database
 	Config        *config.Config
 	GDriveWorker  *gdrive.Worker
-	Broker        *live.Broker
+	Broker        *sse.Broker
 }
 
 func (h *checkin) ServeHTTP(w http.ResponseWriter, r *http.Request) {

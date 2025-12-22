@@ -1604,7 +1604,7 @@ func Mascot(data *request.CommonData, mascotURL string, hideOnMobile bool) templ
 				return templ_7745c5c3_Err
 			}
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 101, "<p class=\"mascot-text m\">Mascot by <a href=\"https://ko-fi.com/toiletpigeon\">Toilet Pigeon</a></p><p class=\"mascot-text\">Used with permission</p></div>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 101, "<p class=\"mascot-text m\">Mascot by <a href=\"https://www.instagram.com/toiletpigeon\">Toilet Pigeon</a></p><p class=\"mascot-text\">Used with permission</p></div>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

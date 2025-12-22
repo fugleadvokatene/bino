@@ -41,14 +41,20 @@ solved by having the page reload, either by a form or with `location.reload()`.
 There are a few exceptions where the frontend is more interactive: searching and filtering, calendar, and wiki. Off the shelf libraries are used for this (TipTap, calendar.js, htmx).
 
 The backend starts up a webserver and runs a few periodic background jobs
-that keep the search index in sync and delete stale data (expired sessions and invitations). 
-
-Operations in Google Drive are put on a task queue which is managed by a worker that has access to a service account. Other than that, there is hardly any concurrency at the application layer.
+that keep the search index in sync and delete stale data (expired sessions and invitations).
 
 Currently the backend Go code is structured like this (only the most important/general packages are shown).
 main lives in `cmd`, the other packages live in `internal`.
 
 ![](doc/img/backend.png)
+
+##### Concurrency
+
+Most of the application has little concurrency concerns, with these exceptions:
+
+- `/internal/gdrive`: Operations in Google Drive are put on a task queue which is managed by a worker that has access to a service account.
+- `/internal/sse`: For Server-Sent-Events on the dashboard, currently just to update the URL to a journal once it has been created.
+- `/internal/fs`: Image processing tasks are kicked off when uploaded by a user or downloaded from a Google Drive journal.
 
 #### Frontend
 

@@ -42,9 +42,9 @@ import (
 	"github.com/fugleadvokatene/bino/internal/handlers/handleruser"
 	"github.com/fugleadvokatene/bino/internal/handlers/handleruseradmin"
 	"github.com/fugleadvokatene/bino/internal/handlers/handlerwiki"
-	"github.com/fugleadvokatene/bino/internal/live"
 	"github.com/fugleadvokatene/bino/internal/route"
 	"github.com/fugleadvokatene/bino/internal/sql"
+	"github.com/fugleadvokatene/bino/internal/sse"
 	"github.com/joho/godotenv"
 	"github.com/lmittmann/tint"
 	"github.com/mattn/go-isatty"
@@ -110,7 +110,7 @@ func realMain() error {
 	fileBackend := fs.NewLocalFileStorage(ctx, "file", "tmp")
 
 	// Set up broker
-	broker := live.NewBroker(ctx)
+	broker := sse.NewBroker(ctx)
 
 	// Start all background jobs
 	background.StartJobs(ctx, db, fileBackend, config.SystemLanguage, &config.Security)

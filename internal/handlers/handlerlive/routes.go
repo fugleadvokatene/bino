@@ -1,13 +1,13 @@
 package handlerlive
 
 import (
-	"github.com/fugleadvokatene/bino/internal/live"
 	"github.com/fugleadvokatene/bino/internal/model"
 	"github.com/fugleadvokatene/bino/internal/route"
+	"github.com/fugleadvokatene/bino/internal/sse"
 )
 
 func Routes(
-	broker *live.Broker,
+	broker *sse.Broker,
 ) []route.Route {
 	return []route.Route{
 		{
