@@ -1,6 +1,7 @@
 package auth
 
 import (
+	"fmt"
 	"net/http"
 	"time"
 
@@ -14,7 +15,6 @@ func Authenticate(
 	w http.ResponseWriter,
 	r *http.Request,
 	auth *Authenticator,
-	loginRedirectHandler http.Handler,
 	buildKey string,
 ) (request.CommonData, error) {
 	ctx := r.Context()
@@ -22,7 +22,8 @@ func Authenticate(
 	user, session, err := GetUser(w, r, auth)
 
 	if err != nil {
-		loginRedirectHandler.ServeHTTP(w, r)
+		fmt.Printf("redirecting to login\n")
+		request.Redirect(w, r, "/")
 		return request.CommonData{}, err
 	}
 

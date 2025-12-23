@@ -23,10 +23,21 @@ templ LoginPage(data *request.CommonData, organization string, mascotURL string)
                         <path fill="none" d="M0 0h48v48H0z"></path>
                     </svg>
                     </div>
-                    <a href="/login" style="color: black">{SignInWithGoogle}</a>
+                    <a href="/login" style="color: black" id="loginlink">{SignInWithGoogle}</a>
                 </div>
             </button>
         }
         @templbase.Mascot(data, mascotURL, false)
+        <script>
+            function isEmbeddedBrowser() {
+                const ua = navigator.userAgent || navigator.vendor || window.opera;
+                return /FBAN|FBAV|Instagram|Line|Twitter|Snapchat|LinkedIn|WebView|wv/i.test(ua)
+            }
+            const loginLink = document.getElementById("loginlink")
+            if (isEmbeddedBrowser()) {
+                loginLink.setAttribute("target", "_blank")
+                loginLink.setAttribute("rel", "noopener")
+            }
+        </script>
     }
 }

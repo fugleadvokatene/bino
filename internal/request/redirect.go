@@ -5,8 +5,10 @@ import (
 )
 
 func Redirect(w http.ResponseWriter, r *http.Request, url string) {
-	cd := MustLoadCommonData(r.Context())
-	cd.SaveFeedback()
+	if cd, err := LoadCommonData(r.Context()); err == nil {
+		cd.SaveFeedback()
+	}
+
 	http.Redirect(w, r, url, http.StatusFound)
 }
 

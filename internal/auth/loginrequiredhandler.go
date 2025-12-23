@@ -20,10 +20,9 @@ func NewLoginRequiredHandler(
 	buildKey string,
 ) http.Handler {
 	return &withLoginRequired{
-		handler:      handler,
-		auth:         auth,
-		buildKey:     buildKey,
-		loginHandler: NewLoginRedirectHandler(auth),
+		handler:  handler,
+		auth:     auth,
+		buildKey: buildKey,
 	}
 }
 
@@ -32,7 +31,6 @@ func (h *withLoginRequired) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		w,
 		r,
 		h.auth,
-		h.loginHandler,
 		h.buildKey,
 	)
 	if err != nil {
