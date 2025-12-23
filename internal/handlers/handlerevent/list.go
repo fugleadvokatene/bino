@@ -56,7 +56,7 @@ func (h *list) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 
 	first := offset
-	last := offset + min(limit, n)
+	last := offset + min(limit, n) - 1
 
 	ls := listState{First: first, Last: last, N: n}
 
