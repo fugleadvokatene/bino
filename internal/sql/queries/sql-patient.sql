@@ -86,7 +86,7 @@ LEFT JOIN species_language AS sl
   ON sl.species_id = p.species_id
 WHERE curr_home_id IS NULL
   AND sl.language_id = $1
-ORDER BY p.id DESC
+ORDER BY p.time_checkout DESC
 ;
 
 -- name: AddPatient :one
