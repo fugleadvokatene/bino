@@ -347,14 +347,14 @@ func (lfs *LocalFileStorage) Commit(ctx context.Context, ids []string) CommitRes
 	return out
 }
 
-func (lfs *LocalFileStorage) Open(ctx context.Context, id string, info model.FileInfo) (io.ReadCloser, error) {
+func (lfs *LocalFileStorage) Open(ctx context.Context, id string, filename string) (io.ReadCloser, error) {
 	dir, err := os.OpenRoot(lfs.MainDirectory)
 	if err != nil {
 		return nil, err
 	}
 	defer dir.Close()
 
-	file, err := dir.Open(id + "/" + info.FileName)
+	file, err := dir.Open(id + "/" + filename)
 	if err != nil {
 		return nil, err
 	}

@@ -9,12 +9,12 @@ import (
 // ---- Wiki link
 
 type WikiLink struct {
-	ID    int32
-	Title string
+	WikiID int32
+	Title  string
 }
 
 func (wlw WikiLink) URL() templ.SafeURL {
-	return templ.URL(fmt.Sprintf("/wiki/view/%d", wlw.ID))
+	return templ.URL(fmt.Sprintf("/wiki/view/%d", wlw.WikiID))
 }
 
 // ---- Wiki page

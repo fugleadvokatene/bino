@@ -168,4 +168,8 @@ type LiveEventType string
 //	Small,
 //
 // )
-type ImageSize string
+type FileVariantID string
+
+func (fvid FileVariantID) IsMiniature() bool {
+	return fvid == FileVariantIDLarge || fvid == FileVariantIDMedium || fvid == FileVariantIDSmall
+}

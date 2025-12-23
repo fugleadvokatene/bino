@@ -36,6 +36,7 @@ func StartJobs(
 	go RunJob("Delete false Wiki links", time.Hour, func() (any, error) { return db.RemoveFalseFileWikiLinks(ctx) })
 	go RunJob("Suggest journal URLs", time.Hour, func() (any, error) { return db.SuggestJournalURLs(ctx, systemLanguageID) })
 	go RunJob("Unset old journal-pending status", time.Minute*10, func() (any, error) { return db.UnsetOldPendingStatus(ctx) })
+	go RunJob("Create image variants", time.Minute*10, func() (any, error) { return CreateImageVariants(ctx, db, fileBackend) })
 	if secConf.AllowUserDefinedHTTPRequests {
 		go RunJob("Store user avatars", time.Hour, func() (any, error) { return db.StoreUserAvatars(ctx, fileBackend) })
 	}

@@ -11,6 +11,7 @@ import (
 	"github.com/fugleadvokatene/bino/internal/fs"
 	"github.com/fugleadvokatene/bino/internal/model"
 	"github.com/fugleadvokatene/bino/internal/request"
+	"github.com/fugleadvokatene/bino/internal/sql"
 	"github.com/jackc/pgx/v5"
 )
 
@@ -56,14 +57,34 @@ func (h *Read) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	rc, err := h.FileBackend.Open(ctx, fileView.UUID, fileView.FileInfo())
+	// Option to serve smaller versions
+	variantStr, err := request.GetQueryValue(r, "variant")
+	if err == nil {
+		if _, err := model.ParseFileVariantID(variantStr); err == nil {
+			if variant, err := h.DB.Q.GetVariant(ctx, sql.GetVariantParams{
+				FileID:  file.ID,
+				Variant: variantStr,
+			}); err == nil {
+				h.serveFile(w, r, fileView.UUID, variant.Filename, variant.Mimetype, int(variant.Size))
+				return
+			}
+		}
+	}
+
+	// Serve original
+	h.serveFile(w, r, fileView.UUID, fileView.OriginalFilename, fileView.MIMEType, int(fileView.Size))
+}
+
+func (h *Read) serveFile(w http.ResponseWriter, r *http.Request, uuid string, filename string, mimetype string, size int) {
+	ctx := r.Context()
+	rc, err := h.FileBackend.Open(ctx, uuid, filename)
 	if err != nil {
 		request.AjaxError(w, r, err, http.StatusInternalServerError)
 		return
 	}
 	defer rc.Close()
-	w.Header().Set("Content-Type", fileView.MIMEType)
-	w.Header().Set("Content-Length", strconv.Itoa(int(fileView.Size)))
+	w.Header().Set("Content-Type", mimetype)
+	w.Header().Set("Content-Length", strconv.Itoa(size))
 	if _, err := io.Copy(w, rc); err != nil {
 		request.LogCtx(ctx, slog.LevelError, "failed to write out file: %v", err)
 	}

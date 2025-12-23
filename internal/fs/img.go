@@ -1,8 +1,11 @@
 package fs
 
 import (
+	"context"
+	"errors"
 	"fmt"
 	"image"
+	"log/slog"
 	"math"
 	"os"
 	"path"
@@ -25,24 +28,78 @@ const (
 	AreaLarge  = 800.0 * 800.0
 )
 
-func ConvertImage(
-	originalPath string,
-	size model.ImageSize,
-) error {
-	// Validate inputs
-	if size == model.ImageSizeOriginal {
-		return fmt.Errorf("pointless call to ConvertImage with size==Original")
+// Must be in increasing order of size.
+var miniatureVariants = []model.FileVariantID{model.FileVariantIDSmall, model.FileVariantIDMedium, model.FileVariantIDLarge}
+
+var ErrImageTooSmall = errors.New("image too small to downscale")
+
+type Miniature struct {
+	Original        string
+	VariantFilename string
+	Variant         model.FileVariantID
+	MimeType        string
+	Size            int32
+	Width           int32
+	Height          int32
+}
+
+func (lfs *LocalFileStorage) CreateMiniatures(ctx context.Context, uuid string, originalFilename string) ([]Miniature, error) {
+	dir, err := os.OpenRoot(lfs.MainDirectory)
+	if err != nil {
+		return nil, fmt.Errorf("opening file directory: %w", err)
+	}
+	defer dir.Close()
+
+	subdir, err := dir.OpenRoot(uuid)
+	if err != nil {
+		return nil, fmt.Errorf("no subdirectory named '%s' in main directory: %w", uuid, err)
+	}
+	defer subdir.Close()
+
+	return CreateMiniatures(ctx, subdir, originalFilename)
+}
+
+func CreateMiniatures(
+	ctx context.Context,
+	dir *os.Root,
+	originalFilename string,
+) ([]Miniature, error) {
+	file, err := dir.Open(originalFilename)
+	if err != nil {
+		return nil, fmt.Errorf("opening original file: %w", err)
+	}
+	defer file.Close()
+
+	img, _, err := image.Decode(file)
+	if err != nil {
+		return nil, fmt.Errorf("decoding original image: %w", err)
 	}
 
-	// Decode image from original file
-	in, err := os.Open(originalPath)
-	if err != nil {
-		return fmt.Errorf("opening '%s': %w", originalPath, err)
+	var created []Miniature
+	for _, variant := range miniatureVariants {
+		var mini Miniature
+		if mini, err = DownscaleImage(ctx, dir, originalFilename, img, variant); err != nil {
+			break
+		} else {
+			created = append(created, mini)
+		}
 	}
-	img, _, err := image.Decode(in)
-	in.Close()
-	if err != nil {
-		return fmt.Errorf("decoding image: %w", err)
+	if errors.Is(err, ErrImageTooSmall) {
+		err = nil
+	}
+	return created, err
+}
+
+func DownscaleImage(
+	ctx context.Context,
+	dir *os.Root,
+	originalFilename string,
+	img image.Image,
+	variant model.FileVariantID,
+) (Miniature, error) {
+	// Validate inputs
+	if !variant.IsMiniature() {
+		return Miniature{}, fmt.Errorf("unsupported variant '%s'", variant)
 	}
 
 	// Compute new size based on original size and target area
@@ -51,22 +108,25 @@ func ConvertImage(
 	origHeight := float64(rect.Dy())
 	origArea := origWidth * origHeight
 	if origArea < 1.0 {
-		return fmt.Errorf("image has no pixels")
+		return Miniature{}, fmt.Errorf("image has no pixels")
 	}
 	var scaleFactor float64
-	switch size {
-	case model.ImageSizeLarge:
+	switch variant {
+	case model.FileVariantIDLarge:
 		scaleFactor = math.Sqrt(AreaLarge / origArea)
-	case model.ImageSizeMedium:
+	case model.FileVariantIDMedium:
 		scaleFactor = math.Sqrt(AreaMedium / origArea)
-	case model.ImageSizeSmall:
+	case model.FileVariantIDSmall:
 		scaleFactor = math.Sqrt(AreaSmall / origArea)
 	default:
-		return fmt.Errorf("unknown size '%s'", size)
+		return Miniature{}, fmt.Errorf("unknown size '%s'", variant)
 	}
+	if scaleFactor > 1.0 {
+		return Miniature{}, ErrImageTooSmall
+	}
+
 	newWidth := origWidth * scaleFactor
 	newHeight := origHeight * scaleFactor
-	fmt.Printf("%s sf: %f, w: %d->%d, h: %d->%d\n", size, scaleFactor, int(origWidth), int(newWidth), int(origHeight), int(newHeight))
 
 	// Do the resizing operation
 	filter := gift.New(
@@ -76,16 +136,41 @@ func ConvertImage(
 	filter.Draw(resizedImg, img)
 
 	// Store resized image
-	dir, filename := path.Split(originalPath)
-	newPath := path.Join(dir, strings.TrimSuffix(filename, path.Ext(filename))+"-"+size.String()+".jpg")
-	out, err := os.Create(newPath)
+	newName := ImageVariantPath(originalFilename, variant)
+	out, err := dir.Create(newName)
 	if err != nil {
-		return fmt.Errorf("failed to create target destination '%s': %w", newPath, err)
+		return Miniature{}, fmt.Errorf("failed to create target destination '%s': %w", newName, err)
 	}
-	if err := jpeg.Encode(out, resizedImg, &jpeg.Options{
+	err = jpeg.Encode(out, resizedImg, &jpeg.Options{
 		Quality: 85,
-	}); err != nil {
-		return fmt.Errorf("failed to encode resized image as jpeg: %w", err)
+	})
+	out.Close()
+	if err != nil {
+		return Miniature{}, fmt.Errorf("failed to encode resized image as jpeg: %w", err)
 	}
-	return nil
+	info, err := dir.Stat(newName)
+	if err != nil {
+		return Miniature{}, fmt.Errorf("stat-ing created file: %w", err)
+	}
+
+	mini := Miniature{
+		Original:        originalFilename,
+		VariantFilename: newName,
+		Variant:         variant,
+		MimeType:        "image/jpeg",
+		Size:            int32(info.Size()),
+		Width:           int32(newWidth),
+		Height:          int32(newHeight),
+	}
+
+	slog.DebugContext(ctx, "Created miniature", "mini", mini)
+
+	return mini, nil
+}
+
+func ImageVariantPath(orig string, variant model.FileVariantID) string {
+	if variant.IsMiniature() {
+		return strings.TrimSuffix(orig, path.Ext(orig)) + "-" + variant.String() + ".jpg"
+	}
+	return orig
 }

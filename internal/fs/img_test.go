@@ -1,43 +1,57 @@
 package fs
 
 import (
+	"context"
+	"log/slog"
 	"os"
 	"path/filepath"
 	"runtime"
 	"testing"
-
-	"github.com/fugleadvokatene/bino/internal/model"
+	"time"
 )
 
-func TestConvertImage_AllSizes(t *testing.T) {
+func TestCreateMiniatures(t *testing.T) {
+	ctx := context.Background()
+	slog.SetLogLoggerLevel(slog.LevelDebug)
+
 	_, file, _, ok := runtime.Caller(0)
 	if !ok {
 		t.Fatal("cannot resolve test file path")
 	}
 
 	base := filepath.Join(filepath.Dir(file), "test")
-	orig := filepath.Join(base, "mascot.jpg")
-
-	sizes := []model.ImageSize{
-		model.ImageSizeSmall,
-		model.ImageSizeMedium,
-		model.ImageSizeLarge,
+	dir, err := os.OpenRoot(base)
+	if err != nil {
+		t.Fatalf("opening root: %v", err)
 	}
-	paths := make([]string, 0, len(sizes))
-	for _, size := range sizes {
-		path := filepath.Join(base, "mascot-"+size.String()+".jpg")
-		os.Remove(path)
-		paths = append(paths, path)
+	orig := "mascot.jpg"
+
+	for _, variant := range miniatureVariants {
+		os.Remove(ImageVariantPath(orig, variant))
 	}
 
-	for i, size := range sizes {
-		err := ConvertImage(orig, size)
-		if err != nil {
-			t.Fatalf("ConvertImage failed for size %s: %v", size, err)
-		}
+	var m1, m2 runtime.MemStats
+	runtime.GC()
+	runtime.ReadMemStats(&m1)
+	start := time.Now()
+	miniatures, err := CreateMiniatures(ctx, dir, orig)
+	runtime.ReadMemStats(&m2)
+	elapsed := time.Since(start)
 
-		if _, err := os.Stat(paths[i]); err != nil {
-			t.Fatalf("output image not found for size %s: %v", size, err)
+	if err != nil {
+		t.Fatalf("CreateMiniatures failed: %v", err)
+	}
+
+	slog.DebugContext(
+		ctx,
+		"Runtime stats",
+		"miniatures", miniatures,
+		"elapsed", elapsed,
+		"peakAlloc", (m2.TotalAlloc-m1.TotalAlloc)/1024/1024,
+	)
+	for _, mini := range miniatures {
+		if _, err := dir.Stat(mini.VariantFilename); err != nil {
+			t.Fatalf("output image not found: %v", err)
 		}
 	}
 }

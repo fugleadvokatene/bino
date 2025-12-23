@@ -13,7 +13,7 @@ templ FileUploadPage(data *request.CommonData, files []model.File) {
     <head>
         @templbase.Head(data)
     </head>
-    <body data-lang={templ.JSONString(data.Language)}>
+    <body data-lang={templ.JSONString(data.Language)} data-csrf={data.User.CSRFToken}>
         @templbase.Body(data) {
             <div class={"main b-container"}>
                 <h1>{data.Language.FilesUploadHeader}</h1>
@@ -54,20 +54,42 @@ templ FileUploader(data *request.CommonData, url string) {
     }
 }
 
+templ Trivia(cls ...string) {
+    <div class={"small bg-gradient p-1 border border-black border-1 rounded-2", cls}>
+        {children...}
+    </div>
+}
+
 templ FileViewComponent(data *request.CommonData, file *model.File) {
     <div class="card file-container mb-2">
         <div class="card-header d-flex justify-content-between">
             <div>
-                <div class="user-file-name editable"  data-action={file.EditPresentationFilenameURL()}>{file.PresentationFilename}</div>
+                <div class="user-file-name editable" data-action={file.EditPresentationFilenameURL()}>{file.PresentationFilename}</div>
                 <div class="user-metadata d-flex gap-2">
-                    <div class="user-file-accessibility small bg-gradient p-1 border border-black border-1 rounded-2">{data.Language.FileAccessibility[file.Accessibility]}</div>
-                    <div class="user-file-size small bg-gradient p-1 border border-black border-1 rounded-2">{file.FileSizeText()}</div>
-                    for _, wl := range file.WikiLinks {
-                        <div class="user-file-size small bg-gradient p-1 border border-black border-1 rounded-2">Used in Wiki page: <a href={wl.URL()}>{wl.Title}</a></div>
+                    @Trivia("user-file-accessibility") {
+                        {data.Language.FileAccessibility[file.Accessibility]}
+                    }
+                    @Trivia("user-file-created") {
+                        {data.Language.FormatTimeAbs(file.Created)}
+                    }
+                    for _, wl := range file.WikiAssociations {
+                        @Trivia() {
+                            Wiki: <a href={wl.WikiURL()}>{wl.WikiTitle}</a>
+                        }
+                    }
+                    for _, pa := range file.PatientAssociations {
+                        @Trivia() {
+                            Patient: <a href={pa.PatientURL()}>{pa.PatientName}</a>
+                        }
+                    }
+                    for _, iv := range file.ImageVariants {
+                        @Trivia() {
+                            <a href={iv.URL(file.PresentationFilename)}>{iv.VariantID}</a>: {iv.FileSizeText()} ({iv.Width} × {iv.Height})
+                        }
                     }
                 </div>
             </div>
-            if len(file.WikiLinks) == 0 && len(file.PatientLinks) == 0 {
+            if len(file.WikiAssociations) == 0 && len(file.PatientAssociations) == 0 {
                 @templbase.SingleButtonForm(
                     data,
                     fmt.Sprintf("/file/%d/delete", file.ID),
@@ -86,7 +108,7 @@ templ FileViewComponent(data *request.CommonData, file *model.File) {
                 >
                     <img 
                         class="user-image dark-on-hover"
-                        src={templ.URL(file.URL())}
+                        src={templ.URL(file.URL()+"?variant=Medium")}
                         alt={file.PresentationFilename}
                     />
                 </a>

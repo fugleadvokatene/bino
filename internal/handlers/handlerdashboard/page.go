@@ -1,7 +1,9 @@
 package handlerdashboard
 
 import (
+	"cmp"
 	"net/http"
+	"slices"
 
 	"github.com/fugleadvokatene/bino/internal/db"
 	"github.com/fugleadvokatene/bino/internal/generic"
@@ -56,31 +58,45 @@ func (h *Page) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	homeViews := generic.SliceToSlice(homes, func(h model.Home) model.Home {
-		h.Patients = generic.SliceToSlice(generic.FilterSlice(patients, func(p sql.GetActivePatientsRow) bool {
-			return p.CurrHomeID.Valid && p.CurrHomeID.Int32 == h.ID
-		}), func(p sql.GetActivePatientsRow) model.Patient {
-			return p.ToModel()
-		})
-		h.Users = generic.SliceToSlice(generic.FilterSlice(users, func(u sql.GetAppusersRow) bool {
-			return u.HomeID.Valid && u.HomeID.Int32 == h.ID
-		}), func(u sql.GetAppusersRow) model.User {
-			return u.ToModel()
-		})
-		h.UnavailablePeriods = generic.SliceToSlice(generic.FilterSlice(unavailablePeriods, func(p sql.HomeUnavailable) bool {
-			return p.HomeID == h.ID
-		}), func(in sql.HomeUnavailable) model.Period {
-			return in.ToModel()
-		})
-		return h
-	})
+	// Attach patients to homes
+	generic.GroupByID(
+		homes,
+		patients,
+		func(h *model.Home) int32 { return h.ID },
+		func(p *sql.GetActivePatientsRow) int32 { return p.CurrHomeID.Int32 },
+		func(h *model.Home, p *sql.GetActivePatientsRow) {
+			h.Patients = append(h.Patients, p.ToModel())
+		},
+	)
+
+	// Attach users to homes
+	generic.GroupByID(
+		homes,
+		users,
+		func(h *model.Home) int32 { return h.ID },
+		func(u *sql.GetAppusersRow) int32 { return u.HomeID.Int32 },
+		func(h *model.Home, u *sql.GetAppusersRow) {
+			h.Users = append(h.Users, u.ToModel())
+		},
+	)
+
+	// Attach unavailable-periods to homes
+	generic.GroupByID(
+		homes,
+		unavailablePeriods,
+		func(h *model.Home) int32 { return h.ID },
+		func(p *sql.HomeUnavailable) int32 { return p.HomeID },
+		func(h *model.Home, p *sql.HomeUnavailable) {
+			h.UnavailablePeriods = append(h.UnavailablePeriods, p.ToModel())
+		},
+	)
 
 	var preferredHomeView model.Home
 	if preferredHomeIdx := generic.Find(homes, func(h model.Home) bool {
 		return h.ID == commonData.User.PreferredHome.ID
 	}); preferredHomeIdx != -1 {
-		preferredHomeView = homeViews[preferredHomeIdx]
-		homeViews = append(homeViews[:preferredHomeIdx], homeViews[preferredHomeIdx+1:]...)
+		preferredHomeView = homes[preferredHomeIdx]
+		homes = append(homes[:preferredHomeIdx], homes[preferredHomeIdx+1:]...)
 	}
 	preferredHomeView.PreferredSpecies = preferredSpecies
 	preferredHomeView.NonPreferredSpecies = otherSpecies
@@ -90,5 +106,7 @@ func (h *Page) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		defaultSpecies = preferredSpecies[0].ID
 	}
 
-	_ = DashboardPage(commonData, defaultSpecies, &preferredHomeView, homeViews, h.MascotURL).Render(r.Context(), w)
+	slices.SortStableFunc(homes, func(a, b model.Home) int { return cmp.Compare(a.Name, b.Name) })
+
+	_ = DashboardPage(commonData, defaultSpecies, &preferredHomeView, homes, h.MascotURL).Render(r.Context(), w)
 }

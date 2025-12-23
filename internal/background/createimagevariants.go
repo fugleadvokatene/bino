@@ -1,0 +1,94 @@
+package background
+
+import (
+	"context"
+	"fmt"
+	"image"
+	"log/slog"
+
+	dblib "github.com/fugleadvokatene/bino/internal/db"
+	"github.com/fugleadvokatene/bino/internal/fs"
+	"github.com/fugleadvokatene/bino/internal/model"
+	"github.com/fugleadvokatene/bino/internal/sql"
+)
+
+func CreateImageVariants(
+	ctx context.Context,
+	db *dblib.Database,
+	fileBackend *fs.LocalFileStorage,
+) (int64, error) {
+	successfulConversions := int64(0)
+
+	// Create original variant
+	filesMissingOriginalVariant, err := db.Q.GetFilesMissingOriginalVariant(ctx)
+	if err != nil {
+		slog.ErrorContext(ctx, "Couldn't get files missing variants", "err", err)
+		return 0, err
+	}
+	for _, file := range filesMissingOriginalVariant {
+		rc, err := fileBackend.Open(ctx, file.Uuid, file.Filename)
+		if err != nil {
+			slog.ErrorContext(ctx, "Couldn't open file", "err", err, "id", file.ID, "uuid", file.Uuid, "filename", file.Filename)
+			continue
+		}
+
+		cfg, _, err := image.DecodeConfig(rc)
+		rc.Close()
+
+		if err != nil {
+			slog.ErrorContext(ctx, "Couldn't decode image", "err", err, "id", file.ID)
+		} else if err := db.Q.PublishVariant(ctx, sql.PublishVariantParams{
+			FileID:   file.ID,
+			Variant:  model.FileVariantIDOriginal.String(),
+			Filename: file.Filename,
+			Mimetype: file.Mimetype,
+			Size:     int32(file.Size),
+			Width:    int32(cfg.Width),
+			Height:   int32(cfg.Height),
+		}); err != nil {
+			slog.ErrorContext(ctx, "Couldn't publish variant", "err", err, "id", file.ID)
+		} else {
+			successfulConversions++
+		}
+	}
+
+	// Create miniatures
+	filesMissingMiniatures, err := db.Q.GetFilesMissingMiniatures(ctx)
+	if err != nil {
+		slog.ErrorContext(ctx, "Couldn't get files missing miniatures", "err", err)
+		return successfulConversions, err
+	}
+	for _, file := range filesMissingMiniatures {
+		miniatures, err := fileBackend.CreateMiniatures(ctx, file.Uuid, file.Filename)
+		if err != nil {
+			return successfulConversions, fmt.Errorf("creating miniatures: %w", err)
+		}
+		slog.InfoContext(ctx, "Creating miniatures", "file", file.Filename, "miniatures", miniatures)
+		if err := db.Transaction(ctx, func(ctx context.Context, db *dblib.Database) error {
+			for _, mini := range miniatures {
+				params := sql.PublishVariantParams{
+					FileID:   file.ID,
+					Variant:  mini.Variant.String(),
+					Filename: mini.VariantFilename,
+					Mimetype: mini.MimeType,
+					Size:     mini.Size,
+					Width:    mini.Width,
+					Height:   mini.Height,
+				}
+				if err := db.Q.PublishVariant(ctx, params); err != nil {
+					return fmt.Errorf("publishing variant '%s': %w", mini.Variant.String(), err)
+				}
+			}
+			if err := db.Q.SetMiniaturesCreated(ctx, file.ID); err != nil {
+				return fmt.Errorf("setting miniatures-created=true: %w", err)
+			}
+			return nil
+		}); err != nil {
+			return successfulConversions, fmt.Errorf("publishing miniatures for %s: %w", file.Uuid, err)
+		} else {
+			successfulConversions++
+		}
+	}
+
+	return successfulConversions, nil
+}

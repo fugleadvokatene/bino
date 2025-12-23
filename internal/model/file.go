@@ -5,6 +5,8 @@ import (
 	"path/filepath"
 	"strings"
 	"time"
+
+	"github.com/a-h/templ"
 )
 
 type FileInfo struct {
@@ -25,8 +27,9 @@ type File struct {
 	PresentationFilename string
 	MIMEType             string
 	Size                 int64
-	WikiLinks            []WikiLink
-	PatientLinks         []Patient
+	WikiAssociations     []FileWikiAssociation
+	PatientAssociations  []FilePatientAssociation
+	ImageVariants        []ImageVariant
 }
 
 func (in *File) FileInfo() FileInfo {
@@ -67,12 +70,39 @@ func (in *File) URL() string {
 	return FileURL(in.ID, in.PresentationFilename)
 }
 
+func (in *File) ImgSrcset() string {
+	srcs := make([]string, len(in.ImageVariants))
+	for i, variant := range in.ImageVariants {
+		srcs[i] = fmt.Sprintf(
+			"%s?variant=%s %dw",
+			FileURL(in.ID, variant.Filename),
+			variant.VariantID.String(),
+			variant.Width,
+		)
+	}
+	return strings.Join(srcs, ", ")
+}
+
+func (in *File) ImgSizes() string {
+	sizes := make([]string, len(in.ImageVariants))
+	for i, variant := range in.ImageVariants {
+		sizes[i] = fmt.Sprintf(
+			"%dpx",
+			variant.Width,
+		)
+	}
+	return strings.Join(sizes, ", ")
+}
+
 func (in *File) EditPresentationFilenameURL() string {
 	return fmt.Sprintf("/file/%d/set-filename", in.ID)
 }
 
 func (in *File) FileSizeText() string {
-	s := in.Size
+	return FileSizeText(in.Size)
+}
+
+func FileSizeText(s int64) string {
 	if s < 1000 {
 		return fmt.Sprintf("%d B", s)
 	}
@@ -84,4 +114,28 @@ func (in *File) FileSizeText() string {
 	}
 	s /= 1000
 	return fmt.Sprintf("%d GB", s)
+}
+
+// ---- File/Wiki association
+
+type FileWikiAssociation struct {
+	FileID    int32
+	WikiID    int32
+	WikiTitle string
+}
+
+func (fwa *FileWikiAssociation) WikiURL() templ.SafeURL {
+	return templ.URL(fmt.Sprintf("/wiki/view/%d", fwa.WikiID))
+}
+
+// ---- File/Patient association
+
+type FilePatientAssociation struct {
+	FileID      int32
+	PatientID   int32
+	PatientName string
+}
+
+func (fpa *FilePatientAssociation) PatientURL() templ.SafeURL {
+	return templ.SafeURL(PatientURL(fpa.PatientID))
 }

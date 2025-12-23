@@ -250,8 +250,8 @@ func (in *File) ToModel() model.File {
 
 func (in *WikiPage) ToModel() model.WikiLink {
 	return model.WikiLink{
-		ID:    in.ID,
-		Title: in.Title,
+		WikiID: in.ID,
+		Title:  in.Title,
 	}
 }
 
@@ -293,5 +293,39 @@ func (gefcr GetEventsForCalendarRow) ToModel(language *language.Language) calend
 		Title:   fmt.Sprintf("%s: %s", gefcr.PatientName, language.FormatEvent(gefcr.EventID, gefcr.AssociatedID)),
 		URL:     model.PatientURL(gefcr.PatientID),
 		Display: "list-item",
+	}
+}
+
+// ---- File Wiki association
+
+func (in *GetFileWikiAssociationsAccessibleByUserRow) ToModel() model.FileWikiAssociation {
+	return model.FileWikiAssociation{
+		FileID:    in.FileID,
+		WikiID:    in.WikiID,
+		WikiTitle: in.Title,
+	}
+}
+
+// ---- File Patient association
+
+func (in *GetFilePatientAssociationsAccessibleByUserRow) ToModel() model.FilePatientAssociation {
+	return model.FilePatientAssociation{
+		FileID:      in.FileID,
+		PatientID:   in.PatientID,
+		PatientName: in.Name,
+	}
+}
+
+// --- File variant
+
+func (in *ImageVariant) ToModel() model.ImageVariant {
+	return model.ImageVariant{
+		FileID:    in.FileID,
+		VariantID: model.FileVariantID(in.Variant),
+		Filename:  in.Filename,
+		Mimetype:  in.Mimetype,
+		Size:      in.Size,
+		Width:     in.Width,
+		Height:    in.Height,
 	}
 }

@@ -549,6 +549,56 @@ func ParseFileAccessibility(name string) (FileAccessibility, error) {
 }
 
 const (
+	// FileVariantIDOriginal is a FileVariantID of type Original.
+	FileVariantIDOriginal FileVariantID = "Original"
+	// FileVariantIDLarge is a FileVariantID of type Large.
+	FileVariantIDLarge FileVariantID = "Large"
+	// FileVariantIDMedium is a FileVariantID of type Medium.
+	FileVariantIDMedium FileVariantID = "Medium"
+	// FileVariantIDSmall is a FileVariantID of type Small.
+	FileVariantIDSmall FileVariantID = "Small"
+)
+
+var ErrInvalidFileVariantID = errors.New("not a valid FileVariantID")
+
+// FileVariantIDValues returns a list of the values for FileVariantID
+func FileVariantIDValues() []FileVariantID {
+	return []FileVariantID{
+		FileVariantIDOriginal,
+		FileVariantIDLarge,
+		FileVariantIDMedium,
+		FileVariantIDSmall,
+	}
+}
+
+// String implements the Stringer interface.
+func (x FileVariantID) String() string {
+	return string(x)
+}
+
+// IsValid provides a quick way to determine if the typed value is
+// part of the allowed enumerated values
+func (x FileVariantID) IsValid() bool {
+	_, err := ParseFileVariantID(string(x))
+	return err == nil
+}
+
+var _FileVariantIDValue = map[string]FileVariantID{
+	"Original": FileVariantIDOriginal,
+	"Large":    FileVariantIDLarge,
+	"Medium":   FileVariantIDMedium,
+	"Small":    FileVariantIDSmall,
+}
+
+// ParseFileVariantID attempts to convert a string to a FileVariantID.
+func ParseFileVariantID(name string) (FileVariantID, error) {
+	if x, ok := _FileVariantIDValue[name]; ok {
+		return x, nil
+	}
+	return FileVariantID(""), fmt.Errorf("%s is %w", name, ErrInvalidFileVariantID)
+}
+
+const (
 	// GDriveTaskRequestIDGetFile is a GDriveTaskRequestID of type GetFile.
 	GDriveTaskRequestIDGetFile GDriveTaskRequestID = 0
 	// GDriveTaskRequestIDInviteUser is a GDriveTaskRequestID of type InviteUser.
@@ -613,56 +663,6 @@ func ParseGDriveTaskRequestID(name string) (GDriveTaskRequestID, error) {
 		return x, nil
 	}
 	return GDriveTaskRequestID(0), fmt.Errorf("%s is %w", name, ErrInvalidGDriveTaskRequestID)
-}
-
-const (
-	// ImageSizeOriginal is a ImageSize of type Original.
-	ImageSizeOriginal ImageSize = "Original"
-	// ImageSizeLarge is a ImageSize of type Large.
-	ImageSizeLarge ImageSize = "Large"
-	// ImageSizeMedium is a ImageSize of type Medium.
-	ImageSizeMedium ImageSize = "Medium"
-	// ImageSizeSmall is a ImageSize of type Small.
-	ImageSizeSmall ImageSize = "Small"
-)
-
-var ErrInvalidImageSize = errors.New("not a valid ImageSize")
-
-// ImageSizeValues returns a list of the values for ImageSize
-func ImageSizeValues() []ImageSize {
-	return []ImageSize{
-		ImageSizeOriginal,
-		ImageSizeLarge,
-		ImageSizeMedium,
-		ImageSizeSmall,
-	}
-}
-
-// String implements the Stringer interface.
-func (x ImageSize) String() string {
-	return string(x)
-}
-
-// IsValid provides a quick way to determine if the typed value is
-// part of the allowed enumerated values
-func (x ImageSize) IsValid() bool {
-	_, err := ParseImageSize(string(x))
-	return err == nil
-}
-
-var _ImageSizeValue = map[string]ImageSize{
-	"Original": ImageSizeOriginal,
-	"Large":    ImageSizeLarge,
-	"Medium":   ImageSizeMedium,
-	"Small":    ImageSizeSmall,
-}
-
-// ParseImageSize attempts to convert a string to a ImageSize.
-func ParseImageSize(name string) (ImageSize, error) {
-	if x, ok := _ImageSizeValue[name]; ok {
-		return x, nil
-	}
-	return ImageSize(""), fmt.Errorf("%s is %w", name, ErrInvalidImageSize)
 }
 
 const (

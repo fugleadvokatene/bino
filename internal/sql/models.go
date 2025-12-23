@@ -42,6 +42,7 @@ type File struct {
 	Mimetype             string
 	Size                 int64
 	PresentationFilename string
+	MiniaturesCreated    bool
 }
 
 type FilePatient struct {
@@ -80,6 +81,16 @@ type HomeUnavailable struct {
 	FromDate pgtype.Date
 	ToDate   pgtype.Date
 	Note     pgtype.Text
+}
+
+type ImageVariant struct {
+	FileID   int32
+	Variant  string
+	Filename string
+	Mimetype string
+	Size     int32
+	Width    int32
+	Height   int32
 }
 
 type Invitation struct {

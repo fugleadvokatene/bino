@@ -13,18 +13,32 @@ FROM file
 WHERE id = @id
 ;
 
+-- name: PublishVariant :exec
+INSERT
+INTO image_variant
+  (file_id, variant, filename, mimetype, size, width, height)
+VALUES
+  (@file_id, @variant, @filename, @mimetype, @size, @width, @height)
+;
+
+-- name: GetVariant :one
+SELECT *
+FROM image_variant
+WHERE file_id=$1 AND variant=$2
+;
+
 -- name: GetFilesAccessibleByUser :many
 SELECT *
 FROM file
 WHERE
       creator = @creator
   OR accessibility >= @accessibility
-ORDER BY created DESC
 ;
 
 -- name: GetAllFileWikiAssociations :many
 SELECT * from file_wiki
 ;
+
 
 -- name: GetFileWikiAssociationsAccessibleByUser :many
 SELECT fw.file_id, fw.wiki_id, wp.title
@@ -36,7 +50,7 @@ INNER JOIN wiki_page AS wp
 WHERE
       file.creator = @creator
   OR accessibility >= @accessibility
-ORDER BY file.created DESC
+ORDER BY fw.wiki_id
 ;
 
 -- name: GetFilePatientAssociationsAccessibleByUser :many
@@ -49,7 +63,38 @@ INNER JOIN patient AS p
 WHERE
       file.creator = @creator
   OR accessibility >= @accessibility
-ORDER BY file.created DESC
+ORDER BY fp.patient_id
+;
+
+-- name: GetImageVariantsAccessibleByUser :many
+SELECT iv.*
+FROM file
+INNER JOIN image_variant AS iv
+  ON file.id = iv.file_id
+WHERE
+      file.creator = @creator
+  OR accessibility >= @accessibility
+ORDER BY iv.variant DESC
+;
+
+-- name: GetFilesMissingOriginalVariant :many
+SELECT f.*
+FROM file AS f
+LEFT JOIN image_variant AS iv
+  ON f.id = iv.file_id
+WHERE iv.file_id IS NULL
+;
+
+-- name: GetFilesMissingMiniatures :many
+SELECT f.*
+FROM file AS f
+WHERE NOT f.miniatures_created
+;
+
+-- name: SetMiniaturesCreated :exec
+UPDATE file
+SET miniatures_created=TRUE
+WHERE id = @id
 ;
 
 -- name: GetFileByID :one
