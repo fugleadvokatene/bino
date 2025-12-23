@@ -22,6 +22,18 @@ func GetQueryValue(r *http.Request, field string) (string, error) {
 	return values[0], nil
 }
 
+func GetQueryID(r *http.Request, field string) (int32, error) {
+	vStr, err := GetQueryValue(r, field)
+	if err != nil {
+		return 0, err
+	}
+	v, err := strconv.ParseInt(vStr, 10, 32)
+	if err != nil {
+		return 0, err
+	}
+	return int32(v), nil
+}
+
 func GetFormIDs(r *http.Request, fields ...string) (map[string]int32, error) {
 	strings, err := GetFormValues(r, fields...)
 	if err != nil {

@@ -17,6 +17,7 @@ type Event struct {
 	AppuserID    int32
 	HomeName     string
 	UserName     string
+	PatientName  string
 	AvatarUrl    pgtype.Text
 
 	TimeAbs string

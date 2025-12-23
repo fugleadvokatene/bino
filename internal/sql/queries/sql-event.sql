@@ -16,6 +16,28 @@ VALUES (
   NOW()
 );
 
+-- name: NumEvents :one
+SELECT COUNT(*) AS n FROM patient_event;
+
+-- name: GetEvents :many
+SELECT
+    pe.*,
+    p.name AS patient_name,
+    h.name AS home_name,
+    au.display_name AS user_name,
+    au.avatar_url AS avatar_url
+FROM patient_event AS pe
+JOIN patient AS p
+  ON p.id = pe.patient_id
+JOIN home AS h
+  ON h.id = pe.home_id
+JOIN appuser AS au
+  ON au.id = pe.appuser_id
+ORDER BY pe.time DESC
+LIMIT $1 OFFSET $2
+;
+
+
 -- name: GetEventsForPatient :many
 SELECT
     pe.*,

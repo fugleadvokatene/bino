@@ -11,6 +11,11 @@ func Routes(
 ) []route.Route {
 	return []route.Route{
 		{
+			Path:    "GET /event",
+			Handler: &list{DB: db},
+			Cap:     model.CapViewAllFormerPatients,
+		},
+		{
 			Path:    "POST /event/{event}/set-note",
 			Handler: &setNote{DB: db},
 			Cap:     model.CapManageOwnPatients,

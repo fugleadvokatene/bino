@@ -83,6 +83,8 @@ type Language struct {
 	ErrorPageInstructions string
 	ErrorSettingLanguage  string
 
+	EventList string
+
 	FFAdmin  string
 	FFCreate string
 
@@ -228,6 +230,17 @@ type Language struct {
 	Capabilities                  map[model.Cap]string
 	CapabilitiesLink              string
 	CapabilitiesHeader            string
+}
+
+func (l *Language) ShowingFirstToLastOfN(first, last, n int32) string {
+	switch l.ID {
+	case model.LanguageIDNO:
+		return fmt.Sprintf("Viser %d-%d av %d", first, last, n)
+	case model.LanguageIDEN:
+		fallthrough
+	default:
+		return fmt.Sprintf("Showing %d-%d of %d", first, last, n)
+	}
 }
 
 func (l *Language) CheckinSuccessful(name string) string {
@@ -415,6 +428,8 @@ var NO = &Language{
 	ErrorPageHead:         "Feilmelding",
 	ErrorPageInstructions: "Det skjedde noe feil under lasting av siden. Feilen har blitt logget og vil bli undersøkt. Send melding til administrator for hjelp. Den tekniske feilmeldingen følger under.",
 	ErrorSettingLanguage:  "Kunne ikke oppdatere språk",
+
+	EventList: "Siste hendelser",
 
 	FFAdmin:  "Konfigurer feature flags",
 	FFCreate: "Lag nytt feature flag",
@@ -721,6 +736,8 @@ var EN = &Language{
 	ErrorPageHead:         "Error",
 	ErrorPageInstructions: "An error occurred while loading the page. The error has been logged and will be investigated. Send a message to the site admin for help. The technical error message is as follows.",
 	ErrorSettingLanguage:  "Failed to update language",
+
+	EventList: "Last events",
 
 	FFAdmin:  "Configure feature flags",
 	FFCreate: "Create feature flag",

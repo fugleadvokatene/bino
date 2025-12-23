@@ -1,0 +1,59 @@
+package handlerevent
+
+import "github.com/fugleadvokatene/bino/internal/model"
+import "github.com/fugleadvokatene/bino/internal/request"
+import "github.com/fugleadvokatene/bino/internal/templbase"
+import "github.com/fugleadvokatene/bino/internal/handlers/handlercalendar"
+
+templ EventListPage(data *request.CommonData, events []model.Event, ls listState) {
+	@templbase.Layout(data) {
+        <h1>{data.Language.EventList}</h1>
+        <div class="card">
+            <p class="p-1 m-auto">
+                if prev, havePrev := ls.Prev(); havePrev {
+                    <a href={prev}>←</a>
+                }
+                {data.Language.ShowingFirstToLastOfN(ls.First, ls.Last, ls.N)}
+                if next, haveNext := ls.Next(); haveNext {
+                    <a href={next}>→</a>
+                }
+            </p>
+            @EventList(data, events, true)
+        </div>
+    }
+}
+
+templ EventList(data *request.CommonData, events []model.Event, showpatient bool) {
+    <table class="table table-bordered table-sm table-striped">
+    <thead>
+        <th>{data.Language.PatientEventTime}</th>
+        if showpatient {
+            <th>{data.Language.CheckinPatientName}</th>
+        }
+        <th>{data.Language.PatientEventUser}</th>
+        <th>{data.Language.PatientEventEvent}</th>
+        <th>{data.Language.PatientEventHome}</th>
+        <th>{data.Language.PatientEventNote}</th>
+    </thead>
+    <tbody>
+        for _, event := range events {
+            <tr>
+                <td>@handlercalendar.CalendarLinkAbs(data.Language, event.Time, "listDay")</td>
+                if showpatient {
+                    <td><a href={templ.URL(model.PatientURL(event.PatientID))}>{event.PatientName}</a></td>
+                }
+                <td class="center">
+                    @templbase.Avatar(event.User)
+                </td>
+                <td>{data.Language.FormatEvent(event.EventID, event.AssociatedID)}</td>
+                <td><a href={event.Home.URL()}>{event.Home.Name}</a></td>
+                <td>
+                    <span class="editable editable-end" data-action={event.SetNoteURL()}>
+                        {event.Note}
+                    </span>
+                </td>
+            </tr>
+        }
+    </tbody>
+    </table>
+}

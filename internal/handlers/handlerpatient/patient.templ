@@ -7,6 +7,7 @@ import (
 	"github.com/fugleadvokatene/bino/internal/request"
 	"github.com/fugleadvokatene/bino/internal/templbase"
 	"github.com/fugleadvokatene/bino/internal/handlers/handlercalendar"
+	"github.com/fugleadvokatene/bino/internal/handlers/handlerevent"
 )
 
 templ PatientPage(ctx context.Context, data *request.CommonData, page model.PatientPage) {
@@ -54,36 +55,12 @@ templ PatientPage(ctx context.Context, data *request.CommonData, page model.Pati
             </table>
 
             <h2>Historikk</h2>
-            <table class="table table-bordered table-sm table-striped">
-            <thead>
-                <th>{data.Language.PatientEventTime}</th>
-                <th>{data.Language.PatientEventUser}</th>
-                <th>{data.Language.PatientEventEvent}</th>
-                <th>{data.Language.PatientEventHome}</th>
-                <th>{data.Language.PatientEventNote}</th>
-            </thead>
-            <tbody>
-                for _, event := range page.Events {
-                    <tr>
-                        <td>@handlercalendar.CalendarLinkAbs(data.Language, event.Time, "listDay")</td>
-                        <td class="center">
-                            @templbase.Avatar(event.User)
-                        </td>
-                        <td>{data.Language.FormatEvent(event.EventID, event.AssociatedID)}</td>
-                        <td><a href={event.Home.URL()}>{event.Home.Name}</a></td>
-                        <td>
-                            <span class="editable editable-end" data-action={event.SetNoteURL()}>
-                                {event.Note}
-                            </span>
-                        </td>
-                    </tr>
-                }
-            </tbody>
-            </table>
+            @handlerevent.EventList(data, page.Events, false)
         }
         @templbase.JSModule(data, "editable")
     }
 }
+
 
 templ PatientHardDelete(data *request.CommonData, patient model.Patient) {
     <tr>

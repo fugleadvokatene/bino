@@ -11,6 +11,7 @@ templ AdminRootPage(data *request.CommonData) {
         if data.FeatureFlag("File uploader") {
             <li class="card mb-1"><div class="card-header"><a href="/file">{data.Language.FilesUploadHeader}</a></div></li>
         }
+        <li class="card mb-1"><div class="card-header"><a href="/event">{data.Language.EventList}</a></div></li>
         if data.User.AccessLevel >= model.AccessLevelCoordinator {
             <li class="card mb-1"><div class="card-header"><a href="/species">{data.Language.AdminManageSpecies}</a></div></li>
             if data.FeatureFlag("Import tool") {

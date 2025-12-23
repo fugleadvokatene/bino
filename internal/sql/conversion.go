@@ -88,6 +88,38 @@ func (in GetActivePatientsRow) ToModel() model.Patient {
 	}
 }
 
+// ---- Patient event
+
+func (in GetEventsRow) ToModel(lang *language.Language) model.Event {
+	return model.Event{
+		ID:           in.ID,
+		PatientID:    in.PatientID,
+		HomeID:       in.HomeID,
+		Note:         in.Note,
+		EventID:      in.EventID,
+		AssociatedID: in.AssociatedID,
+		AppuserID:    in.AppuserID,
+		HomeName:     in.HomeName,
+		UserName:     in.UserName,
+		PatientName:  in.PatientName,
+		AvatarUrl:    in.AvatarUrl,
+		TimeRel:      lang.FormatTimeRel(in.Time.Time),
+		TimeAbs:      lang.FormatTimeAbs(in.Time.Time),
+		Time:         in.Time.Time,
+		User: model.User{
+			ID:           in.AppuserID,
+			Name:         in.UserName,
+			AvatarURL:    in.AvatarUrl.String,
+			HasAvatarURL: in.AvatarUrl.Valid,
+			Email:        "",
+		},
+		Home: model.Home{
+			ID:   in.HomeID,
+			Name: in.HomeName,
+		},
+	}
+}
+
 // ---- User
 
 func (user GetAppusersRow) ToModel() model.User {

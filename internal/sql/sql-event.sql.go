@@ -93,6 +93,77 @@ func (q *Queries) DeleteEventsForPatient(ctx context.Context, patientID int32) e
 	return err
 }
 
+const getEvents = `-- name: GetEvents :many
+SELECT
+    pe.id, pe.patient_id, pe.home_id, pe.note, pe.event_id, pe.time, pe.associated_id, pe.appuser_id,
+    p.name AS patient_name,
+    h.name AS home_name,
+    au.display_name AS user_name,
+    au.avatar_url AS avatar_url
+FROM patient_event AS pe
+JOIN patient AS p
+  ON p.id = pe.patient_id
+JOIN home AS h
+  ON h.id = pe.home_id
+JOIN appuser AS au
+  ON au.id = pe.appuser_id
+ORDER BY pe.time DESC
+LIMIT $1 OFFSET $2
+`
+
+type GetEventsParams struct {
+	Limit  int32
+	Offset int32
+}
+
+type GetEventsRow struct {
+	ID           int32
+	PatientID    int32
+	HomeID       int32
+	Note         string
+	EventID      int32
+	Time         pgtype.Timestamptz
+	AssociatedID pgtype.Int4
+	AppuserID    int32
+	PatientName  string
+	HomeName     string
+	UserName     string
+	AvatarUrl    pgtype.Text
+}
+
+func (q *Queries) GetEvents(ctx context.Context, arg GetEventsParams) ([]GetEventsRow, error) {
+	rows, err := q.db.Query(ctx, getEvents, arg.Limit, arg.Offset)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetEventsRow
+	for rows.Next() {
+		var i GetEventsRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.PatientID,
+			&i.HomeID,
+			&i.Note,
+			&i.EventID,
+			&i.Time,
+			&i.AssociatedID,
+			&i.AppuserID,
+			&i.PatientName,
+			&i.HomeName,
+			&i.UserName,
+			&i.AvatarUrl,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getEventsForCalendar = `-- name: GetEventsForCalendar :many
 SELECT
   pe.id, pe.patient_id, pe.home_id, pe.note, pe.event_id, pe.time, pe.associated_id, pe.appuser_id,
@@ -238,6 +309,17 @@ func (q *Queries) GetFirstEventOfTypeForPatient(ctx context.Context, arg GetFirs
 	var time pgtype.Timestamptz
 	err := row.Scan(&time)
 	return time, err
+}
+
+const numEvents = `-- name: NumEvents :one
+SELECT COUNT(*) AS n FROM patient_event
+`
+
+func (q *Queries) NumEvents(ctx context.Context) (int64, error) {
+	row := q.db.QueryRow(ctx, numEvents)
+	var n int64
+	err := row.Scan(&n)
+	return n, err
 }
 
 const setEventNote = `-- name: SetEventNote :exec
