@@ -45,7 +45,7 @@ templ FormerPatientsPage(data *request.CommonData, patients []model.Patient) {
                                 }
                             </td>
                             <td class="filter-content" data-sort-key={p.TimeCheckin.Unix()}>@handlercalendar.CalendarLinkAbs(data.Language, p.TimeCheckin, "listDay")</td>
-                            <td class="filter-content" data-sort-key={p.TimeCheckin.Unix()}>@handlercalendar.CalendarLinkAbs(data.Language, p.TimeCheckout, "listDay")</td>
+                            <td class="filter-content" data-sort-key={p.TimeCheckout.Unix()}>@handlercalendar.CalendarLinkAbs(data.Language, p.TimeCheckout, "listDay")</td>
                         </tr>
                     }
                     <tr id="filter-none" hidden>
