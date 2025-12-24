@@ -1,0 +1,17 @@
+$primary: rgb(108, 74, 161);
+$accent: rgb(0, 140, 95);
+$body: rgb(210, 212, 225);
+$light: rgb(238, 239, 245);
+$dark: rgb(60, 60, 80);
+$text: rgb(245, 245, 250);
+$warning: rgb(235, 140, 75);
+$midgray: mix($dark, $light, 25);
+$slightdark: mix($dark, $midgray, 50);
+$lightprimary: mix($primary, $light, 15);
+$lightaccent: mix($accent, $light, 15);
+$lightwarning: mix($warning, $light, 45);
+$lighterror: mix(red, $light, 45);
+
+$mobilethreshold: 1000px;
+
+$dashboard-home-column: 300px;
