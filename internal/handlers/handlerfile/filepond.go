@@ -44,6 +44,12 @@ func (h *filepondSubmit) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if err := h.DB.Transaction(ctx, func(ctx context.Context, db *db.Database) error {
 		errs := []error{}
 		for uuid, fileInfo := range result.Commited {
+			hash, err := h.FileBackend.Sha256(ctx, uuid, fileInfo.FileName)
+			if err != nil {
+				errs = append(errs, fmt.Errorf("hashing %s: %w", uuid, err))
+				data.Error(data.Language.GenericFailed, err)
+				continue
+			}
 			_, err := h.DB.Q.PublishFile(ctx, sql.PublishFileParams{
 				Uuid:          uuid,
 				Creator:       data.User.AppuserID,
@@ -52,6 +58,7 @@ func (h *filepondSubmit) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 				Filename:      fileInfo.FileName,
 				Mimetype:      fileInfo.MIMEType,
 				Size:          fileInfo.Size,
+				Sha256:        hash,
 			})
 			if err != nil {
 				errs = append(errs, fmt.Errorf("committing %s: %w", uuid, err))

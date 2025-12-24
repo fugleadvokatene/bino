@@ -1,9 +1,9 @@
 -- name: PublishFile :one
 INSERT
 INTO file
-  (uuid, accessibility, creator, created, filename, presentation_filename, mimetype, size)
+  (uuid, accessibility, creator, created, filename, presentation_filename, mimetype, size, sha256)
 VALUES 
-  (@uuid, @accessibility, @creator, @created, @filename, @filename, @mimetype, @size)
+  (@uuid, @accessibility, @creator, @created, @filename, @filename, @mimetype, @size, @sha256)
 RETURNING id
 ;
 
@@ -16,9 +16,9 @@ WHERE id = @id
 -- name: PublishVariant :exec
 INSERT
 INTO image_variant
-  (file_id, variant, filename, mimetype, size, width, height)
+  (file_id, variant, filename, mimetype, size, width, height, sha256)
 VALUES
-  (@file_id, @variant, @filename, @mimetype, @size, @width, @height)
+  (@file_id, @variant, @filename, @mimetype, @size, @width, @height, @sha256)
 ;
 
 -- name: GetVariant :one
@@ -101,6 +101,13 @@ WHERE id = @id
 SELECT *
 FROM file
 WHERE sha256 IS NULL
+;
+
+-- name: GetFileBySizeAndHash :one
+SELECT *
+FROM file
+WHERE size = @size AND sha256 = @sha256
+LIMIT 1
 ;
 
 -- name: SetFileHash :exec

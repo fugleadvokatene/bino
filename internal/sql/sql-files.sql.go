@@ -232,6 +232,37 @@ func (q *Queries) GetFilesMissingHash(ctx context.Context) ([]File, error) {
 	return items, nil
 }
 
+const getFileBySizeAndHash = `-- name: GetFileBySizeAndHash :one
+SELECT id, uuid, creator, created, accessibility, filename, mimetype, size, presentation_filename, miniatures_created, sha256
+FROM file
+WHERE size = $1 AND sha256 = $2
+LIMIT 1
+`
+
+type GetFileBySizeAndHashParams struct {
+	Size   int64
+	Sha256 []byte
+}
+
+func (q *Queries) GetFileBySizeAndHash(ctx context.Context, arg GetFileBySizeAndHashParams) (File, error) {
+	row := q.db.QueryRow(ctx, getFileBySizeAndHash, arg.Size, arg.Sha256)
+	var i File
+	err := row.Scan(
+		&i.ID,
+		&i.Uuid,
+		&i.Creator,
+		&i.Created,
+		&i.Accessibility,
+		&i.Filename,
+		&i.Mimetype,
+		&i.Size,
+		&i.PresentationFilename,
+		&i.MiniaturesCreated,
+		&i.Sha256,
+	)
+	return i, err
+}
+
 const getFilesMissingMiniatures = `-- name: GetFilesMissingMiniatures :many
 SELECT f.id, f.uuid, f.creator, f.created, f.accessibility, f.filename, f.mimetype, f.size, f.presentation_filename, f.miniatures_created, f.sha256
 FROM file AS f
@@ -435,9 +466,9 @@ func (q *Queries) GetVariant(ctx context.Context, arg GetVariantParams) (ImageVa
 const publishFile = `-- name: PublishFile :one
 INSERT
 INTO file
-  (uuid, accessibility, creator, created, filename, presentation_filename, mimetype, size)
+  (uuid, accessibility, creator, created, filename, presentation_filename, mimetype, size, sha256)
 VALUES 
-  ($1, $2, $3, $4, $5, $5, $6, $7)
+  ($1, $2, $3, $4, $5, $5, $6, $7, $8)
 RETURNING id
 `
 
@@ -449,6 +480,7 @@ type PublishFileParams struct {
 	Filename      string
 	Mimetype      string
 	Size          int64
+	Sha256        []byte
 }
 
 func (q *Queries) PublishFile(ctx context.Context, arg PublishFileParams) (int32, error) {
@@ -460,6 +492,7 @@ func (q *Queries) PublishFile(ctx context.Context, arg PublishFileParams) (int32
 		arg.Filename,
 		arg.Mimetype,
 		arg.Size,
+		arg.Sha256,
 	)
 	var id int32
 	err := row.Scan(&id)
@@ -469,9 +502,9 @@ func (q *Queries) PublishFile(ctx context.Context, arg PublishFileParams) (int32
 const publishVariant = `-- name: PublishVariant :exec
 INSERT
 INTO image_variant
-  (file_id, variant, filename, mimetype, size, width, height)
+  (file_id, variant, filename, mimetype, size, width, height, sha256)
 VALUES
-  ($1, $2, $3, $4, $5, $6, $7)
+  ($1, $2, $3, $4, $5, $6, $7, $8)
 `
 
 type PublishVariantParams struct {
@@ -482,6 +515,7 @@ type PublishVariantParams struct {
 	Size     int32
 	Width    int32
 	Height   int32
+	Sha256   []byte
 }
 
 func (q *Queries) PublishVariant(ctx context.Context, arg PublishVariantParams) error {
@@ -493,6 +527,7 @@ func (q *Queries) PublishVariant(ctx context.Context, arg PublishVariantParams) 
 		arg.Size,
 		arg.Width,
 		arg.Height,
+		arg.Sha256,
 	)
 	return err
 }

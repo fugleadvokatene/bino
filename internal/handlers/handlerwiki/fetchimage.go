@@ -89,6 +89,12 @@ func (h *fetchImage) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		}
 
 		fileInfo := commitResult.Commited[uploadResult.UniqueID]
+		hash, err := h.FileBackend.Sha256(ctx, uploadResult.UniqueID, fileInfo.FileName)
+		if err != nil {
+			request.LogError(r, fmt.Errorf("hashing image: %w", err))
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
 		fileID, err = h.DB.Q.PublishFile(ctx, sql.PublishFileParams{
 			Uuid:          uploadResult.UniqueID,
 			Creator:       request.MustLoadCommonData(ctx).User.AppuserID,
@@ -97,6 +103,7 @@ func (h *fetchImage) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			Filename:      fileInfo.FileName,
 			Mimetype:      fileInfo.MIMEType,
 			Size:          fileInfo.Size,
+			Sha256:        hash,
 		})
 		if err != nil {
 			request.LogError(r, fmt.Errorf("registering file to db: %w", err))

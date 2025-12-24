@@ -37,6 +37,8 @@ func CreateImageVariants(
 
 		if err != nil {
 			slog.ErrorContext(ctx, "Couldn't decode image", "err", err, "id", file.ID)
+		} else if hash, err := fileBackend.Sha256(ctx, file.Uuid, file.Filename); err != nil {
+			slog.ErrorContext(ctx, "Couldn't hash image", "err", err, "id", file.ID)
 		} else if err := db.Q.PublishVariant(ctx, sql.PublishVariantParams{
 			FileID:   file.ID,
 			Variant:  model.FileVariantIDOriginal.String(),
@@ -45,6 +47,7 @@ func CreateImageVariants(
 			Size:     int32(file.Size),
 			Width:    int32(cfg.Width),
 			Height:   int32(cfg.Height),
+			Sha256:   hash,
 		}); err != nil {
 			slog.ErrorContext(ctx, "Couldn't publish variant", "err", err, "id", file.ID)
 		} else {
@@ -66,6 +69,10 @@ func CreateImageVariants(
 		slog.InfoContext(ctx, "Creating miniatures", "file", file.Filename, "miniatures", miniatures)
 		if err := db.Transaction(ctx, func(ctx context.Context, db *dblib.Database) error {
 			for _, mini := range miniatures {
+				hash, err := fileBackend.Sha256(ctx, file.Uuid, mini.VariantFilename)
+				if err != nil {
+					return fmt.Errorf("hashing variant '%s': %w", mini.Variant.String(), err)
+				}
 				params := sql.PublishVariantParams{
 					FileID:   file.ID,
 					Variant:  mini.Variant.String(),
@@ -74,6 +81,7 @@ func CreateImageVariants(
 					Size:     mini.Size,
 					Width:    mini.Width,
 					Height:   mini.Height,
+					Sha256:   hash,
 				}
 				if err := db.Q.PublishVariant(ctx, params); err != nil {
 					return fmt.Errorf("publishing variant '%s': %w", mini.Variant.String(), err)
