@@ -1,0 +1,2 @@
+- Only edit files. The changes will be pulled and artifacts will be rebuilt. Do not attempt to build anything, and do not modify the build artifacts that are checked in. 
+- When creating pull requests, do not put a comment in the pull request.

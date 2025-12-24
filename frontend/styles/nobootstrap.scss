@@ -1,0 +1,380 @@
+@use 'vars';
+
+/*
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.25rem;
+  padding: 0.375rem 0.75rem;
+  border: 1px solid transparent;
+  border-radius: 0;
+  font: inherit;
+  color: vars.$text;
+  background-color: vars.$midgray;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.btn:disabled,
+.btn[disabled] {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.btn-sm {
+  padding: 0.25rem 0.5rem;
+  font-size: 0.875rem;
+}
+
+.btn-primary {
+  background-color: vars.$primary;
+  border-color: vars.$primary;
+  color: vars.$text;
+}
+
+.btn-success {
+  background-color: vars.$accent;
+  border-color: vars.$accent;
+  color: vars.$text;
+}
+
+.btn-warning {
+  background-color: vars.$warning;
+  border-color: vars.$warning;
+  color: black;
+}
+
+.btn-danger {
+  background-color: rgb(200, 55, 55);
+  border-color: rgb(200, 55, 55);
+  color: vars.$text;
+}
+
+.btn-secondary {
+  background-color: vars.$slightdark;
+  border-color: vars.$slightdark;
+  color: vars.$text;
+}
+
+.btn-outline-primary {
+  background-color: transparent;
+  border-color: vars.$primary;
+  color: vars.$primary;
+}
+
+.btn-outline-success {
+  background-color: transparent;
+  border-color: vars.$accent;
+  color: vars.$accent;
+}
+
+.btn-outline-warning {
+  background-color: transparent;
+  border-color: vars.$warning;
+  color: vars.$warning;
+}
+
+.btn-outline-danger {
+  background-color: transparent;
+  border-color: rgb(200, 55, 55);
+  color: rgb(200, 55, 55);
+}
+
+.btn-outline-primary:hover,
+.btn-outline-success:hover,
+.btn-outline-warning:hover,
+.btn-outline-danger:hover {
+  background-color: vars.$light;
+}
+
+.form-control,
+.form-select {
+  display: block;
+  width: 100%;
+  padding: 0.375rem 0.75rem;
+  border: 1px solid vars.$midgray;
+  border-radius: 0;
+  background-color: vars.$light;
+  color: vars.$dark;
+  font: inherit;
+  box-sizing: border-box;
+}
+
+.form-control:focus,
+.form-select:focus {
+  outline: 2px solid vars.$primary;
+  outline-offset: 2px;
+}
+
+.form-control-sm,
+.form-select.form-control-sm {
+  padding: 0.25rem 0.5rem;
+  font-size: 0.875rem;
+}
+
+.form-control-plaintext {
+  padding: 0;
+  border: 0;
+  background-color: transparent;
+  color: inherit;
+}
+
+.input-group {
+  display: flex;
+  align-items: stretch;
+  width: 100%;
+}
+
+.input-group > .form-control,
+.input-group > .form-select {
+  flex: 1 1 auto;
+}
+
+.input-group-append {
+  display: flex;
+}
+
+.input-group-text {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.375rem 0.75rem;
+  background-color: vars.$light;
+  border: 1px solid vars.$midgray;
+  border-radius: 0;
+  color: vars.$dark;
+  white-space: nowrap;
+}
+
+.input-group-sm .form-control,
+.input-group-sm .form-select,
+.input-group-sm .input-group-text {
+  padding: 0.25rem 0.5rem;
+  font-size: 0.875rem;
+}
+
+.form-group {
+  margin-bottom: 0.75rem;
+}
+
+.form-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.form-check-inline {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin-right: 0.75rem;
+}
+
+.form-text {
+  font-size: 0.875rem;
+  color: vars.$slightdark;
+}
+
+.text-muted {
+  color: vars.$slightdark;
+}
+
+.container {
+  width: 100%;
+  max-width: vars.$mobilethreshold;
+  margin: 0 auto;
+  padding: 0 1rem;
+  box-sizing: border-box;
+}
+
+.card {
+  padding: 1rem;
+  margin-bottom: 0.5rem;
+  background-color: vars.$light;
+  border: 1px solid vars.$midgray;
+}
+
+.card-header {
+  font-weight: bold;
+  margin: -1rem -1rem 0.75rem -1rem;
+  padding: 0.5rem 1rem;
+  background-color: vars.$lightprimary;
+  border-bottom: 1px solid vars.$midgray;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  color: inherit;
+}
+
+.table th,
+.table td {
+  padding: 0.5rem;
+  border-bottom: 1px solid vars.$midgray;
+}
+
+.table-striped tbody tr:nth-child(odd) {
+  background-color: mix(vars.$light, vars.$body, 70);
+}
+
+.table-bordered th,
+.table-bordered td {
+  border: 1px solid vars.$midgray;
+}
+
+.table-sm th,
+.table-sm td {
+  padding: 0.25rem 0.5rem;
+}
+
+.tbl {
+  margin: 0;
+}
+
+.text-center {
+  text-align: center;
+}
+
+.small,
+small {
+  font-size: 0.875rem;
+}
+
+.shadow-sm {
+  box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.2);
+}
+
+.shadow-lg {
+  box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.3);
+}
+
+.d-flex {
+  display: flex;
+}
+
+.flex-column {
+  flex-direction: column;
+}
+
+.justify-content-between {
+  justify-content: space-between;
+}
+
+.justify-content-end {
+  justify-content: flex-end;
+}
+
+.justify-content-center {
+  justify-content: center;
+}
+
+.align-self-center {
+  align-self: center;
+}
+
+.gap-1 {
+  gap: 0.25rem;
+}
+
+.gap-2 {
+  gap: 0.5rem;
+}
+
+.p-0 {
+  padding: 0;
+}
+
+.p-2 {
+  padding: 0.5rem;
+}
+
+.m-0 {
+  margin: 0;
+}
+
+.m-1 {
+  margin: 0.25rem;
+}
+
+.mt-2 {
+  margin-top: 0.5rem;
+}
+
+.mb-2 {
+  margin-bottom: 0.5rem;
+}
+
+.w-100 {
+  width: 100%;
+}
+
+.w-75 {
+  width: 75%;
+}
+
+.w-50 {
+  width: 50%;
+}
+
+.w-25 {
+  width: 25%;
+}
+
+.navbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.navbar-expand-lg .navbar-toggler {
+  @media (min-width: vars.$mobilethreshold) {
+    display: none;
+  }
+
+  @media (max-width: vars.$mobilethreshold) {
+    display: inline-flex;
+  }
+}
+
+.navbar-toggler {
+  border: 1px solid vars.$midgray;
+  padding: 0.25rem 0.5rem;
+  border-radius: 0;
+}
+
+.navbar-toggler-icon {
+  position: relative;
+  display: block;
+  width: 1.5rem;
+  height: 0.125rem;
+  background-color: vars.$dark;
+}
+
+.navbar-toggler-icon::before,
+.navbar-toggler-icon::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  width: 1.5rem;
+  height: 0.125rem;
+  background-color: vars.$dark;
+}
+
+.navbar-toggler-icon::before {
+  top: -0.4rem;
+}
+
+.navbar-toggler-icon::after {
+  top: 0.4rem;
+}
+
+.collapse {
+  display: none;
+}
+
+.collapse.show {
+  display: block;
+}
+*/
