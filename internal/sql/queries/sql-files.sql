@@ -97,6 +97,32 @@ SET miniatures_created=TRUE
 WHERE id = @id
 ;
 
+-- name: GetFilesMissingHash :many
+SELECT *
+FROM file
+WHERE sha256 IS NULL
+;
+
+-- name: SetFileHash :exec
+UPDATE file
+SET sha256 = $2
+WHERE id = $1
+;
+
+-- name: GetImageVariantsMissingHash :many
+SELECT iv.*, f.uuid
+FROM image_variant as iv
+INNER JOIN file AS f
+  ON iv.file_id = f.id
+WHERE iv.sha256 IS NULL
+;
+
+-- name: SetImageVariantHash :exec
+UPDATE image_variant
+SET sha256 = $3
+WHERE file_id = $1 AND variant = $2
+;
+
 -- name: GetFileByID :one
 SELECT *
 FROM file

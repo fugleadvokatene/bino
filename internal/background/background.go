@@ -37,6 +37,7 @@ func StartJobs(
 	go RunJob("Suggest journal URLs", time.Hour, func() (any, error) { return db.SuggestJournalURLs(ctx, systemLanguageID) })
 	go RunJob("Unset old journal-pending status", time.Minute*10, func() (any, error) { return db.UnsetOldPendingStatus(ctx) })
 	go RunJob("Create image variants", time.Minute*10, func() (any, error) { return CreateImageVariants(ctx, db, fileBackend) })
+	go RunJob("Create file hashes", time.Minute*10, func() (any, error) { return CreateImageHashes(ctx, db, fileBackend) })
 	if secConf.AllowUserDefinedHTTPRequests {
 		go RunJob("Store user avatars", time.Hour, func() (any, error) { return db.StoreUserAvatars(ctx, fileBackend) })
 	}

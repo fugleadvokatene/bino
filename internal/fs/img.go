@@ -2,9 +2,11 @@ package fs
 
 import (
 	"context"
+	"crypto/sha256"
 	"errors"
 	"fmt"
 	"image"
+	"io"
 	"log/slog"
 	"math"
 	"os"
@@ -43,20 +45,42 @@ type Miniature struct {
 	Height          int32
 }
 
-func (lfs *LocalFileStorage) CreateMiniatures(ctx context.Context, uuid string, originalFilename string) ([]Miniature, error) {
-	dir, err := os.OpenRoot(lfs.MainDirectory)
+func WithFileDir[T any](ctx context.Context, dirname string, uuid string, f func(context.Context, *os.Root) (T, error)) (T, error) {
+	dir, err := os.OpenRoot(dirname)
 	if err != nil {
-		return nil, fmt.Errorf("opening file directory: %w", err)
+		return *new(T), fmt.Errorf("opening file directory: %w", err)
 	}
 	defer dir.Close()
 
 	subdir, err := dir.OpenRoot(uuid)
 	if err != nil {
-		return nil, fmt.Errorf("no subdirectory named '%s' in main directory: %w", uuid, err)
+		return *new(T), fmt.Errorf("no subdirectory named '%s' in main directory: %w", uuid, err)
 	}
 	defer subdir.Close()
 
-	return CreateMiniatures(ctx, subdir, originalFilename)
+	return f(ctx, subdir)
+}
+
+func (lfs *LocalFileStorage) CreateMiniatures(ctx context.Context, uuid string, originalFilename string) ([]Miniature, error) {
+	return WithFileDir(ctx, lfs.MainDirectory, uuid, func(ctx context.Context, subdir *os.Root) ([]Miniature, error) {
+		return CreateMiniatures(ctx, subdir, originalFilename)
+	})
+}
+
+func (lfs *LocalFileStorage) Sha256(ctx context.Context, uuid string, filename string) ([]byte, error) {
+	return WithFileDir(ctx, lfs.MainDirectory, uuid, func(ctx context.Context, subdir *os.Root) ([]byte, error) {
+		file, err := subdir.Open(filename)
+		if err != nil {
+			return nil, fmt.Errorf("opening file: %w", err)
+		}
+		defer file.Close()
+
+		h := sha256.New()
+		if _, err := io.Copy(h, file); err != nil {
+			return nil, err
+		}
+		return h.Sum(nil), nil
+	})
 }
 
 func CreateMiniatures(

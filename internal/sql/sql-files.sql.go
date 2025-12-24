@@ -194,6 +194,44 @@ func (q *Queries) GetFilesAccessibleByUser(ctx context.Context, arg GetFilesAcce
 	return items, nil
 }
 
+const getFilesMissingHash = `-- name: GetFilesMissingHash :many
+SELECT id, uuid, creator, created, accessibility, filename, mimetype, size, presentation_filename, miniatures_created, sha256
+FROM file
+WHERE sha256 IS NULL
+`
+
+func (q *Queries) GetFilesMissingHash(ctx context.Context) ([]File, error) {
+	rows, err := q.db.Query(ctx, getFilesMissingHash)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []File
+	for rows.Next() {
+		var i File
+		if err := rows.Scan(
+			&i.ID,
+			&i.Uuid,
+			&i.Creator,
+			&i.Created,
+			&i.Accessibility,
+			&i.Filename,
+			&i.Mimetype,
+			&i.Size,
+			&i.PresentationFilename,
+			&i.MiniaturesCreated,
+			&i.Sha256,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getFilesMissingMiniatures = `-- name: GetFilesMissingMiniatures :many
 SELECT f.id, f.uuid, f.creator, f.created, f.accessibility, f.filename, f.mimetype, f.size, f.presentation_filename, f.miniatures_created, f.sha256
 FROM file AS f
@@ -317,6 +355,56 @@ func (q *Queries) GetImageVariantsAccessibleByUser(ctx context.Context, arg GetI
 	return items, nil
 }
 
+const getImageVariantsMissingHash = `-- name: GetImageVariantsMissingHash :many
+SELECT iv.file_id, iv.variant, iv.filename, iv.mimetype, iv.size, iv.width, iv.height, iv.sha256, f.uuid
+FROM image_variant as iv
+INNER JOIN file AS f
+  ON iv.file_id = f.id
+WHERE iv.sha256 IS NULL
+`
+
+type GetImageVariantsMissingHashRow struct {
+	FileID   int32
+	Variant  string
+	Filename string
+	Mimetype string
+	Size     int32
+	Width    int32
+	Height   int32
+	Sha256   []byte
+	Uuid     string
+}
+
+func (q *Queries) GetImageVariantsMissingHash(ctx context.Context) ([]GetImageVariantsMissingHashRow, error) {
+	rows, err := q.db.Query(ctx, getImageVariantsMissingHash)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetImageVariantsMissingHashRow
+	for rows.Next() {
+		var i GetImageVariantsMissingHashRow
+		if err := rows.Scan(
+			&i.FileID,
+			&i.Variant,
+			&i.Filename,
+			&i.Mimetype,
+			&i.Size,
+			&i.Width,
+			&i.Height,
+			&i.Sha256,
+			&i.Uuid,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getVariant = `-- name: GetVariant :one
 SELECT file_id, variant, filename, mimetype, size, width, height, sha256
 FROM image_variant
@@ -428,6 +516,39 @@ where fw.file_id = u.file_id
 
 func (q *Queries) RemoveFalseFileWikiLinks(ctx context.Context) (pgconn.CommandTag, error) {
 	return q.db.Exec(ctx, removeFalseFileWikiLinks)
+}
+
+const setFileHash = `-- name: SetFileHash :exec
+UPDATE file
+SET sha256 = $2
+WHERE id = $1
+`
+
+type SetFileHashParams struct {
+	ID     int32
+	Sha256 []byte
+}
+
+func (q *Queries) SetFileHash(ctx context.Context, arg SetFileHashParams) error {
+	_, err := q.db.Exec(ctx, setFileHash, arg.ID, arg.Sha256)
+	return err
+}
+
+const setImageVariantHash = `-- name: SetImageVariantHash :exec
+UPDATE image_variant
+SET sha256 = $3
+WHERE file_id = $1 AND variant = $2
+`
+
+type SetImageVariantHashParams struct {
+	FileID  int32
+	Variant string
+	Sha256  []byte
+}
+
+func (q *Queries) SetImageVariantHash(ctx context.Context, arg SetImageVariantHashParams) error {
+	_, err := q.db.Exec(ctx, setImageVariantHash, arg.FileID, arg.Variant, arg.Sha256)
+	return err
 }
 
 const setMiniaturesCreated = `-- name: SetMiniaturesCreated :exec
