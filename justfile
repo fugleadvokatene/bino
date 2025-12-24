@@ -10,7 +10,7 @@ enum:
 	go generate ./...
 
 sass:
-	sass frontend/styles.scss cmd/static/gen.css -q
+	sass frontend/styles/styles.scss cmd/static/gen.css -q
 
 frontend:
 	cd frontend && npm run format &&  npm run build

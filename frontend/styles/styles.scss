@@ -16,7 +16,7 @@ $mobilethreshold: 1000px;
 
 $dashboard-home-column: 300px;
 
-@use 'node_modules/bootstrap/scss/bootstrap' with (
+@use '../node_modules/bootstrap/scss/bootstrap' with (
   $enable-shadows: true,
   $enable-rounded: false,
   $primary: $primary,
