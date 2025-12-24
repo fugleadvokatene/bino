@@ -1,0 +1,27 @@
+@use 'vars';
+
+.main {
+  flex: 1;
+}
+
+.center {
+  text-align: center;
+}
+
+body {
+  display: flex;
+  flex-direction: column;
+  background-color: vars.$body;
+  color: vars.$text;
+}
+
+html,
+body {
+  height: 100%;
+  margin: 0;
+}
+
+:root {
+  --bs-body-font-family: 'Roboto', sans-serif;
+  font-optical-sizing: auto;
+}

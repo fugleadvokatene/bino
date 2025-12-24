@@ -1,0 +1,13 @@
+.editable {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+}
+
+.editable::after {
+  content: '✏️';
+  transform: scaleX(-1);
+  margin-left: 0.5em;
+  font-size: 0.75em;
+  opacity: 0.8;
+}

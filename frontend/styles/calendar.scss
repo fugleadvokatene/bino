@@ -1,0 +1,20 @@
+@use 'vars';
+
+#calendar {
+  @media (min-width: vars.$mobilethreshold) {
+    min-width: vars.$mobilethreshold * 0.95;
+  }
+}
+
+.fc-daygrid-dot-event {
+  white-space: initial !important;
+  align-items: start;
+}
+
+.fc-daygrid-event-dot {
+  display: none;
+}
+
+.fc-toolbar-title {
+  text-transform: capitalize;
+}

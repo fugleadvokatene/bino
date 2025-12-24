@@ -1,0 +1,16 @@
+@use 'vars';
+
+.card-gripper {
+  align-self: center;
+  color: vars.$slightdark;
+  // increase hitbox
+  padding: 0.25em;
+
+  @media (max-width: vars.$mobilethreshold) {
+    display: none !important;
+  }
+}
+
+.sortable-fallback {
+  opacity: 0;
+}

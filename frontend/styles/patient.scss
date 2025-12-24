@@ -1,0 +1,16 @@
+@use 'vars';
+
+.patient-page {
+  width: 800px;
+  max-width: 98%;
+}
+
+.patient-species-header {
+  font-weight: normal;
+  margin-right: 1em;
+  color: vars.$dark;
+}
+
+.card-header-patient {
+  background-color: vars.$lightprimary;
+}

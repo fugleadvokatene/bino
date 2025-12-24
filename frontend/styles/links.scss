@@ -1,0 +1,23 @@
+@use 'vars';
+
+// By default links use the accent color and are clickable
+// They show underline on hover.
+a {
+  color: vars.$accent;
+  user-select: default !important;
+  touch-action: default !important;
+  cursor: pointer;
+  text-decoration: none;
+}
+a:hover {
+  text-decoration: underline;
+}
+
+// Links to external sites show a little arrow pointing up and to the right
+// Journal-links are icons with their own behaviour defined in journal-link-icon.scss
+a[href]:not(.journal-link-icon):not(
+    :where([href^='#'], [href^='/']:not([href^='//']))
+  ):after {
+  content: ' '
+    url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAYAAACNMs+9AAAAVklEQVR4Xn3PgQkAMQhDUXfqTu7kTtkpd5RA8AInfArtQ2iRXFWT2QedAfttj2FsPIOE1eCOlEuoWWjgzYaB/IkeGOrxXhqB+uA9Bfcm0lAZuh+YIeAD+cAqSz4kCMUAAAAASUVORK5CYII=);
+}

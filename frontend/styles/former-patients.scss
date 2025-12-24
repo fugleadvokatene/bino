@@ -1,0 +1,13 @@
+.former-patients-search-container {
+  min-width: min(100%, 150px);
+  margin-top: 0 !important;
+  margin-left: 0 !important;
+  margin-bottom: 1rem !important;
+  flex: 1;
+  align-self: flex-start;
+}
+
+.former-patients-container {
+  display: flex;
+  max-width: 96%;
+}

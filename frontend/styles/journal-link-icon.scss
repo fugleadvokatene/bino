@@ -1,0 +1,11 @@
+@use 'vars';
+
+.journal-link-icon {
+  color: vars.$accent;
+  border: 1px solid vars.$accent;
+  border-radius: 25%;
+}
+
+.journal-link-icon:hover {
+  background-color: vars.$lightaccent;
+}

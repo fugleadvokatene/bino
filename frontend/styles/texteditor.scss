@@ -1,0 +1,182 @@
+@use 'vars';
+
+.editor-container {
+  max-width: 800px;
+  width: 99%;
+  color: vars.$dark;
+  border: 1px solid vars.$slightdark;
+  background: vars.$light;
+
+  @media (min-width: vars.$mobilethreshold) {
+    height: calc(100% - 1em);
+  }
+}
+
+.form-switch > input[type='checkbox'] {
+  border-radius: 1em;
+}
+
+.cdx-notifies {
+  color: vars.$dark;
+}
+
+.ce-block__content,
+.ce-toolbar__content {
+  max-width: calc(100% - 100px) !important;
+}
+.cdx-block {
+  max-width: 100% !important;
+}
+.codex-editor__loader {
+  height: 38px !important;
+}
+.codex-editor__redactor {
+  padding-bottom: 38px !important;
+}
+
+.cdx-list {
+  --line-height: 1em !important;
+}
+
+.tc-table {
+  line-height: 1.2em !important;
+}
+
+.tc-table {
+  border-top: 1px solid vars.$slightdark !important;
+  border-left: 1px solid vars.$slightdark !important;
+}
+
+.tc-row {
+  border-bottom: 1px solid vars.$slightdark !important;
+}
+
+.tc-cell {
+  border-right: 1px solid vars.$slightdark !important;
+}
+
+.tc-cell:focus {
+  outline: 2px solid #2680eb;
+  outline-offset: -2px;
+}
+
+.tc-toolbox .tc-popover {
+  top: -2em !important;
+}
+
+.editor-container-outer {
+  display: flex;
+  flex-direction: column;
+  background: #fafafa;
+  overflow: hidden;
+  width: 100%;
+  margin-bottom: 0.5em;
+  height: max-content;
+}
+
+.editor-container-inner {
+  display: flex;
+  flex-direction: column;
+  background: #fafafa;
+  overflow: hidden;
+  width: 100%;
+}
+
+.editor-toolbar {
+  display: flex;
+  align-items: center;
+  padding: 6px 8px;
+  background: #f3f3f3;
+  border-bottom: 1px solid #e2e2e2;
+}
+
+.editor-toolbar-buttons {
+  display: flex;
+  gap: 4px;
+  flex: 1;
+}
+
+.editor-toolbar-buttons button {
+  background: #fff;
+  border: 1px solid #d0d0d0;
+  width: 30px;
+  height: 30px;
+  border-radius: 6px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition:
+    border-color 0.15s,
+    background 0.15s;
+}
+
+.editor-toolbar-buttons button:hover {
+  border-color: #b5b5b5;
+  background: #f5f5f5;
+}
+
+.editor-toolbar-buttons button.active {
+  background: #e4e4e4;
+  border-color: #a3a3a3;
+}
+
+#editor-status {
+  min-width: 18px;
+  text-align: right;
+  font-size: 14px;
+  color: #777;
+  user-select: none;
+}
+
+.editor-status-ellipsis::after {
+  content: '...';
+  animation: ellipsis 1s steps(4, end) infinite;
+}
+
+@keyframes ellipsis {
+  0% {
+    content: '.';
+  }
+  33% {
+    content: '..';
+  }
+  66% {
+    content: '...';
+  }
+  100% {
+    content: '';
+  }
+}
+
+#editorjs {
+  flex: 1;
+  overflow-y: auto;
+  background: #fff;
+  font-size: 16px;
+  line-height: 1.5;
+}
+
+#editorjs p {
+  margin: 0 0 12px 0.5rem;
+}
+
+#editorjs ul,
+#editorjs ol {
+  margin: 0 0 12px 20px;
+  padding: 0;
+  line-height: 1.35;
+}
+
+#editorjs li {
+  margin: 2px 0;
+}
+
+#editorjs li > p {
+  margin: 0;
+  line-height: 1.35;
+}
+
+.tiptap {
+  padding: 1em;
+}

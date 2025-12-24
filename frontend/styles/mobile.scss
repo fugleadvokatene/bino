@@ -1,0 +1,17 @@
+@use 'vars';
+
+.break-on-mobile {
+  display: none;
+  @media (min-width: vars.$mobilethreshold) {
+    display: flex;
+  }
+  @media (max-width: vars.$mobilethreshold) {
+    display: block;
+  }
+}
+
+.hide-on-mobile {
+  @media (max-width: vars.$mobilethreshold) {
+    display: none;
+  }
+}

@@ -1,0 +1,31 @@
+@use 'vars';
+
+.b-card > h1,
+.b-card > h2,
+.b-card > h3,
+.b-card > h4,
+.b-card > h5,
+.b-card > h6 {
+  margin-left: 0;
+}
+
+.b-card {
+  padding: 1em;
+  margin-bottom: 0.5em;
+  background-color: vars.$light;
+}
+
+.b-app {
+  width: 100%;
+}
+
+.b-container {
+  max-width: vars.$mobilethreshold;
+  width: 100%;
+  margin: auto;
+}
+
+.b-new-patient {
+  width: 100%;
+  margin: 1em;
+}

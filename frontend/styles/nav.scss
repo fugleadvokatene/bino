@@ -1,0 +1,84 @@
+@use 'vars';
+
+nav {
+  background-color: vars.$dark;
+  padding: 0.5em !important;
+  margin-bottom: 0.5em;
+  a {
+    color: vars.$text;
+  }
+}
+
+.logged-in-as {
+  margin-right: 1em;
+}
+
+.display-name {
+  font-weight: bold;
+}
+
+.collapsing,
+.navbar-toggler,
+.navbar-collapse {
+  -webkit-transition: none !important;
+  transition: none !important;
+}
+
+.navbar-toggler {
+  background-color: vars.$light;
+}
+
+.navbar-collapse {
+  display: flex;
+  justify-content: right;
+}
+
+.b-navbar-item {
+  text-decoration: none;
+  padding: 0.5em;
+}
+
+.b-navbar-item-text {
+  background-color: mix(vars.$dark, black, 75);
+  border-radius: 0.5em;
+  @media (min-width: vars.$mobilethreshold) {
+    margin-right: 0.5em;
+  }
+  @media (max-width: vars.$mobilethreshold) {
+    margin-top: 0.5em;
+  }
+}
+
+.brand-color {
+  color: vars.$text;
+}
+
+.brand {
+  transition: color 0.5s ease;
+  color: vars.$text;
+  text-decoration: none !important;
+  font-size: x-large;
+  font-weight: 100;
+  font-family: 'Hammersmith One';
+}
+
+.brand-badge {
+  padding: 0.2rem 0.85rem 0 0.7rem;
+}
+#language-select {
+  width: 5em;
+}
+
+.navbar-collapse.show {
+  @media (min-width: vars.$mobilethreshold) {
+    display: flex;
+  }
+  @media (max-width: vars.$mobilethreshold) {
+    display: grid !important;
+  }
+}
+
+.nav-profile-picture {
+  height: 2.5em;
+  border-radius: 50%;
+}

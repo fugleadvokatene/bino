@@ -1,0 +1,40 @@
+@use 'vars';
+
+mark.hl {
+  background: linear-gradient(148deg, #fff59d 0%, #fce168 100%);
+  padding: 0;
+  border-radius: 3px;
+  border: 1px solid vars.$slightdark;
+  box-shadow: 0 0 3px rgba(0, 0, 0, 0.2);
+}
+
+.match-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 2em;
+  padding: 0.2rem !important;
+}
+
+.match-name {
+  align-content: center;
+}
+
+.matches {
+  .fragment {
+    position: relative;
+
+    pre {
+      margin: 0.25rem 0;
+      white-space: pre-wrap;
+      font-family: inherit;
+    }
+  }
+}
+
+.search-advanced-options[data-show='false'] {
+  display: none;
+}
+
+.search-header {
+  color: vars.$dark;
+}

@@ -1,0 +1,27 @@
+@use 'vars';
+
+.mascot-container {
+  min-height: 175px;
+  justify-content: center;
+  display: grid;
+  margin: auto;
+}
+
+.mascot-container[hide-on-mobile] {
+  @media (max-width: vars.$mobilethreshold) {
+    display: none;
+  }
+}
+
+.mascot {
+  height: 150px;
+  border-radius: 50%;
+  align-self: center;
+  border: 5px solid vars.$light;
+}
+
+.mascot-text {
+  color: vars.$slightdark;
+  font-size: 0.6em;
+  margin: auto;
+}

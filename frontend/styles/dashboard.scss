@@ -1,0 +1,201 @@
+@use 'vars';
+
+#filter-none {
+  color: vars.$dark;
+  margin: auto;
+}
+
+.dashboard-filter {
+  background-color: rgb(193.5, 194.25, 203.75);
+  border: 1px solid vars.$slightdark;
+  margin: 0 !important;
+}
+
+.dashboard-search {
+  background-color: rgb(193.5, 194.25, 203.75);
+  border: 2px solid vars.$slightdark;
+}
+
+.active-search {
+  border: 2px solid vars.$warning !important;
+}
+
+.dashboard-home {
+  min-width: min(100%, vars.$dashboard-home-column);
+}
+
+.b-create-patient {
+  width: 100% !important;
+  margin-top: 0.5em !important;
+}
+
+.dashboard-patient-card {
+  padding: 0 !important;
+}
+
+.dashboard-form {
+  min-width: min(100%, 350px);
+  background-color: rgba(25, 135, 24, 0.25);
+  cursor: default;
+  :active {
+    cursor: default !important;
+  }
+  border: 2px solid mix(green, vars.$slightdark, 50);
+  align-self: flex-start;
+  margin-top: 0 !important;
+  margin-left: 0 !important;
+  margin-right: 1rem !important;
+}
+
+.dashboard-left-sidebar {
+  min-width: min(100%, 350px);
+  margin-top: 0 !important;
+  margin-left: 0 !important;
+  flex: 1;
+  align-self: flex-start;
+  display: flex;
+  flex-direction: column;
+  flex-grow: initial;
+  @media (min-width: vars.$mobilethreshold) {
+    height: 100%;
+    margin-bottom: 1rem !important;
+    margin-right: 0.5em !important;
+  }
+}
+
+.drop-target {
+  background-color: rgba(59, 130, 246, 0.1);
+  box-shadow: inset 0 0 10px rgba(59, 130, 246, 0.5);
+}
+
+.card-header {
+  background-color: vars.$midgray;
+  color: vars.$light;
+  padding: 0.38rem;
+  color: black;
+  font-weight: bold;
+}
+
+.dashboard-patient-list {
+  height: 100%;
+}
+
+.dashboard-home {
+  background-color: vars.$light;
+
+  @media (min-width: vars.$mobilethreshold) {
+    margin-right: 0.5rem;
+    margin-bottom: 0;
+  }
+  @media (max-width: vars.$mobilethreshold) {
+    margin-right: 0;
+    margin-bottom: 0.5rem;
+  }
+}
+
+.dashboard-home:last-of-type {
+  margin-right: 0 !important;
+  @media (max-width: vars.$mobilethreshold) {
+    margin-bottom: 0 !important;
+  }
+}
+
+.dashboard-indicator {
+  min-width: 5px;
+  position: sticky;
+  top: 0;
+  margin-bottom: 1rem;
+
+  @media (max-width: vars.$mobilethreshold) {
+    display: none !important;
+  }
+}
+
+#dashboard-indicator-left {
+  background: linear-gradient(270deg, vars.$slightdark, transparent);
+  left: 0;
+}
+
+#dashboard-indicator-right {
+  background: linear-gradient(90deg, vars.$slightdark, transparent);
+  right: 0;
+}
+
+.home-note {
+  margin: 0rem;
+  margin-bottom: 0.5rem;
+}
+
+.home-note:last-of-type {
+  margin-bottom: 0;
+}
+
+.b-container.dashboard-container {
+  cursor: grab;
+  :active {
+    cursor: grabbing;
+  }
+  @media (min-width: vars.$mobilethreshold) {
+    display: flex;
+  }
+  @media (max-width: vars.$mobilethreshold) {
+    display: block;
+  }
+  max-width: 96%;
+}
+.dashboard {
+  min-width: min(100%, vars.$dashboard-home-column * 2);
+  @media (min-width: vars.$mobilethreshold) {
+    display: flex;
+    user-select: none;
+    touch-action: none;
+    cursor: grab;
+    :active {
+      cursor: grabbing;
+    }
+    overflow: hidden;
+    margin-bottom: 1rem;
+  }
+  @media (max-width: vars.$mobilethreshold) {
+    display: block;
+  }
+  border: 2px solid vars.$slightdark;
+}
+
+.dashboard.dashboard-other {
+  @media (min-width: vars.$mobilethreshold) {
+    cursor: grab;
+    :active {
+      cursor: grabbing;
+    }
+    overflow-x: scroll;
+  }
+}
+
+.dashboard.dashboard-self {
+  min-width: min(100%, vars.$dashboard-home-column);
+  @media (min-width: vars.$mobilethreshold) {
+    margin-right: 0.2em;
+  }
+  @media (max-width: vars.$mobilethreshold) {
+    margin-bottom: 0.5em;
+  }
+}
+
+.dashboard-head-profile {
+  height: 1.5em;
+  width: 1.5em;
+  background: vars.$accent;
+  color: vars.$light;
+  margin-left: 0.25em;
+  border-radius: 50%;
+  display: inline-flex;
+  justify-content: center;
+  align-content: center;
+}
+
+.dashboard-patient-card {
+  user-select: default !important;
+  touch-action: default !important;
+  cursor: pointer;
+}

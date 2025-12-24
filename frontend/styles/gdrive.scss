@@ -1,0 +1,9 @@
+@use 'vars';
+
+#reload-google-folders {
+  margin: 0 auto 1rem;
+}
+
+.gdrive-doc-select[selected] {
+  background-color: vars.$lightaccent;
+}

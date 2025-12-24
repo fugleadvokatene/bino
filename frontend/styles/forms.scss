@@ -1,0 +1,35 @@
+@use 'vars';
+
+.short-label {
+  width: 5em;
+}
+
+input[data-field='latin'] {
+  font-style: italic;
+}
+
+.form-inline {
+  text-align: right;
+  margin-top: 1em;
+  margin-bottom: 0.5em;
+}
+
+label {
+  user-select: none;
+}
+
+.checkbox {
+  padding: 0.1rem 0.5rem;
+  border: 0.2rem solid vars.$accent;
+  background-color: mix(vars.$accent, vars.$midgray, 75);
+  margin: 0.5rem;
+  color: black;
+}
+
+.checkbox:hover {
+  background-color: vars.$accent;
+}
+
+.checkbox[data-hidden='true'] {
+  display: none;
+}

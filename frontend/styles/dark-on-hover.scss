@@ -1,0 +1,5 @@
+@use 'vars';
+
+.dark-on-hover:hover {
+  filter: brightness(0.8);
+}
