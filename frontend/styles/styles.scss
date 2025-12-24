@@ -1,11 +1,6 @@
 @use 'vars';
 
-@use '../node_modules/bootstrap/scss/bootstrap' with (
-  $enable-shadows: true,
-  $enable-rounded: false,
-  $primary: vars.$primary,
-  $warning: vars.$warning
-);
+@use 'nobootstrap';
 
 @use 'b-card';
 @use 'calendar';

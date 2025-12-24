@@ -4,7 +4,7 @@ var calendar = new FullCalendar.Calendar(calendarEl, {
     initialView: calendarEl.dataset["initialview"],
     initialDate: calendarEl.dataset["initialdate"],
     locale: 'nb',
-    themeSystem: 'bootstrap5',
+    themeSystem: 'standard',
     headerToolbar: {
         start: 'title',
         center: 'dayGridMonth dayGridWeek listDay',
