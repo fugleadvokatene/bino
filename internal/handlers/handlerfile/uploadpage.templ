@@ -5,6 +5,7 @@ import (
 	"github.com/fugleadvokatene/bino/internal/model"
 	"github.com/fugleadvokatene/bino/internal/request"
 	"github.com/fugleadvokatene/bino/internal/templbase"
+	"encoding/hex"
 )
 
 templ FileUploadPage(data *request.CommonData, files []model.File) {
@@ -84,7 +85,7 @@ templ FileViewComponent(data *request.CommonData, file *model.File) {
                     }
                     for _, iv := range file.ImageVariants {
                         @Trivia() {
-                            <a href={iv.URL(file.PresentationFilename)}>{iv.VariantID}</a>: {iv.FileSizeText()} ({iv.Width} × {iv.Height})
+                            <a href={iv.URL(file.PresentationFilename)}>{iv.VariantID}</a>: {iv.FileSizeText()}, {iv.Width} × {iv.Height}, hash: {shortDigest(iv.SHA256)}
                         }
                     }
                 </div>
@@ -117,4 +118,14 @@ templ FileViewComponent(data *request.CommonData, file *model.File) {
             }
         </div>
     </div>
+}
+
+func shortDigest(hash []byte) string {
+    if hash == nil || len(hash) == 0 {
+        return "not set"
+    }
+    if len(hash) < 4 {
+        return hex.EncodeToString(hash)
+    }
+    return hex.EncodeToString(hash[:4]) + "..."
 }

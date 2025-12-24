@@ -275,6 +275,7 @@ func (in *File) ToModel() model.File {
 		PresentationFilename: in.PresentationFilename,
 		MIMEType:             in.Mimetype,
 		Size:                 in.Size,
+		SHA256:               in.Sha256,
 	}
 }
 
@@ -348,7 +349,7 @@ func (in *GetFilePatientAssociationsAccessibleByUserRow) ToModel() model.FilePat
 	}
 }
 
-// --- File variant
+// --- Image variant
 
 func (in *ImageVariant) ToModel() model.ImageVariant {
 	return model.ImageVariant{
@@ -357,6 +358,7 @@ func (in *ImageVariant) ToModel() model.ImageVariant {
 		Filename:  in.Filename,
 		Mimetype:  in.Mimetype,
 		Size:      in.Size,
+		SHA256:    in.Sha256,
 		Width:     in.Width,
 		Height:    in.Height,
 	}

@@ -27,6 +27,7 @@ type File struct {
 	PresentationFilename string
 	MIMEType             string
 	Size                 int64
+	SHA256               []byte
 	WikiAssociations     []FileWikiAssociation
 	PatientAssociations  []FilePatientAssociation
 	ImageVariants        []ImageVariant

@@ -1,6 +1,7 @@
 package handlerfile
 
 import (
+	"github.com/fugleadvokatene/bino/internal/background"
 	"github.com/fugleadvokatene/bino/internal/db"
 	"github.com/fugleadvokatene/bino/internal/fs"
 	"github.com/fugleadvokatene/bino/internal/model"
@@ -10,6 +11,7 @@ import (
 func Routes(
 	db *db.Database,
 	fileBackend *fs.LocalFileStorage,
+	jobs *background.Jobs,
 ) []route.Route {
 	readHandler := &Read{DB: db, FileBackend: fileBackend}
 	return []route.Route{
@@ -41,7 +43,7 @@ func Routes(
 		},
 		{
 			Path:    "POST /file/submit",
-			Handler: &filepondSubmit{DB: db, FileBackend: fileBackend},
+			Handler: &filepondSubmit{DB: db, FileBackend: fileBackend, Jobs: jobs},
 			Cap:     model.CapUploadFile,
 		},
 		{

@@ -12,6 +12,7 @@ type ImageVariant struct {
 	Filename  string
 	Mimetype  string
 	Size      int32
+	SHA256    []byte
 	Width     int32
 	Height    int32
 }

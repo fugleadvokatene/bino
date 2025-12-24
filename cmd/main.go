@@ -113,7 +113,7 @@ func realMain() error {
 	broker := sse.NewBroker(ctx)
 
 	// Start all background jobs
-	background.StartJobs(ctx, db, fileBackend, config.SystemLanguage, &config.Security)
+	jobs := background.StartJobs(ctx, db, fileBackend, config.SystemLanguage, &config.Security)
 
 	// Set up authentication
 	authenticator, err := auth.New(ctx, config.Auth, db)
@@ -142,7 +142,7 @@ func realMain() error {
 		handlerdebug.Routes(),
 		handlerevent.Routes(db),
 		handlerfeatureflag.Routes(db),
-		handlerfile.Routes(db, fileBackend),
+		handlerfile.Routes(db, fileBackend, &jobs),
 		handlerformerpatients.Routes(db),
 		handlergdriveadmin.Routes(db, gdriveWorker),
 		handlerhome.Routes(db),

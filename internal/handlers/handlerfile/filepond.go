@@ -10,6 +10,7 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/fugleadvokatene/bino/internal/background"
 	"github.com/fugleadvokatene/bino/internal/db"
 	"github.com/fugleadvokatene/bino/internal/fs"
 	"github.com/fugleadvokatene/bino/internal/model"
@@ -21,6 +22,7 @@ import (
 type filepondSubmit struct {
 	DB          *db.Database
 	FileBackend *fs.LocalFileStorage
+	Jobs        *background.Jobs
 }
 
 func (h *filepondSubmit) ServeHTTP(w http.ResponseWriter, r *http.Request) {
@@ -44,7 +46,13 @@ func (h *filepondSubmit) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if err := h.DB.Transaction(ctx, func(ctx context.Context, db *db.Database) error {
 		errs := []error{}
 		for uuid, fileInfo := range result.Commited {
-			_, err := h.DB.Q.PublishFile(ctx, sql.PublishFileParams{
+			hash, err := h.FileBackend.Sha256(ctx, uuid, fileInfo.FileName)
+			if err != nil {
+				errs = append(errs, fmt.Errorf("hashing %s: %w", uuid, err))
+				data.Error(data.Language.GenericFailed, err)
+				continue
+			}
+			if _, err := h.DB.Q.PublishFile(ctx, sql.PublishFileParams{
 				Uuid:          uuid,
 				Creator:       data.User.AppuserID,
 				Created:       pgtype.Timestamptz{Time: time.Now(), Valid: true},
@@ -52,8 +60,8 @@ func (h *filepondSubmit) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 				Filename:      fileInfo.FileName,
 				Mimetype:      fileInfo.MIMEType,
 				Size:          fileInfo.Size,
-			})
-			if err != nil {
+				Sha256:        hash,
+			}); err != nil {
 				errs = append(errs, fmt.Errorf("committing %s: %w", uuid, err))
 				data.Error(data.Language.GenericFailed, err)
 			}
@@ -64,6 +72,9 @@ func (h *filepondSubmit) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		request.Redirect(w, r, "/file")
 		return
 	}
+
+	// Wake up the job that generates miniatures
+	h.Jobs.ImageHint.Send()
 
 	request.Redirect(w, r, "/file")
 }
