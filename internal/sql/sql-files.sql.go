@@ -37,7 +37,7 @@ func (q *Queries) GetAllFileWikiAssociations(ctx context.Context) ([]FileWiki, e
 }
 
 const getFileByID = `-- name: GetFileByID :one
-SELECT id, uuid, creator, created, accessibility, filename, mimetype, size, presentation_filename, miniatures_created
+SELECT id, uuid, creator, created, accessibility, filename, mimetype, size, presentation_filename, miniatures_created, sha256
 FROM file
 WHERE id = $1
 `
@@ -56,6 +56,7 @@ func (q *Queries) GetFileByID(ctx context.Context, id int32) (File, error) {
 		&i.Size,
 		&i.PresentationFilename,
 		&i.MiniaturesCreated,
+		&i.Sha256,
 	)
 	return i, err
 }
@@ -149,7 +150,7 @@ func (q *Queries) GetFileWikiAssociationsAccessibleByUser(ctx context.Context, a
 }
 
 const getFilesAccessibleByUser = `-- name: GetFilesAccessibleByUser :many
-SELECT id, uuid, creator, created, accessibility, filename, mimetype, size, presentation_filename, miniatures_created
+SELECT id, uuid, creator, created, accessibility, filename, mimetype, size, presentation_filename, miniatures_created, sha256
 FROM file
 WHERE
       creator = $1
@@ -181,6 +182,7 @@ func (q *Queries) GetFilesAccessibleByUser(ctx context.Context, arg GetFilesAcce
 			&i.Size,
 			&i.PresentationFilename,
 			&i.MiniaturesCreated,
+			&i.Sha256,
 		); err != nil {
 			return nil, err
 		}
@@ -193,7 +195,7 @@ func (q *Queries) GetFilesAccessibleByUser(ctx context.Context, arg GetFilesAcce
 }
 
 const getFilesMissingMiniatures = `-- name: GetFilesMissingMiniatures :many
-SELECT f.id, f.uuid, f.creator, f.created, f.accessibility, f.filename, f.mimetype, f.size, f.presentation_filename, f.miniatures_created
+SELECT f.id, f.uuid, f.creator, f.created, f.accessibility, f.filename, f.mimetype, f.size, f.presentation_filename, f.miniatures_created, f.sha256
 FROM file AS f
 WHERE NOT f.miniatures_created
 `
@@ -218,6 +220,7 @@ func (q *Queries) GetFilesMissingMiniatures(ctx context.Context) ([]File, error)
 			&i.Size,
 			&i.PresentationFilename,
 			&i.MiniaturesCreated,
+			&i.Sha256,
 		); err != nil {
 			return nil, err
 		}
@@ -230,7 +233,7 @@ func (q *Queries) GetFilesMissingMiniatures(ctx context.Context) ([]File, error)
 }
 
 const getFilesMissingOriginalVariant = `-- name: GetFilesMissingOriginalVariant :many
-SELECT f.id, f.uuid, f.creator, f.created, f.accessibility, f.filename, f.mimetype, f.size, f.presentation_filename, f.miniatures_created
+SELECT f.id, f.uuid, f.creator, f.created, f.accessibility, f.filename, f.mimetype, f.size, f.presentation_filename, f.miniatures_created, f.sha256
 FROM file AS f
 LEFT JOIN image_variant AS iv
   ON f.id = iv.file_id
@@ -257,6 +260,7 @@ func (q *Queries) GetFilesMissingOriginalVariant(ctx context.Context) ([]File, e
 			&i.Size,
 			&i.PresentationFilename,
 			&i.MiniaturesCreated,
+			&i.Sha256,
 		); err != nil {
 			return nil, err
 		}
@@ -269,7 +273,7 @@ func (q *Queries) GetFilesMissingOriginalVariant(ctx context.Context) ([]File, e
 }
 
 const getImageVariantsAccessibleByUser = `-- name: GetImageVariantsAccessibleByUser :many
-SELECT iv.file_id, iv.variant, iv.filename, iv.mimetype, iv.size, iv.width, iv.height
+SELECT iv.file_id, iv.variant, iv.filename, iv.mimetype, iv.size, iv.width, iv.height, iv.sha256
 FROM file
 INNER JOIN image_variant AS iv
   ON file.id = iv.file_id
@@ -301,6 +305,7 @@ func (q *Queries) GetImageVariantsAccessibleByUser(ctx context.Context, arg GetI
 			&i.Size,
 			&i.Width,
 			&i.Height,
+			&i.Sha256,
 		); err != nil {
 			return nil, err
 		}
@@ -313,7 +318,7 @@ func (q *Queries) GetImageVariantsAccessibleByUser(ctx context.Context, arg GetI
 }
 
 const getVariant = `-- name: GetVariant :one
-SELECT file_id, variant, filename, mimetype, size, width, height
+SELECT file_id, variant, filename, mimetype, size, width, height, sha256
 FROM image_variant
 WHERE file_id=$1 AND variant=$2
 `
@@ -334,6 +339,7 @@ func (q *Queries) GetVariant(ctx context.Context, arg GetVariantParams) (ImageVa
 		&i.Size,
 		&i.Width,
 		&i.Height,
+		&i.Sha256,
 	)
 	return i, err
 }

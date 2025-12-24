@@ -43,6 +43,7 @@ type File struct {
 	Size                 int64
 	PresentationFilename string
 	MiniaturesCreated    bool
+	Sha256               []byte
 }
 
 type FilePatient struct {
@@ -91,6 +92,7 @@ type ImageVariant struct {
 	Size     int32
 	Width    int32
 	Height   int32
+	Sha256   []byte
 }
 
 type Invitation struct {
