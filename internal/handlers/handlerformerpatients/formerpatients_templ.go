@@ -239,9 +239,9 @@ func FormerPatientsPage(data *request.CommonData, patients []model.Patient) temp
 					return templ_7745c5c3_Err
 				}
 				var templ_7745c5c3_Var16 string
-				templ_7745c5c3_Var16, templ_7745c5c3_Err = templ.JoinStringErrs(p.Species)
+				templ_7745c5c3_Var16, templ_7745c5c3_Err = templ.JoinStringErrs(p.Species.Name)
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handlers/handlerformerpatients/formerpatients.templ`, Line: 40, Col: 65}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handlers/handlerformerpatients/formerpatients.templ`, Line: 40, Col: 70}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var16))
 				if templ_7745c5c3_Err != nil {

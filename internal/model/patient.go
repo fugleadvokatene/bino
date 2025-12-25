@@ -13,7 +13,7 @@ type Patient struct {
 	ID                    int32
 	Status                int32
 	Name                  string
-	Species               string
+	Species               Species
 	JournalURL            string
 	TimeCheckin           time.Time
 	TimeCheckout          time.Time

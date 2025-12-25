@@ -151,6 +151,12 @@ SET name = $2
 WHERE id = $1
 ;
 
+-- name: SetPatientSpecies :exec
+UPDATE patient
+SET species_id = $2
+WHERE id = $1
+;
+
 -- name: SetPatientJournal :execresult
 UPDATE patient
 SET journal_url=$2, journal_pending=FALSE

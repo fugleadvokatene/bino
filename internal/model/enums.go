@@ -72,6 +72,7 @@ type Cap int32
 //	JournalCreated                 = 14,
 //	JournalAttached                = 15,
 //	JournalDetached                = 16,
+//	SpeciesChanged 				   = 17,
 //
 // )
 type EventID int32

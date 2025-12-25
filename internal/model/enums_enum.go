@@ -346,11 +346,13 @@ const (
 	EventIDJournalAttached EventID = 15
 	// EventIDJournalDetached is a EventID of type JournalDetached.
 	EventIDJournalDetached EventID = 16
+	// EventIDSpeciesChanged is a EventID of type SpeciesChanged.
+	EventIDSpeciesChanged EventID = 17
 )
 
 var ErrInvalidEventID = errors.New("not a valid EventID")
 
-const _EventIDName = "UnknownRegisteredAdoptedReleasedTransferredToOtherHomeTransferredOutsideOrganizationDiedEuthanizedStatusChangedDeletedNameChangedJournalCreatedJournalAttachedJournalDetached"
+const _EventIDName = "UnknownRegisteredAdoptedReleasedTransferredToOtherHomeTransferredOutsideOrganizationDiedEuthanizedStatusChangedDeletedNameChangedJournalCreatedJournalAttachedJournalDetachedSpeciesChanged"
 
 // EventIDValues returns a list of the values for EventID
 func EventIDValues() []EventID {
@@ -369,6 +371,7 @@ func EventIDValues() []EventID {
 		EventIDJournalCreated,
 		EventIDJournalAttached,
 		EventIDJournalDetached,
+		EventIDSpeciesChanged,
 	}
 }
 
@@ -387,6 +390,7 @@ var _EventIDMap = map[EventID]string{
 	EventIDJournalCreated:                 _EventIDName[129:143],
 	EventIDJournalAttached:                _EventIDName[143:158],
 	EventIDJournalDetached:                _EventIDName[158:173],
+	EventIDSpeciesChanged:                 _EventIDName[173:187],
 }
 
 // String implements the Stringer interface.
@@ -419,6 +423,7 @@ var _EventIDValue = map[string]EventID{
 	_EventIDName[129:143]: EventIDJournalCreated,
 	_EventIDName[143:158]: EventIDJournalAttached,
 	_EventIDName[158:173]: EventIDJournalDetached,
+	_EventIDName[173:187]: EventIDSpeciesChanged,
 }
 
 // ParseEventID attempts to convert a string to a EventID.

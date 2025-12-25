@@ -37,7 +37,7 @@ templ FormerPatientsPage(data *request.CommonData, patients []model.Patient) {
                     for _, p := range patients {
                         <tr class="filter-box">
                             <td><a href={templ.URL(p.URL())} class="filter-content">{p.Name}</a></td>
-                            <td class="filter-content">{p.Species}</td>
+                            <td class="filter-content">{p.Species.Name}</td>
                             <td class="filter-content">
                                 {data.Language.Status[model.Status(p.Status)]}
                                 if model.Status(p.Status) == model.StatusDeleted {

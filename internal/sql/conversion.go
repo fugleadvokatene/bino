@@ -24,10 +24,13 @@ func (h Home) ToModel() model.Home {
 
 func (in GetCurrentPatientsForHomeRow) ToModel() model.Patient {
 	return model.Patient{
-		ID:                    in.ID,
-		Status:                in.Status,
-		Name:                  in.Name,
-		Species:               in.SpeciesName,
+		ID:     in.ID,
+		Status: in.Status,
+		Name:   in.Name,
+		Species: model.Species{
+			ID:   in.SpeciesID,
+			Name: in.SpeciesName,
+		},
 		TimeCheckin:           in.TimeCheckin.Time,
 		TimeCheckout:          in.TimeCheckout.Time,
 		SuggestedJournalURL:   in.SuggestedJournalUrl.String,
@@ -40,10 +43,12 @@ func (in GetCurrentPatientsForHomeRow) ToModel() model.Patient {
 
 func (in GetFormerPatientsRow) ToModel() model.Patient {
 	return model.Patient{
-		ID:                    in.ID,
-		Status:                in.Status,
-		Name:                  in.Name,
-		Species:               in.Species,
+		ID:     in.ID,
+		Status: in.Status,
+		Name:   in.Name,
+		Species: model.Species{
+			Name: in.Species,
+		},
 		TimeCheckin:           in.TimeCheckin.Time,
 		TimeCheckout:          in.TimeCheckout.Time,
 		SuggestedJournalURL:   in.SuggestedJournalUrl.String,
@@ -56,10 +61,13 @@ func (in GetFormerPatientsRow) ToModel() model.Patient {
 
 func (in GetPatientWithSpeciesRow) ToModel() model.Patient {
 	return model.Patient{
-		ID:                    in.ID,
-		Status:                in.Status,
-		Name:                  in.Name,
-		Species:               in.SpeciesName,
+		ID:     in.ID,
+		Status: in.Status,
+		Name:   in.Name,
+		Species: model.Species{
+			ID:   in.SpeciesID,
+			Name: in.SpeciesName,
+		},
 		JournalURL:            in.JournalUrl.String,
 		TimeCheckin:           in.TimeCheckin.Time,
 		TimeCheckout:          in.TimeCheckout.Time,
@@ -73,8 +81,10 @@ func (in GetPatientWithSpeciesRow) ToModel() model.Patient {
 
 func (in GetActivePatientsRow) ToModel() model.Patient {
 	return model.Patient{
-		ID:                    in.ID,
-		Species:               in.Species,
+		ID: in.ID,
+		Species: model.Species{
+			Name: in.Species,
+		},
 		Name:                  in.Name,
 		Status:                in.Status,
 		JournalURL:            in.JournalUrl.String,

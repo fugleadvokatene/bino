@@ -10,7 +10,12 @@ import (
 	"github.com/fugleadvokatene/bino/internal/handlers/handlerevent"
 )
 
-templ PatientPage(ctx context.Context, data *request.CommonData, page model.PatientPage) {
+templ PatientPage(
+    ctx context.Context,
+    data *request.CommonData,
+    page model.PatientPage,
+    speciesList []templbase.Option,
+) {
 	@templbase.Layout(data, "patient-page") {
         <h1 class="editable" data-action={page.Patient.URLSuffix("set-name")}>{page.Patient.Name}</h1>
         @templbase.Card() {
@@ -27,7 +32,14 @@ templ PatientPage(ctx context.Context, data *request.CommonData, page model.Pati
                 </tr>
                 <tr>
                     <th>{data.Language.GenericSpecies}</th>
-                    <td>{page.Patient.Species}</td>
+                    <td>
+                        <span
+                            class="editable editable-select"
+                            data-action={page.Patient.URLSuffix("set-species")}
+                            data-options={templ.JSONString(speciesList)}
+                            data-selected={page.Patient.Species.ID}
+                        >{page.Patient.Species.Name}</span>
+                    </td>
                 </tr>
                 if page.Home != nil {
                     <tr>
@@ -57,7 +69,6 @@ templ PatientPage(ctx context.Context, data *request.CommonData, page model.Pati
             <h2>Historikk</h2>
             @handlerevent.EventList(data, page.Events, false)
         }
-        @templbase.JSModule(data, "editable")
     }
 }
 
@@ -191,7 +202,7 @@ templ PatientCard(data *request.CommonData, homes []model.Home, home *model.Home
                     // Must be on one line to avoid whitespace issue...
                     <a href={templ.URL(patient.JournalURL)} data-patient-id={patient.ID} class="journal-link-icon"><i data-patient-id={patient.ID} class={"link-icon-exists fa-brands fa-google-drive", templbase.ClassIf(patient.JournalURL == "" || patient.JournalPending, "d-none")}></i><i data-patient-id={patient.ID} class={"link-icon-pending fa-solid fa-spinner spin-8", templbase.ClassIf(patient.JournalURL != "" || !patient.JournalPending, "d-none")}></i></a>
                 }
-                <span class="patient-species-header filter-content">{patient.Species}</span>    
+                <span class="patient-species-header filter-content">{patient.Species.Name}</span>    
                 <button
                     class="expander btn btn-sm btn-outline-success must-be-clickable"
                     data-target={patient.CollapseID("#")}

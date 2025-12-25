@@ -598,6 +598,22 @@ func (q *Queries) SetPatientName(ctx context.Context, arg SetPatientNameParams) 
 	return err
 }
 
+const setPatientSpecies = `-- name: SetPatientSpecies :exec
+UPDATE patient
+SET species_id = $2
+WHERE id = $1
+`
+
+type SetPatientSpeciesParams struct {
+	ID        int32
+	SpeciesID int32
+}
+
+func (q *Queries) SetPatientSpecies(ctx context.Context, arg SetPatientSpeciesParams) error {
+	_, err := q.db.Exec(ctx, setPatientSpecies, arg.ID, arg.SpeciesID)
+	return err
+}
+
 const setPatientStatus = `-- name: SetPatientStatus :exec
 UPDATE patient
 SET status = $2

@@ -1,6 +1,7 @@
 package handlerpatient
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/fugleadvokatene/bino/internal/db"
@@ -9,6 +10,7 @@ import (
 	"github.com/fugleadvokatene/bino/internal/model"
 	"github.com/fugleadvokatene/bino/internal/request"
 	"github.com/fugleadvokatene/bino/internal/sql"
+	"github.com/fugleadvokatene/bino/internal/templbase"
 )
 
 type page struct {
@@ -33,6 +35,17 @@ func (h *page) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		handlererror.Error(w, r, err)
 		return
 	}
+
+	preferred, nonPreferred, err := h.DB.GetSpeciesForUser(ctx, commonData.User.AppuserID, commonData.Language.ID)
+	speciesList := generic.SliceToSlice(
+		append(preferred, nonPreferred...),
+		func(in model.Species) templbase.Option {
+			return templbase.Option{
+				Value: fmt.Sprintf("%d", in.ID),
+				Label: in.Name,
+			}
+		},
+	)
 
 	commonData.Subtitle = patientData.Name
 
@@ -95,5 +108,5 @@ func (h *page) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			return home.ToModel()
 		}),
 		Events: events,
-	}).Render(ctx, w)
+	}, speciesList).Render(ctx, w)
 }

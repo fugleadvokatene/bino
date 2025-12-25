@@ -2,6 +2,48 @@ import { QuerySelector } from './common'
 
 const originals = new WeakMap<HTMLFormElement, HTMLElement>()
 
+type EditableFactory = (
+  el: HTMLElement
+) => HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+
+const factories: Record<string, EditableFactory> = {
+  'editable-lg': (el) => {
+    const t = document.createElement('textarea')
+    t.rows = 5
+    t.value = el.textContent?.trim() ?? ''
+    return t
+  },
+  'editable-select': (el) => {
+    const s = document.createElement('select')
+    const options = JSON.parse(el.dataset.options)
+    const selected = el.dataset.selected
+    for (const { Value: value, Label: label } of options) {
+      const opt = document.createElement('option')
+      opt.label = label
+      opt.value = value
+      s.appendChild(opt)
+    }
+    s.value = selected
+    return s
+  },
+  'editable-input': (el) => {
+    const i = document.createElement('input')
+    i.type = 'text'
+    i.classList.add('w-75')
+    i.value = el.textContent?.trim() ?? ''
+    return i
+  }
+}
+
+function createEditable(el: HTMLElement) {
+  for (const cls in factories) {
+    if (el.classList.contains(cls)) {
+      return factories[cls](el)
+    }
+  }
+  return factories['editable-input'](el)
+}
+
 document.addEventListener('click', (e) => {
   const target = e.target instanceof Element ? e.target : null
   const el = target?.closest<HTMLElement>('.editable')
@@ -11,12 +53,8 @@ document.addEventListener('click', (e) => {
   const action = el.dataset.action
   if (!action) return
 
-  const input: HTMLInputElement | HTMLTextAreaElement = document.createElement(
-    large ? 'textarea' : 'input'
-  )
-
+  const input = createEditable(el)
   input.name = 'value'
-  input.value = el.textContent?.trim() ?? ''
   input.classList.add('form-control')
   input.style.fontSize = getComputedStyle(el).fontSize
   input.spellcheck = false
@@ -24,14 +62,7 @@ document.addEventListener('click', (e) => {
   input.autocorrect = false
   input.autocapitalize = 'off'
 
-  if (input instanceof HTMLTextAreaElement) {
-    input.rows = 5
-  } else {
-    input.type = 'text'
-    input.classList.add('w-75')
-  }
-
-  const csrf: HTMLInputElement = document.createElement('input')
+  const csrf = document.createElement('input')
   csrf.name = 'csrf'
   csrf.value = document.body.dataset['csrf']
   csrf.type = 'hidden'

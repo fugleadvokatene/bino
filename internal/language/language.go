@@ -590,6 +590,7 @@ var NO = &Language{
 		model.EventIDJournalCreated:                 "Opprettet journal i Google Drive",
 		model.EventIDJournalAttached:                "Koblet til journal i Google Drive",
 		model.EventIDJournalDetached:                "Koblet fra journal i Google Drive",
+		model.EventIDSpeciesChanged:                 "Endret art",
 	},
 
 	MatchType: map[model.MatchType]string{
@@ -897,6 +898,7 @@ var EN = &Language{
 		model.EventIDJournalCreated:                 "Created journal",
 		model.EventIDJournalAttached:                "Linked journal",
 		model.EventIDJournalDetached:                "Unlinked journal",
+		model.EventIDSpeciesChanged:                 "Changed species",
 	},
 
 	MatchType: map[model.MatchType]string{

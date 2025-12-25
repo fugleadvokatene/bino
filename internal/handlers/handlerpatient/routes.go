@@ -40,6 +40,11 @@ func Routes(
 			Cap:     model.CapManageOwnPatients,
 		},
 		{
+			Path:    "POST /patient/{patient}/set-species",
+			Handler: &setSpecies{DB: db},
+			Cap:     model.CapManageOwnPatients,
+		},
+		{
 			Path:    "POST /patient/{patient}/create-journal",
 			Handler: &createJournal{DB: db, GDriveWorker: gdriveWorker, Config: config},
 			Cap:     model.CapCreatePatientJournal,
