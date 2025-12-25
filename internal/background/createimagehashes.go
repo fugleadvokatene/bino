@@ -22,7 +22,7 @@ func CreateImageHashes(
 
 	nHashed := int64(0)
 	for _, file := range filesMissingHash {
-		hash, err := fileBackend.Sha256(ctx, file.Uuid, file.Filename)
+		hash, err := fileBackend.Sha256(ctx, fileBackend.MainDirectory, file.Uuid, file.Filename)
 		if err != nil {
 			slog.ErrorContext(ctx, "Failed to create sha256 hash", "id", file.ID, "uuid", file.Uuid, "err", err)
 			continue
@@ -39,7 +39,7 @@ func CreateImageHashes(
 		return nHashed, fmt.Errorf("getting image variants missing hash: %w", err)
 	}
 	for _, iv := range imageVariantsMissingHash {
-		hash, err := fileBackend.Sha256(ctx, iv.Uuid, iv.Filename)
+		hash, err := fileBackend.Sha256(ctx, fileBackend.MainDirectory, iv.Uuid, iv.Filename)
 		if err != nil {
 			slog.ErrorContext(ctx, "Failed to create sha256 hash", "id", iv.FileID, "uuid", iv.Uuid, "err", err)
 			continue

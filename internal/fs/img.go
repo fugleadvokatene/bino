@@ -67,8 +67,8 @@ func (lfs *LocalFileStorage) CreateMiniatures(ctx context.Context, uuid string, 
 	})
 }
 
-func (lfs *LocalFileStorage) Sha256(ctx context.Context, uuid string, filename string) ([]byte, error) {
-	return WithFileDir(ctx, lfs.MainDirectory, uuid, func(ctx context.Context, subdir *os.Root) ([]byte, error) {
+func (lfs *LocalFileStorage) Sha256(ctx context.Context, dirname string, uuid string, filename string) ([]byte, error) {
+	return WithFileDir(ctx, dirname, uuid, func(ctx context.Context, subdir *os.Root) ([]byte, error) {
 		file, err := subdir.Open(filename)
 		if err != nil {
 			return nil, fmt.Errorf("opening file: %w", err)

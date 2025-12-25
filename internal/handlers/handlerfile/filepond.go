@@ -46,7 +46,7 @@ func (h *filepondSubmit) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if err := h.DB.Transaction(ctx, func(ctx context.Context, db *db.Database) error {
 		errs := []error{}
 		for uuid, fileInfo := range result.Commited {
-			hash, err := h.FileBackend.Sha256(ctx, uuid, fileInfo.FileName)
+			hash, err := h.FileBackend.Sha256(ctx, h.FileBackend.MainDirectory, uuid, fileInfo.FileName)
 			if err != nil {
 				errs = append(errs, fmt.Errorf("hashing %s: %w", uuid, err))
 				data.Error(data.Language.GenericFailed, err)

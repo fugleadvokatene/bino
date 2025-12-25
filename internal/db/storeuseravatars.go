@@ -16,7 +16,7 @@ import (
 func (db *Database) StoreUserAvatars(ctx context.Context, backend *fs.LocalFileStorage) (int64, error) {
 	// Get users that currently have their avatar stored on googleusercontent.com, these may disappear at any time
 	users, err := db.Q.GetUsersWithGoogleStoredAvatars(ctx)
-	if err != nil {
+	if err != nil || len(users) == 0 {
 		return 0, err
 	}
 
@@ -71,7 +71,6 @@ func (db *Database) StoreUserAvatars(ctx context.Context, backend *fs.LocalFileS
 				slog.Warn("Unable to update user avatar", "err", err)
 				continue
 			}
-			return nil
 		}
 		return errors.Join(errs...)
 	}); err != nil {
