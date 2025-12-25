@@ -11900,6 +11900,10 @@ textarea.form-control-lg {
   cursor: pointer;
 }
 
+.total-patients {
+  color: rgb(126.75, 127.125, 141.875);
+}
+
 .debug-top,
 .debug-list {
   list-style: none;

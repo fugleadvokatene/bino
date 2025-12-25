@@ -20,6 +20,7 @@ templ DashboardPage(
         <div class="dashboard-left-sidebar">
             @DashboardForm(data, defaultSelectedSpecies, selfHome, homes)
             @DashboardSearch(data)
+            @DashboardTotalPatients(homes)
             @templbase.Mascot(data, mascotURL, true)
         </div>
         if selfHome.ID != 0 {
@@ -31,6 +32,20 @@ templ DashboardPage(
     @templbase.JSModule(data, "dashboard")
     @templbase.JSModule(data, "reorder-patients")
 }
+
+templ DashboardTotalPatients(homes []model.Home) {
+    <div class="hide-on-mobile m-auto">
+        <p class="micro total-patients">Totalt {nPatients(homes)} pasienter inne nå.</p>
+    </div>
+}
+
+func nPatients(homes []model.Home) int {
+    n := 0
+    for _, home := range homes {
+        n += len(home.Patients)
+    }
+    return n
+} 
 
 templ DashboardSearch(data *request.CommonData) {
     @templbase.Card("dashboard-search", "shadow-sm", "mb-2") {
