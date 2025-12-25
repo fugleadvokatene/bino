@@ -3,7 +3,6 @@ package sql
 import (
 	"context"
 	"fmt"
-	"os"
 	"strings"
 	"time"
 
@@ -12,25 +11,8 @@ import (
 	migrate "github.com/rubenv/sql-migrate"
 )
 
-func Setup(ctx context.Context) (*pgxpool.Pool, error) {
-	pass := os.Getenv("BINO_DB_PASSWORD")
-	if pass == "" {
-		panic("missing env variable: BINO_DB_PASSWORD")
-	}
-
-	host := os.Getenv("BINO_DB_HOST")
-	if host == "" {
-		panic("missing env variable: BINO_DB_HOST")
-	}
-
-	port := os.Getenv("BINO_DB_PORT")
-	if port == "" {
-		panic("missing env variable: BINO_DB_PORT")
-	}
-
-	connStr := fmt.Sprintf("postgres://bino:%s@%s:%s/bino?sslmode=disable", pass, host, port)
-
-	conn, err := pgxpool.New(ctx, connStr)
+func Setup(ctx context.Context, c *Credentials) (*pgxpool.Pool, error) {
+	conn, err := pgxpool.New(ctx, c.URL())
 	if err != nil {
 		return nil, err
 	}
@@ -42,6 +24,10 @@ func Setup(ctx context.Context) (*pgxpool.Pool, error) {
 
 	sqlDB := stdlib.OpenDBFromPool(conn)
 	defer sqlDB.Close()
+
+	if err := sqlDB.PingContext(ctx); err != nil {
+		return nil, fmt.Errorf("pinging db: %w", err)
+	}
 
 	var n int
 	for {

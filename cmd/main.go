@@ -89,7 +89,11 @@ func realMain() error {
 	ctx := context.Background()
 
 	// Connect to database
-	conn, err := sql.Setup(ctx)
+	credentials, err := sql.NewCredentialsFromEnv()
+	if err != nil {
+		return fmt.Errorf("constructing database credentials: %w", err)
+	}
+	conn, err := sql.Setup(ctx, credentials)
 	if err != nil {
 		return fmt.Errorf("setting up database connection: %w", err)
 	}
