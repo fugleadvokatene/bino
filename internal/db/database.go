@@ -11,6 +11,7 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
+// Database might be better renamed to Persistence
 type Database struct {
 	// Postgres
 	Q    *sql.Queries

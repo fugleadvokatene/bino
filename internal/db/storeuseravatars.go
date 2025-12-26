@@ -37,34 +37,31 @@ func (db *Database) StoreUserAvatars(ctx context.Context) (int64, error) {
 
 	// Commit images
 	uuids := generic.MapToSlice(fileIDToUserID, func(uuid string, _ int32) string { return uuid })
-	commitResult := db.CommitFile(ctx, uuids)
-	if err := commitResult.Error; err != nil {
-		slog.Warn("Unable to commit image", "err", err, "n committed", len(commitResult.Commited), "n failed", len(commitResult.Failed))
-	}
+	commitResult := db.CommitFiles(ctx, uuids)
 
 	// Register images to publish them
 	if err := db.Transaction(ctx, func(ctx context.Context, db *Database) error {
 		errs := []error{}
-		for uuid, fileInfo := range commitResult.Commited {
+		for uuid, fileInfo := range commitResult {
 			userID, found := fileIDToUserID[uuid]
 			if !found {
 				continue
 			}
 			fileID, err := db.Q.PublishFile(ctx, sql.PublishFileParams{
 				Uuid:          uuid,
-				Creator:       fileInfo.Creator,
+				Creator:       fileInfo.Commited.Creator,
 				Created:       pgtype.Timestamptz{Time: time.Now(), Valid: true},
 				Accessibility: int32(model.FileAccessibilityInternal),
-				Filename:      fileInfo.FileName,
-				Mimetype:      fileInfo.MIMEType,
-				Size:          fileInfo.Size,
+				Filename:      fileInfo.Commited.FileName,
+				Mimetype:      fileInfo.Commited.MIMEType,
+				Size:          fileInfo.Commited.Size,
 			})
 			if err != nil {
 				slog.Warn("Unable to commit image", "err", err)
 				continue
 			}
 			if err := db.Q.UpdateUserAvatar(ctx, sql.UpdateUserAvatarParams{
-				Url: pgtype.Text{String: model.FileURL(fileID, fileInfo.FileName), Valid: true},
+				Url: pgtype.Text{String: model.FileURL(fileID, fileInfo.Commited.FileName), Valid: true},
 				ID:  userID,
 			}); err != nil {
 				slog.Warn("Unable to update user avatar", "err", err)
@@ -75,5 +72,5 @@ func (db *Database) StoreUserAvatars(ctx context.Context) (int64, error) {
 	}); err != nil {
 		slog.Warn("Errors registering files", "err", err)
 	}
-	return int64(len(commitResult.Commited)), err
+	return int64(len(commitResult)), err
 }

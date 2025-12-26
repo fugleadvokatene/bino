@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"os"
 
+	"github.com/fugleadvokatene/bino/internal/generic"
 	"github.com/fugleadvokatene/bino/internal/model"
 	"github.com/fugleadvokatene/bino/internal/request"
 	"github.com/google/uuid"
@@ -39,8 +40,7 @@ type ReadResult struct {
 }
 
 type CommitResult struct {
-	Commited       map[string]model.FileInfo
-	Failed         []string
+	Commited       model.FileInfo
 	Error          error
 	HTTPStatusCode int
 }
@@ -252,36 +252,36 @@ func (db *Database) ReadTempFile(ctx context.Context, id string) (out ReadResult
 	}
 }
 
-func (db *Database) CommitFile(ctx context.Context, ids []string) CommitResult {
+func (db *Database) CommitFile(ctx context.Context, uuid string) CommitResult {
 	var out CommitResult
-	out.Commited = map[string]model.FileInfo{}
+	out.Commited = model.FileInfo{}
 	out.HTTPStatusCode = http.StatusOK
-
-	for _, id := range ids {
-		if id == "" {
-			out.Error = fmt.Errorf("got empty uuid")
-			out.Failed = append(out.Failed, id)
-			slog.Warn("Empty UUID")
-			continue
-		}
-		tmpDir := db.tmpDirectory + "/" + id
-		mainDir := db.mainDirectory + "/" + id
-		if err := os.Rename(tmpDir, mainDir); err != nil {
-			out.Failed = append(out.Failed, id)
-			out.Error = err
-			out.HTTPStatusCode = http.StatusInternalServerError
-		} else {
-			meta, err := db.readMetaFile(ctx, db.MainRoot, id)
-			if err != nil {
-				out.Failed = append(out.Failed, id)
-				out.Error = err
-				out.HTTPStatusCode = http.StatusInternalServerError
-			} else {
-				out.Commited[id] = meta
-			}
-		}
+	if uuid == "" {
+		out.Error = fmt.Errorf("got empty uuid")
+		slog.Warn("Empty UUID")
+		return out
 	}
+	tmpDir := db.tmpDirectory + "/" + uuid
+	mainDir := db.mainDirectory + "/" + uuid
+	if err := os.Rename(tmpDir, mainDir); err != nil {
+		out.Error = err
+		out.HTTPStatusCode = http.StatusInternalServerError
+		return out
+	}
+	meta, err := db.readMetaFile(ctx, db.MainRoot, uuid)
+	if err != nil {
+		out.Error = err
+		out.HTTPStatusCode = http.StatusInternalServerError
+		return out
+	}
+	out.Commited = meta
 	return out
+}
+
+func (db *Database) CommitFiles(ctx context.Context, ids []string) map[string]CommitResult {
+	return generic.SliceToMap(ids, func(id string) (string, CommitResult) {
+		return id, db.CommitFile(ctx, id)
+	})
 }
 
 func (db *Database) OpenFile(ctx context.Context, id string, filename string) (io.ReadCloser, error) {
