@@ -154,17 +154,17 @@ func (h *filepondRestore) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		request.AjaxError(w, r, err, http.StatusInternalServerError)
 	}
 
-	res := h.DB.ReadTempFile(ctx, id)
-	if res.Error != nil {
-		request.AjaxError(w, r, res.Error, res.HTTPStatusCode)
+	data, meta, err := h.DB.ReadTempFile(ctx, id)
+	if err != nil {
+		request.AjaxError(w, r, err, db.GetHTTPStatusCode(err))
 		return
 	}
-	if res.Error != nil {
-		request.AjaxError(w, r, res.Error, res.HTTPStatusCode)
+	if err != nil {
+		request.AjaxError(w, r, err, db.GetHTTPStatusCode(err))
 		return
 	}
 
-	w.Header().Set("Content-Type", res.FileInfo.MIMEType)
-	w.Header().Set("Content-Length", strconv.Itoa(len(res.Data)))
-	w.Write(res.Data)
+	w.Header().Set("Content-Type", meta.MIMEType)
+	w.Header().Set("Content-Length", strconv.Itoa(len(data)))
+	w.Write(data)
 }

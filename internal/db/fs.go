@@ -18,13 +18,6 @@ const (
 	MaxImageSize = 20 * 1024 * 1024
 )
 
-type ReadResult struct {
-	Data           []byte
-	FileInfo       model.FileInfo
-	Error          error
-	HTTPStatusCode int
-}
-
 func (db *Database) UploadFile(ctx context.Context, data io.Reader, fileInfo model.FileInfo) (string, error) {
 	id := uuid.New().String()
 
@@ -118,64 +111,42 @@ func (db *Database) ListTempFileDirectory(ctx context.Context) (map[string]model
 	return out, nil
 }
 
-func (db *Database) ReadTempFile(ctx context.Context, id string) (out ReadResult) {
+func (db *Database) ReadTempFile(ctx context.Context, id string) ([]byte, model.FileInfo, error) {
 	cd := request.MustLoadCommonData(ctx)
 
 	if err := uuid.Validate(id); err != nil {
-		return ReadResult{
-			Error:          fmt.Errorf("'%s' is not a valid UUID: %w", id, err),
-			HTTPStatusCode: http.StatusBadRequest,
-		}
+		return nil, model.FileInfo{}, newFileError(http.StatusBadRequest, "'%s' is not a valid UUID: %w", id, err)
 	}
 
 	info, err := db.readMetaFile(ctx, db.TmpRoot, id)
 	if err != nil {
-		return ReadResult{
-			Error:          err,
-			HTTPStatusCode: http.StatusInternalServerError,
-		}
+		return nil, model.FileInfo{}, fmt.Errorf("reading meta file: %w", err)
 	}
 
 	file, err := db.TmpRoot.Open(id + "/" + info.FileName)
 	if err != nil {
-		return ReadResult{
-			Error:          err,
-			HTTPStatusCode: http.StatusNotFound,
-		}
+		return nil, model.FileInfo{}, newFileError(http.StatusBadRequest, "%w", err)
 	}
 
 	stat, err := file.Stat()
 	if err != nil {
 		file.Close()
-		return ReadResult{
-			Error:          err,
-			HTTPStatusCode: http.StatusInternalServerError,
-		}
+		return nil, model.FileInfo{}, err
 	}
 
 	if size := stat.Size(); size > MaxImageSize {
 		cd.Log(slog.LevelWarn, "file too large", "size", size, "maxsize", MaxImageSize)
 		file.Close()
-		return ReadResult{
-			Error:          fmt.Errorf("file too large"),
-			HTTPStatusCode: http.StatusRequestEntityTooLarge,
-		}
+		return nil, model.FileInfo{}, newFileError(http.StatusRequestEntityTooLarge, "file too large")
 	}
 
 	data, err := io.ReadAll(file)
 	file.Close()
 	if err != nil {
-		return ReadResult{
-			Error:          err,
-			HTTPStatusCode: http.StatusInternalServerError,
-		}
+		return nil, model.FileInfo{}, err
 	}
 
-	return ReadResult{
-		Data:           data,
-		FileInfo:       info,
-		HTTPStatusCode: http.StatusOK,
-	}
+	return data, info, nil
 }
 
 func (db *Database) CommitFile(ctx context.Context, uuid string) (model.FileInfo, error) {
