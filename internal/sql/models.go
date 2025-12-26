@@ -102,6 +102,14 @@ type Invitation struct {
 	Home        pgtype.Int4
 }
 
+type Journal struct {
+	PatientID int32
+	Updated   pgtype.Timestamptz
+	Json      []byte
+	Markdown  pgtype.Text
+	Html      pgtype.Text
+}
+
 // Each row represents a patient
 type Patient struct {
 	ID                    int32

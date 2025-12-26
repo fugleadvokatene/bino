@@ -26,6 +26,9 @@ func (di *DocImage) Markdown(w io.Writer) {
 	fmt.Fprintf(w, "![%s %s](%s)\n", di.Title, di.Description, di.URL)
 }
 
+func (*DocImage) IndexableText(io.Writer) {
+}
+
 func (di *DocImage) Images() []*DocImage {
 	return []*DocImage{di}
 }

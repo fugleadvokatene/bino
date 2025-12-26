@@ -1,12 +1,12 @@
 package handlerpatient
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
 	"log/slog"
 	"net/http"
-	"os"
 	"runtime/debug"
 
 	"github.com/fugleadvokatene/bino/internal/background"
@@ -17,6 +17,7 @@ import (
 	"github.com/fugleadvokatene/bino/internal/handlers/handlererror"
 	"github.com/fugleadvokatene/bino/internal/model"
 	"github.com/fugleadvokatene/bino/internal/request"
+	"github.com/fugleadvokatene/bino/internal/sql"
 )
 
 type fetchJournal struct {
@@ -56,13 +57,19 @@ func (h *fetchJournal) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 	documentID := match[1]
 
-	go fetch(h.DB, h.GDriveWorker, h.Jobs, documentID)
+	go fetch(h.DB, h.GDriveWorker, h.Jobs, patient, documentID)
 
-	commonData.Success(commonData.Language.TODO("journal found"))
+	commonData.Success(commonData.Language.TODO("Journalen innhentes, oppdater siden om noen sekunder"))
 	request.RedirectToReferer(w, r)
 }
 
-func fetch(db *dblib.Database, worker *gdrive.Worker, jobs *background.Jobs, id string) {
+func fetch(
+	db *dblib.Database,
+	worker *gdrive.Worker,
+	jobs *background.Jobs,
+	patientID int32,
+	documentID string,
+) {
 	ctx := context.Background()
 	defer func() {
 		if r := recover(); r != nil {
@@ -70,7 +77,7 @@ func fetch(db *dblib.Database, worker *gdrive.Worker, jobs *background.Jobs, id 
 			debug.PrintStack()
 		}
 	}()
-	doc, err := worker.GetDocument(id)
+	doc, err := worker.GetDocument(documentID)
 	if err != nil {
 		fmt.Printf("Err: %s\n", err)
 	} else {
@@ -87,21 +94,46 @@ func fetch(db *dblib.Database, worker *gdrive.Worker, jobs *background.Jobs, id 
 			db,
 		)
 		if err != nil {
-			slog.ErrorContext(ctx, "Couldn't upload image from Google Journal", "err", err)
+			slog.ErrorContext(ctx, "Couldn't upload image from Google doc", "err", err)
 			continue
 		}
-		fmt.Printf("filename=%s, fileID=%d\n", filename, fileID)
 		img.URL = model.FileURL(fileID, filename)
 		img.Volatile = false
 		nUploaded++
 	}
-	doc.Markdown(os.Stdout)
+
 	if nUploaded > 0 {
 		jobs.ImageHint.Send()
 	}
-	marshalled, err := json.MarshalIndent(doc, "", "  ")
-	if err != nil {
-		slog.ErrorContext(ctx, "Couldn't JSON-marshal doc", "err", err)
+
+	updateParams := sql.UpsertJournalParams{
+		PatientID: patientID,
 	}
-	fmt.Printf("%s\n", marshalled)
+
+	// Marshall to JSON, Markdown and HTML
+	// Each in its own scope in case it can help the GC
+	{
+		marshalled, err := json.MarshalIndent(doc, "", "  ")
+		if err != nil {
+			slog.ErrorContext(ctx, "Couldn't marshal journal", "err", err)
+		} else {
+			updateParams.Json = marshalled
+		}
+	}
+	{
+		var mdBuffer bytes.Buffer
+		doc.Markdown(&mdBuffer)
+		updateParams.Markdown.String = mdBuffer.String()
+		updateParams.Markdown.Valid = mdBuffer.Len() > 0
+	}
+	{
+		var htmlBuffer bytes.Buffer
+		doc.Templ().Render(ctx, &htmlBuffer)
+		updateParams.Html.String = htmlBuffer.String()
+		updateParams.Html.Valid = htmlBuffer.Len() > 0
+	}
+
+	if err := db.Q.UpsertJournal(ctx, updateParams); err != nil {
+		slog.ErrorContext(ctx, "Couldn't upsert journal", "err", err)
+	}
 }

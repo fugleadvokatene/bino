@@ -12257,6 +12257,27 @@ h6 {
   background-color: rgb(202.3, 224.15, 222.5);
 }
 
+.journal-list-item:has(> ul) {
+  list-style: none;
+  padding-left: 0;
+}
+
+.journal-bold {
+  font-weight: bold;
+}
+
+.journal-italic {
+  font-style: italic;
+}
+
+.journal-strikethrough {
+  text-decoration-line: line-through;
+}
+
+.journal-underline {
+  text-decoration-line: underline;
+}
+
 .main {
   flex: 1;
 }

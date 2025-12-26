@@ -4,928 +4,1045 @@
   "RevisionID": "AHwbPDI7juLXzTOWphnef7reB2nVr5kBxfRwNC7HIRNK-EgWArhGz9qiLgPlgp7ecOQAPrmu8Cnvv3BzoQY4slCkBQ",
   "Content": [
     {
-      "Elements": [
-        {
-          "Type": "text",
-          "Value": {
-            "Content": "2025-11-06 Rockstar\n",
-            "Flags": 1,
-            "FontSize": 34,
-            "LinkURL": ""
+      "Type": "paragraph",
+      "Value": {
+        "Elements": [
+          {
+            "Type": "text",
+            "Value": {
+              "Content": "2025-11-06 Rockstar\n",
+              "Flags": 1,
+              "FontSize": 34,
+              "LinkURL": ""
+            }
           }
-        }
-      ],
-      "ListLevel": 0
+        ]
+      }
     },
     {
-      "Elements": [
-        {
-          "Type": "text",
-          "Value": {
-            "Content": "Sjekkliste\n",
-            "Flags": 1,
-            "FontSize": 18,
-            "LinkURL": ""
+      "Type": "paragraph",
+      "Value": {
+        "Elements": [
+          {
+            "Type": "text",
+            "Value": {
+              "Content": "Sjekkliste\n",
+              "Flags": 1,
+              "FontSize": 18,
+              "LinkURL": ""
+            }
           }
-        }
-      ],
-      "ListLevel": 0
+        ]
+      }
     },
     {
-      "Elements": [
-        {
-          "Type": "text",
-          "Value": {
-            "Content": "Pasientens navn:",
-            "Flags": 1,
-            "FontSize": 0,
-            "LinkURL": ""
+      "Type": "list",
+      "Value": {
+        "Items": [
+          {
+            "Type": "paragraph",
+            "Value": {
+              "Elements": [
+                {
+                  "Type": "text",
+                  "Value": {
+                    "Content": "Pasientens navn:",
+                    "Flags": 1,
+                    "FontSize": 0,
+                    "LinkURL": ""
+                  }
+                },
+                {
+                  "Type": "text",
+                  "Value": {
+                    "Content": " Rockstar\n",
+                    "Flags": 0,
+                    "FontSize": 0,
+                    "LinkURL": ""
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "Type": "paragraph",
+            "Value": {
+              "Elements": [
+                {
+                  "Type": "text",
+                  "Value": {
+                    "Content": "Art",
+                    "Flags": 1,
+                    "FontSize": 0,
+                    "LinkURL": ""
+                  }
+                },
+                {
+                  "Type": "text",
+                  "Value": {
+                    "Content": ": Bydue\n",
+                    "Flags": 0,
+                    "FontSize": 0,
+                    "LinkURL": ""
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "Type": "paragraph",
+            "Value": {
+              "Elements": [
+                {
+                  "Type": "text",
+                  "Value": {
+                    "Content": "Alder:",
+                    "Flags": 1,
+                    "FontSize": 0,
+                    "LinkURL": ""
+                  }
+                },
+                {
+                  "Type": "text",
+                  "Value": {
+                    "Content": " Ungdom / Unge\n",
+                    "Flags": 0,
+                    "FontSize": 0,
+                    "LinkURL": ""
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "Type": "paragraph",
+            "Value": {
+              "Elements": [
+                {
+                  "Type": "text",
+                  "Value": {
+                    "Content": "Funnsted:",
+                    "Flags": 1,
+                    "FontSize": 0,
+                    "LinkURL": ""
+                  }
+                },
+                {
+                  "Type": "text",
+                  "Value": {
+                    "Content": " Dælenenggata 3A\n",
+                    "Flags": 0,
+                    "FontSize": 0,
+                    "LinkURL": ""
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "Type": "paragraph",
+            "Value": {
+              "Elements": [
+                {
+                  "Type": "text",
+                  "Value": {
+                    "Content": "Meldt av:",
+                    "Flags": 1,
+                    "FontSize": 0,
+                    "LinkURL": ""
+                  }
+                },
+                {
+                  "Type": "text",
+                  "Value": {
+                    "Content": " Caroline Dammyr\n",
+                    "Flags": 0,
+                    "FontSize": 0,
+                    "LinkURL": ""
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "Type": "paragraph",
+            "Value": {
+              "Elements": [
+                {
+                  "Type": "text",
+                  "Value": {
+                    "Content": "Meldt hvor:",
+                    "Flags": 1,
+                    "FontSize": 0,
+                    "LinkURL": ""
+                  }
+                },
+                {
+                  "Type": "text",
+                  "Value": {
+                    "Content": " SMS til Villfuglhjelpen --\u003e Jonathan\n",
+                    "Flags": 0,
+                    "FontSize": 0,
+                    "LinkURL": ""
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "Type": "paragraph",
+            "Value": {
+              "Elements": [
+                {
+                  "Type": "text",
+                  "Value": {
+                    "Content": "Fanget av:",
+                    "Flags": 1,
+                    "FontSize": 0,
+                    "LinkURL": ""
+                  }
+                },
+                {
+                  "Type": "text",
+                  "Value": {
+                    "Content": " Jonathan\n",
+                    "Flags": 0,
+                    "FontSize": 0,
+                    "LinkURL": ""
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "Type": "paragraph",
+            "Value": {
+              "Elements": [
+                {
+                  "Type": "text",
+                  "Value": {
+                    "Content": "Levert til:",
+                    "Flags": 1,
+                    "FontSize": 0,
+                    "LinkURL": ""
+                  }
+                },
+                {
+                  "Type": "text",
+                  "Value": {
+                    "Content": " Jonathan\n",
+                    "Flags": 0,
+                    "FontSize": 0,
+                    "LinkURL": ""
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "Type": "paragraph",
+            "Value": {
+              "Elements": [
+                {
+                  "Type": "text",
+                  "Value": {
+                    "Content": "Vekt:",
+                    "Flags": 1,
+                    "FontSize": 0,
+                    "LinkURL": ""
+                  }
+                },
+                {
+                  "Type": "text",
+                  "Value": {
+                    "Content": " 238g ved inntak. 291g den 14 nov. 316g den 27. nov\n",
+                    "Flags": 0,
+                    "FontSize": 0,
+                    "LinkURL": ""
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "Type": "paragraph",
+            "Value": {
+              "Elements": [
+                {
+                  "Type": "text",
+                  "Value": {
+                    "Content": "Brystbeinet:",
+                    "Flags": 1,
+                    "FontSize": 0,
+                    "LinkURL": ""
+                  }
+                },
+                {
+                  "Type": "text",
+                  "Value": {
+                    "Content": " tynn men ca normal for alder\n",
+                    "Flags": 0,
+                    "FontSize": 0,
+                    "LinkURL": ""
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "Type": "paragraph",
+            "Value": {
+              "Elements": [
+                {
+                  "Type": "text",
+                  "Value": {
+                    "Content": "Kroen:",
+                    "Flags": 1,
+                    "FontSize": 0,
+                    "LinkURL": ""
+                  }
+                },
+                {
+                  "Type": "text",
+                  "Value": {
+                    "Content": " tom\n",
+                    "Flags": 0,
+                    "FontSize": 0,
+                    "LinkURL": ""
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "Type": "paragraph",
+            "Value": {
+              "Elements": [
+                {
+                  "Type": "text",
+                  "Value": {
+                    "Content": "Sår på kroppen:",
+                    "Flags": 1,
+                    "FontSize": 0,
+                    "LinkURL": ""
+                  }
+                },
+                {
+                  "Type": "text",
+                  "Value": {
+                    "Content": " nei\n",
+                    "Flags": 0,
+                    "FontSize": 0,
+                    "LinkURL": ""
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "Type": "paragraph",
+            "Value": {
+              "Elements": [
+                {
+                  "Type": "text",
+                  "Value": {
+                    "Content": "Kloakka:",
+                    "Flags": 1,
+                    "FontSize": 0,
+                    "LinkURL": ""
+                  }
+                },
+                {
+                  "Type": "text",
+                  "Value": {
+                    "Content": " ok\n",
+                    "Flags": 0,
+                    "FontSize": 0,
+                    "LinkURL": ""
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "Type": "paragraph",
+            "Value": {
+              "Elements": [
+                {
+                  "Type": "text",
+                  "Value": {
+                    "Content": "Vinger:",
+                    "Flags": 1,
+                    "FontSize": 0,
+                    "LinkURL": ""
+                  }
+                },
+                {
+                  "Type": "text",
+                  "Value": {
+                    "Content": " ok, ikke helt utviklet mtp fjær\n",
+                    "Flags": 0,
+                    "FontSize": 0,
+                    "LinkURL": ""
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "Type": "paragraph",
+            "Value": {
+              "Elements": [
+                {
+                  "Type": "text",
+                  "Value": {
+                    "Content": "Bein:",
+                    "Flags": 1,
+                    "FontSize": 0,
+                    "LinkURL": ""
+                  }
+                },
+                {
+                  "Type": "text",
+                  "Value": {
+                    "Content": " ok\n",
+                    "Flags": 0,
+                    "FontSize": 0,
+                    "LinkURL": ""
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "Type": "paragraph",
+            "Value": {
+              "Elements": [
+                {
+                  "Type": "text",
+                  "Value": {
+                    "Content": "Øyne:",
+                    "Flags": 1,
+                    "FontSize": 0,
+                    "LinkURL": ""
+                  }
+                },
+                {
+                  "Type": "text",
+                  "Value": {
+                    "Content": " mulig sliter litt med høyre øye\n",
+                    "Flags": 0,
+                    "FontSize": 0,
+                    "LinkURL": ""
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "Type": "paragraph",
+            "Value": {
+              "Elements": [
+                {
+                  "Type": "text",
+                  "Value": {
+                    "Content": "Avføring:",
+                    "Flags": 1,
+                    "FontSize": 0,
+                    "LinkURL": ""
+                  }
+                },
+                {
+                  "Type": "text",
+                  "Value": {
+                    "Content": " ser ok ut\n",
+                    "Flags": 0,
+                    "FontSize": 0,
+                    "LinkURL": ""
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "Type": "paragraph",
+            "Value": {
+              "Elements": [
+                {
+                  "Type": "text",
+                  "Value": {
+                    "Content": "Skader:",
+                    "Flags": 1,
+                    "FontSize": 0,
+                    "LinkURL": ""
+                  }
+                },
+                {
+                  "Type": "text",
+                  "Value": {
+                    "Content": " nei\n",
+                    "Flags": 0,
+                    "FontSize": 0,
+                    "LinkURL": ""
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "Type": "paragraph",
+            "Value": {
+              "Elements": [
+                {
+                  "Type": "text",
+                  "Value": {
+                    "Content": "Sykdommer:",
+                    "Flags": 1,
+                    "FontSize": 0,
+                    "LinkURL": ""
+                  }
+                },
+                {
+                  "Type": "text",
+                  "Value": {
+                    "Content": " noe rotasjon på hodet og \n",
+                    "Flags": 0,
+                    "FontSize": 0,
+                    "LinkURL": ""
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "Type": "paragraph",
+            "Value": {
+              "Elements": [
+                {
+                  "Type": "text",
+                  "Value": {
+                    "Content": "Munnhulen:",
+                    "Flags": 1,
+                    "FontSize": 0,
+                    "LinkURL": ""
+                  }
+                },
+                {
+                  "Type": "text",
+                  "Value": {
+                    "Content": " ok\n",
+                    "Flags": 0,
+                    "FontSize": 0,
+                    "LinkURL": ""
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "Type": "paragraph",
+            "Value": {
+              "Elements": [
+                {
+                  "Type": "text",
+                  "Value": {
+                    "Content": "Ektoparasitter:",
+                    "Flags": 1,
+                    "FontSize": 0,
+                    "LinkURL": ""
+                  }
+                },
+                {
+                  "Type": "text",
+                  "Value": {
+                    "Content": " nei\n",
+                    "Flags": 0,
+                    "FontSize": 0,
+                    "LinkURL": ""
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "Type": "paragraph",
+            "Value": {
+              "Elements": [
+                {
+                  "Type": "text",
+                  "Value": {
+                    "Content": "Halsprøve (dato og funn):",
+                    "Flags": 1,
+                    "FontSize": 0,
+                    "LinkURL": ""
+                  }
+                },
+                {
+                  "Type": "text",
+                  "Value": {
+                    "Content": "\n",
+                    "Flags": 0,
+                    "FontSize": 0,
+                    "LinkURL": ""
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "Type": "list",
+            "Value": {
+              "Items": [
+                {
+                  "Type": "paragraph",
+                  "Value": {
+                    "Elements": [
+                      {
+                        "Type": "text",
+                        "Value": {
+                          "Content": "ved inntak: ingen funn\n",
+                          "Flags": 0,
+                          "FontSize": 0,
+                          "LinkURL": ""
+                        }
+                      }
+                    ]
+                  }
+                },
+                {
+                  "Type": "paragraph",
+                  "Value": {
+                    "Elements": [
+                      {
+                        "Type": "text",
+                        "Value": {
+                          "Content": "27.nov: ingen funn\n",
+                          "Flags": 0,
+                          "FontSize": 0,
+                          "LinkURL": ""
+                        }
+                      }
+                    ]
+                  }
+                }
+              ],
+              "Nesting": 1,
+              "Ordered": false
+            }
+          },
+          {
+            "Type": "paragraph",
+            "Value": {
+              "Elements": [
+                {
+                  "Type": "text",
+                  "Value": {
+                    "Content": "Fekalprøve (dato og funn):",
+                    "Flags": 1,
+                    "FontSize": 0,
+                    "LinkURL": ""
+                  }
+                },
+                {
+                  "Type": "text",
+                  "Value": {
+                    "Content": "\n",
+                    "Flags": 0,
+                    "FontSize": 0,
+                    "LinkURL": ""
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "Type": "list",
+            "Value": {
+              "Items": [
+                {
+                  "Type": "paragraph",
+                  "Value": {
+                    "Elements": [
+                      {
+                        "Type": "text",
+                        "Value": {
+                          "Content": "ved inntak: en trichomonas, en og annen koksidie, og en del knoppskytende gjærsopper\n",
+                          "Flags": 0,
+                          "FontSize": 0,
+                          "LinkURL": ""
+                        }
+                      }
+                    ]
+                  }
+                }
+              ],
+              "Nesting": 1,
+              "Ordered": false
+            }
+          },
+          {
+            "Type": "paragraph",
+            "Value": {
+              "Elements": [
+                {
+                  "Type": "text",
+                  "Value": {
+                    "Content": "Andre observasjoner:",
+                    "Flags": 1,
+                    "FontSize": 0,
+                    "LinkURL": ""
+                  }
+                },
+                {
+                  "Type": "text",
+                  "Value": {
+                    "Content": " så et tegn på dårlig syn (roterer hodet sakte) under transport, men ikke sett etter den fikk roet seg ned\n",
+                    "Flags": 0,
+                    "FontSize": 0,
+                    "LinkURL": ""
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "Type": "paragraph",
+            "Value": {
+              "Elements": [
+                {
+                  "Type": "text",
+                  "Value": {
+                    "Content": "Behandlende veterinær:",
+                    "Flags": 1,
+                    "FontSize": 0,
+                    "LinkURL": ""
+                  }
+                },
+                {
+                  "Type": "text",
+                  "Value": {
+                    "Content": " \n",
+                    "Flags": 0,
+                    "FontSize": 0,
+                    "LinkURL": ""
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "Type": "paragraph",
+            "Value": {
+              "Elements": [
+                {
+                  "Type": "text",
+                  "Value": {
+                    "Content": "Dato for veterinærbesøk:",
+                    "Flags": 1,
+                    "FontSize": 0,
+                    "LinkURL": ""
+                  }
+                },
+                {
+                  "Type": "text",
+                  "Value": {
+                    "Content": " \n",
+                    "Flags": 0,
+                    "FontSize": 0,
+                    "LinkURL": ""
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "Type": "paragraph",
+            "Value": {
+              "Elements": [
+                {
+                  "Type": "text",
+                  "Value": {
+                    "Content": "Avlivet eller dødd (dato):",
+                    "Flags": 1,
+                    "FontSize": 0,
+                    "LinkURL": ""
+                  }
+                },
+                {
+                  "Type": "text",
+                  "Value": {
+                    "Content": " \n",
+                    "Flags": 0,
+                    "FontSize": 0,
+                    "LinkURL": ""
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "Type": "paragraph",
+            "Value": {
+              "Elements": [
+                {
+                  "Type": "text",
+                  "Value": {
+                    "Content": "Sluppet fri (dato og sted):",
+                    "Flags": 1,
+                    "FontSize": 0,
+                    "LinkURL": ""
+                  }
+                },
+                {
+                  "Type": "text",
+                  "Value": {
+                    "Content": " \n",
+                    "Flags": 0,
+                    "FontSize": 0,
+                    "LinkURL": ""
+                  }
+                }
+              ]
+            }
           }
-        },
-        {
-          "Type": "text",
-          "Value": {
-            "Content": " Rockstar\n",
-            "Flags": 0,
-            "FontSize": 0,
-            "LinkURL": ""
-          }
-        }
-      ],
-      "ListLevel": 1
+        ],
+        "Nesting": 0,
+        "Ordered": false
+      }
     },
     {
-      "Elements": [
-        {
-          "Type": "text",
-          "Value": {
-            "Content": "Art",
-            "Flags": 1,
-            "FontSize": 0,
-            "LinkURL": ""
+      "Type": "paragraph",
+      "Value": {
+        "Elements": [
+          {
+            "Type": "text",
+            "Value": {
+              "Content": "Førstehjelp\n",
+              "Flags": 1,
+              "FontSize": 18,
+              "LinkURL": ""
+            }
           }
-        },
-        {
-          "Type": "text",
-          "Value": {
-            "Content": ": Bydue\n",
-            "Flags": 0,
-            "FontSize": 0,
-            "LinkURL": ""
-          }
-        }
-      ],
-      "ListLevel": 1
+        ]
+      }
     },
     {
-      "Elements": [
-        {
-          "Type": "text",
-          "Value": {
-            "Content": "Alder:",
-            "Flags": 1,
-            "FontSize": 0,
-            "LinkURL": ""
+      "Type": "paragraph",
+      "Value": {
+        "Elements": [
+          {
+            "Type": "text",
+            "Value": {
+              "Content": "Får mat og vann. Begynner å spise med en gang",
+              "Flags": 0,
+              "FontSize": 0,
+              "LinkURL": ""
+            }
+          },
+          {
+            "Type": "text",
+            "Value": {
+              "Content": "\n",
+              "Flags": 0,
+              "FontSize": 0,
+              "LinkURL": ""
+            }
           }
-        },
-        {
-          "Type": "text",
-          "Value": {
-            "Content": " Ungdom / Unge\n",
-            "Flags": 0,
-            "FontSize": 0,
-            "LinkURL": ""
-          }
-        }
-      ],
-      "ListLevel": 1
+        ]
+      }
     },
     {
-      "Elements": [
-        {
-          "Type": "text",
-          "Value": {
-            "Content": "Funnsted:",
-            "Flags": 1,
-            "FontSize": 0,
-            "LinkURL": ""
+      "Type": "paragraph",
+      "Value": {
+        "Elements": [
+          {
+            "Type": "text",
+            "Value": {
+              "Content": "\n",
+              "Flags": 0,
+              "FontSize": 0,
+              "LinkURL": ""
+            }
           }
-        },
-        {
-          "Type": "text",
-          "Value": {
-            "Content": " Dælenenggata 3A\n",
-            "Flags": 0,
-            "FontSize": 0,
-            "LinkURL": ""
-          }
-        }
-      ],
-      "ListLevel": 1
+        ]
+      }
     },
     {
-      "Elements": [
-        {
-          "Type": "text",
-          "Value": {
-            "Content": "Meldt av:",
-            "Flags": 1,
-            "FontSize": 0,
-            "LinkURL": ""
+      "Type": "paragraph",
+      "Value": {
+        "Elements": [
+          {
+            "Type": "text",
+            "Value": {
+              "Content": "Videre tiltak og logg\n",
+              "Flags": 1,
+              "FontSize": 18,
+              "LinkURL": ""
+            }
           }
-        },
-        {
-          "Type": "text",
-          "Value": {
-            "Content": " Caroline Dammyr\n",
-            "Flags": 0,
-            "FontSize": 0,
-            "LinkURL": ""
-          }
-        }
-      ],
-      "ListLevel": 1
+        ]
+      }
     },
     {
-      "Elements": [
-        {
-          "Type": "text",
-          "Value": {
-            "Content": "Meldt hvor:",
-            "Flags": 1,
-            "FontSize": 0,
-            "LinkURL": ""
+      "Type": "paragraph",
+      "Value": {
+        "Elements": [
+          {
+            "Type": "text",
+            "Value": {
+              "Content": "Kan antakelig slippes om et par uker.\n",
+              "Flags": 0,
+              "FontSize": 0,
+              "LinkURL": ""
+            }
           }
-        },
-        {
-          "Type": "text",
-          "Value": {
-            "Content": " SMS til Villfuglhjelpen --\u003e Jonathan\n",
-            "Flags": 0,
-            "FontSize": 0,
-            "LinkURL": ""
-          }
-        }
-      ],
-      "ListLevel": 1
+        ]
+      }
     },
     {
-      "Elements": [
-        {
-          "Type": "text",
-          "Value": {
-            "Content": "Fanget av:",
-            "Flags": 1,
-            "FontSize": 0,
-            "LinkURL": ""
+      "Type": "paragraph",
+      "Value": {
+        "Elements": [
+          {
+            "Type": "text",
+            "Value": {
+              "Content": "\n",
+              "Flags": 0,
+              "FontSize": 0,
+              "LinkURL": ""
+            }
           }
-        },
-        {
-          "Type": "text",
-          "Value": {
-            "Content": " Jonathan\n",
-            "Flags": 0,
-            "FontSize": 0,
-            "LinkURL": ""
-          }
-        }
-      ],
-      "ListLevel": 1
+        ]
+      }
     },
     {
-      "Elements": [
-        {
-          "Type": "text",
-          "Value": {
-            "Content": "Levert til:",
-            "Flags": 1,
-            "FontSize": 0,
-            "LinkURL": ""
+      "Type": "paragraph",
+      "Value": {
+        "Elements": [
+          {
+            "Type": "text",
+            "Value": {
+              "Content": "Rød ring for identifikasjon.\n",
+              "Flags": 0,
+              "FontSize": 0,
+              "LinkURL": ""
+            }
           }
-        },
-        {
-          "Type": "text",
-          "Value": {
-            "Content": " Jonathan\n",
-            "Flags": 0,
-            "FontSize": 0,
-            "LinkURL": ""
-          }
-        }
-      ],
-      "ListLevel": 1
+        ]
+      }
     },
     {
-      "Elements": [
-        {
-          "Type": "text",
-          "Value": {
-            "Content": "Vekt:",
-            "Flags": 1,
-            "FontSize": 0,
-            "LinkURL": ""
+      "Type": "paragraph",
+      "Value": {
+        "Elements": [
+          {
+            "Type": "text",
+            "Value": {
+              "Content": "\n",
+              "Flags": 0,
+              "FontSize": 0,
+              "LinkURL": ""
+            }
           }
-        },
-        {
-          "Type": "text",
-          "Value": {
-            "Content": " 238g ved inntak. 291g den 14 nov. 316g den 27. nov\n",
-            "Flags": 0,
-            "FontSize": 0,
-            "LinkURL": ""
-          }
-        }
-      ],
-      "ListLevel": 1
+        ]
+      }
     },
     {
-      "Elements": [
-        {
-          "Type": "text",
-          "Value": {
-            "Content": "Brystbeinet:",
-            "Flags": 1,
-            "FontSize": 0,
-            "LinkURL": ""
+      "Type": "paragraph",
+      "Value": {
+        "Elements": [
+          {
+            "Type": "text",
+            "Value": {
+              "Content": "Mot gjærsopp: nystatin BID 1ml/kg, så ca 0.25ml. Første dose 6. nov, siste 20. nov",
+              "Flags": 0,
+              "FontSize": 0,
+              "LinkURL": ""
+            }
+          },
+          {
+            "Type": "text",
+            "Value": {
+              "Content": "\n",
+              "Flags": 0,
+              "FontSize": 0,
+              "LinkURL": ""
+            }
           }
-        },
-        {
-          "Type": "text",
-          "Value": {
-            "Content": " tynn men ca normal for alder\n",
-            "Flags": 0,
-            "FontSize": 0,
-            "LinkURL": ""
-          }
-        }
-      ],
-      "ListLevel": 1
+        ]
+      }
     },
     {
-      "Elements": [
-        {
-          "Type": "text",
-          "Value": {
-            "Content": "Kroen:",
-            "Flags": 1,
-            "FontSize": 0,
-            "LinkURL": ""
+      "Type": "paragraph",
+      "Value": {
+        "Elements": [
+          {
+            "Type": "text",
+            "Value": {
+              "Content": "Bilder\n",
+              "Flags": 1,
+              "FontSize": 18,
+              "LinkURL": ""
+            }
           }
-        },
-        {
-          "Type": "text",
-          "Value": {
-            "Content": " tom\n",
-            "Flags": 0,
-            "FontSize": 0,
-            "LinkURL": ""
-          }
-        }
-      ],
-      "ListLevel": 1
+        ]
+      }
     },
     {
-      "Elements": [
-        {
-          "Type": "text",
-          "Value": {
-            "Content": "Sår på kroppen:",
-            "Flags": 1,
-            "FontSize": 0,
-            "LinkURL": ""
+      "Type": "paragraph",
+      "Value": {
+        "Elements": [
+          {
+            "Type": "image",
+            "Value": {
+              "Title": "",
+              "Description": "",
+              "Width": 292.5,
+              "Height": 469.697021484375,
+              "Margin": [
+                9,
+                9,
+                9,
+                9
+              ],
+              "Crop": [
+                0.16466346,
+                0.20352565,
+                0.082616955,
+                0.17147435
+              ],
+              "URL": "/file/66/AD_4nXdQJ86oL_aDbk8KmvCSxH6YU1XIG7EzAUxbjk7AkBRwYzbLu89NBLLuwr-8RatBTMIwx3ONF18DdTiooInK5Txcw25VbS0o.png",
+              "Volatile": false,
+              "Angle": 0
+            }
+          },
+          {
+            "Type": "text",
+            "Value": {
+              "Content": "\n",
+              "Flags": 0,
+              "FontSize": 0,
+              "LinkURL": ""
+            }
           }
-        },
-        {
-          "Type": "text",
-          "Value": {
-            "Content": " nei\n",
-            "Flags": 0,
-            "FontSize": 0,
-            "LinkURL": ""
-          }
-        }
-      ],
-      "ListLevel": 1
+        ]
+      }
     },
     {
-      "Elements": [
-        {
-          "Type": "text",
-          "Value": {
-            "Content": "Kloakka:",
-            "Flags": 1,
-            "FontSize": 0,
-            "LinkURL": ""
+      "Type": "paragraph",
+      "Value": {
+        "Elements": [
+          {
+            "Type": "text",
+            "Value": {
+              "Content": "\n",
+              "Flags": 0,
+              "FontSize": 0,
+              "LinkURL": ""
+            }
           }
-        },
-        {
-          "Type": "text",
-          "Value": {
-            "Content": " ok\n",
-            "Flags": 0,
-            "FontSize": 0,
-            "LinkURL": ""
-          }
-        }
-      ],
-      "ListLevel": 1
-    },
-    {
-      "Elements": [
-        {
-          "Type": "text",
-          "Value": {
-            "Content": "Vinger:",
-            "Flags": 1,
-            "FontSize": 0,
-            "LinkURL": ""
-          }
-        },
-        {
-          "Type": "text",
-          "Value": {
-            "Content": " ok, ikke helt utviklet mtp fjær\n",
-            "Flags": 0,
-            "FontSize": 0,
-            "LinkURL": ""
-          }
-        }
-      ],
-      "ListLevel": 1
-    },
-    {
-      "Elements": [
-        {
-          "Type": "text",
-          "Value": {
-            "Content": "Bein:",
-            "Flags": 1,
-            "FontSize": 0,
-            "LinkURL": ""
-          }
-        },
-        {
-          "Type": "text",
-          "Value": {
-            "Content": " ok\n",
-            "Flags": 0,
-            "FontSize": 0,
-            "LinkURL": ""
-          }
-        }
-      ],
-      "ListLevel": 1
-    },
-    {
-      "Elements": [
-        {
-          "Type": "text",
-          "Value": {
-            "Content": "Øyne:",
-            "Flags": 1,
-            "FontSize": 0,
-            "LinkURL": ""
-          }
-        },
-        {
-          "Type": "text",
-          "Value": {
-            "Content": " mulig sliter litt med høyre øye\n",
-            "Flags": 0,
-            "FontSize": 0,
-            "LinkURL": ""
-          }
-        }
-      ],
-      "ListLevel": 1
-    },
-    {
-      "Elements": [
-        {
-          "Type": "text",
-          "Value": {
-            "Content": "Avføring:",
-            "Flags": 1,
-            "FontSize": 0,
-            "LinkURL": ""
-          }
-        },
-        {
-          "Type": "text",
-          "Value": {
-            "Content": " ser ok ut\n",
-            "Flags": 0,
-            "FontSize": 0,
-            "LinkURL": ""
-          }
-        }
-      ],
-      "ListLevel": 1
-    },
-    {
-      "Elements": [
-        {
-          "Type": "text",
-          "Value": {
-            "Content": "Skader:",
-            "Flags": 1,
-            "FontSize": 0,
-            "LinkURL": ""
-          }
-        },
-        {
-          "Type": "text",
-          "Value": {
-            "Content": " nei\n",
-            "Flags": 0,
-            "FontSize": 0,
-            "LinkURL": ""
-          }
-        }
-      ],
-      "ListLevel": 1
-    },
-    {
-      "Elements": [
-        {
-          "Type": "text",
-          "Value": {
-            "Content": "Sykdommer:",
-            "Flags": 1,
-            "FontSize": 0,
-            "LinkURL": ""
-          }
-        },
-        {
-          "Type": "text",
-          "Value": {
-            "Content": " noe rotasjon på hodet og \n",
-            "Flags": 0,
-            "FontSize": 0,
-            "LinkURL": ""
-          }
-        }
-      ],
-      "ListLevel": 1
-    },
-    {
-      "Elements": [
-        {
-          "Type": "text",
-          "Value": {
-            "Content": "Munnhulen:",
-            "Flags": 1,
-            "FontSize": 0,
-            "LinkURL": ""
-          }
-        },
-        {
-          "Type": "text",
-          "Value": {
-            "Content": " ok\n",
-            "Flags": 0,
-            "FontSize": 0,
-            "LinkURL": ""
-          }
-        }
-      ],
-      "ListLevel": 1
-    },
-    {
-      "Elements": [
-        {
-          "Type": "text",
-          "Value": {
-            "Content": "Ektoparasitter:",
-            "Flags": 1,
-            "FontSize": 0,
-            "LinkURL": ""
-          }
-        },
-        {
-          "Type": "text",
-          "Value": {
-            "Content": " nei\n",
-            "Flags": 0,
-            "FontSize": 0,
-            "LinkURL": ""
-          }
-        }
-      ],
-      "ListLevel": 1
-    },
-    {
-      "Elements": [
-        {
-          "Type": "text",
-          "Value": {
-            "Content": "Halsprøve (dato og funn):",
-            "Flags": 1,
-            "FontSize": 0,
-            "LinkURL": ""
-          }
-        },
-        {
-          "Type": "text",
-          "Value": {
-            "Content": "\n",
-            "Flags": 0,
-            "FontSize": 0,
-            "LinkURL": ""
-          }
-        }
-      ],
-      "ListLevel": 1
-    },
-    {
-      "Elements": [
-        {
-          "Type": "text",
-          "Value": {
-            "Content": "ved inntak: ingen funn\n",
-            "Flags": 0,
-            "FontSize": 0,
-            "LinkURL": ""
-          }
-        }
-      ],
-      "ListLevel": 2
-    },
-    {
-      "Elements": [
-        {
-          "Type": "text",
-          "Value": {
-            "Content": "27.nov: ingen funn\n",
-            "Flags": 0,
-            "FontSize": 0,
-            "LinkURL": ""
-          }
-        }
-      ],
-      "ListLevel": 2
-    },
-    {
-      "Elements": [
-        {
-          "Type": "text",
-          "Value": {
-            "Content": "Fekalprøve (dato og funn):",
-            "Flags": 1,
-            "FontSize": 0,
-            "LinkURL": ""
-          }
-        },
-        {
-          "Type": "text",
-          "Value": {
-            "Content": "\n",
-            "Flags": 0,
-            "FontSize": 0,
-            "LinkURL": ""
-          }
-        }
-      ],
-      "ListLevel": 1
-    },
-    {
-      "Elements": [
-        {
-          "Type": "text",
-          "Value": {
-            "Content": "ved inntak: en trichomonas, en og annen koksidie, og en del knoppskytende gjærsopper\n",
-            "Flags": 0,
-            "FontSize": 0,
-            "LinkURL": ""
-          }
-        }
-      ],
-      "ListLevel": 2
-    },
-    {
-      "Elements": [
-        {
-          "Type": "text",
-          "Value": {
-            "Content": "Andre observasjoner:",
-            "Flags": 1,
-            "FontSize": 0,
-            "LinkURL": ""
-          }
-        },
-        {
-          "Type": "text",
-          "Value": {
-            "Content": " så et tegn på dårlig syn (roterer hodet sakte) under transport, men ikke sett etter den fikk roet seg ned\n",
-            "Flags": 0,
-            "FontSize": 0,
-            "LinkURL": ""
-          }
-        }
-      ],
-      "ListLevel": 1
-    },
-    {
-      "Elements": [
-        {
-          "Type": "text",
-          "Value": {
-            "Content": "Behandlende veterinær:",
-            "Flags": 1,
-            "FontSize": 0,
-            "LinkURL": ""
-          }
-        },
-        {
-          "Type": "text",
-          "Value": {
-            "Content": " \n",
-            "Flags": 0,
-            "FontSize": 0,
-            "LinkURL": ""
-          }
-        }
-      ],
-      "ListLevel": 1
-    },
-    {
-      "Elements": [
-        {
-          "Type": "text",
-          "Value": {
-            "Content": "Dato for veterinærbesøk:",
-            "Flags": 1,
-            "FontSize": 0,
-            "LinkURL": ""
-          }
-        },
-        {
-          "Type": "text",
-          "Value": {
-            "Content": " \n",
-            "Flags": 0,
-            "FontSize": 0,
-            "LinkURL": ""
-          }
-        }
-      ],
-      "ListLevel": 1
-    },
-    {
-      "Elements": [
-        {
-          "Type": "text",
-          "Value": {
-            "Content": "Avlivet eller dødd (dato):",
-            "Flags": 1,
-            "FontSize": 0,
-            "LinkURL": ""
-          }
-        },
-        {
-          "Type": "text",
-          "Value": {
-            "Content": " \n",
-            "Flags": 0,
-            "FontSize": 0,
-            "LinkURL": ""
-          }
-        }
-      ],
-      "ListLevel": 1
-    },
-    {
-      "Elements": [
-        {
-          "Type": "text",
-          "Value": {
-            "Content": "Sluppet fri (dato og sted):",
-            "Flags": 1,
-            "FontSize": 0,
-            "LinkURL": ""
-          }
-        },
-        {
-          "Type": "text",
-          "Value": {
-            "Content": " \n",
-            "Flags": 0,
-            "FontSize": 0,
-            "LinkURL": ""
-          }
-        }
-      ],
-      "ListLevel": 1
-    },
-    {
-      "Elements": [
-        {
-          "Type": "text",
-          "Value": {
-            "Content": "Førstehjelp\n",
-            "Flags": 1,
-            "FontSize": 18,
-            "LinkURL": ""
-          }
-        }
-      ],
-      "ListLevel": 0
-    },
-    {
-      "Elements": [
-        {
-          "Type": "text",
-          "Value": {
-            "Content": "Får mat og vann. Begynner å spise med en gang",
-            "Flags": 0,
-            "FontSize": 0,
-            "LinkURL": ""
-          }
-        },
-        {
-          "Type": "text",
-          "Value": {
-            "Content": "\n",
-            "Flags": 0,
-            "FontSize": 0,
-            "LinkURL": ""
-          }
-        }
-      ],
-      "ListLevel": 0
-    },
-    {
-      "Elements": [
-        {
-          "Type": "text",
-          "Value": {
-            "Content": "\n",
-            "Flags": 0,
-            "FontSize": 0,
-            "LinkURL": ""
-          }
-        }
-      ],
-      "ListLevel": 0
-    },
-    {
-      "Elements": [
-        {
-          "Type": "text",
-          "Value": {
-            "Content": "Videre tiltak og logg\n",
-            "Flags": 1,
-            "FontSize": 18,
-            "LinkURL": ""
-          }
-        }
-      ],
-      "ListLevel": 0
-    },
-    {
-      "Elements": [
-        {
-          "Type": "text",
-          "Value": {
-            "Content": "Kan antakelig slippes om et par uker.\n",
-            "Flags": 0,
-            "FontSize": 0,
-            "LinkURL": ""
-          }
-        }
-      ],
-      "ListLevel": 0
-    },
-    {
-      "Elements": [
-        {
-          "Type": "text",
-          "Value": {
-            "Content": "\n",
-            "Flags": 0,
-            "FontSize": 0,
-            "LinkURL": ""
-          }
-        }
-      ],
-      "ListLevel": 0
-    },
-    {
-      "Elements": [
-        {
-          "Type": "text",
-          "Value": {
-            "Content": "Rød ring for identifikasjon.\n",
-            "Flags": 0,
-            "FontSize": 0,
-            "LinkURL": ""
-          }
-        }
-      ],
-      "ListLevel": 0
-    },
-    {
-      "Elements": [
-        {
-          "Type": "text",
-          "Value": {
-            "Content": "\n",
-            "Flags": 0,
-            "FontSize": 0,
-            "LinkURL": ""
-          }
-        }
-      ],
-      "ListLevel": 0
-    },
-    {
-      "Elements": [
-        {
-          "Type": "text",
-          "Value": {
-            "Content": "Mot gjærsopp: nystatin BID 1ml/kg, så ca 0.25ml. Første dose 6. nov, siste 20. nov",
-            "Flags": 0,
-            "FontSize": 0,
-            "LinkURL": ""
-          }
-        },
-        {
-          "Type": "text",
-          "Value": {
-            "Content": "\n",
-            "Flags": 0,
-            "FontSize": 0,
-            "LinkURL": ""
-          }
-        }
-      ],
-      "ListLevel": 0
-    },
-    {
-      "Elements": [
-        {
-          "Type": "text",
-          "Value": {
-            "Content": "Bilder\n",
-            "Flags": 1,
-            "FontSize": 18,
-            "LinkURL": ""
-          }
-        }
-      ],
-      "ListLevel": 0
-    },
-    {
-      "Elements": [
-        {
-          "Type": "image",
-          "Value": {
-            "Title": "",
-            "Description": "",
-            "Width": 292.5,
-            "Height": 469.697021484375,
-            "Margin": [
-              9,
-              9,
-              9,
-              9
-            ],
-            "Crop": [
-              0.16466346,
-              0.20352565,
-              0.082616955,
-              0.17147435
-            ],
-            "URL": "/file/66/AD_4nXdQJ86oL_aDbk8KmvCSxH6YU1XIG7EzAUxbjk7AkBRwYzbLu89NBLLuwr-8RatBTMIwx3ONF18DdTiooInK5Txcw25VbS0o.png",
-            "Volatile": false,
-            "Angle": 0
-          }
-        },
-        {
-          "Type": "text",
-          "Value": {
-            "Content": "\n",
-            "Flags": 0,
-            "FontSize": 0,
-            "LinkURL": ""
-          }
-        }
-      ],
-      "ListLevel": 0
-    },
-    {
-      "Elements": [
-        {
-          "Type": "text",
-          "Value": {
-            "Content": "\n",
-            "Flags": 0,
-            "FontSize": 0,
-            "LinkURL": ""
-          }
-        }
-      ],
-      "ListLevel": 0
+        ]
+      }
     }
   ]
 }

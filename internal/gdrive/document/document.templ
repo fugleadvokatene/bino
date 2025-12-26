@@ -1,0 +1,83 @@
+package document
+
+templ (doc *Document) Templ() {
+    <article>
+    for _, elem := range doc.Content {
+        @elem.Value.Templ()
+    }
+    </article>
+}
+
+templ (para *Paragraph) Templ() {
+    <p>
+    for _, elem := range para.Elements {
+        @elem.Value.Templ()
+    }
+    </p>
+}
+
+templ (img *DocImage) Templ() {
+    <img src={img.URL}/>
+}
+
+templ (text *DocText) Templ() {
+    // pass 1: resolve header
+	if text.FontSize >= 34 {
+        <h1>
+            @text.templPass2()
+        </h1>
+	} else if text.FontSize >= 18 {
+        <h2>
+            @text.templPass2()
+        </h2>
+	} else if text.FontSize > 0 {
+        <h3>
+            @text.templPass2()
+        </h3>
+	} else {
+        @text.templPass2()
+    }
+}
+
+templ (text *DocText) templPass2() {
+    // pass 2: resolve flags
+    <span class={text.ClassesFromFlags()}>@text.templPass3()</span>
+}
+
+templ (text *DocText) templPass3() {
+    // pass 5: resolve url
+    if text.Flags & FlagLink != 0 {
+        <a class="journal-link" href={templ.URL(text.LinkURL)}>{text.Trim()}</a>
+    } else {
+        {text.Trim()}
+    }
+}
+
+templ (list *List) Templ() {
+    if list.Ordered {
+        @list.templOrdered()
+    } else {
+        @list.templUnordered()
+    }
+}
+
+templ (list *List) templOrdered() {
+    <ol class="journal-ordered-list">
+    for _, elem := range list.Items {
+        <li class="journal-list-item">
+            @elem.Value.Templ()
+        </li>
+    }
+    </ol>
+}
+
+templ (list *List) templUnordered() {
+    <ul class="journal-unordered-list">
+    for _, elem := range list.Items {
+        <li class="journal-list-item">
+            @elem.Value.Templ()
+        </li>
+    }
+    </ul>
+}
+

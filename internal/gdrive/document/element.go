@@ -4,13 +4,17 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+
+	"github.com/a-h/templ"
 )
 
 type Element struct {
 	Type  string
 	Value interface {
 		Markdown(w io.Writer)
+		IndexableText(w io.Writer)
 		Images() []*DocImage
+		Templ() templ.Component
 	}
 }
 
@@ -32,6 +36,18 @@ func (e *Element) UnmarshalJSON(b []byte) error {
 		e.Value = &v
 	case "image":
 		var v DocImage
+		if err := json.Unmarshal(aux.Value, &v); err != nil {
+			return err
+		}
+		e.Value = &v
+	case "paragraph":
+		var v Paragraph
+		if err := json.Unmarshal(aux.Value, &v); err != nil {
+			return err
+		}
+		e.Value = &v
+	case "list":
+		var v List
 		if err := json.Unmarshal(aux.Value, &v); err != nil {
 			return err
 		}

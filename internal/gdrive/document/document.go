@@ -12,17 +12,23 @@ type Document struct {
 	ID         string
 	Title      string
 	RevisionID string
-	Content    []Paragraph
+	Content    []Element
 }
 
 func (d *Document) Markdown(w io.Writer) {
 	for _, elem := range d.Content {
-		elem.Markdown(w)
+		elem.Value.Markdown(w)
+	}
+}
+func (d *Document) IndexableText(w io.Writer) {
+	for _, elem := range d.Content {
+		elem.Value.IndexableText(w)
+		io.WriteString(w, "\n")
 	}
 }
 
 func (d *Document) Images() []*DocImage {
-	return generic.Flatten(d.Content, func(in Paragraph) []*DocImage { return in.Images() })
+	return generic.Flatten(d.Content, func(in Element) []*DocImage { return in.Value.Images() })
 }
 
 func New(doc *docs.Document) (Document, error) {
@@ -58,19 +64,77 @@ func New(doc *docs.Document) (Document, error) {
 	return out, nil
 }
 
-func parseStructuralElements(elements []*docs.StructuralElement, inlineObjects map[string]docs.InlineObject) []Paragraph {
-	var out []Paragraph
+type listStack struct {
+	stack []*List
+}
+
+func (ls *listStack) top() *List {
+	if len(ls.stack) > 0 {
+		return ls.stack[len(ls.stack)-1]
+	}
+	return nil
+}
+
+func (ls *listStack) push() *List {
+	list := new(List)
+	ls.stack = append(ls.stack, list)
+	return list
+}
+
+func (ls *listStack) pop() *List {
+	var out *List
+	ls.stack, out = ls.stack[:len(ls.stack)-1], ls.stack[len(ls.stack)-1]
+	return out
+}
+
+func parseStructuralElements(elements []*docs.StructuralElement, inlineObjects map[string]docs.InlineObject) []Element {
+	var out []Element
+	var ls listStack
+	var currList *List
 	for _, elem := range elements {
 		para := elem.Paragraph
 		if para == nil {
 			continue
 		}
-		var newPara Paragraph
-		newPara.Elements = parseParagraphElements(para.Elements, inlineObjects)
-		if para.Bullet != nil {
-			newPara.ListLevel = para.Bullet.NestingLevel + 1
+		el := Element{
+			Type: "paragraph",
+			Value: &Paragraph{
+				Elements: parseParagraphElements(para.Elements, inlineObjects),
+			},
 		}
-		out = append(out, newPara)
+		if para.Bullet != nil {
+			nest := int(para.Bullet.NestingLevel)
+			if currList == nil {
+				currList = ls.push()
+			}
+			if currList.Nesting == nest {
+				currList.Items = append(currList.Items, el)
+			} else if currList.Nesting < nest {
+				currList = ls.push()
+				currList.Nesting = nest
+				currList.Items = append(currList.Items, el)
+			} else {
+				for currList.Nesting > nest {
+					popped := ls.pop()
+					currList = ls.top()
+					currList.Items = append(currList.Items, Element{
+						Type:  "list",
+						Value: popped,
+					})
+				}
+				currList.Nesting = nest
+				currList.Items = append(currList.Items, el)
+			}
+		} else {
+			if currList != nil {
+				out = append(out, Element{
+					Type:  "list",
+					Value: currList,
+				})
+			}
+			currList = nil
+			out = append(out, el)
+		}
 	}
 	return out
 }

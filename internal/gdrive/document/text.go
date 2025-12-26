@@ -15,6 +15,10 @@ type DocText struct {
 	LinkURL  string
 }
 
+func (dt *DocText) Trim() string {
+	return strings.TrimSpace(dt.Content)
+}
+
 func (di *DocText) Images() []*DocImage {
 	return nil
 }
@@ -57,6 +61,10 @@ func (dt *DocText) Markdown(w io.Writer) {
 	io.WriteString(w, contentTrimmedRight)
 }
 
+func (dt *DocText) IndexableText(w io.Writer) {
+	io.WriteString(w, dt.Trim())
+}
+
 func parseTextRun(textRun *docs.TextRun) Element {
 	style := textRun.TextStyle
 	var out DocText
@@ -84,4 +92,21 @@ func parseTextRun(textRun *docs.TextRun) Element {
 		Type:  "text",
 		Value: &out,
 	}
+}
+
+func (dt *DocText) ClassesFromFlags() []string {
+	var out []string
+	if dt.Flags&FlagBold != 0 {
+		out = append(out, "journal-bold")
+	}
+	if dt.Flags&FlagItalic != 0 {
+		out = append(out, "journal-italic")
+	}
+	if dt.Flags&FlagStrikethrough != 0 {
+		out = append(out, "journal-strikethrough")
+	}
+	if dt.Flags&FlagUnderline != 0 {
+		out = append(out, "journal-underline")
+	}
+	return out
 }

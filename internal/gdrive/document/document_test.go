@@ -31,9 +31,17 @@ func TestDocument(t *testing.T) {
 	if err != nil {
 		t.Fatalf("reading test.json: %v", err)
 	}
+	txtText, err := dir.ReadFile("test.txt")
+	if err != nil {
+		t.Fatalf("reading test.txt: %v", err)
+	}
 	mdText, err := dir.ReadFile("test.md")
 	if err != nil {
 		t.Fatalf("reading test.md: %v", err)
+	}
+	htmlText, err := dir.ReadFile("test.html")
+	if err != nil {
+		t.Fatalf("reading test.html: %v", err)
 	}
 
 	var doc Document
@@ -41,9 +49,24 @@ func TestDocument(t *testing.T) {
 		t.Fatalf("unmarshalling test doc: %v", err)
 	}
 
+	var txtBuffer bytes.Buffer
+	doc.IndexableText(&txtBuffer)
+	dir.WriteFile("actual.txt", txtBuffer.Bytes(), 0600)
+	if s := strings.TrimSpace(txtBuffer.String()); s != strings.TrimSpace(string(txtText)) {
+		t.Fatal("incorrect IndexableText, if the expected output has changed please copy actual.txt to test.txt", string(txtText), s)
+	}
+
 	var mdBuffer bytes.Buffer
 	doc.Markdown(&mdBuffer)
+	dir.WriteFile("actual.md", mdBuffer.Bytes(), 0600)
 	if s := strings.TrimSpace(mdBuffer.String()); s != strings.TrimSpace(string(mdText)) {
-		t.Fatalf("incorrect markdown, want:\n\n%s\n\ngot:\n\n%s\n\n", string(mdText), s)
+		t.Fatal("incorrect Markdown, if the expected output has changed please copy actual.md to test.md", string(mdText), s)
+	}
+
+	var htmlBuffer bytes.Buffer
+	doc.Templ().Render(ctx, &htmlBuffer)
+	dir.WriteFile("actual.html", htmlBuffer.Bytes(), 0600)
+	if s := strings.TrimSpace(htmlBuffer.String()); s != strings.TrimSpace(string(htmlText)) {
+		t.Fatal("incorrect HTML, if the expected output has changed please copy actual.html to test.html", string(htmlText), s)
 	}
 }

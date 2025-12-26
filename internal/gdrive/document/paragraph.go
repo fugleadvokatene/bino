@@ -7,8 +7,7 @@ import (
 )
 
 type Paragraph struct {
-	Elements  []Element
-	ListLevel int64
+	Elements []Element
 }
 
 func (dp *Paragraph) Images() []*DocImage {
@@ -16,13 +15,14 @@ func (dp *Paragraph) Images() []*DocImage {
 }
 
 func (dt *Paragraph) Markdown(w io.Writer) {
-	if dt.ListLevel > 0 {
-		for range dt.ListLevel - 1 {
-			io.WriteString(w, "  ")
-		}
-		io.WriteString(w, "- ")
-	}
 	for _, elem := range dt.Elements {
 		elem.Value.Markdown(w)
+	}
+}
+
+func (dt *Paragraph) IndexableText(w io.Writer) {
+	for _, elem := range dt.Elements {
+		elem.Value.IndexableText(w)
+		io.WriteString(w, " ")
 	}
 }
