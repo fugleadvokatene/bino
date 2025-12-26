@@ -69,16 +69,9 @@ func (h *fetchImage) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if resp.Success == 0 {
-		uuid, err := db.UploadImageFromURL(ctx, req.URL, h.DB)
+		fileInfo, fileID, err := db.UploadImageFromURL(ctx, req.URL, h.DB)
 		if err != nil {
-			request.LogError(r, fmt.Errorf("uploading image: %w", err))
-			w.WriteHeader(http.StatusInternalServerError)
-			return
-		}
-
-		fileInfo, fileID, err := h.DB.CommitFile(ctx, uuid)
-		if err != nil {
-			request.LogError(r, fmt.Errorf("committing file db: %w", err))
+			request.LogError(r, fmt.Errorf("uploadign image db: %w", err))
 			w.WriteHeader(http.StatusInternalServerError)
 			return
 		} else {

@@ -17,45 +17,34 @@ func (db *Database) StoreUserAvatars(ctx context.Context) (int64, error) {
 		return 0, err
 	}
 
-	// Upload images, keeping track of the mapping from uuid to user id
-	fileIDToUserID := make(map[string]int32)
+	// Upload images, keeping track of the mapping from id to user id
+	commitResults := make(map[int32]model.FileInfo)
+	fileIDToUserID := make(map[int32]int32)
 	for _, user := range users {
-		uuid, err := UploadImageFromURL(ctx, user.AvatarUrl.String, db)
+		fileInfo, id, err := UploadImageFromURL(ctx, user.AvatarUrl.String, db)
 		if err != nil {
 			slog.Warn("Unable to upload image", "err", err, "url", user.AvatarUrl.String)
 			continue
 		}
-		if uuid == "" {
+		if id == 0 {
 			slog.Warn("Got empty UUID after upload")
 			continue
 		}
-		slog.Info("Uploaded image", "uuid", uuid, "originalURL", user.AvatarUrl.String)
-		fileIDToUserID[uuid] = user.ID
-	}
-
-	// Commit images
-	commitResults := make(map[string]model.FileInfo)
-	fileIDs := make(map[string]int32)
-	for uuid := range fileIDToUserID {
-		result, fileID, err := db.CommitFile(ctx, uuid)
-		if err == nil {
-			commitResults[uuid] = result
-			fileIDs[uuid] = fileID
-		} else {
-			slog.Error("Committing file", "uuid", uuid, "err", err)
-		}
+		slog.Info("Uploaded image", "id", id, "originalURL", user.AvatarUrl.String)
+		commitResults[id] = fileInfo
+		fileIDToUserID[id] = user.ID
 	}
 
 	// Register images to publish them
 	if err := db.Transaction(ctx, func(ctx context.Context, db *Database) error {
 		errs := []error{}
-		for uuid, fileInfo := range commitResults {
-			userID, found := fileIDToUserID[uuid]
+		for fileID, fileInfo := range commitResults {
+			userID, found := fileIDToUserID[fileID]
 			if !found {
 				continue
 			}
 			if err := db.Q.UpdateUserAvatar(ctx, sql.UpdateUserAvatarParams{
-				Url: pgtype.Text{String: model.FileURL(fileIDs[uuid], fileInfo.FileName), Valid: true},
+				Url: pgtype.Text{String: model.FileURL(fileID, fileInfo.FileName), Valid: true},
 				ID:  userID,
 			}); err != nil {
 				slog.Warn("Unable to update user avatar", "err", err)

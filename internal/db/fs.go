@@ -156,22 +156,35 @@ func (db *Database) CommitFile(ctx context.Context, uuid string) (model.FileInfo
 	if uuid == "" {
 		return model.FileInfo{}, 0, fmt.Errorf("got empty uuid")
 	}
+
+	// Check metadata
+	meta, err := db.readMetaFile(ctx, db.TmpRoot, uuid)
+	if err != nil {
+		return model.FileInfo{}, 0, err
+	}
+
+	// Compute SHA256 hash of file
+	hash, err := db.Sha256File(ctx, db.TmpRoot, uuid, meta.FileName)
+	if err != nil {
+		slog.ErrorContext(ctx, "Couldn't compute file hash", "err", err, "uuid", uuid, "filename", meta.FileName)
+		hash = nil
+	}
+
+	// Lookup duplicate
+	if prev, err := db.Q.GetFileBySizeAndHash(ctx, sql.GetFileBySizeAndHashParams{
+		Size:   meta.Size,
+		Sha256: hash,
+	}); err == nil {
+		slog.InfoContext(ctx, "Found duplicate", "uuid", uuid)
+		return meta, prev.ID, nil
+	}
+
+	// Move the file over
 	tmpDir := db.tmpDirectory + "/" + uuid
 	mainDir := db.mainDirectory + "/" + uuid
 	if err := os.Rename(tmpDir, mainDir); err != nil {
 		return model.FileInfo{}, 0, err
 	}
-	meta, err := db.readMetaFile(ctx, db.MainRoot, uuid)
-	if err != nil {
-		return model.FileInfo{}, 0, err
-	}
-
-	hash, err := db.Sha256File(ctx, db.MainRoot, uuid, meta.FileName)
-	if err != nil {
-		slog.ErrorContext(ctx, "Couldn't create file hash", "err", err, "uuid", uuid, "filename", meta.FileName)
-		hash = nil
-	}
-
 	fileID, err := db.Q.PublishFile(ctx, sql.PublishFileParams{
 		Uuid:     uuid,
 		Created:  pgtype.Timestamptz{Time: time.Now(), Valid: true},
