@@ -19,8 +19,6 @@ type Language struct {
 	AccessLevel  string
 	AccessLevels map[model.AccessLevel]string
 
-	FileAccessibility map[model.FileAccessibility]string
-
 	AdminDisplayName            string
 	AdminEmailAddress           string
 	AdminInviteToBino           string
@@ -361,11 +359,6 @@ var NO = &Language{
 		model.AccessLevelRehabber:    "Rehabilitør",
 		model.AccessLevelNone:        "Bruker",
 	},
-	FileAccessibility: map[model.FileAccessibility]string{
-		model.FileAccessibilityPersonal: "Synlig for bare deg",
-		model.FileAccessibilityInternal: "Synlig for innloggede",
-		model.FileAccessibilityPublic:   "Synlig for hele internett",
-	},
 
 	AdminDisplayName:            "Navn",
 	AdminEmailAddress:           "Epostaddresse",
@@ -669,11 +662,6 @@ var EN = &Language{
 		model.AccessLevelCoordinator: "Coordinator",
 		model.AccessLevelRehabber:    "Rehabilitator",
 		model.AccessLevelNone:        "User",
-	},
-	FileAccessibility: map[model.FileAccessibility]string{
-		model.FileAccessibilityPersonal: "Visible for you",
-		model.FileAccessibilityInternal: "Visible for logged-in users",
-		model.FileAccessibilityPublic:   "Visible for the entire internet",
 	},
 
 	AdminDisplayName:            "Name",

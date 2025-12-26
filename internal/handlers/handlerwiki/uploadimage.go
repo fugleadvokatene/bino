@@ -18,7 +18,6 @@ type uploadImage struct {
 
 func (h *uploadImage) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-	data := request.MustLoadCommonData(ctx)
 
 	var resp WikiImageResponse
 	defer func() {
@@ -53,7 +52,6 @@ func (h *uploadImage) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		FileName: header.Filename,
 		MIMEType: header.Header.Get("Content-Type"),
 		Size:     header.Size,
-		Creator:  data.User.AppuserID,
 		Created:  time.Now(),
 	})
 	if err != nil {

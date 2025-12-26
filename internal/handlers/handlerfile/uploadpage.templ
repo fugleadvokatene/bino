@@ -67,9 +67,6 @@ templ FileViewComponent(data *request.CommonData, file *model.File) {
             <div>
                 <div class="user-file-name editable" data-action={file.EditPresentationFilenameURL()}>{file.PresentationFilename}</div>
                 <div class="user-metadata d-flex gap-2">
-                    @Trivia("user-file-accessibility") {
-                        {data.Language.FileAccessibility[file.Accessibility]}
-                    }
                     @Trivia("user-file-created") {
                         {data.Language.FormatTimeAbs(file.Created)}
                     }

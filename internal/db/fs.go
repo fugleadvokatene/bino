@@ -173,14 +173,12 @@ func (db *Database) CommitFile(ctx context.Context, uuid string) (model.FileInfo
 	}
 
 	fileID, err := db.Q.PublishFile(ctx, sql.PublishFileParams{
-		Uuid:          uuid,
-		Creator:       meta.Creator,
-		Created:       pgtype.Timestamptz{Time: time.Now(), Valid: true},
-		Accessibility: int32(model.FileAccessibilityInternal),
-		Filename:      meta.FileName,
-		Mimetype:      meta.MIMEType,
-		Size:          meta.Size,
-		Sha256:        hash,
+		Uuid:     uuid,
+		Created:  pgtype.Timestamptz{Time: time.Now(), Valid: true},
+		Filename: meta.FileName,
+		Mimetype: meta.MIMEType,
+		Size:     meta.Size,
+		Sha256:   hash,
 	})
 
 	if err != nil {

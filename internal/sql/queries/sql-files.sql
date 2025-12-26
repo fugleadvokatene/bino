@@ -1,9 +1,9 @@
 -- name: PublishFile :one
 INSERT
 INTO file
-  (uuid, accessibility, creator, created, filename, presentation_filename, mimetype, size, sha256)
+  (uuid, created, filename, presentation_filename, mimetype, size, sha256)
 VALUES 
-  (@uuid, @accessibility, @creator, @created, @filename, @filename, @mimetype, @size, @sha256)
+  (@uuid, @created, @filename, @filename, @mimetype, @size, @sha256)
 RETURNING id
 ;
 
@@ -27,12 +27,9 @@ FROM image_variant
 WHERE file_id=$1 AND variant=$2
 ;
 
--- name: GetFilesAccessibleByUser :many
+-- name: GetFiles :many
 SELECT *
 FROM file
-WHERE
-      creator = @creator
-  OR accessibility >= @accessibility
 ;
 
 -- name: GetAllFileWikiAssociations :many
@@ -40,40 +37,31 @@ SELECT * from file_wiki
 ;
 
 
--- name: GetFileWikiAssociationsAccessibleByUser :many
+-- name: GetFileWikiAssociations :many
 SELECT fw.file_id, fw.wiki_id, wp.title
 FROM file
 INNER JOIN file_wiki AS fw
   ON file.id = fw.file_id
 INNER JOIN wiki_page AS wp
   ON wp.id = fw.wiki_id
-WHERE
-      file.creator = @creator
-  OR accessibility >= @accessibility
 ORDER BY fw.wiki_id
 ;
 
--- name: GetFilePatientAssociationsAccessibleByUser :many
+-- name: GetFilePatientAssociations :many
 SELECT fp.file_id, fp.patient_id, p.name
 FROM file
 INNER JOIN file_patient AS fp
   ON file.id = fp.file_id
 INNER JOIN patient AS p
   ON p.id = fp.patient_id
-WHERE
-      file.creator = @creator
-  OR accessibility >= @accessibility
 ORDER BY fp.patient_id
 ;
 
--- name: GetImageVariantsAccessibleByUser :many
+-- name: GetImageVariants :many
 SELECT iv.*
 FROM file
 INNER JOIN image_variant AS iv
   ON file.id = iv.file_id
-WHERE
-      file.creator = @creator
-  OR accessibility >= @accessibility
 ORDER BY iv.variant DESC
 ;
 

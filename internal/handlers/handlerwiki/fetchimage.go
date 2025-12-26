@@ -30,7 +30,6 @@ type WikiImageResponse struct {
 
 func (h *fetchImage) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-	data := request.MustLoadCommonData(ctx)
 
 	var resp WikiImageResponse
 	defer func() {
@@ -70,7 +69,7 @@ func (h *fetchImage) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if resp.Success == 0 {
-		uuid, err := db.UploadImageFromURL(ctx, req.URL, h.DB, data.User.AppuserID)
+		uuid, err := db.UploadImageFromURL(ctx, req.URL, h.DB)
 		if err != nil {
 			request.LogError(r, fmt.Errorf("uploading image: %w", err))
 			w.WriteHeader(http.StatusInternalServerError)

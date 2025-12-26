@@ -37,7 +37,7 @@ func (q *Queries) GetAllFileWikiAssociations(ctx context.Context) ([]FileWiki, e
 }
 
 const getFileByID = `-- name: GetFileByID :one
-SELECT id, uuid, creator, created, accessibility, filename, mimetype, size, presentation_filename, miniatures_created, sha256
+SELECT id, uuid, created, filename, mimetype, size, presentation_filename, miniatures_created, sha256
 FROM file
 WHERE id = $1
 `
@@ -48,9 +48,7 @@ func (q *Queries) GetFileByID(ctx context.Context, id int32) (File, error) {
 	err := row.Scan(
 		&i.ID,
 		&i.Uuid,
-		&i.Creator,
 		&i.Created,
-		&i.Accessibility,
 		&i.Filename,
 		&i.Mimetype,
 		&i.Size,
@@ -62,7 +60,7 @@ func (q *Queries) GetFileByID(ctx context.Context, id int32) (File, error) {
 }
 
 const getFileBySizeAndHash = `-- name: GetFileBySizeAndHash :one
-SELECT id, uuid, creator, created, accessibility, filename, mimetype, size, presentation_filename, miniatures_created, sha256
+SELECT id, uuid, created, filename, mimetype, size, presentation_filename, miniatures_created, sha256
 FROM file
 WHERE size = $1 AND sha256 = $2
 LIMIT 1
@@ -79,9 +77,7 @@ func (q *Queries) GetFileBySizeAndHash(ctx context.Context, arg GetFileBySizeAnd
 	err := row.Scan(
 		&i.ID,
 		&i.Uuid,
-		&i.Creator,
 		&i.Created,
-		&i.Accessibility,
 		&i.Filename,
 		&i.Mimetype,
 		&i.Size,
@@ -92,39 +88,31 @@ func (q *Queries) GetFileBySizeAndHash(ctx context.Context, arg GetFileBySizeAnd
 	return i, err
 }
 
-const getFilePatientAssociationsAccessibleByUser = `-- name: GetFilePatientAssociationsAccessibleByUser :many
+const getFilePatientAssociations = `-- name: GetFilePatientAssociations :many
 SELECT fp.file_id, fp.patient_id, p.name
 FROM file
 INNER JOIN file_patient AS fp
   ON file.id = fp.file_id
 INNER JOIN patient AS p
   ON p.id = fp.patient_id
-WHERE
-      file.creator = $1
-  OR accessibility >= $2
 ORDER BY fp.patient_id
 `
 
-type GetFilePatientAssociationsAccessibleByUserParams struct {
-	Creator       int32
-	Accessibility int32
-}
-
-type GetFilePatientAssociationsAccessibleByUserRow struct {
+type GetFilePatientAssociationsRow struct {
 	FileID    int32
 	PatientID int32
 	Name      string
 }
 
-func (q *Queries) GetFilePatientAssociationsAccessibleByUser(ctx context.Context, arg GetFilePatientAssociationsAccessibleByUserParams) ([]GetFilePatientAssociationsAccessibleByUserRow, error) {
-	rows, err := q.db.Query(ctx, getFilePatientAssociationsAccessibleByUser, arg.Creator, arg.Accessibility)
+func (q *Queries) GetFilePatientAssociations(ctx context.Context) ([]GetFilePatientAssociationsRow, error) {
+	rows, err := q.db.Query(ctx, getFilePatientAssociations)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []GetFilePatientAssociationsAccessibleByUserRow
+	var items []GetFilePatientAssociationsRow
 	for rows.Next() {
-		var i GetFilePatientAssociationsAccessibleByUserRow
+		var i GetFilePatientAssociationsRow
 		if err := rows.Scan(&i.FileID, &i.PatientID, &i.Name); err != nil {
 			return nil, err
 		}
@@ -136,39 +124,31 @@ func (q *Queries) GetFilePatientAssociationsAccessibleByUser(ctx context.Context
 	return items, nil
 }
 
-const getFileWikiAssociationsAccessibleByUser = `-- name: GetFileWikiAssociationsAccessibleByUser :many
+const getFileWikiAssociations = `-- name: GetFileWikiAssociations :many
 SELECT fw.file_id, fw.wiki_id, wp.title
 FROM file
 INNER JOIN file_wiki AS fw
   ON file.id = fw.file_id
 INNER JOIN wiki_page AS wp
   ON wp.id = fw.wiki_id
-WHERE
-      file.creator = $1
-  OR accessibility >= $2
 ORDER BY fw.wiki_id
 `
 
-type GetFileWikiAssociationsAccessibleByUserParams struct {
-	Creator       int32
-	Accessibility int32
-}
-
-type GetFileWikiAssociationsAccessibleByUserRow struct {
+type GetFileWikiAssociationsRow struct {
 	FileID int32
 	WikiID int32
 	Title  string
 }
 
-func (q *Queries) GetFileWikiAssociationsAccessibleByUser(ctx context.Context, arg GetFileWikiAssociationsAccessibleByUserParams) ([]GetFileWikiAssociationsAccessibleByUserRow, error) {
-	rows, err := q.db.Query(ctx, getFileWikiAssociationsAccessibleByUser, arg.Creator, arg.Accessibility)
+func (q *Queries) GetFileWikiAssociations(ctx context.Context) ([]GetFileWikiAssociationsRow, error) {
+	rows, err := q.db.Query(ctx, getFileWikiAssociations)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []GetFileWikiAssociationsAccessibleByUserRow
+	var items []GetFileWikiAssociationsRow
 	for rows.Next() {
-		var i GetFileWikiAssociationsAccessibleByUserRow
+		var i GetFileWikiAssociationsRow
 		if err := rows.Scan(&i.FileID, &i.WikiID, &i.Title); err != nil {
 			return nil, err
 		}
@@ -180,21 +160,13 @@ func (q *Queries) GetFileWikiAssociationsAccessibleByUser(ctx context.Context, a
 	return items, nil
 }
 
-const getFilesAccessibleByUser = `-- name: GetFilesAccessibleByUser :many
-SELECT id, uuid, creator, created, accessibility, filename, mimetype, size, presentation_filename, miniatures_created, sha256
+const getFiles = `-- name: GetFiles :many
+SELECT id, uuid, created, filename, mimetype, size, presentation_filename, miniatures_created, sha256
 FROM file
-WHERE
-      creator = $1
-  OR accessibility >= $2
 `
 
-type GetFilesAccessibleByUserParams struct {
-	Creator       int32
-	Accessibility int32
-}
-
-func (q *Queries) GetFilesAccessibleByUser(ctx context.Context, arg GetFilesAccessibleByUserParams) ([]File, error) {
-	rows, err := q.db.Query(ctx, getFilesAccessibleByUser, arg.Creator, arg.Accessibility)
+func (q *Queries) GetFiles(ctx context.Context) ([]File, error) {
+	rows, err := q.db.Query(ctx, getFiles)
 	if err != nil {
 		return nil, err
 	}
@@ -205,9 +177,7 @@ func (q *Queries) GetFilesAccessibleByUser(ctx context.Context, arg GetFilesAcce
 		if err := rows.Scan(
 			&i.ID,
 			&i.Uuid,
-			&i.Creator,
 			&i.Created,
-			&i.Accessibility,
 			&i.Filename,
 			&i.Mimetype,
 			&i.Size,
@@ -226,7 +196,7 @@ func (q *Queries) GetFilesAccessibleByUser(ctx context.Context, arg GetFilesAcce
 }
 
 const getFilesMissingHash = `-- name: GetFilesMissingHash :many
-SELECT id, uuid, creator, created, accessibility, filename, mimetype, size, presentation_filename, miniatures_created, sha256
+SELECT id, uuid, created, filename, mimetype, size, presentation_filename, miniatures_created, sha256
 FROM file
 WHERE sha256 IS NULL
 `
@@ -243,9 +213,7 @@ func (q *Queries) GetFilesMissingHash(ctx context.Context) ([]File, error) {
 		if err := rows.Scan(
 			&i.ID,
 			&i.Uuid,
-			&i.Creator,
 			&i.Created,
-			&i.Accessibility,
 			&i.Filename,
 			&i.Mimetype,
 			&i.Size,
@@ -264,7 +232,7 @@ func (q *Queries) GetFilesMissingHash(ctx context.Context) ([]File, error) {
 }
 
 const getFilesMissingMiniatures = `-- name: GetFilesMissingMiniatures :many
-SELECT f.id, f.uuid, f.creator, f.created, f.accessibility, f.filename, f.mimetype, f.size, f.presentation_filename, f.miniatures_created, f.sha256
+SELECT f.id, f.uuid, f.created, f.filename, f.mimetype, f.size, f.presentation_filename, f.miniatures_created, f.sha256
 FROM file AS f
 WHERE NOT f.miniatures_created
 `
@@ -281,9 +249,7 @@ func (q *Queries) GetFilesMissingMiniatures(ctx context.Context) ([]File, error)
 		if err := rows.Scan(
 			&i.ID,
 			&i.Uuid,
-			&i.Creator,
 			&i.Created,
-			&i.Accessibility,
 			&i.Filename,
 			&i.Mimetype,
 			&i.Size,
@@ -302,7 +268,7 @@ func (q *Queries) GetFilesMissingMiniatures(ctx context.Context) ([]File, error)
 }
 
 const getFilesMissingOriginalVariant = `-- name: GetFilesMissingOriginalVariant :many
-SELECT f.id, f.uuid, f.creator, f.created, f.accessibility, f.filename, f.mimetype, f.size, f.presentation_filename, f.miniatures_created, f.sha256
+SELECT f.id, f.uuid, f.created, f.filename, f.mimetype, f.size, f.presentation_filename, f.miniatures_created, f.sha256
 FROM file AS f
 LEFT JOIN image_variant AS iv
   ON f.id = iv.file_id
@@ -321,9 +287,7 @@ func (q *Queries) GetFilesMissingOriginalVariant(ctx context.Context) ([]File, e
 		if err := rows.Scan(
 			&i.ID,
 			&i.Uuid,
-			&i.Creator,
 			&i.Created,
-			&i.Accessibility,
 			&i.Filename,
 			&i.Mimetype,
 			&i.Size,
@@ -341,24 +305,16 @@ func (q *Queries) GetFilesMissingOriginalVariant(ctx context.Context) ([]File, e
 	return items, nil
 }
 
-const getImageVariantsAccessibleByUser = `-- name: GetImageVariantsAccessibleByUser :many
+const getImageVariants = `-- name: GetImageVariants :many
 SELECT iv.file_id, iv.variant, iv.filename, iv.mimetype, iv.size, iv.width, iv.height, iv.sha256
 FROM file
 INNER JOIN image_variant AS iv
   ON file.id = iv.file_id
-WHERE
-      file.creator = $1
-  OR accessibility >= $2
 ORDER BY iv.variant DESC
 `
 
-type GetImageVariantsAccessibleByUserParams struct {
-	Creator       int32
-	Accessibility int32
-}
-
-func (q *Queries) GetImageVariantsAccessibleByUser(ctx context.Context, arg GetImageVariantsAccessibleByUserParams) ([]ImageVariant, error) {
-	rows, err := q.db.Query(ctx, getImageVariantsAccessibleByUser, arg.Creator, arg.Accessibility)
+func (q *Queries) GetImageVariants(ctx context.Context) ([]ImageVariant, error) {
+	rows, err := q.db.Query(ctx, getImageVariants)
 	if err != nil {
 		return nil, err
 	}
@@ -466,28 +422,24 @@ func (q *Queries) GetVariant(ctx context.Context, arg GetVariantParams) (ImageVa
 const publishFile = `-- name: PublishFile :one
 INSERT
 INTO file
-  (uuid, accessibility, creator, created, filename, presentation_filename, mimetype, size, sha256)
+  (uuid, created, filename, presentation_filename, mimetype, size, sha256)
 VALUES 
-  ($1, $2, $3, $4, $5, $5, $6, $7, $8)
+  ($1, $2, $3, $3, $4, $5, $6)
 RETURNING id
 `
 
 type PublishFileParams struct {
-	Uuid          string
-	Accessibility int32
-	Creator       int32
-	Created       pgtype.Timestamptz
-	Filename      string
-	Mimetype      string
-	Size          int64
-	Sha256        []byte
+	Uuid     string
+	Created  pgtype.Timestamptz
+	Filename string
+	Mimetype string
+	Size     int64
+	Sha256   []byte
 }
 
 func (q *Queries) PublishFile(ctx context.Context, arg PublishFileParams) (int32, error) {
 	row := q.db.QueryRow(ctx, publishFile,
 		arg.Uuid,
-		arg.Accessibility,
-		arg.Creator,
 		arg.Created,
 		arg.Filename,
 		arg.Mimetype,

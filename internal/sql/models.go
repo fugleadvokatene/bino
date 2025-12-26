@@ -35,9 +35,7 @@ type FeatureFlag struct {
 type File struct {
 	ID                   int32
 	Uuid                 string
-	Creator              int32
 	Created              pgtype.Timestamptz
-	Accessibility        int32
 	Filename             string
 	Mimetype             string
 	Size                 int64

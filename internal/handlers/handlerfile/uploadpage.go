@@ -18,7 +18,7 @@ func (h *uploadPage) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	data.Subtitle = data.Language.FilesUploadHeader
 
-	files, err := h.DB.GetFilesAccessibleByUser(ctx, data.User.AppuserID)
+	files, err := h.DB.GetFiles(ctx)
 	if err != nil {
 		handlererror.Error(w, r, err)
 		return

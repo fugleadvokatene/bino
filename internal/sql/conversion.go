@@ -277,8 +277,6 @@ func ParseJSON[T any](extraData string) *T {
 func (in *File) ToModel() model.File {
 	return model.File{
 		ID:                   in.ID,
-		Creator:              in.Creator,
-		Accessibility:        model.FileAccessibility(in.Accessibility),
 		Created:              in.Created.Time,
 		UUID:                 in.Uuid,
 		OriginalFilename:     in.Filename,
@@ -341,7 +339,7 @@ func (gefcr GetEventsForCalendarRow) ToModel(language *language.Language) calend
 
 // ---- File Wiki association
 
-func (in *GetFileWikiAssociationsAccessibleByUserRow) ToModel() model.FileWikiAssociation {
+func (in *GetFileWikiAssociationsRow) ToModel() model.FileWikiAssociation {
 	return model.FileWikiAssociation{
 		FileID:    in.FileID,
 		WikiID:    in.WikiID,
@@ -351,7 +349,7 @@ func (in *GetFileWikiAssociationsAccessibleByUserRow) ToModel() model.FileWikiAs
 
 // ---- File Patient association
 
-func (in *GetFilePatientAssociationsAccessibleByUserRow) ToModel() model.FilePatientAssociation {
+func (in *GetFilePatientAssociationsRow) ToModel() model.FilePatientAssociation {
 	return model.FilePatientAssociation{
 		FileID:      in.FileID,
 		PatientID:   in.PatientID,

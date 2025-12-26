@@ -69,7 +69,6 @@ func (h *filepondProcess) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		FileName: header.Filename,
 		MIMEType: header.Header.Get("Content-Type"),
 		Size:     header.Size,
-		Creator:  data.User.AppuserID,
 		Created:  time.Now(),
 	})
 	if err != nil {

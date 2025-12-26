@@ -39,20 +39,10 @@ func (h *Read) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	fileView := file.ToModel()
 
-	switch fileView.Accessibility {
-	case model.FileAccessibilityPublic:
-	case model.FileAccessibilityInternal:
-		cd, err := request.LoadCommonData(ctx)
-		if err != nil || cd == nil || cd.User == nil {
-			request.AjaxError(w, r, err, http.StatusUnauthorized)
-			return
-		}
-	case model.FileAccessibilityPersonal:
-		cd, err := request.LoadCommonData(ctx)
-		if err != nil || cd.User.AppuserID != fileView.Creator {
-			request.AjaxError(w, r, err, http.StatusUnauthorized)
-			return
-		}
+	cd, err := request.LoadCommonData(ctx)
+	if err != nil || cd == nil || cd.User == nil {
+		request.AjaxError(w, r, err, http.StatusUnauthorized)
+		return
 	}
 
 	// Option to serve smaller versions

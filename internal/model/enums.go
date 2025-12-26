@@ -92,13 +92,6 @@ func (fbt FB) CSSClass() string {
 }
 
 // ENUM(
-// Personal=0,
-// Internal=1,
-// Public=2,
-// )
-type FileAccessibility int32
-
-// ENUM(
 //
 //	GetFile,
 //	InviteUser,

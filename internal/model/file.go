@@ -14,14 +14,11 @@ type FileInfo struct {
 	MIMEType string
 	Size     int64
 	Created  time.Time
-	Creator  int32
 }
 
 type File struct {
 	ID                   int32
 	UUID                 string
-	Creator              int32
-	Accessibility        FileAccessibility
 	Created              time.Time
 	OriginalFilename     string
 	PresentationFilename string
@@ -39,7 +36,6 @@ func (in *File) FileInfo() FileInfo {
 		MIMEType: in.MIMEType,
 		Size:     in.Size,
 		Created:  in.Created,
-		Creator:  in.Creator,
 	}
 }
 
