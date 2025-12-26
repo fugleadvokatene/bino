@@ -68,10 +68,9 @@ func (db *Database) Transaction(ctx context.Context, f func(ctx context.Context,
 	if err != nil {
 		return fmt.Errorf("starting database transaction: %w", err)
 	}
-	err = f(ctx, &Database{
-		Q:    db.Q.WithTx(tx),
-		Conn: db.Conn,
-	})
+	child := *db
+	child.Q = db.Q.WithTx(tx)
+	err = f(ctx, &child)
 	if err == nil {
 		err = tx.Commit(ctx)
 	} else {

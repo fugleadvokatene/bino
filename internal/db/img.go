@@ -46,6 +46,9 @@ type Miniature struct {
 }
 
 func WithFileDir[T any](ctx context.Context, dir *os.Root, uuid string, f func(context.Context, *os.Root) (T, error)) (T, error) {
+	if dir == nil {
+		return *new(T), fmt.Errorf("called WithFileDir on nil dir")
+	}
 	subdir, err := dir.OpenRoot(uuid)
 	if err != nil {
 		return *new(T), fmt.Errorf("no subdirectory named '%s' in main directory: %w", uuid, err)
