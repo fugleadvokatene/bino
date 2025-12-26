@@ -19,11 +19,6 @@ const (
 	MaxImageSize = 20 * 1024 * 1024
 )
 
-type DeleteResult struct {
-	Error          error
-	HTTPStatusCode int
-}
-
 type ReadResult struct {
 	Data           []byte
 	FileInfo       model.FileInfo
@@ -84,28 +79,20 @@ func (db *Database) UploadFile(ctx context.Context, data io.Reader, fileInfo mod
 	return id, nil
 }
 
-func (db *Database) deleteFile(_ context.Context, dir *os.Root, id string) (out DeleteResult) {
+func (db *Database) deleteFile(_ context.Context, dir *os.Root, id string) error {
 	if err := uuid.Validate(id); err != nil {
-		return DeleteResult{
-			Error:          fmt.Errorf("'%s' is not a valid UUID: %w", id, err),
-			HTTPStatusCode: http.StatusBadRequest,
-		}
+		return newFileError(http.StatusBadRequest, "'%s' is not a valid UUID: %w", id, err)
 	}
 
 	// Delete directory
 	if err := dir.RemoveAll(id); err != nil {
-		return DeleteResult{
-			Error:          err,
-			HTTPStatusCode: http.StatusInternalServerError,
-		}
+		return newFileError(http.StatusInternalServerError, "%w", err)
 	}
 
-	return DeleteResult{
-		HTTPStatusCode: http.StatusOK,
-	}
+	return nil
 }
 
-func (db *Database) DeleteTempFile(ctx context.Context, id string) (out DeleteResult) {
+func (db *Database) DeleteTempFile(ctx context.Context, id string) error {
 	return db.deleteFile(ctx, db.TmpRoot, id)
 }
 
@@ -244,6 +231,6 @@ func (db *Database) OpenFile(ctx context.Context, id string, filename string) (i
 	return file, nil
 }
 
-func (db *Database) DeleteFile(ctx context.Context, id string) (out DeleteResult) {
+func (db *Database) DeleteFile(ctx context.Context, id string) error {
 	return db.deleteFile(ctx, db.MainRoot, id)
 }

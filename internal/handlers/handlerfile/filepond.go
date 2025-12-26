@@ -125,8 +125,8 @@ func (h *filepondRevert) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if result := h.DB.DeleteTempFile(ctx, string(in)); result.Error != nil {
-		request.AjaxError(w, r, err, result.HTTPStatusCode)
+	if err := h.DB.DeleteTempFile(ctx, string(in)); err != nil {
+		request.AjaxError(w, r, err, db.GetHTTPStatusCode(err))
 		return
 	}
 
