@@ -10,7 +10,6 @@ import (
 	"os"
 	"time"
 
-	"github.com/fugleadvokatene/bino/internal/model"
 	"github.com/fugleadvokatene/bino/internal/request"
 	"github.com/fugleadvokatene/bino/internal/sql"
 	"github.com/google/uuid"
@@ -21,16 +20,36 @@ const (
 	MaxImageSize = 20 * 1024 * 1024
 )
 
-func (db *Database) UploadFile(ctx context.Context, data io.Reader, fileInfo model.FileInfo) (string, error) {
-	id := uuid.New().String()
+type fileInfo struct {
+	FileName string
+	MIMEType string
+	Size     int64
+	Created  time.Time
+}
+
+func (db *Database) UploadFile(
+	ctx context.Context,
+	data io.Reader,
+	filename string,
+	mimeType string,
+	size int64,
+) (string, error) {
+	uuid := uuid.New().String()
+
+	fileInfo := fileInfo{
+		FileName: filename,
+		MIMEType: mimeType,
+		Size:     size,
+		Created:  time.Now(),
+	}
 
 	// Create UUID subdirectory
-	if err := db.TmpRoot.Mkdir(id, 0700); err != nil {
+	if err := db.TmpRoot.Mkdir(uuid, 0700); err != nil {
 		return "", newFileError(http.StatusInternalServerError, "creating file directory: %w", err)
 	}
 
 	// Create the metadata file
-	metaFile, err := db.TmpRoot.Create(id + "/metadata.json")
+	metaFile, err := db.TmpRoot.Create(uuid + "/metadata.json")
 	if err != nil {
 		return "", newFileError(http.StatusInternalServerError, "creating metadata.json: %w", err)
 	}
@@ -44,7 +63,7 @@ func (db *Database) UploadFile(ctx context.Context, data io.Reader, fileInfo mod
 	}
 
 	// Create the file
-	file, err := db.TmpRoot.Create(id + "/" + fileInfo.FileName)
+	file, err := db.TmpRoot.Create(uuid + "/" + fileInfo.FileName)
 	if err != nil {
 		return "", newFileError(http.StatusInternalServerError, "creating %s: %w", fileInfo.FileName, err)
 	}
@@ -60,7 +79,7 @@ func (db *Database) UploadFile(ctx context.Context, data io.Reader, fileInfo mod
 		return "", newFileError(http.StatusInternalServerError, "file size expected %d wrote %d", fileInfo.Size, n)
 	}
 
-	return id, nil
+	return uuid, nil
 }
 
 func (db *Database) deleteFile(_ context.Context, dir *os.Root, id string) error {
@@ -80,28 +99,28 @@ func (db *Database) DeleteTempFile(ctx context.Context, id string) error {
 	return db.deleteFile(ctx, db.TmpRoot, id)
 }
 
-func (db *Database) readMetaFile(_ context.Context, dir *os.Root, id string) (model.FileInfo, error) {
+func (db *Database) readMetaFile(_ context.Context, dir *os.Root, id string) (fileInfo, error) {
 	metaFile, err := dir.Open(id + "/metadata.json")
 	if err != nil {
-		return model.FileInfo{}, err
+		return fileInfo{}, err
 	}
-	var info model.FileInfo
+	var info fileInfo
 	if err := json.NewDecoder(metaFile).Decode(&info); err != nil {
 		metaFile.Close()
-		return model.FileInfo{}, err
+		return fileInfo{}, err
 	}
 	metaFile.Close()
 
 	return info, nil
 }
 
-func (db *Database) ListTempFileDirectory(ctx context.Context) (map[string]model.FileInfo, error) {
+func (db *Database) ListTempFileDirectory(ctx context.Context) (map[string]fileInfo, error) {
 	entries, err := os.ReadDir(db.tmpDirectory)
 	if err != nil {
 		return nil, err
 	}
 
-	out := map[string]model.FileInfo{}
+	out := map[string]fileInfo{}
 	for _, entry := range entries {
 		name := entry.Name()
 		if entry.IsDir() && uuid.Validate(name) == nil {
@@ -114,53 +133,53 @@ func (db *Database) ListTempFileDirectory(ctx context.Context) (map[string]model
 	return out, nil
 }
 
-func (db *Database) ReadTempFile(ctx context.Context, id string) ([]byte, model.FileInfo, error) {
+func (db *Database) ReadTempFile(ctx context.Context, id string) ([]byte, fileInfo, error) {
 	cd := request.MustLoadCommonData(ctx)
 
 	if err := uuid.Validate(id); err != nil {
-		return nil, model.FileInfo{}, newFileError(http.StatusBadRequest, "'%s' is not a valid UUID: %w", id, err)
+		return nil, fileInfo{}, newFileError(http.StatusBadRequest, "'%s' is not a valid UUID: %w", id, err)
 	}
 
 	info, err := db.readMetaFile(ctx, db.TmpRoot, id)
 	if err != nil {
-		return nil, model.FileInfo{}, fmt.Errorf("reading meta file: %w", err)
+		return nil, fileInfo{}, fmt.Errorf("reading meta file: %w", err)
 	}
 
 	file, err := db.TmpRoot.Open(id + "/" + info.FileName)
 	if err != nil {
-		return nil, model.FileInfo{}, newFileError(http.StatusBadRequest, "%w", err)
+		return nil, fileInfo{}, newFileError(http.StatusBadRequest, "%w", err)
 	}
 
 	stat, err := file.Stat()
 	if err != nil {
 		file.Close()
-		return nil, model.FileInfo{}, err
+		return nil, fileInfo{}, err
 	}
 
 	if size := stat.Size(); size > MaxImageSize {
 		cd.Log(slog.LevelWarn, "file too large", "size", size, "maxsize", MaxImageSize)
 		file.Close()
-		return nil, model.FileInfo{}, newFileError(http.StatusRequestEntityTooLarge, "file too large")
+		return nil, fileInfo{}, newFileError(http.StatusRequestEntityTooLarge, "file too large")
 	}
 
 	data, err := io.ReadAll(file)
 	file.Close()
 	if err != nil {
-		return nil, model.FileInfo{}, err
+		return nil, fileInfo{}, err
 	}
 
 	return data, info, nil
 }
 
-func (db *Database) CommitFile(ctx context.Context, uuid string) (model.FileInfo, int32, error) {
+func (db *Database) CommitFile(ctx context.Context, uuid string) (string, int32, error) {
 	if uuid == "" {
-		return model.FileInfo{}, 0, fmt.Errorf("got empty uuid")
+		return "", 0, fmt.Errorf("got empty uuid")
 	}
 
 	// Check metadata
 	meta, err := db.readMetaFile(ctx, db.TmpRoot, uuid)
 	if err != nil {
-		return model.FileInfo{}, 0, err
+		return "", 0, err
 	}
 
 	// Compute SHA256 hash of file
@@ -176,14 +195,14 @@ func (db *Database) CommitFile(ctx context.Context, uuid string) (model.FileInfo
 		Sha256: hash,
 	}); err == nil {
 		slog.InfoContext(ctx, "Found duplicate", "uuid", uuid)
-		return meta, prev.ID, nil
+		return prev.Filename, prev.ID, nil
 	}
 
 	// Move the file over
 	tmpDir := db.tmpDirectory + "/" + uuid
 	mainDir := db.mainDirectory + "/" + uuid
 	if err := os.Rename(tmpDir, mainDir); err != nil {
-		return model.FileInfo{}, 0, err
+		return "", 0, err
 	}
 	fileID, err := db.Q.PublishFile(ctx, sql.PublishFileParams{
 		Uuid:     uuid,
@@ -195,9 +214,9 @@ func (db *Database) CommitFile(ctx context.Context, uuid string) (model.FileInfo
 	})
 
 	if err != nil {
-		return meta, 0, err
+		return meta.FileName, 0, err
 	}
-	return meta, fileID, err
+	return meta.FileName, fileID, err
 }
 
 func (db *Database) OpenFile(ctx context.Context, id string, filename string) (io.ReadCloser, error) {

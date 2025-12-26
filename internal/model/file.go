@@ -9,13 +9,6 @@ import (
 	"github.com/a-h/templ"
 )
 
-type FileInfo struct {
-	FileName string
-	MIMEType string
-	Size     int64
-	Created  time.Time
-}
-
 type File struct {
 	ID                   int32
 	UUID                 string
@@ -28,15 +21,6 @@ type File struct {
 	WikiAssociations     []FileWikiAssociation
 	PatientAssociations  []FilePatientAssociation
 	ImageVariants        []ImageVariant
-}
-
-func (in *File) FileInfo() FileInfo {
-	return FileInfo{
-		FileName: in.OriginalFilename,
-		MIMEType: in.MIMEType,
-		Size:     in.Size,
-		Created:  in.Created,
-	}
 }
 
 func (in *File) IsImage() bool {

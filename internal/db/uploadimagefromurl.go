@@ -6,13 +6,11 @@ import (
 	"net/url"
 	"path"
 	"strings"
-	"time"
 
-	"github.com/fugleadvokatene/bino/internal/model"
 	"github.com/fugleadvokatene/bino/internal/security"
 )
 
-func UploadImageFromURL(ctx context.Context, rawURL string, db *Database) (model.FileInfo, int32, error) {
+func UploadImageFromURL(ctx context.Context, rawURL string, db *Database) (string, int32, error) {
 	r, fetchInfo, err := security.Fetch(ctx, rawURL, func(ct string) error {
 		if !strings.HasPrefix(ct, "image/") {
 			return fmt.Errorf("not an image: %s", ct)
@@ -20,7 +18,7 @@ func UploadImageFromURL(ctx context.Context, rawURL string, db *Database) (model
 		return nil
 	})
 	if err != nil {
-		return model.FileInfo{}, 0, err
+		return "", 0, err
 	}
 	name := "file.img"
 	if u, err := url.Parse(rawURL); err == nil {
@@ -30,16 +28,9 @@ func UploadImageFromURL(ctx context.Context, rawURL string, db *Database) (model
 		}
 	}
 
-	info := model.FileInfo{
-		FileName: name,
-		MIMEType: fetchInfo.ContentType,
-		Size:     fetchInfo.ContentLength,
-		Created:  time.Now(),
-	}
-
-	uuid, err := db.UploadFile(ctx, r, info)
+	uuid, err := db.UploadFile(ctx, r, name, fetchInfo.ContentType, fetchInfo.ContentLength)
 	if err != nil {
-		return model.FileInfo{}, 0, err
+		return "", 0, err
 	}
 
 	return db.CommitFile(ctx, uuid)

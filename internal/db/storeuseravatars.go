@@ -18,10 +18,10 @@ func (db *Database) StoreUserAvatars(ctx context.Context) (int64, error) {
 	}
 
 	// Upload images, keeping track of the mapping from id to user id
-	commitResults := make(map[int32]model.FileInfo)
+	filenames := make(map[int32]string)
 	fileIDToUserID := make(map[int32]int32)
 	for _, user := range users {
-		fileInfo, id, err := UploadImageFromURL(ctx, user.AvatarUrl.String, db)
+		filename, id, err := UploadImageFromURL(ctx, user.AvatarUrl.String, db)
 		if err != nil {
 			slog.Warn("Unable to upload image", "err", err, "url", user.AvatarUrl.String)
 			continue
@@ -31,20 +31,20 @@ func (db *Database) StoreUserAvatars(ctx context.Context) (int64, error) {
 			continue
 		}
 		slog.Info("Uploaded image", "id", id, "originalURL", user.AvatarUrl.String)
-		commitResults[id] = fileInfo
+		filenames[id] = filename
 		fileIDToUserID[id] = user.ID
 	}
 
 	// Register images to publish them
 	if err := db.Transaction(ctx, func(ctx context.Context, db *Database) error {
 		errs := []error{}
-		for fileID, fileInfo := range commitResults {
+		for fileID, filename := range filenames {
 			userID, found := fileIDToUserID[fileID]
 			if !found {
 				continue
 			}
 			if err := db.Q.UpdateUserAvatar(ctx, sql.UpdateUserAvatarParams{
-				Url: pgtype.Text{String: model.FileURL(fileID, fileInfo.FileName), Valid: true},
+				Url: pgtype.Text{String: model.FileURL(fileID, filename), Valid: true},
 				ID:  userID,
 			}); err != nil {
 				slog.Warn("Unable to update user avatar", "err", err)
@@ -55,5 +55,5 @@ func (db *Database) StoreUserAvatars(ctx context.Context) (int64, error) {
 	}); err != nil {
 		slog.Warn("Errors registering files", "err", err)
 	}
-	return int64(len(commitResults)), err
+	return int64(len(filenames)), err
 }

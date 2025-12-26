@@ -11,7 +11,7 @@ type FileError struct {
 }
 
 func newFileError(httpStatusCode int, message string, args ...any) error {
-	return FileError{inner: fmt.Errorf(message, args), httpStatusCode: httpStatusCode}
+	return FileError{inner: fmt.Errorf(message, args...), httpStatusCode: httpStatusCode}
 }
 
 func (fe FileError) Error() string {

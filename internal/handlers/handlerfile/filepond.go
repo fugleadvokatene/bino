@@ -5,11 +5,9 @@ import (
 	"log/slog"
 	"net/http"
 	"strconv"
-	"time"
 
 	"github.com/fugleadvokatene/bino/internal/background"
 	"github.com/fugleadvokatene/bino/internal/db"
-	"github.com/fugleadvokatene/bino/internal/model"
 	"github.com/fugleadvokatene/bino/internal/request"
 )
 
@@ -65,12 +63,7 @@ func (h *filepondProcess) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 	defer file.Close()
 
-	uuid, err := h.DB.UploadFile(ctx, file, model.FileInfo{
-		FileName: header.Filename,
-		MIMEType: header.Header.Get("Content-Type"),
-		Size:     header.Size,
-		Created:  time.Now(),
-	})
+	uuid, err := h.DB.UploadFile(ctx, file, header.Filename, header.Header.Get("Content-Type"), header.Size)
 	if err != nil {
 		request.AjaxError(w, r, err, db.GetHTTPStatusCode(err))
 		return

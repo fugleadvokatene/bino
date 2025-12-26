@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"time"
 
 	"github.com/fugleadvokatene/bino/internal/db"
 	"github.com/fugleadvokatene/bino/internal/model"
@@ -48,26 +47,21 @@ func (h *uploadImage) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 	defer file.Close()
 
-	uuid, err := h.DB.UploadFile(ctx, file, model.FileInfo{
-		FileName: header.Filename,
-		MIMEType: header.Header.Get("Content-Type"),
-		Size:     header.Size,
-		Created:  time.Now(),
-	})
+	uuid, err := h.DB.UploadFile(ctx, file, header.Filename, header.Header.Get("Content-Type"), header.Size)
 	if err != nil {
 		request.LogError(r, fmt.Errorf("uploading file: %w", err))
 		w.WriteHeader(db.GetHTTPStatusCode(err))
 		return
 	}
 
-	fileInfo, fileID, err := h.DB.CommitFile(ctx, uuid)
+	filename, fileID, err := h.DB.CommitFile(ctx, uuid)
 	if err != nil {
 		request.LogError(r, fmt.Errorf("registering file to db: %w", err))
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	} else {
 		resp.Success = 1
-		resp.File.URL = model.FileURL(fileID, fileInfo.FileName)
+		resp.File.URL = model.FileURL(fileID, filename)
 	}
 
 	if err := h.DB.Q.AssociateFileWithWikiPage(ctx, sql.AssociateFileWithWikiPageParams{

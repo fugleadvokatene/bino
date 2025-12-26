@@ -69,14 +69,14 @@ func (h *fetchImage) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if resp.Success == 0 {
-		fileInfo, fileID, err := db.UploadImageFromURL(ctx, req.URL, h.DB)
+		filename, fileID, err := db.UploadImageFromURL(ctx, req.URL, h.DB)
 		if err != nil {
 			request.LogError(r, fmt.Errorf("uploadign image db: %w", err))
 			w.WriteHeader(http.StatusInternalServerError)
 			return
 		} else {
 			resp.Success = 1
-			resp.File.URL = model.FileURL(fileID, fileInfo.FileName)
+			resp.File.URL = model.FileURL(fileID, filename)
 		}
 	}
 
