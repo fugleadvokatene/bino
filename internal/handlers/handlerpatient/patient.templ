@@ -76,7 +76,7 @@ templ PatientPage(
                 </tbody>
             </table>
 
-            if patient.JournalURL != "" &&  data.User.FeatureFlags.Contains("Journal V2") {
+            if patient.JournalURL != "" {
                 <h2>Journal</h2>
                 @templbase.SingleButtonForm(data, patient.URLSuffix("fetch-journal"), "Hent siste fra Google Drive", "POST", "btn-success")
                 if !journalUpdated.IsZero() {

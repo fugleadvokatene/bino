@@ -289,7 +289,7 @@ func PatientPage(
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
-				if patient.JournalURL != "" && data.User.FeatureFlags.Contains("Journal V2") {
+				if patient.JournalURL != "" {
 					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 20, "<h2>Journal</h2>")
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err
