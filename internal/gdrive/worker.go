@@ -4,10 +4,12 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"runtime/debug"
 	"strings"
 	"sync"
 	"time"
 
+	"github.com/fugleadvokatene/bino/internal/gdrive/document"
 	"github.com/fugleadvokatene/bino/internal/generic"
 	"github.com/fugleadvokatene/bino/internal/model"
 	"google.golang.org/api/drive/v3"
@@ -48,6 +50,13 @@ func newGDriveTaskRequest() TaskRequest {
 func newGDriveTaskRequestGetFile(id string) TaskRequest {
 	req := newGDriveTaskRequest()
 	req.Type = model.GDriveTaskRequestIDGetFile
+	req.Payload = id
+	return req
+}
+
+func newGDriveTaskRequestGetDocument(id string) TaskRequest {
+	req := newGDriveTaskRequest()
+	req.Type = model.GDriveTaskRequestIDGetDocument
 	req.Payload = id
 	return req
 }
@@ -119,6 +128,14 @@ func (req TaskRequest) decodeGetFile() (string, error) {
 	return id, nil
 }
 
+func (req TaskRequest) decodeGetDocument() (string, error) {
+	id, ok := req.Payload.(string)
+	if !ok {
+		return "", fmt.Errorf("decodeGetDocument called on request with payload of type %T", req.Payload)
+	}
+	return id, nil
+}
+
 func (req TaskRequest) decodeInviteUser() (payloadInviteUser, error) {
 	inv, ok := req.Payload.(payloadInviteUser)
 	if !ok {
@@ -170,6 +187,20 @@ func (resp TaskResponse) decodeGetFile() (Item, error) {
 		return Item{}, fmt.Errorf("decodeGetFile called with bad payload type %T", resp.Payload)
 	}
 	return item, nil
+}
+
+func (resp TaskResponse) decodeGetDocument() (document.Document, error) {
+	if err := resp.decodeError(); err != nil {
+		return document.Document{}, err
+	}
+	if resp.Type != model.GDriveTaskRequestIDGetDocument {
+		return document.Document{}, fmt.Errorf("decodeGetDocument called on response of type %s", resp.Type.String())
+	}
+	doc, ok := resp.Payload.(document.Document)
+	if !ok {
+		return document.Document{}, fmt.Errorf("decodeGetDocument called with bad payload type %T", resp.Payload)
+	}
+	return doc, nil
 }
 
 func (resp TaskResponse) decodeInviteUser() error {
@@ -300,6 +331,10 @@ func (w *Worker) GetFile(id string) (Item, error) {
 	return w.Exec(newGDriveTaskRequestGetFile(id)).decodeGetFile()
 }
 
+func (w *Worker) GetDocument(id string) (document.Document, error) {
+	return w.Exec(newGDriveTaskRequestGetDocument(id)).decodeGetDocument()
+}
+
 func (w *Worker) InviteUser(id, email, role string) error {
 	return w.Exec(newGDriveTaskRequestInviteUser(id, email, role)).decodeInviteUser()
 }
@@ -327,6 +362,7 @@ func (w *Worker) worker(workerID int) {
 func (w *Worker) handleRequest(req TaskRequest) (resp TaskResponse) {
 	defer func() {
 		if r := recover(); r != nil {
+			debug.PrintStack()
 			resp = w.errorResponse(req, fmt.Errorf("panicked in handler: %v", r))
 		}
 	}()
@@ -334,6 +370,8 @@ func (w *Worker) handleRequest(req TaskRequest) (resp TaskResponse) {
 	switch req.Type {
 	case model.GDriveTaskRequestIDGetFile:
 		return w.handleRequestGetFile(req)
+	case model.GDriveTaskRequestIDGetDocument:
+		return w.handleRequestGetDocument(req)
 	case model.GDriveTaskRequestIDInviteUser:
 		return w.handleRequestInviteUser(req)
 	case model.GDriveTaskRequestIDCreateJournal:
@@ -353,6 +391,20 @@ func (w *Worker) handleRequestGetFile(req TaskRequest) TaskResponse {
 	}
 
 	item, err := w.g.GetFile(id)
+	if err != nil {
+		return w.errorResponse(req, err)
+	}
+
+	return w.successResponse(req, item)
+}
+
+func (w *Worker) handleRequestGetDocument(req TaskRequest) TaskResponse {
+	id, err := req.decodeGetDocument()
+	if err != nil {
+		return w.errorResponse(req, err)
+	}
+
+	item, err := w.g.GetDocument(id)
 	if err != nil {
 		return w.errorResponse(req, err)
 	}

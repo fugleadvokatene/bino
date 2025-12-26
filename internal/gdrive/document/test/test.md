@@ -1,0 +1,44 @@
+# **2025-11-06 Rockstar**
+## **Sjekkliste**
+- **Pasientens navn:** Rockstar
+- **Art**: Bydue
+- **Alder:** Ungdom / Unge
+- **Funnsted:** Dælenenggata 3A
+- **Meldt av:** Caroline Dammyr
+- **Meldt hvor:** SMS til Villfuglhjelpen --> Jonathan
+- **Fanget av:** Jonathan
+- **Levert til:** Jonathan
+- **Vekt:** 238g ved inntak. 291g den 14 nov. 316g den 27. nov
+- **Brystbeinet:** tynn men ca normal for alder
+- **Kroen:** tom
+- **Sår på kroppen:** nei
+- **Kloakka:** ok
+- **Vinger:** ok, ikke helt utviklet mtp fjær
+- **Bein:** ok
+- **Øyne:** mulig sliter litt med høyre øye
+- **Avføring:** ser ok ut
+- **Skader:** nei
+- **Sykdommer:** noe rotasjon på hodet og 
+- **Munnhulen:** ok
+- **Ektoparasitter:** nei
+- **Halsprøve (dato og funn):**
+  - ved inntak: ingen funn
+  - 27.nov: ingen funn
+- **Fekalprøve (dato og funn):**
+  - ved inntak: en trichomonas, en og annen koksidie, og en del knoppskytende gjærsopper
+- **Andre observasjoner:** så et tegn på dårlig syn (roterer hodet sakte) under transport, men ikke sett etter den fikk roet seg ned
+- **Behandlende veterinær:** 
+- **Dato for veterinærbesøk:** 
+- **Avlivet eller dødd (dato):** 
+- **Sluppet fri (dato og sted):** 
+## **Førstehjelp**
+Får mat og vann. Begynner å spise med en gang
+
+## **Videre tiltak og logg**
+Kan antakelig slippes om et par uker.
+
+Rød ring for identifikasjon.
+
+Mot gjærsopp: nystatin BID 1ml/kg, så ca 0.25ml. Første dose 6. nov, siste 20. nov
+## **Bilder**
+![ ](/file/66/AD_4nXdQJ86oL_aDbk8KmvCSxH6YU1XIG7EzAUxbjk7AkBRwYzbLu89NBLLuwr-8RatBTMIwx3ONF18DdTiooInK5Txcw25VbS0o.png)

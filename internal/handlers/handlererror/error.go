@@ -22,7 +22,7 @@ func NotFound(w http.ResponseWriter, r *http.Request, err error) {
 	cd := request.MustLoadCommonData(ctx)
 	w.WriteHeader(http.StatusNotFound)
 	_ = NotFoundPage(cd, err.Error(), request.LastGoodURL(r)).Render(ctx, w)
-	request.LogR(r, slog.LevelDebug, "%s", err.Error())
+	request.LogR(r, slog.LevelDebug, "Not found", "err", err.Error())
 }
 
 func PathNotFound(w http.ResponseWriter, r *http.Request) {

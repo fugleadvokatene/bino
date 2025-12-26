@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/fugleadvokatene/bino/internal/db"
+	"github.com/fugleadvokatene/bino/internal/gdrive/document"
 	"github.com/fugleadvokatene/bino/internal/generic"
 	"google.golang.org/api/docs/v1"
 	"google.golang.org/api/drive/v3"
@@ -122,6 +123,19 @@ func (g *Client) GetFile(id string) (Item, error) {
 	}
 
 	return g.fileToItem(f)
+}
+
+func (g *Client) GetDocument(id string) (document.Document, error) {
+	call := g.Docs.Documents.Get(id).
+		SuggestionsViewMode("PREVIEW_WITHOUT_SUGGESTIONS").
+		IncludeTabsContent(true)
+
+	doc, err := call.Do()
+	if err != nil {
+		return document.Document{}, err
+	}
+
+	return document.New(doc)
 }
 
 func (g *Client) ExportDocument(id string) (Journal, error) {

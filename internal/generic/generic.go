@@ -58,6 +58,14 @@ func SliceToSlice[TIn any, TOut any](in []TIn, f func(TIn) TOut) []TOut {
 	return out
 }
 
+func Flatten[T any, U any](elems []T, f func(T) []U) []U {
+	var out []U
+	for _, elem := range elems {
+		out = append(out, f(elem)...)
+	}
+	return out
+}
+
 func MapToSlice[KIn comparable, VIn any, TOut any](in map[KIn]VIn, f func(KIn, VIn) TOut) []TOut {
 	if in == nil {
 		return nil

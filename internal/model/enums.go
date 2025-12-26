@@ -98,6 +98,7 @@ func (fbt FB) CSSClass() string {
 //	CreateJournal,
 //	ListFiles,
 //	UpdateJournal,
+//	GetDocument,
 //
 // )
 type GDriveTaskRequestID int
@@ -167,3 +168,17 @@ type FileVariantID string
 func (fvid FileVariantID) IsMiniature() bool {
 	return fvid == FileVariantIDLarge || fvid == FileVariantIDMedium || fvid == FileVariantIDSmall
 }
+
+// ENUM(
+//
+//	P,
+//	H1,
+//	H2,
+//	H3,
+//	H4,
+//	H5,
+//	H6,
+//	Bullet
+//
+// )
+type DocElemType string

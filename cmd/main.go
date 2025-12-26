@@ -150,7 +150,7 @@ func realMain() error {
 		handlerhomeadmin.Routes(db),
 		handlerimport.Routes(db),
 		handlerlanguage.Routes(db),
-		handlerpatient.Routes(db, gdriveWorker, config),
+		handlerpatient.Routes(db, gdriveWorker, config, &jobs),
 		handlerprivacy.Routes(db, config.Privacy),
 		handlersearch.Routes(db),
 		handlerspeciesadmin.Routes(db),

@@ -317,6 +317,72 @@ func ParseCap(name string) (Cap, error) {
 }
 
 const (
+	// DocElemTypeP is a DocElemType of type P.
+	DocElemTypeP DocElemType = "P"
+	// DocElemTypeH1 is a DocElemType of type H1.
+	DocElemTypeH1 DocElemType = "H1"
+	// DocElemTypeH2 is a DocElemType of type H2.
+	DocElemTypeH2 DocElemType = "H2"
+	// DocElemTypeH3 is a DocElemType of type H3.
+	DocElemTypeH3 DocElemType = "H3"
+	// DocElemTypeH4 is a DocElemType of type H4.
+	DocElemTypeH4 DocElemType = "H4"
+	// DocElemTypeH5 is a DocElemType of type H5.
+	DocElemTypeH5 DocElemType = "H5"
+	// DocElemTypeH6 is a DocElemType of type H6.
+	DocElemTypeH6 DocElemType = "H6"
+	// DocElemTypeBullet is a DocElemType of type Bullet.
+	DocElemTypeBullet DocElemType = "Bullet"
+)
+
+var ErrInvalidDocElemType = errors.New("not a valid DocElemType")
+
+// DocElemTypeValues returns a list of the values for DocElemType
+func DocElemTypeValues() []DocElemType {
+	return []DocElemType{
+		DocElemTypeP,
+		DocElemTypeH1,
+		DocElemTypeH2,
+		DocElemTypeH3,
+		DocElemTypeH4,
+		DocElemTypeH5,
+		DocElemTypeH6,
+		DocElemTypeBullet,
+	}
+}
+
+// String implements the Stringer interface.
+func (x DocElemType) String() string {
+	return string(x)
+}
+
+// IsValid provides a quick way to determine if the typed value is
+// part of the allowed enumerated values
+func (x DocElemType) IsValid() bool {
+	_, err := ParseDocElemType(string(x))
+	return err == nil
+}
+
+var _DocElemTypeValue = map[string]DocElemType{
+	"P":      DocElemTypeP,
+	"H1":     DocElemTypeH1,
+	"H2":     DocElemTypeH2,
+	"H3":     DocElemTypeH3,
+	"H4":     DocElemTypeH4,
+	"H5":     DocElemTypeH5,
+	"H6":     DocElemTypeH6,
+	"Bullet": DocElemTypeBullet,
+}
+
+// ParseDocElemType attempts to convert a string to a DocElemType.
+func ParseDocElemType(name string) (DocElemType, error) {
+	if x, ok := _DocElemTypeValue[name]; ok {
+		return x, nil
+	}
+	return DocElemType(""), fmt.Errorf("%s is %w", name, ErrInvalidDocElemType)
+}
+
+const (
 	// EventIDUnknown is a EventID of type Unknown.
 	EventIDUnknown EventID = 0
 	// EventIDRegistered is a EventID of type Registered.
@@ -557,11 +623,13 @@ const (
 	GDriveTaskRequestIDListFiles GDriveTaskRequestID = 3
 	// GDriveTaskRequestIDUpdateJournal is a GDriveTaskRequestID of type UpdateJournal.
 	GDriveTaskRequestIDUpdateJournal GDriveTaskRequestID = 4
+	// GDriveTaskRequestIDGetDocument is a GDriveTaskRequestID of type GetDocument.
+	GDriveTaskRequestIDGetDocument GDriveTaskRequestID = 5
 )
 
 var ErrInvalidGDriveTaskRequestID = errors.New("not a valid GDriveTaskRequestID")
 
-const _GDriveTaskRequestIDName = "GetFileInviteUserCreateJournalListFilesUpdateJournal"
+const _GDriveTaskRequestIDName = "GetFileInviteUserCreateJournalListFilesUpdateJournalGetDocument"
 
 // GDriveTaskRequestIDValues returns a list of the values for GDriveTaskRequestID
 func GDriveTaskRequestIDValues() []GDriveTaskRequestID {
@@ -571,6 +639,7 @@ func GDriveTaskRequestIDValues() []GDriveTaskRequestID {
 		GDriveTaskRequestIDCreateJournal,
 		GDriveTaskRequestIDListFiles,
 		GDriveTaskRequestIDUpdateJournal,
+		GDriveTaskRequestIDGetDocument,
 	}
 }
 
@@ -580,6 +649,7 @@ var _GDriveTaskRequestIDMap = map[GDriveTaskRequestID]string{
 	GDriveTaskRequestIDCreateJournal: _GDriveTaskRequestIDName[17:30],
 	GDriveTaskRequestIDListFiles:     _GDriveTaskRequestIDName[30:39],
 	GDriveTaskRequestIDUpdateJournal: _GDriveTaskRequestIDName[39:52],
+	GDriveTaskRequestIDGetDocument:   _GDriveTaskRequestIDName[52:63],
 }
 
 // String implements the Stringer interface.
@@ -603,6 +673,7 @@ var _GDriveTaskRequestIDValue = map[string]GDriveTaskRequestID{
 	_GDriveTaskRequestIDName[17:30]: GDriveTaskRequestIDCreateJournal,
 	_GDriveTaskRequestIDName[30:39]: GDriveTaskRequestIDListFiles,
 	_GDriveTaskRequestIDName[39:52]: GDriveTaskRequestIDUpdateJournal,
+	_GDriveTaskRequestIDName[52:63]: GDriveTaskRequestIDGetDocument,
 }
 
 // ParseGDriveTaskRequestID attempts to convert a string to a GDriveTaskRequestID.
