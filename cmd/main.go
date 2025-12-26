@@ -96,8 +96,12 @@ func realMain() error {
 	if err != nil {
 		return fmt.Errorf("setting up database connection: %w", err)
 	}
-	defer conn.Close()
-	db := dblib.New(conn, "file", "tmp")
+	db, err := dblib.New(conn, "file", "tmp")
+	if err != nil {
+		conn.Close()
+		return fmt.Errorf("creating dblib: %w", err)
+	}
+	defer db.Close()
 
 	// Set up Google Drive client
 	gdriveClient, err := gdrive.NewClient(ctx, config.GoogleDrive, db)

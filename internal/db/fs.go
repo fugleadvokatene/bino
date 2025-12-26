@@ -50,21 +50,11 @@ type ListTempResult struct {
 	Error error
 }
 
-func (db *Database) Upload(ctx context.Context, data io.Reader, fileInfo model.FileInfo) (out UploadResult) {
+func (db *Database) UploadFile(ctx context.Context, data io.Reader, fileInfo model.FileInfo) (out UploadResult) {
 	id := uuid.New().String()
 
-	// Open the file base directory
-	dir, err := os.OpenRoot(db.TmpDirectory)
-	if err != nil {
-		return UploadResult{
-			Error:          err,
-			HTTPStatusCode: http.StatusInternalServerError,
-		}
-	}
-	defer dir.Close()
-
 	// Create UUID subdirectory
-	if err := dir.Mkdir(id, 0700); err != nil {
+	if err := db.TmpRoot.Mkdir(id, 0700); err != nil {
 		return UploadResult{
 			Error:          fmt.Errorf("creating file directory: %w", err),
 			HTTPStatusCode: http.StatusInternalServerError,
@@ -72,7 +62,7 @@ func (db *Database) Upload(ctx context.Context, data io.Reader, fileInfo model.F
 	}
 
 	// Create the metadata file
-	metaFile, err := dir.Create(id + "/metadata.json")
+	metaFile, err := db.TmpRoot.Create(id + "/metadata.json")
 	if err != nil {
 		return UploadResult{
 			Error:          fmt.Errorf("creating metadata.json: %w", err),
@@ -101,7 +91,7 @@ func (db *Database) Upload(ctx context.Context, data io.Reader, fileInfo model.F
 	}
 
 	// Create the file
-	file, err := dir.Create(id + "/" + fileInfo.FileName)
+	file, err := db.TmpRoot.Create(id + "/" + fileInfo.FileName)
 	if err != nil {
 		return UploadResult{
 			Error:          fmt.Errorf("creating %s: %w", fileInfo.FileName, err),
@@ -142,23 +132,13 @@ func (db *Database) Upload(ctx context.Context, data io.Reader, fileInfo model.F
 	}
 }
 
-func (db *Database) delete(_ context.Context, dirname string, id string) (out DeleteResult) {
+func (db *Database) deleteFile(_ context.Context, dir *os.Root, id string) (out DeleteResult) {
 	if err := uuid.Validate(id); err != nil {
 		return DeleteResult{
 			Error:          fmt.Errorf("'%s' is not a valid UUID: %w", id, err),
 			HTTPStatusCode: http.StatusBadRequest,
 		}
 	}
-
-	// Open the file base directory
-	dir, err := os.OpenRoot(dirname)
-	if err != nil {
-		return DeleteResult{
-			Error:          err,
-			HTTPStatusCode: http.StatusInternalServerError,
-		}
-	}
-	defer dir.Close()
 
 	// Delete directory
 	if err := dir.RemoveAll(id); err != nil {
@@ -173,8 +153,8 @@ func (db *Database) delete(_ context.Context, dirname string, id string) (out De
 	}
 }
 
-func (db *Database) DeleteTemp(ctx context.Context, id string) (out DeleteResult) {
-	return db.delete(ctx, db.TmpDirectory, id)
+func (db *Database) DeleteTempFile(ctx context.Context, id string) (out DeleteResult) {
+	return db.deleteFile(ctx, db.TmpRoot, id)
 }
 
 func (db *Database) readMetaFile(_ context.Context, dir *os.Root, id string) (model.FileInfo, error) {
@@ -192,18 +172,10 @@ func (db *Database) readMetaFile(_ context.Context, dir *os.Root, id string) (mo
 	return info, nil
 }
 
-func (db *Database) ListTemp(ctx context.Context) (out ListTempResult) {
+func (db *Database) ListTempFileDirectory(ctx context.Context) (out ListTempResult) {
 	out.Files = map[string]model.FileInfo{}
 
-	dir, err := os.OpenRoot(db.TmpDirectory)
-	if err != nil {
-		return ListTempResult{
-			Error: err,
-		}
-	}
-	defer dir.Close()
-
-	entries, err := os.ReadDir(db.TmpDirectory)
+	entries, err := os.ReadDir(db.tmpDirectory)
 	if err != nil {
 		return ListTempResult{Error: err}
 	}
@@ -211,7 +183,7 @@ func (db *Database) ListTemp(ctx context.Context) (out ListTempResult) {
 	for _, entry := range entries {
 		name := entry.Name()
 		if entry.IsDir() && uuid.Validate(name) == nil {
-			if info, err := db.readMetaFile(ctx, dir, name); err == nil {
+			if info, err := db.readMetaFile(ctx, db.TmpRoot, name); err == nil {
 				out.Files[name] = info
 			}
 		}
@@ -220,7 +192,7 @@ func (db *Database) ListTemp(ctx context.Context) (out ListTempResult) {
 	return out
 }
 
-func (db *Database) ReadTemp(ctx context.Context, id string) (out ReadResult) {
+func (db *Database) ReadTempFile(ctx context.Context, id string) (out ReadResult) {
 	cd := request.MustLoadCommonData(ctx)
 
 	if err := uuid.Validate(id); err != nil {
@@ -229,16 +201,8 @@ func (db *Database) ReadTemp(ctx context.Context, id string) (out ReadResult) {
 			HTTPStatusCode: http.StatusBadRequest,
 		}
 	}
-	dir, err := os.OpenRoot(db.TmpDirectory)
-	if err != nil {
-		return ReadResult{
-			Error:          err,
-			HTTPStatusCode: http.StatusInternalServerError,
-		}
-	}
-	defer dir.Close()
 
-	info, err := db.readMetaFile(ctx, dir, id)
+	info, err := db.readMetaFile(ctx, db.TmpRoot, id)
 	if err != nil {
 		return ReadResult{
 			Error:          err,
@@ -246,7 +210,7 @@ func (db *Database) ReadTemp(ctx context.Context, id string) (out ReadResult) {
 		}
 	}
 
-	file, err := dir.Open(id + "/" + info.FileName)
+	file, err := db.TmpRoot.Open(id + "/" + info.FileName)
 	if err != nil {
 		return ReadResult{
 			Error:          err,
@@ -288,19 +252,10 @@ func (db *Database) ReadTemp(ctx context.Context, id string) (out ReadResult) {
 	}
 }
 
-func (db *Database) Commit(ctx context.Context, ids []string) CommitResult {
+func (db *Database) CommitFile(ctx context.Context, ids []string) CommitResult {
 	var out CommitResult
 	out.Commited = map[string]model.FileInfo{}
 	out.HTTPStatusCode = http.StatusOK
-
-	dir, err := os.OpenRoot(db.MainDirectory)
-	if err != nil {
-		return CommitResult{
-			Error:          err,
-			HTTPStatusCode: http.StatusInternalServerError,
-		}
-	}
-	defer dir.Close()
 
 	for _, id := range ids {
 		if id == "" {
@@ -309,14 +264,14 @@ func (db *Database) Commit(ctx context.Context, ids []string) CommitResult {
 			slog.Warn("Empty UUID")
 			continue
 		}
-		tmpDir := db.TmpDirectory + "/" + id
-		mainDir := db.MainDirectory + "/" + id
+		tmpDir := db.tmpDirectory + "/" + id
+		mainDir := db.mainDirectory + "/" + id
 		if err := os.Rename(tmpDir, mainDir); err != nil {
 			out.Failed = append(out.Failed, id)
 			out.Error = err
 			out.HTTPStatusCode = http.StatusInternalServerError
 		} else {
-			meta, err := db.readMetaFile(ctx, dir, id)
+			meta, err := db.readMetaFile(ctx, db.MainRoot, id)
 			if err != nil {
 				out.Failed = append(out.Failed, id)
 				out.Error = err
@@ -329,20 +284,14 @@ func (db *Database) Commit(ctx context.Context, ids []string) CommitResult {
 	return out
 }
 
-func (db *Database) Open(ctx context.Context, id string, filename string) (io.ReadCloser, error) {
-	dir, err := os.OpenRoot(db.MainDirectory)
-	if err != nil {
-		return nil, err
-	}
-	defer dir.Close()
-
-	file, err := dir.Open(id + "/" + filename)
+func (db *Database) OpenFile(ctx context.Context, id string, filename string) (io.ReadCloser, error) {
+	file, err := db.MainRoot.Open(id + "/" + filename)
 	if err != nil {
 		return nil, err
 	}
 	return file, nil
 }
 
-func (db *Database) Delete(ctx context.Context, id string) (out DeleteResult) {
-	return db.delete(ctx, db.MainDirectory, id)
+func (db *Database) DeleteFile(ctx context.Context, id string) (out DeleteResult) {
+	return db.deleteFile(ctx, db.MainRoot, id)
 }

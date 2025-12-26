@@ -79,7 +79,7 @@ func (h *fetchImage) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		commitResult := h.DB.Commit(ctx, []string{uploadResult.UniqueID})
+		commitResult := h.DB.CommitFile(ctx, []string{uploadResult.UniqueID})
 		if commitResult.Error != nil {
 			request.LogError(r, fmt.Errorf("committing image: %w", err))
 			w.WriteHeader(http.StatusInternalServerError)
@@ -87,7 +87,7 @@ func (h *fetchImage) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		}
 
 		fileInfo := commitResult.Commited[uploadResult.UniqueID]
-		hash, err := h.DB.Sha256(ctx, h.DB.MainDirectory, uploadResult.UniqueID, fileInfo.FileName)
+		hash, err := h.DB.Sha256File(ctx, h.DB.MainRoot, uploadResult.UniqueID, fileInfo.FileName)
 		if err != nil {
 			request.LogError(r, fmt.Errorf("hashing image: %w", err))
 			w.WriteHeader(http.StatusInternalServerError)

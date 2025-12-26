@@ -75,7 +75,7 @@ func (h *Read) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 func (h *Read) serveFile(w http.ResponseWriter, r *http.Request, uuid string, filename string, mimetype string, size int) {
 	ctx := r.Context()
-	rc, err := h.DB.Open(ctx, uuid, filename)
+	rc, err := h.DB.OpenFile(ctx, uuid, filename)
 	if err != nil {
 		request.AjaxError(w, r, err, http.StatusInternalServerError)
 		return

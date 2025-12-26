@@ -41,7 +41,7 @@ func (h delete_) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if result := h.DB.Delete(ctx, file.Uuid); result.Error != nil {
+	if result := h.DB.DeleteFile(ctx, file.Uuid); result.Error != nil {
 		request.AjaxError(w, r, err, result.HTTPStatusCode)
 		return
 	}

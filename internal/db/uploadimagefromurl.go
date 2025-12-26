@@ -38,6 +38,6 @@ func UploadImageFromURL(ctx context.Context, rawURL string, db *Database, creato
 		Creator:  creatorID,
 	}
 
-	result := db.Upload(ctx, r, info)
+	result := db.UploadFile(ctx, r, info)
 	return result
 }

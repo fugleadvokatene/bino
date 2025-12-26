@@ -37,7 +37,7 @@ func (db *Database) StoreUserAvatars(ctx context.Context) (int64, error) {
 
 	// Commit images
 	uuids := generic.MapToSlice(fileIDToUserID, func(uuid string, _ int32) string { return uuid })
-	commitResult := db.Commit(ctx, uuids)
+	commitResult := db.CommitFile(ctx, uuids)
 	if err := commitResult.Error; err != nil {
 		slog.Warn("Unable to commit image", "err", err, "n committed", len(commitResult.Commited), "n failed", len(commitResult.Failed))
 	}

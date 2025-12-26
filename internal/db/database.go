@@ -17,25 +17,49 @@ type Database struct {
 	Conn *pgxpool.Pool
 
 	// Local file system
-	MainDirectory string
-	TmpDirectory  string
+	MainRoot *os.Root
+	TmpRoot  *os.Root
+
+	// Only used for commit operation which renames from tmp to main
+	mainDirectory string
+	tmpDirectory  string
 }
 
-func New(conn *pgxpool.Pool, mainDir, tmpDir string) *Database {
+func New(conn *pgxpool.Pool, mainDir, tmpDir string) (*Database, error) {
 	if err := os.MkdirAll(mainDir, os.ModePerm); err != nil {
-		panic(fmt.Errorf("creating mainDir='%s': %w", mainDir, err))
+		return nil, fmt.Errorf("creating mainDir='%s': %w", mainDir, err)
 	}
 	if err := os.MkdirAll(tmpDir, os.ModePerm); err != nil {
-		panic(fmt.Errorf("creating tmpDir='%s': %w", tmpDir, err))
+		return nil, fmt.Errorf("creating tmpDir='%s': %w", tmpDir, err)
+	}
+	MainRoot, err := os.OpenRoot(mainDir)
+	if err != nil {
+		return nil, fmt.Errorf("opening main root: %w", err)
+	}
+	TmpRoot, err := os.OpenRoot(tmpDir)
+	if err != nil {
+		MainRoot.Close()
+		return nil, fmt.Errorf("opening tmp root: %w", err)
 	}
 
 	return &Database{
 		Conn: conn,
 		Q:    sql.New(conn),
 
-		MainDirectory: mainDir,
-		TmpDirectory:  tmpDir,
-	}
+		MainRoot: MainRoot,
+		TmpRoot:  TmpRoot,
+
+		mainDirectory: mainDir,
+		tmpDirectory:  tmpDir,
+	}, nil
+}
+
+func (db *Database) Close() error {
+	db.Conn.Close()
+	return errors.Join(
+		db.MainRoot.Close(),
+		db.TmpRoot.Close(),
+	)
 }
 
 func (db *Database) Transaction(ctx context.Context, f func(ctx context.Context, q *Database) error) error {

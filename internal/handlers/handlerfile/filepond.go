@@ -34,7 +34,7 @@ func (h *filepondSubmit) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	result := h.DB.Commit(ctx, uuids)
+	result := h.DB.CommitFile(ctx, uuids)
 	if result.Error != nil {
 		data.Error(data.Language.GenericFailed, result.Error)
 		request.Redirect(w, r, "/file")
@@ -44,7 +44,7 @@ func (h *filepondSubmit) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if err := h.DB.Transaction(ctx, func(ctx context.Context, db *db.Database) error {
 		errs := []error{}
 		for uuid, fileInfo := range result.Commited {
-			hash, err := h.DB.Sha256(ctx, h.DB.MainDirectory, uuid, fileInfo.FileName)
+			hash, err := h.DB.Sha256File(ctx, h.DB.MainRoot, uuid, fileInfo.FileName)
 			if err != nil {
 				errs = append(errs, fmt.Errorf("hashing %s: %w", uuid, err))
 				data.Error(data.Language.GenericFailed, err)
@@ -101,7 +101,7 @@ func (h *filepondProcess) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 	defer file.Close()
 
-	result := h.DB.Upload(ctx, file, model.FileInfo{
+	result := h.DB.UploadFile(ctx, file, model.FileInfo{
 		FileName: header.Filename,
 		MIMEType: header.Header.Get("Content-Type"),
 		Size:     header.Size,
@@ -131,7 +131,7 @@ func (h *filepondRevert) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if result := h.DB.DeleteTemp(ctx, string(in)); result.Error != nil {
+	if result := h.DB.DeleteTempFile(ctx, string(in)); result.Error != nil {
 		request.AjaxError(w, r, err, result.HTTPStatusCode)
 		return
 	}
@@ -152,7 +152,7 @@ func (h *filepondRestore) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		request.AjaxError(w, r, err, http.StatusInternalServerError)
 	}
 
-	res := h.DB.ReadTemp(ctx, id)
+	res := h.DB.ReadTempFile(ctx, id)
 	if res.Error != nil {
 		request.AjaxError(w, r, res.Error, res.HTTPStatusCode)
 		return

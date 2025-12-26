@@ -24,7 +24,7 @@ func CreateImageVariants(
 		return 0, err
 	}
 	for _, file := range filesMissingOriginalVariant {
-		rc, err := db.Open(ctx, file.Uuid, file.Filename)
+		rc, err := db.OpenFile(ctx, file.Uuid, file.Filename)
 		if err != nil {
 			slog.ErrorContext(ctx, "Couldn't open file", "err", err, "id", file.ID, "uuid", file.Uuid, "filename", file.Filename)
 			continue
@@ -35,7 +35,7 @@ func CreateImageVariants(
 
 		if err != nil {
 			slog.ErrorContext(ctx, "Couldn't decode image", "err", err, "id", file.ID)
-		} else if hash, err := db.Sha256(ctx, db.MainDirectory, file.Uuid, file.Filename); err != nil {
+		} else if hash, err := db.Sha256File(ctx, db.MainRoot, file.Uuid, file.Filename); err != nil {
 			slog.ErrorContext(ctx, "Couldn't hash image", "err", err, "id", file.ID)
 		} else if err := db.Q.PublishVariant(ctx, sql.PublishVariantParams{
 			FileID:   file.ID,
@@ -67,7 +67,7 @@ func CreateImageVariants(
 		slog.InfoContext(ctx, "Creating miniatures", "file", file.Filename, "miniatures", miniatures)
 		if err := db.Transaction(ctx, func(ctx context.Context, db *dblib.Database) error {
 			for _, mini := range miniatures {
-				hash, err := db.Sha256(ctx, db.MainDirectory, file.Uuid, mini.VariantFilename)
+				hash, err := db.Sha256File(ctx, db.MainRoot, file.Uuid, mini.VariantFilename)
 				if err != nil {
 					return fmt.Errorf("hashing variant '%s': %w", mini.Variant.String(), err)
 				}

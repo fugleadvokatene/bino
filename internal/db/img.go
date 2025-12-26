@@ -45,13 +45,7 @@ type Miniature struct {
 	Height          int32
 }
 
-func WithFileDir[T any](ctx context.Context, dirname string, uuid string, f func(context.Context, *os.Root) (T, error)) (T, error) {
-	dir, err := os.OpenRoot(dirname)
-	if err != nil {
-		return *new(T), fmt.Errorf("opening file directory: %w", err)
-	}
-	defer dir.Close()
-
+func WithFileDir[T any](ctx context.Context, dir *os.Root, uuid string, f func(context.Context, *os.Root) (T, error)) (T, error) {
 	subdir, err := dir.OpenRoot(uuid)
 	if err != nil {
 		return *new(T), fmt.Errorf("no subdirectory named '%s' in main directory: %w", uuid, err)
@@ -62,13 +56,13 @@ func WithFileDir[T any](ctx context.Context, dirname string, uuid string, f func
 }
 
 func (db *Database) CreateMiniatures(ctx context.Context, uuid string, originalFilename string) ([]Miniature, error) {
-	return WithFileDir(ctx, db.MainDirectory, uuid, func(ctx context.Context, subdir *os.Root) ([]Miniature, error) {
+	return WithFileDir(ctx, db.MainRoot, uuid, func(ctx context.Context, subdir *os.Root) ([]Miniature, error) {
 		return CreateMiniatures(ctx, subdir, originalFilename)
 	})
 }
 
-func (db *Database) Sha256(ctx context.Context, dirname string, uuid string, filename string) ([]byte, error) {
-	return WithFileDir(ctx, dirname, uuid, func(ctx context.Context, subdir *os.Root) ([]byte, error) {
+func (db *Database) Sha256File(ctx context.Context, dir *os.Root, uuid string, filename string) ([]byte, error) {
+	return WithFileDir(ctx, dir, uuid, func(ctx context.Context, subdir *os.Root) ([]byte, error) {
 		file, err := subdir.Open(filename)
 		if err != nil {
 			return nil, fmt.Errorf("opening file: %w", err)
