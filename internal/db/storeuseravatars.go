@@ -6,14 +6,13 @@ import (
 	"log/slog"
 	"time"
 
-	"github.com/fugleadvokatene/bino/internal/fs"
 	"github.com/fugleadvokatene/bino/internal/generic"
 	"github.com/fugleadvokatene/bino/internal/model"
 	"github.com/fugleadvokatene/bino/internal/sql"
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
-func (db *Database) StoreUserAvatars(ctx context.Context, backend *fs.LocalFileStorage) (int64, error) {
+func (db *Database) StoreUserAvatars(ctx context.Context, backend *LocalFileStorage) (int64, error) {
 	// Get users that currently have their avatar stored on googleusercontent.com, these may disappear at any time
 	users, err := db.Q.GetUsersWithGoogleStoredAvatars(ctx)
 	if err != nil || len(users) == 0 {
@@ -23,7 +22,7 @@ func (db *Database) StoreUserAvatars(ctx context.Context, backend *fs.LocalFileS
 	// Upload images, keeping track of the mapping from uuid to user id
 	fileIDToUserID := make(map[string]int32)
 	for _, user := range users {
-		uploadResult := fs.UploadImageFromURL(ctx, user.AvatarUrl.String, backend, user.ID)
+		uploadResult := UploadImageFromURL(ctx, user.AvatarUrl.String, backend, user.ID)
 		if err := uploadResult.Error; err != nil {
 			slog.Warn("Unable to upload image", "err", err, "url", user.AvatarUrl.String)
 			continue

@@ -7,7 +7,6 @@ import (
 	"log/slog"
 
 	dblib "github.com/fugleadvokatene/bino/internal/db"
-	"github.com/fugleadvokatene/bino/internal/fs"
 	"github.com/fugleadvokatene/bino/internal/model"
 	"github.com/fugleadvokatene/bino/internal/sql"
 )
@@ -15,7 +14,7 @@ import (
 func CreateImageVariants(
 	ctx context.Context,
 	db *dblib.Database,
-	fileBackend *fs.LocalFileStorage,
+	fileBackend *dblib.LocalFileStorage,
 ) (int64, error) {
 	successfulConversions := int64(0)
 

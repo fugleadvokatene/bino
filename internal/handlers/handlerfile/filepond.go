@@ -12,7 +12,6 @@ import (
 
 	"github.com/fugleadvokatene/bino/internal/background"
 	"github.com/fugleadvokatene/bino/internal/db"
-	"github.com/fugleadvokatene/bino/internal/fs"
 	"github.com/fugleadvokatene/bino/internal/model"
 	"github.com/fugleadvokatene/bino/internal/request"
 	"github.com/fugleadvokatene/bino/internal/sql"
@@ -21,7 +20,7 @@ import (
 
 type filepondSubmit struct {
 	DB          *db.Database
-	FileBackend *fs.LocalFileStorage
+	FileBackend *db.LocalFileStorage
 	Jobs        *background.Jobs
 }
 
@@ -80,7 +79,7 @@ func (h *filepondSubmit) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 }
 
 type filepondProcess struct {
-	FileBackend *fs.LocalFileStorage
+	FileBackend *db.LocalFileStorage
 }
 
 // https://pqina.nl/filepond/docs/api/server/#process
@@ -89,9 +88,9 @@ func (h *filepondProcess) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	data := request.MustLoadCommonData(ctx)
 
 	// Parse multipart form with reasonable max memory
-	err := r.ParseMultipartForm(fs.MaxImageSize)
+	err := r.ParseMultipartForm(db.MaxImageSize)
 	if err != nil {
-		data.Log(slog.LevelWarn, "file too large?", "err", err, "maxsize", fs.MaxImageSize)
+		data.Log(slog.LevelWarn, "file too large?", "err", err, "maxsize", db.MaxImageSize)
 		request.AjaxError(w, r, err, http.StatusRequestEntityTooLarge)
 		return
 	}
@@ -120,7 +119,7 @@ func (h *filepondProcess) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 }
 
 type filepondRevert struct {
-	FileBackend *fs.LocalFileStorage
+	FileBackend *db.LocalFileStorage
 }
 
 // https://pqina.nl/filepond/docs/api/server/#revert
@@ -142,7 +141,7 @@ func (h *filepondRevert) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 }
 
 type filepondRestore struct {
-	FileBackend *fs.LocalFileStorage
+	FileBackend *db.LocalFileStorage
 }
 
 // https://pqina.nl/filepond/docs/api/server/#restore

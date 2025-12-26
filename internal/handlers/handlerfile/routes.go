@@ -3,14 +3,13 @@ package handlerfile
 import (
 	"github.com/fugleadvokatene/bino/internal/background"
 	"github.com/fugleadvokatene/bino/internal/db"
-	"github.com/fugleadvokatene/bino/internal/fs"
 	"github.com/fugleadvokatene/bino/internal/model"
 	"github.com/fugleadvokatene/bino/internal/route"
 )
 
 func Routes(
 	db *db.Database,
-	fileBackend *fs.LocalFileStorage,
+	fileBackend *db.LocalFileStorage,
 	jobs *background.Jobs,
 ) []route.Route {
 	readHandler := &Read{DB: db, FileBackend: fileBackend}

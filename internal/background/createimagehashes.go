@@ -6,14 +6,13 @@ import (
 	"log/slog"
 
 	"github.com/fugleadvokatene/bino/internal/db"
-	"github.com/fugleadvokatene/bino/internal/fs"
 	"github.com/fugleadvokatene/bino/internal/sql"
 )
 
 func CreateImageHashes(
 	ctx context.Context,
 	db *db.Database,
-	fileBackend *fs.LocalFileStorage,
+	fileBackend *db.LocalFileStorage,
 ) (int64, error) {
 	filesMissingHash, err := db.Q.GetFilesMissingHash(ctx)
 	if err != nil {

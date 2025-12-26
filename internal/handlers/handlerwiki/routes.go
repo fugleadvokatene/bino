@@ -2,7 +2,6 @@ package handlerwiki
 
 import (
 	"github.com/fugleadvokatene/bino/internal/db"
-	"github.com/fugleadvokatene/bino/internal/fs"
 	"github.com/fugleadvokatene/bino/internal/model"
 	"github.com/fugleadvokatene/bino/internal/route"
 	"github.com/fugleadvokatene/bino/internal/security"
@@ -10,7 +9,7 @@ import (
 
 func Routes(
 	db *db.Database,
-	fileBackend *fs.LocalFileStorage,
+	fileBackend *db.LocalFileStorage,
 	secConf *security.Config,
 ) []route.Route {
 	routes := []route.Route{

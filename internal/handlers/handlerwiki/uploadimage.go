@@ -7,7 +7,6 @@ import (
 	"time"
 
 	"github.com/fugleadvokatene/bino/internal/db"
-	"github.com/fugleadvokatene/bino/internal/fs"
 	"github.com/fugleadvokatene/bino/internal/model"
 	"github.com/fugleadvokatene/bino/internal/request"
 	"github.com/fugleadvokatene/bino/internal/sql"
@@ -16,7 +15,7 @@ import (
 
 type uploadImage struct {
 	DB          *db.Database
-	FileBackend *fs.LocalFileStorage
+	FileBackend *db.LocalFileStorage
 }
 
 func (h *uploadImage) ServeHTTP(w http.ResponseWriter, r *http.Request) {
@@ -38,7 +37,7 @@ func (h *uploadImage) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Parse multipart form with reasonable max memory
-	if err := r.ParseMultipartForm(fs.MaxImageSize); err != nil {
+	if err := r.ParseMultipartForm(db.MaxImageSize); err != nil {
 		request.LogError(r, fmt.Errorf("reading request body: %w", err))
 		w.WriteHeader(http.StatusRequestEntityTooLarge)
 		return

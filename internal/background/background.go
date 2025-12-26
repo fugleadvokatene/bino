@@ -4,8 +4,7 @@ import (
 	"context"
 	"time"
 
-	"github.com/fugleadvokatene/bino/internal/db"
-	"github.com/fugleadvokatene/bino/internal/fs"
+	dblib "github.com/fugleadvokatene/bino/internal/db"
 	"github.com/fugleadvokatene/bino/internal/job"
 	"github.com/fugleadvokatene/bino/internal/model"
 	"github.com/fugleadvokatene/bino/internal/security"
@@ -17,8 +16,8 @@ type Jobs struct {
 
 func StartJobs(
 	ctx context.Context,
-	db *db.Database,
-	fileBackend *fs.LocalFileStorage,
+	db *dblib.Database,
+	fileBackend *dblib.LocalFileStorage,
 	systemLanguageID model.LanguageID,
 	secConf *security.Config,
 ) Jobs {
@@ -26,7 +25,7 @@ func StartJobs(
 
 	job.Run("Delete stale sessions", time.Hour, func() (any, error) { return db.DeleteStaleSessions(ctx) })
 	job.Run("Delete expired invitations", time.Hour, func() (any, error) { return db.DeleteExpiredInvitations(ctx) })
-	job.Run("Delete old staged files", time.Hour, func() (any, error) { return fs.DeleteOldStagedFiles(ctx, fileBackend, 24*time.Hour) })
+	job.Run("Delete old staged files", time.Hour, func() (any, error) { return dblib.DeleteOldStagedFiles(ctx, fileBackend, 24*time.Hour) })
 	job.Run("Delete false Wiki links", time.Hour, func() (any, error) { return db.RemoveFalseFileWikiLinks(ctx) })
 	job.Run("Suggest journal URLs", time.Hour, func() (any, error) { return db.SuggestJournalURLs(ctx, systemLanguageID) })
 	job.Run("Unset old journal-pending status", time.Minute*10, func() (any, error) { return db.UnsetOldPendingStatus(ctx) })

@@ -12,8 +12,7 @@ import (
 	"github.com/fugleadvokatene/bino/internal/auth"
 	"github.com/fugleadvokatene/bino/internal/background"
 	"github.com/fugleadvokatene/bino/internal/config"
-	"github.com/fugleadvokatene/bino/internal/db"
-	"github.com/fugleadvokatene/bino/internal/fs"
+	dblib "github.com/fugleadvokatene/bino/internal/db"
 	"github.com/fugleadvokatene/bino/internal/gdrive"
 	"github.com/fugleadvokatene/bino/internal/handlers/handleraccess"
 	"github.com/fugleadvokatene/bino/internal/handlers/handleradminroot"
@@ -98,7 +97,7 @@ func realMain() error {
 		return fmt.Errorf("setting up database connection: %w", err)
 	}
 	defer conn.Close()
-	db := &db.Database{
+	db := &dblib.Database{
 		Conn: conn,
 		Q:    sql.New(conn),
 	}
@@ -111,7 +110,7 @@ func realMain() error {
 	gdriveWorker := gdrive.NewWorker(ctx, config.GoogleDrive, gdriveClient)
 
 	// Set up file backend
-	fileBackend := fs.NewLocalFileStorage(ctx, "file", "tmp")
+	fileBackend := dblib.NewLocalFileStorage(ctx, "file", "tmp")
 
 	// Set up broker
 	broker := sse.NewBroker(ctx)

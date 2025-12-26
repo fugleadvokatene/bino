@@ -4,13 +4,12 @@ import (
 	"net/http"
 
 	"github.com/fugleadvokatene/bino/internal/db"
-	"github.com/fugleadvokatene/bino/internal/fs"
 	"github.com/fugleadvokatene/bino/internal/request"
 )
 
 type delete_ struct {
 	DB          *db.Database
-	FileBackend *fs.LocalFileStorage
+	FileBackend *db.LocalFileStorage
 }
 
 func (h delete_) ServeHTTP(w http.ResponseWriter, r *http.Request) {

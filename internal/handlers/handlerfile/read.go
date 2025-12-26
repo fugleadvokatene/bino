@@ -8,7 +8,6 @@ import (
 	"strconv"
 
 	"github.com/fugleadvokatene/bino/internal/db"
-	"github.com/fugleadvokatene/bino/internal/fs"
 	"github.com/fugleadvokatene/bino/internal/model"
 	"github.com/fugleadvokatene/bino/internal/request"
 	"github.com/fugleadvokatene/bino/internal/sql"
@@ -17,7 +16,7 @@ import (
 
 type Read struct {
 	DB          *db.Database
-	FileBackend *fs.LocalFileStorage
+	FileBackend *db.LocalFileStorage
 }
 
 func (h *Read) ServeHTTP(w http.ResponseWriter, r *http.Request) {

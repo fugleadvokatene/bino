@@ -1,4 +1,4 @@
-package fs
+package db
 
 import (
 	"context"
@@ -195,7 +195,7 @@ func (lfs *LocalFileStorage) DeleteTemp(ctx context.Context, id string) (out Del
 	return lfs.delete(ctx, lfs.TmpDirectory, id)
 }
 
-func (lfs *LocalFileStorage) readMetaFile(ctx context.Context, dir *os.Root, id string) (model.FileInfo, error) {
+func (lfs *LocalFileStorage) readMetaFile(_ context.Context, dir *os.Root, id string) (model.FileInfo, error) {
 	metaFile, err := dir.Open(id + "/metadata.json")
 	if err != nil {
 		return model.FileInfo{}, err

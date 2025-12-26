@@ -8,7 +8,6 @@ import (
 	"time"
 
 	"github.com/fugleadvokatene/bino/internal/db"
-	"github.com/fugleadvokatene/bino/internal/fs"
 	"github.com/fugleadvokatene/bino/internal/model"
 	"github.com/fugleadvokatene/bino/internal/request"
 	"github.com/fugleadvokatene/bino/internal/sql"
@@ -17,7 +16,7 @@ import (
 
 type fetchImage struct {
 	DB          *db.Database
-	FileBackend *fs.LocalFileStorage
+	FileBackend *db.LocalFileStorage
 }
 
 type WikiFetchImageRequest struct {
@@ -74,7 +73,7 @@ func (h *fetchImage) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if resp.Success == 0 {
-		uploadResult := fs.UploadImageFromURL(ctx, req.URL, h.FileBackend, data.User.AppuserID)
+		uploadResult := db.UploadImageFromURL(ctx, req.URL, h.FileBackend, data.User.AppuserID)
 		if uploadResult.Error != nil {
 			request.LogError(r, fmt.Errorf("uploading image: %w", err))
 			w.WriteHeader(http.StatusInternalServerError)
