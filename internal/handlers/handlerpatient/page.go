@@ -1,10 +1,13 @@
 package handlerpatient
 
 import (
+	"encoding/json"
 	"fmt"
 	"net/http"
+	"time"
 
 	"github.com/fugleadvokatene/bino/internal/db"
+	"github.com/fugleadvokatene/bino/internal/gdrive/document"
 	"github.com/fugleadvokatene/bino/internal/generic"
 	"github.com/fugleadvokatene/bino/internal/handlers/handlererror"
 	"github.com/fugleadvokatene/bino/internal/model"
@@ -49,17 +52,6 @@ func (h *page) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	commonData.Subtitle = patientData.Name
 
-	var home *model.Home
-	if patientData.CurrHomeID.Valid {
-		homeResult, err := h.DB.Q.GetHome(ctx, patientData.CurrHomeID.Int32)
-		if err != nil {
-			handlererror.Error(w, r, err)
-			return
-		}
-		h := homeResult.ToModel()
-		home = &h
-	}
-
 	homes, err := h.DB.Q.GetHomes(ctx)
 	if err != nil {
 		handlererror.Error(w, r, err)
@@ -101,12 +93,25 @@ func (h *page) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		}
 	})
 
-	PatientPage(ctx, commonData, model.PatientPage{
-		Patient: patientData.ToModel(),
-		Home:    home,
-		Homes: generic.SliceToSlice(homes, func(home sql.Home) model.Home {
+	var journal document.Document
+	var journalUpdated time.Time
+	if row, err := h.DB.Q.GetJournalJSON(ctx, id); err == nil {
+		if err := json.Unmarshal(row.Json, &journal); err != nil {
+			generic.Clear(&journal)
+		}
+		journalUpdated = row.Updated.Time
+	}
+
+	PatientPage(
+		ctx,
+		commonData,
+		patientData.ToModel(),
+		generic.SliceToSlice(homes, func(home sql.Home) model.Home {
 			return home.ToModel()
 		}),
-		Events: events,
-	}, speciesList).Render(ctx, w)
+		events,
+		speciesList,
+		&journal,
+		journalUpdated,
+	).Render(ctx, w)
 }

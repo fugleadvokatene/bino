@@ -86,7 +86,7 @@ func (cd *CommonData) Log(level slog.Level, message string, args ...any) {
 		return
 	}
 	if cd.User == nil {
-		fmt.Printf("user is nil\n")
+		fmt.Printf("tried to log with nil user\n")
 		return
 	}
 	if !cd.User.LoggingConsent {

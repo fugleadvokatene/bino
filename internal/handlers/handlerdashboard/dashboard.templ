@@ -234,7 +234,7 @@ templ DashboardHomeCard(data *request.CommonData, homes []model.Home, home *mode
     <div class="card-content dashboard-patient-list" data-home={home.ID}>
         if len(home.Patients) > 0 {
             for _, patient := range home.Patients {
-                @handlerpatient.PatientCard(data, homes, home, patient)
+                @handlerpatient.PatientCard(data, homes, patient)
             }
         }
     </div>

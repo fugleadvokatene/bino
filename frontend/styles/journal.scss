@@ -14,3 +14,29 @@
 .journal-underline {
   text-decoration-line: underline;
 }
+.journal-paragraph {
+  margin: 0 0 0 0.3em;
+}
+.journal-paragraph:empty {
+  display: none;
+}
+.journal-plain::before {
+  content: ' ';
+}
+article {
+  p:empty {
+    display: none;
+  }
+}
+.journal-image-frame {
+  overflow: hidden;
+  position: relative;
+}
+.journal-image-frame img {
+  position: absolute;
+  top: 0;
+  left: 0;
+  transform: translate(calc(-100% * var(--left)), calc(-100% * var(--top)))
+    scale(var(--scale));
+  transform-origin: top left;
+}

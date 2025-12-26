@@ -16,7 +16,7 @@ templ HomePage(ctx context.Context, data *request.CommonData, homes []model.Home
             <h2>{data.Language.HomesPatients} ({len(self.Patients)})</h2>
             <div class="dashboard-patient-list" data-home={self.ID}>
                 for _, patient := range self.Patients {
-                    @handlerpatient.PatientCard(data, homes, self, patient)
+                    @handlerpatient.PatientCard(data, homes, patient)
                 }
             </div>
 

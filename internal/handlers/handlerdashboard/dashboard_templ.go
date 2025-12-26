@@ -1201,7 +1201,7 @@ func DashboardHomeCard(data *request.CommonData, homes []model.Home, home *model
 		}
 		if len(home.Patients) > 0 {
 			for _, patient := range home.Patients {
-				templ_7745c5c3_Err = handlerpatient.PatientCard(data, homes, home, patient).Render(ctx, templ_7745c5c3_Buffer)
+				templ_7745c5c3_Err = handlerpatient.PatientCard(data, homes, patient).Render(ctx, templ_7745c5c3_Buffer)
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}

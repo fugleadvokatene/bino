@@ -123,7 +123,7 @@ func HomePage(ctx context.Context, data *request.CommonData, homes []model.Home,
 					return templ_7745c5c3_Err
 				}
 				for _, patient := range self.Patients {
-					templ_7745c5c3_Err = handlerpatient.PatientCard(data, homes, self, patient).Render(ctx, templ_7745c5c3_Buffer)
+					templ_7745c5c3_Err = handlerpatient.PatientCard(data, homes, patient).Render(ctx, templ_7745c5c3_Buffer)
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err
 					}

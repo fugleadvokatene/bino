@@ -108,5 +108,8 @@ func (dt *DocText) ClassesFromFlags() []string {
 	if dt.Flags&FlagUnderline != 0 {
 		out = append(out, "journal-underline")
 	}
+	if dt.Flags == 0 {
+		out = append(out, "journal-plain")
+	}
 	return out
 }

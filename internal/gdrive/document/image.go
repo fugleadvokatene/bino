@@ -19,6 +19,13 @@ type DocImage struct {
 	Angle       float64
 }
 
+func (di *DocImage) Scale() float64 {
+	return max(
+		1/(1-di.Crop[3]-di.Crop[1]),
+		1/(1-di.Crop[0]-di.Crop[2]),
+	)
+}
+
 func (di *DocImage) Markdown(w io.Writer) {
 	if di == nil {
 		return

@@ -11,6 +11,42 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
+const getJournalHTML = `-- name: GetJournalHTML :one
+SELECT updated, html
+FROM journal
+WHERE patient_id = $1
+`
+
+type GetJournalHTMLRow struct {
+	Updated pgtype.Timestamptz
+	Html    pgtype.Text
+}
+
+func (q *Queries) GetJournalHTML(ctx context.Context, patientID int32) (GetJournalHTMLRow, error) {
+	row := q.db.QueryRow(ctx, getJournalHTML, patientID)
+	var i GetJournalHTMLRow
+	err := row.Scan(&i.Updated, &i.Html)
+	return i, err
+}
+
+const getJournalJSON = `-- name: GetJournalJSON :one
+SELECT updated, json
+FROM journal
+WHERE patient_id = $1
+`
+
+type GetJournalJSONRow struct {
+	Updated pgtype.Timestamptz
+	Json    []byte
+}
+
+func (q *Queries) GetJournalJSON(ctx context.Context, patientID int32) (GetJournalJSONRow, error) {
+	row := q.db.QueryRow(ctx, getJournalJSON, patientID)
+	var i GetJournalJSONRow
+	err := row.Scan(&i.Updated, &i.Json)
+	return i, err
+}
+
 const upsertJournal = `-- name: UpsertJournal :exec
 INSERT INTO journal (patient_id, updated, json, markdown, html)
 VALUES ($1, NOW(), $2, $3, $4)

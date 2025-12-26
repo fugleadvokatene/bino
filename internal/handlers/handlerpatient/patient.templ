@@ -2,50 +2,60 @@ package handlerpatient
 
 import (
     "context"
+    "time"
 
 	"github.com/fugleadvokatene/bino/internal/model"
 	"github.com/fugleadvokatene/bino/internal/request"
 	"github.com/fugleadvokatene/bino/internal/templbase"
 	"github.com/fugleadvokatene/bino/internal/handlers/handlercalendar"
 	"github.com/fugleadvokatene/bino/internal/handlers/handlerevent"
+	"github.com/fugleadvokatene/bino/internal/gdrive/document"
 )
 
 templ PatientPage(
     ctx context.Context,
     data *request.CommonData,
-    page model.PatientPage,
+    patient model.Patient,
+	homes []model.Home,
+	events []model.Event,
     speciesList []templbase.Option,
+    journal *document.Document,
+    journalUpdated time.Time,
 ) {
 	@templbase.Layout(data, "patient-page") {
-        <h1 class="editable" data-action={page.Patient.URLSuffix("set-name")}>{page.Patient.Name}</h1>
+        <h1 class="editable" data-action={patient.URLSuffix("set-name")}>{patient.Name}</h1>
         @templbase.Card() {
             <h2>Personalia</h2>
             <table class="table table-bordered mb-2">
             <tbody>
                 <tr>
                     <th>{data.Language.PatientRegisteredTime}</th>
-                    <td>@handlercalendar.CalendarLinkAbs(data.Language, page.Patient.TimeCheckin, "listDay")</td>
+                    <td>@handlercalendar.CalendarLinkAbs(data.Language, patient.TimeCheckin, "listDay")</td>
                 </tr>
                 <tr>
                     <th>{data.Language.GenericStatus}</th>
-                    <td>{data.Language.Status[model.Status(page.Patient.Status)]}</td>
+                    <td>{data.Language.Status[model.Status(patient.Status)]}</td>
                 </tr>
                 <tr>
                     <th>{data.Language.GenericSpecies}</th>
                     <td>
                         <span
                             class="editable editable-select"
-                            data-action={page.Patient.URLSuffix("set-species")}
+                            data-action={patient.URLSuffix("set-species")}
                             data-options={templ.JSONString(speciesList)}
-                            data-selected={page.Patient.Species.ID}
-                        >{page.Patient.Species.Name}</span>
+                            data-selected={patient.Species.ID}
+                        >{patient.Species.Name}</span>
                     </td>
                 </tr>
-                if page.Home != nil {
-                    <tr>
-                        <th>{data.Language.GenericHome}</th>
-                        <td>{page.Home.Name}</td>
-                    </tr>
+                if patient.CurrentHomeID != 0 {
+                    for _, home := range homes {
+                        if home.ID == patient.CurrentHomeID {
+                            <tr>
+                                <th>{data.Language.GenericHome}</th>
+                                <td>{home.Name}</td>
+                            </tr>
+                        }
+                    }
                 }
             </tbody>
             </table>
@@ -53,28 +63,34 @@ templ PatientPage(
             <h2>Oppdater</h2>
             <table class="patient-table table table-bordered mb-2">
                 <tbody>
-                    @PatientJournalUpdate(data, page.Patient)
+                    @PatientJournalUpdate(data, patient)
 
-                    if model.IsCheckoutStatus[model.Status(page.Patient.Status)] {
+                    if model.IsCheckoutStatus[model.Status(patient.Status)] {
                         if data.User.HasCapability(model.CapHardDeletePatient) {
-                            @PatientHardDelete(data, page.Patient)
+                            @PatientHardDelete(data, patient)
                         }
                     } else {
-                        @PatientMove(data, page.Homes, page.Home, page.Patient)
-                        @PatientCheckout(data, page.Patient)
+                        @PatientMove(data, homes, patient)
+                        @PatientCheckout(data, patient)
                     }
                 </tbody>
             </table>
 
-            if page.Patient.JournalURL != "" &&  data.User.FeatureFlags.Contains("Journal V2") {
+            if patient.JournalURL != "" &&  data.User.FeatureFlags.Contains("Journal V2") {
                 <h2>Journal</h2>
-                @templbase.SingleButtonForm(data, page.Patient.URLSuffix("fetch-journal"), "Fetch journal", "POST", "btn-success")
+                @templbase.SingleButtonForm(data, patient.URLSuffix("fetch-journal"), "Hent siste fra Google Drive", "POST", "btn-success")
+                if !journalUpdated.IsZero() {
+                    <p>Sist oppdatert <span>{data.Language.FormatTimeAbs(journalUpdated)}</span></p>
+                    @journal.Templ()
+                }
             }
 
             <h2>Historikk</h2>
-            @handlerevent.EventList(data, page.Events, false)
+            @handlerevent.EventList(data, events, false)
         }
     }
+    <link rel="stylesheet" href={data.StaticFile("bundle/imageupload.css")}></link>
+    @templbase.JSModule(data, "imageupload")
 }
 
 
@@ -166,7 +182,7 @@ templ PatientJournalUpdate(data *request.CommonData, patient model.Patient) {
     </tr>
 }
 
-templ PatientMove(data *request.CommonData, homes []model.Home, home *model.Home, patient model.Patient) {
+templ PatientMove(data *request.CommonData, homes []model.Home, patient model.Patient) {
     <tr>
         <th class="w-25">{data.Language.GenericMoveTo}</th>
         <td>
@@ -193,11 +209,11 @@ templ PatientMove(data *request.CommonData, homes []model.Home, home *model.Home
     </tr>
 }
 
-templ PatientCard(data *request.CommonData, homes []model.Home, home *model.Home, patient model.Patient) {
+templ PatientCard(data *request.CommonData, homes []model.Home, patient model.Patient) {
     <div class="card b-card dashboard-patient-card m-0 filter-box shadow-sm" id={patient.CardID("#")} data-patient-id={patient.ID}>
         <div class="card-header card-header-patient d-flex justify-content-between">
             <div>
-                if data.User.HasHomeOrAccess(home.ID, model.AccessLevelCoordinator) {
+                if data.User.HasHomeOrAccess(patient.CurrentHomeID, model.AccessLevelCoordinator) {
                     <i class="fa-solid fa-grip-vertical card-gripper dark-on-hover"></i>
                 }
                 <a href={templ.URL(patient.URL())} class="filter-content must-be-clickable">{patient.Name}</a>
@@ -215,7 +231,7 @@ templ PatientCard(data *request.CommonData, homes []model.Home, home *model.Home
             </div>
         </div>
         <div class="card-content" id={patient.CollapseID("")} hidden>
-            @PatientTable(data, homes, home, patient)
+            @PatientTable(data, homes, patient)
         </div>
     </div>
 }
@@ -223,7 +239,6 @@ templ PatientCard(data *request.CommonData, homes []model.Home, home *model.Home
 templ PatientTable(
     data *request.CommonData,
     homes []model.Home,
-    home *model.Home,
     patient model.Patient,
 ) {
     <table class="patient-table table table-bordered">
@@ -231,7 +246,7 @@ templ PatientTable(
             if patient.JournalURL == "" {
                 @PatientJournalUpdate(data, patient)
             }
-            @PatientMove(data, homes, home, patient)
+            @PatientMove(data, homes, patient)
             @CheckoutForm(data, patient)
         </tbody>
     </table>

@@ -1,23 +1,38 @@
 package document
 
+import (
+    "fmt"
+)
+
 templ (doc *Document) Templ() {
-    <article>
-    for _, elem := range doc.Content {
-        @elem.Value.Templ()
-    }
+    <article class="card p-1">
+        for _, elem := range doc.Content {
+            @elem.Value.Templ()
+        }
     </article>
 }
 
 templ (para *Paragraph) Templ() {
-    <p>
-    for _, elem := range para.Elements {
-        @elem.Value.Templ()
-    }
+    <p class="journal-paragraph">
+        for _, elem := range para.Elements {
+            @elem.Value.Templ()
+        }
     </p>
 }
 
 templ (img *DocImage) Templ() {
-    <img src={img.URL}/>
+    <a
+        href={templ.URL(img.URL)}
+        data-lightbox="user-files"
+        class="user-image-link journal-image-frame d-block"
+        style={fmt.Sprintf("width: %dpx; height: %dpx", int(img.Width), int(img.Height))}
+    >
+        <img
+            src={img.URL + "?variant=Medium"}
+            class="user-image dark-on-hover"
+            style={fmt.Sprintf("--top: %f; --right: %f; --bottom: %f; --left: %f; --scale: %f", img.Crop[0], img.Crop[1], img.Crop[2], img.Crop[3], img.Scale())}
+        />
+    </a>
 }
 
 templ (text *DocText) Templ() {
@@ -45,7 +60,7 @@ templ (text *DocText) templPass2() {
 }
 
 templ (text *DocText) templPass3() {
-    // pass 5: resolve url
+    // pass 3: resolve url
     if text.Flags & FlagLink != 0 {
         <a class="journal-link" href={templ.URL(text.LinkURL)}>{text.Trim()}</a>
     } else {

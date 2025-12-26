@@ -51,10 +51,3 @@ func (pv Patient) URL() string {
 func (pv Patient) URLSuffix(suffix string) string {
 	return fmt.Sprintf("/patient/%d/%s", pv.ID, suffix)
 }
-
-type PatientPage struct {
-	Patient Patient
-	Home    *Home
-	Events  []Event
-	Homes   []Home
-}
