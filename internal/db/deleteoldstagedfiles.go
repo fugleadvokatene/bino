@@ -2,23 +2,23 @@ package db
 
 import (
 	"context"
-	"log"
+	"log/slog"
 	"time"
 )
 
 func DeleteOldStagedFiles(ctx context.Context, db *Database, maxAge time.Duration) (int, error) {
-	tempFiles := db.ListTempFileDirectory(ctx)
-	if tempFiles.Error != nil {
-		return 0, tempFiles.Error
+	tempFiles, err := db.ListTempFileDirectory(ctx)
+	if err != nil {
+		return 0, err
 	}
 
 	n := 0
-	for uuid, info := range tempFiles.Files {
+	for uuid, info := range tempFiles {
 		if time.Since(info.Created) > maxAge {
-			if result := db.DeleteTempFile(ctx, uuid); result.Error == nil {
+			if result := db.DeleteTempFile(ctx, uuid); result == nil {
 				n += 1
 			} else {
-				log.Printf("couldn't delete temp file %s: %v", uuid, result.Error)
+				slog.ErrorContext(ctx, "couldn't delete temp file", "uuid", uuid, "error", result)
 			}
 		}
 	}

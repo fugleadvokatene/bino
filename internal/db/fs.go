@@ -25,11 +25,6 @@ type ReadResult struct {
 	HTTPStatusCode int
 }
 
-type ListTempResult struct {
-	Files map[string]model.FileInfo
-	Error error
-}
-
 func (db *Database) UploadFile(ctx context.Context, data io.Reader, fileInfo model.FileInfo) (string, error) {
 	id := uuid.New().String()
 
@@ -104,24 +99,23 @@ func (db *Database) readMetaFile(_ context.Context, dir *os.Root, id string) (mo
 	return info, nil
 }
 
-func (db *Database) ListTempFileDirectory(ctx context.Context) (out ListTempResult) {
-	out.Files = map[string]model.FileInfo{}
-
+func (db *Database) ListTempFileDirectory(ctx context.Context) (map[string]model.FileInfo, error) {
 	entries, err := os.ReadDir(db.tmpDirectory)
 	if err != nil {
-		return ListTempResult{Error: err}
+		return nil, err
 	}
 
+	out := map[string]model.FileInfo{}
 	for _, entry := range entries {
 		name := entry.Name()
 		if entry.IsDir() && uuid.Validate(name) == nil {
 			if info, err := db.readMetaFile(ctx, db.TmpRoot, name); err == nil {
-				out.Files[name] = info
+				out[name] = info
 			}
 		}
 	}
 
-	return out
+	return out, nil
 }
 
 func (db *Database) ReadTempFile(ctx context.Context, id string) (out ReadResult) {
