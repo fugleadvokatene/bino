@@ -14,8 +14,7 @@ import (
 )
 
 type uploadImage struct {
-	DB          *db.Database
-	FileBackend *db.LocalFileStorage
+	DB *db.Database
 }
 
 func (h *uploadImage) ServeHTTP(w http.ResponseWriter, r *http.Request) {
@@ -51,7 +50,7 @@ func (h *uploadImage) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 	defer file.Close()
 
-	uploadResult := h.FileBackend.Upload(ctx, file, model.FileInfo{
+	uploadResult := h.DB.Upload(ctx, file, model.FileInfo{
 		FileName: header.Filename,
 		MIMEType: header.Header.Get("Content-Type"),
 		Size:     header.Size,
@@ -64,7 +63,7 @@ func (h *uploadImage) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	commitResult := h.FileBackend.Commit(ctx, []string{uploadResult.UniqueID})
+	commitResult := h.DB.Commit(ctx, []string{uploadResult.UniqueID})
 	if commitResult.Error != nil {
 		request.LogError(r, fmt.Errorf("committing image: %w", err))
 		w.WriteHeader(http.StatusInternalServerError)
@@ -72,7 +71,7 @@ func (h *uploadImage) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 
 	fileInfo := commitResult.Commited[uploadResult.UniqueID]
-	hash, err := h.FileBackend.Sha256(ctx, h.FileBackend.MainDirectory, uploadResult.UniqueID, fileInfo.FileName)
+	hash, err := h.DB.Sha256(ctx, h.DB.MainDirectory, uploadResult.UniqueID, fileInfo.FileName)
 	if err != nil {
 		request.LogError(r, fmt.Errorf("hashing image: %w", err))
 		w.WriteHeader(http.StatusInternalServerError)

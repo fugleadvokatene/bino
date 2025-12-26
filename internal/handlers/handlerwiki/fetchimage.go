@@ -15,8 +15,7 @@ import (
 )
 
 type fetchImage struct {
-	DB          *db.Database
-	FileBackend *db.LocalFileStorage
+	DB *db.Database
 }
 
 type WikiFetchImageRequest struct {
@@ -73,14 +72,14 @@ func (h *fetchImage) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if resp.Success == 0 {
-		uploadResult := db.UploadImageFromURL(ctx, req.URL, h.FileBackend, data.User.AppuserID)
+		uploadResult := db.UploadImageFromURL(ctx, req.URL, h.DB, data.User.AppuserID)
 		if uploadResult.Error != nil {
 			request.LogError(r, fmt.Errorf("uploading image: %w", err))
 			w.WriteHeader(http.StatusInternalServerError)
 			return
 		}
 
-		commitResult := h.FileBackend.Commit(ctx, []string{uploadResult.UniqueID})
+		commitResult := h.DB.Commit(ctx, []string{uploadResult.UniqueID})
 		if commitResult.Error != nil {
 			request.LogError(r, fmt.Errorf("committing image: %w", err))
 			w.WriteHeader(http.StatusInternalServerError)
@@ -88,7 +87,7 @@ func (h *fetchImage) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		}
 
 		fileInfo := commitResult.Commited[uploadResult.UniqueID]
-		hash, err := h.FileBackend.Sha256(ctx, h.FileBackend.MainDirectory, uploadResult.UniqueID, fileInfo.FileName)
+		hash, err := h.DB.Sha256(ctx, h.DB.MainDirectory, uploadResult.UniqueID, fileInfo.FileName)
 		if err != nil {
 			request.LogError(r, fmt.Errorf("hashing image: %w", err))
 			w.WriteHeader(http.StatusInternalServerError)

@@ -12,7 +12,6 @@ import (
 func CreateImageHashes(
 	ctx context.Context,
 	db *db.Database,
-	fileBackend *db.LocalFileStorage,
 ) (int64, error) {
 	filesMissingHash, err := db.Q.GetFilesMissingHash(ctx)
 	if err != nil {
@@ -21,7 +20,7 @@ func CreateImageHashes(
 
 	nHashed := int64(0)
 	for _, file := range filesMissingHash {
-		hash, err := fileBackend.Sha256(ctx, fileBackend.MainDirectory, file.Uuid, file.Filename)
+		hash, err := db.Sha256(ctx, db.MainDirectory, file.Uuid, file.Filename)
 		if err != nil {
 			slog.ErrorContext(ctx, "Failed to create sha256 hash", "id", file.ID, "uuid", file.Uuid, "err", err)
 			continue
@@ -38,7 +37,7 @@ func CreateImageHashes(
 		return nHashed, fmt.Errorf("getting image variants missing hash: %w", err)
 	}
 	for _, iv := range imageVariantsMissingHash {
-		hash, err := fileBackend.Sha256(ctx, fileBackend.MainDirectory, iv.Uuid, iv.Filename)
+		hash, err := db.Sha256(ctx, db.MainDirectory, iv.Uuid, iv.Filename)
 		if err != nil {
 			slog.ErrorContext(ctx, "Failed to create sha256 hash", "id", iv.FileID, "uuid", iv.Uuid, "err", err)
 			continue

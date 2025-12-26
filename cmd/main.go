@@ -97,10 +97,7 @@ func realMain() error {
 		return fmt.Errorf("setting up database connection: %w", err)
 	}
 	defer conn.Close()
-	db := &dblib.Database{
-		Conn: conn,
-		Q:    sql.New(conn),
-	}
+	db := dblib.New(conn, "file", "tmp")
 
 	// Set up Google Drive client
 	gdriveClient, err := gdrive.NewClient(ctx, config.GoogleDrive, db)
@@ -109,14 +106,11 @@ func realMain() error {
 	}
 	gdriveWorker := gdrive.NewWorker(ctx, config.GoogleDrive, gdriveClient)
 
-	// Set up file backend
-	fileBackend := dblib.NewLocalFileStorage(ctx, "file", "tmp")
-
 	// Set up broker
 	broker := sse.NewBroker(ctx)
 
 	// Start all background jobs
-	jobs := background.StartJobs(ctx, db, fileBackend, config.SystemLanguage, &config.Security)
+	jobs := background.StartJobs(ctx, db, config.SystemLanguage, &config.Security)
 
 	// Set up authentication
 	authenticator, err := auth.New(ctx, config.Auth, db)
@@ -145,7 +139,7 @@ func realMain() error {
 		handlerdebug.Routes(),
 		handlerevent.Routes(db),
 		handlerfeatureflag.Routes(db),
-		handlerfile.Routes(db, fileBackend, &jobs),
+		handlerfile.Routes(db, &jobs),
 		handlerformerpatients.Routes(db),
 		handlergdriveadmin.Routes(db, gdriveWorker),
 		handlerhome.Routes(db),
@@ -160,7 +154,7 @@ func realMain() error {
 		handleruser.Routes(db),
 		handlerlive.Routes(broker),
 		handleruseradmin.Routes(db),
-		handlerwiki.Routes(db, fileBackend, &config.Security),
+		handlerwiki.Routes(db, &config.Security),
 	} {
 		for _, route := range routes {
 			handler := route.Handler

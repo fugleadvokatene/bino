@@ -9,7 +9,6 @@ import (
 
 func Routes(
 	db *db.Database,
-	fileBackend *db.LocalFileStorage,
 	secConf *security.Config,
 ) []route.Route {
 	routes := []route.Route{
@@ -40,14 +39,14 @@ func Routes(
 		},
 		{
 			Path:    "POST /wiki/uploadimage/{id}",
-			Handler: &uploadImage{DB: db, FileBackend: fileBackend},
+			Handler: &uploadImage{DB: db},
 			Cap:     model.CapEditWiki,
 		},
 	}
 	if secConf.AllowUserDefinedHTTPRequests {
 		routes = append(routes, route.Route{
 			Path:    "POST /wiki/fetchimage/{id}",
-			Handler: &fetchImage{DB: db, FileBackend: fileBackend},
+			Handler: &fetchImage{DB: db},
 			Cap:     model.CapEditWiki,
 		})
 	}

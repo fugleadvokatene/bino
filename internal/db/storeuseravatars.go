@@ -12,7 +12,7 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
-func (db *Database) StoreUserAvatars(ctx context.Context, backend *LocalFileStorage) (int64, error) {
+func (db *Database) StoreUserAvatars(ctx context.Context) (int64, error) {
 	// Get users that currently have their avatar stored on googleusercontent.com, these may disappear at any time
 	users, err := db.Q.GetUsersWithGoogleStoredAvatars(ctx)
 	if err != nil || len(users) == 0 {
@@ -22,7 +22,7 @@ func (db *Database) StoreUserAvatars(ctx context.Context, backend *LocalFileStor
 	// Upload images, keeping track of the mapping from uuid to user id
 	fileIDToUserID := make(map[string]int32)
 	for _, user := range users {
-		uploadResult := UploadImageFromURL(ctx, user.AvatarUrl.String, backend, user.ID)
+		uploadResult := UploadImageFromURL(ctx, user.AvatarUrl.String, db, user.ID)
 		if err := uploadResult.Error; err != nil {
 			slog.Warn("Unable to upload image", "err", err, "url", user.AvatarUrl.String)
 			continue
@@ -37,7 +37,7 @@ func (db *Database) StoreUserAvatars(ctx context.Context, backend *LocalFileStor
 
 	// Commit images
 	uuids := generic.MapToSlice(fileIDToUserID, func(uuid string, _ int32) string { return uuid })
-	commitResult := backend.Commit(ctx, uuids)
+	commitResult := db.Commit(ctx, uuids)
 	if err := commitResult.Error; err != nil {
 		slog.Warn("Unable to commit image", "err", err, "n committed", len(commitResult.Commited), "n failed", len(commitResult.Failed))
 	}

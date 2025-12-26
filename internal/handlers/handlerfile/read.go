@@ -15,8 +15,7 @@ import (
 )
 
 type Read struct {
-	DB          *db.Database
-	FileBackend *db.LocalFileStorage
+	DB *db.Database
 }
 
 func (h *Read) ServeHTTP(w http.ResponseWriter, r *http.Request) {
@@ -76,7 +75,7 @@ func (h *Read) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 func (h *Read) serveFile(w http.ResponseWriter, r *http.Request, uuid string, filename string, mimetype string, size int) {
 	ctx := r.Context()
-	rc, err := h.FileBackend.Open(ctx, uuid, filename)
+	rc, err := h.DB.Open(ctx, uuid, filename)
 	if err != nil {
 		request.AjaxError(w, r, err, http.StatusInternalServerError)
 		return

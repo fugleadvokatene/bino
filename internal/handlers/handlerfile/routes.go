@@ -9,10 +9,9 @@ import (
 
 func Routes(
 	db *db.Database,
-	fileBackend *db.LocalFileStorage,
 	jobs *background.Jobs,
 ) []route.Route {
-	readHandler := &Read{DB: db, FileBackend: fileBackend}
+	readHandler := &Read{DB: db}
 	return []route.Route{
 		{
 			Path:             "GET /file/{id}/{filename}",
@@ -27,27 +26,27 @@ func Routes(
 		},
 		{
 			Path:    "POST /file/filepond",
-			Handler: &filepondProcess{FileBackend: fileBackend},
+			Handler: &filepondProcess{DB: db},
 			Cap:     model.CapUploadFile,
 		},
 		{
 			Path:    "DELETE /file/filepond",
-			Handler: &filepondRevert{FileBackend: fileBackend},
+			Handler: &filepondRevert{DB: db},
 			Cap:     model.CapUploadFile,
 		},
 		{
 			Path:    "GET /file/filepond/{id}",
-			Handler: &filepondRestore{FileBackend: fileBackend},
+			Handler: &filepondRestore{DB: db},
 			Cap:     model.CapUploadFile,
 		},
 		{
 			Path:    "POST /file/submit",
-			Handler: &filepondSubmit{DB: db, FileBackend: fileBackend, Jobs: jobs},
+			Handler: &filepondSubmit{DB: db, Jobs: jobs},
 			Cap:     model.CapUploadFile,
 		},
 		{
 			Path:    "POST /file/{id}/delete",
-			Handler: &delete_{DB: db, FileBackend: fileBackend},
+			Handler: &delete_{DB: db},
 			Cap:     model.CapUploadFile,
 		},
 		{

@@ -50,29 +50,11 @@ type ListTempResult struct {
 	Error error
 }
 
-type LocalFileStorage struct {
-	MainDirectory string
-	TmpDirectory  string
-}
-
-func NewLocalFileStorage(ctx context.Context, mainDir, tmpDir string) *LocalFileStorage {
-	if err := os.MkdirAll(mainDir, os.ModePerm); err != nil {
-		panic(fmt.Errorf("creating mainDir='%s': %w", mainDir, err))
-	}
-	if err := os.MkdirAll(tmpDir, os.ModePerm); err != nil {
-		panic(fmt.Errorf("creating tmpDir='%s': %w", tmpDir, err))
-	}
-	return &LocalFileStorage{
-		MainDirectory: mainDir,
-		TmpDirectory:  tmpDir,
-	}
-}
-
-func (lfs *LocalFileStorage) Upload(ctx context.Context, data io.Reader, fileInfo model.FileInfo) (out UploadResult) {
+func (db *Database) Upload(ctx context.Context, data io.Reader, fileInfo model.FileInfo) (out UploadResult) {
 	id := uuid.New().String()
 
 	// Open the file base directory
-	dir, err := os.OpenRoot(lfs.TmpDirectory)
+	dir, err := os.OpenRoot(db.TmpDirectory)
 	if err != nil {
 		return UploadResult{
 			Error:          err,
@@ -160,7 +142,7 @@ func (lfs *LocalFileStorage) Upload(ctx context.Context, data io.Reader, fileInf
 	}
 }
 
-func (lfs *LocalFileStorage) delete(_ context.Context, dirname string, id string) (out DeleteResult) {
+func (db *Database) delete(_ context.Context, dirname string, id string) (out DeleteResult) {
 	if err := uuid.Validate(id); err != nil {
 		return DeleteResult{
 			Error:          fmt.Errorf("'%s' is not a valid UUID: %w", id, err),
@@ -191,11 +173,11 @@ func (lfs *LocalFileStorage) delete(_ context.Context, dirname string, id string
 	}
 }
 
-func (lfs *LocalFileStorage) DeleteTemp(ctx context.Context, id string) (out DeleteResult) {
-	return lfs.delete(ctx, lfs.TmpDirectory, id)
+func (db *Database) DeleteTemp(ctx context.Context, id string) (out DeleteResult) {
+	return db.delete(ctx, db.TmpDirectory, id)
 }
 
-func (lfs *LocalFileStorage) readMetaFile(_ context.Context, dir *os.Root, id string) (model.FileInfo, error) {
+func (db *Database) readMetaFile(_ context.Context, dir *os.Root, id string) (model.FileInfo, error) {
 	metaFile, err := dir.Open(id + "/metadata.json")
 	if err != nil {
 		return model.FileInfo{}, err
@@ -210,10 +192,10 @@ func (lfs *LocalFileStorage) readMetaFile(_ context.Context, dir *os.Root, id st
 	return info, nil
 }
 
-func (lfs *LocalFileStorage) ListTemp(ctx context.Context) (out ListTempResult) {
+func (db *Database) ListTemp(ctx context.Context) (out ListTempResult) {
 	out.Files = map[string]model.FileInfo{}
 
-	dir, err := os.OpenRoot(lfs.TmpDirectory)
+	dir, err := os.OpenRoot(db.TmpDirectory)
 	if err != nil {
 		return ListTempResult{
 			Error: err,
@@ -221,7 +203,7 @@ func (lfs *LocalFileStorage) ListTemp(ctx context.Context) (out ListTempResult) 
 	}
 	defer dir.Close()
 
-	entries, err := os.ReadDir(lfs.TmpDirectory)
+	entries, err := os.ReadDir(db.TmpDirectory)
 	if err != nil {
 		return ListTempResult{Error: err}
 	}
@@ -229,7 +211,7 @@ func (lfs *LocalFileStorage) ListTemp(ctx context.Context) (out ListTempResult) 
 	for _, entry := range entries {
 		name := entry.Name()
 		if entry.IsDir() && uuid.Validate(name) == nil {
-			if info, err := lfs.readMetaFile(ctx, dir, name); err == nil {
+			if info, err := db.readMetaFile(ctx, dir, name); err == nil {
 				out.Files[name] = info
 			}
 		}
@@ -238,7 +220,7 @@ func (lfs *LocalFileStorage) ListTemp(ctx context.Context) (out ListTempResult) 
 	return out
 }
 
-func (lfs *LocalFileStorage) ReadTemp(ctx context.Context, id string) (out ReadResult) {
+func (db *Database) ReadTemp(ctx context.Context, id string) (out ReadResult) {
 	cd := request.MustLoadCommonData(ctx)
 
 	if err := uuid.Validate(id); err != nil {
@@ -247,7 +229,7 @@ func (lfs *LocalFileStorage) ReadTemp(ctx context.Context, id string) (out ReadR
 			HTTPStatusCode: http.StatusBadRequest,
 		}
 	}
-	dir, err := os.OpenRoot(lfs.TmpDirectory)
+	dir, err := os.OpenRoot(db.TmpDirectory)
 	if err != nil {
 		return ReadResult{
 			Error:          err,
@@ -256,7 +238,7 @@ func (lfs *LocalFileStorage) ReadTemp(ctx context.Context, id string) (out ReadR
 	}
 	defer dir.Close()
 
-	info, err := lfs.readMetaFile(ctx, dir, id)
+	info, err := db.readMetaFile(ctx, dir, id)
 	if err != nil {
 		return ReadResult{
 			Error:          err,
@@ -306,12 +288,12 @@ func (lfs *LocalFileStorage) ReadTemp(ctx context.Context, id string) (out ReadR
 	}
 }
 
-func (lfs *LocalFileStorage) Commit(ctx context.Context, ids []string) CommitResult {
+func (db *Database) Commit(ctx context.Context, ids []string) CommitResult {
 	var out CommitResult
 	out.Commited = map[string]model.FileInfo{}
 	out.HTTPStatusCode = http.StatusOK
 
-	dir, err := os.OpenRoot(lfs.MainDirectory)
+	dir, err := os.OpenRoot(db.MainDirectory)
 	if err != nil {
 		return CommitResult{
 			Error:          err,
@@ -327,14 +309,14 @@ func (lfs *LocalFileStorage) Commit(ctx context.Context, ids []string) CommitRes
 			slog.Warn("Empty UUID")
 			continue
 		}
-		tmpDir := lfs.TmpDirectory + "/" + id
-		mainDir := lfs.MainDirectory + "/" + id
+		tmpDir := db.TmpDirectory + "/" + id
+		mainDir := db.MainDirectory + "/" + id
 		if err := os.Rename(tmpDir, mainDir); err != nil {
 			out.Failed = append(out.Failed, id)
 			out.Error = err
 			out.HTTPStatusCode = http.StatusInternalServerError
 		} else {
-			meta, err := lfs.readMetaFile(ctx, dir, id)
+			meta, err := db.readMetaFile(ctx, dir, id)
 			if err != nil {
 				out.Failed = append(out.Failed, id)
 				out.Error = err
@@ -347,8 +329,8 @@ func (lfs *LocalFileStorage) Commit(ctx context.Context, ids []string) CommitRes
 	return out
 }
 
-func (lfs *LocalFileStorage) Open(ctx context.Context, id string, filename string) (io.ReadCloser, error) {
-	dir, err := os.OpenRoot(lfs.MainDirectory)
+func (db *Database) Open(ctx context.Context, id string, filename string) (io.ReadCloser, error) {
+	dir, err := os.OpenRoot(db.MainDirectory)
 	if err != nil {
 		return nil, err
 	}
@@ -361,6 +343,6 @@ func (lfs *LocalFileStorage) Open(ctx context.Context, id string, filename strin
 	return file, nil
 }
 
-func (lfs *LocalFileStorage) Delete(ctx context.Context, id string) (out DeleteResult) {
-	return lfs.delete(ctx, lfs.MainDirectory, id)
+func (db *Database) Delete(ctx context.Context, id string) (out DeleteResult) {
+	return db.delete(ctx, db.MainDirectory, id)
 }

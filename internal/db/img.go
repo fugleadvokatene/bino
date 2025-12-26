@@ -61,13 +61,13 @@ func WithFileDir[T any](ctx context.Context, dirname string, uuid string, f func
 	return f(ctx, subdir)
 }
 
-func (lfs *LocalFileStorage) CreateMiniatures(ctx context.Context, uuid string, originalFilename string) ([]Miniature, error) {
-	return WithFileDir(ctx, lfs.MainDirectory, uuid, func(ctx context.Context, subdir *os.Root) ([]Miniature, error) {
+func (db *Database) CreateMiniatures(ctx context.Context, uuid string, originalFilename string) ([]Miniature, error) {
+	return WithFileDir(ctx, db.MainDirectory, uuid, func(ctx context.Context, subdir *os.Root) ([]Miniature, error) {
 		return CreateMiniatures(ctx, subdir, originalFilename)
 	})
 }
 
-func (lfs *LocalFileStorage) Sha256(ctx context.Context, dirname string, uuid string, filename string) ([]byte, error) {
+func (db *Database) Sha256(ctx context.Context, dirname string, uuid string, filename string) ([]byte, error) {
 	return WithFileDir(ctx, dirname, uuid, func(ctx context.Context, subdir *os.Root) ([]byte, error) {
 		file, err := subdir.Open(filename)
 		if err != nil {

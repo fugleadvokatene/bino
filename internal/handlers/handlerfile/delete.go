@@ -8,8 +8,7 @@ import (
 )
 
 type delete_ struct {
-	DB          *db.Database
-	FileBackend *db.LocalFileStorage
+	DB *db.Database
 }
 
 func (h delete_) ServeHTTP(w http.ResponseWriter, r *http.Request) {
@@ -42,7 +41,7 @@ func (h delete_) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if result := h.FileBackend.Delete(ctx, file.Uuid); result.Error != nil {
+	if result := h.DB.Delete(ctx, file.Uuid); result.Error != nil {
 		request.AjaxError(w, r, err, result.HTTPStatusCode)
 		return
 	}
