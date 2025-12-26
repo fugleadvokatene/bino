@@ -8,10 +8,13 @@ import (
 	"log/slog"
 	"net/http"
 	"os"
+	"time"
 
 	"github.com/fugleadvokatene/bino/internal/model"
 	"github.com/fugleadvokatene/bino/internal/request"
+	"github.com/fugleadvokatene/bino/internal/sql"
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 const (
@@ -149,16 +152,41 @@ func (db *Database) ReadTempFile(ctx context.Context, id string) ([]byte, model.
 	return data, info, nil
 }
 
-func (db *Database) CommitFile(ctx context.Context, uuid string) (model.FileInfo, error) {
+func (db *Database) CommitFile(ctx context.Context, uuid string) (model.FileInfo, int32, error) {
 	if uuid == "" {
-		return model.FileInfo{}, fmt.Errorf("got empty uuid")
+		return model.FileInfo{}, 0, fmt.Errorf("got empty uuid")
 	}
 	tmpDir := db.tmpDirectory + "/" + uuid
 	mainDir := db.mainDirectory + "/" + uuid
 	if err := os.Rename(tmpDir, mainDir); err != nil {
-		return model.FileInfo{}, err
+		return model.FileInfo{}, 0, err
 	}
-	return db.readMetaFile(ctx, db.MainRoot, uuid)
+	meta, err := db.readMetaFile(ctx, db.MainRoot, uuid)
+	if err != nil {
+		return model.FileInfo{}, 0, err
+	}
+
+	hash, err := db.Sha256File(ctx, db.MainRoot, uuid, meta.FileName)
+	if err != nil {
+		slog.ErrorContext(ctx, "Couldn't create file hash", "err", err, "uuid", uuid, "filename", meta.FileName)
+		hash = nil
+	}
+
+	fileID, err := db.Q.PublishFile(ctx, sql.PublishFileParams{
+		Uuid:          uuid,
+		Creator:       meta.Creator,
+		Created:       pgtype.Timestamptz{Time: time.Now(), Valid: true},
+		Accessibility: int32(model.FileAccessibilityInternal),
+		Filename:      meta.FileName,
+		Mimetype:      meta.MIMEType,
+		Size:          meta.Size,
+		Sha256:        hash,
+	})
+
+	if err != nil {
+		return meta, 0, err
+	}
+	return meta, fileID, err
 }
 
 func (db *Database) OpenFile(ctx context.Context, id string, filename string) (io.ReadCloser, error) {

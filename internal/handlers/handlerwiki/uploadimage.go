@@ -10,7 +10,6 @@ import (
 	"github.com/fugleadvokatene/bino/internal/model"
 	"github.com/fugleadvokatene/bino/internal/request"
 	"github.com/fugleadvokatene/bino/internal/sql"
-	"github.com/jackc/pgx/v5/pgtype"
 )
 
 type uploadImage struct {
@@ -63,28 +62,7 @@ func (h *uploadImage) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	fileInfo, err := h.DB.CommitFile(ctx, uuid)
-	if err != nil {
-		request.LogError(r, fmt.Errorf("committing file: %w", err))
-		w.WriteHeader(http.StatusInternalServerError)
-		return
-	}
-	hash, err := h.DB.Sha256File(ctx, h.DB.MainRoot, uuid, fileInfo.FileName)
-	if err != nil {
-		request.LogError(r, fmt.Errorf("hashing image: %w", err))
-		w.WriteHeader(http.StatusInternalServerError)
-		return
-	}
-	fileID, err := h.DB.Q.PublishFile(ctx, sql.PublishFileParams{
-		Uuid:          uuid,
-		Creator:       request.MustLoadCommonData(ctx).User.AppuserID,
-		Created:       pgtype.Timestamptz{Time: time.Now(), Valid: true},
-		Accessibility: int32(model.FileAccessibilityInternal),
-		Filename:      fileInfo.FileName,
-		Mimetype:      fileInfo.MIMEType,
-		Size:          fileInfo.Size,
-		Sha256:        hash,
-	})
+	fileInfo, fileID, err := h.DB.CommitFile(ctx, uuid)
 	if err != nil {
 		request.LogError(r, fmt.Errorf("registering file to db: %w", err))
 		w.WriteHeader(http.StatusInternalServerError)

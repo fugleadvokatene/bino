@@ -1,9 +1,6 @@
 package handlerfile
 
 import (
-	"context"
-	"errors"
-	"fmt"
 	"io"
 	"log/slog"
 	"net/http"
@@ -14,8 +11,6 @@ import (
 	"github.com/fugleadvokatene/bino/internal/db"
 	"github.com/fugleadvokatene/bino/internal/model"
 	"github.com/fugleadvokatene/bino/internal/request"
-	"github.com/fugleadvokatene/bino/internal/sql"
-	"github.com/jackc/pgx/v5/pgtype"
 )
 
 type filepondSubmit struct {
@@ -34,45 +29,12 @@ func (h *filepondSubmit) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	results := make(map[string]model.FileInfo)
 	for _, uuid := range uuids {
-		result, err := h.DB.CommitFile(ctx, uuid)
+		_, _, err := h.DB.CommitFile(ctx, uuid)
 		if err != nil {
-			slog.ErrorContext(ctx, "Uploading file", "err", err, "uuid", uuid)
-		} else {
-			results[uuid] = result
+			slog.ErrorContext(ctx, "Committing file", "err", err, "uuid", uuid)
 		}
 	}
-	if err := h.DB.Transaction(ctx, func(ctx context.Context, db *db.Database) error {
-		errs := []error{}
-		for uuid, fileInfo := range results {
-			hash, err := h.DB.Sha256File(ctx, h.DB.MainRoot, uuid, fileInfo.FileName)
-			if err != nil {
-				errs = append(errs, fmt.Errorf("hashing %s: %w", uuid, err))
-				data.Error(data.Language.GenericFailed, err)
-				continue
-			}
-			if _, err := h.DB.Q.PublishFile(ctx, sql.PublishFileParams{
-				Uuid:          uuid,
-				Creator:       data.User.AppuserID,
-				Created:       pgtype.Timestamptz{Time: time.Now(), Valid: true},
-				Accessibility: int32(model.FileAccessibilityInternal),
-				Filename:      fileInfo.FileName,
-				Mimetype:      fileInfo.MIMEType,
-				Size:          fileInfo.Size,
-				Sha256:        hash,
-			}); err != nil {
-				errs = append(errs, fmt.Errorf("committing %s: %w", uuid, err))
-				data.Error(data.Language.GenericFailed, err)
-			}
-		}
-		return errors.Join(errs...)
-	}); err != nil {
-		data.Error(data.Language.GenericFailed, err)
-		request.Redirect(w, r, "/file")
-		return
-	}
-
 	// Wake up the job that generates miniatures
 	h.Jobs.ImageHint.Send()
 

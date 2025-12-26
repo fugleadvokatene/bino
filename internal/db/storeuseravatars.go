@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"log/slog"
-	"time"
 
 	"github.com/fugleadvokatene/bino/internal/model"
 	"github.com/fugleadvokatene/bino/internal/sql"
@@ -36,10 +35,12 @@ func (db *Database) StoreUserAvatars(ctx context.Context) (int64, error) {
 
 	// Commit images
 	commitResults := make(map[string]model.FileInfo)
+	fileIDs := make(map[string]int32)
 	for uuid := range fileIDToUserID {
-		result, err := db.CommitFile(ctx, uuid)
+		result, fileID, err := db.CommitFile(ctx, uuid)
 		if err == nil {
 			commitResults[uuid] = result
+			fileIDs[uuid] = fileID
 		} else {
 			slog.Error("Committing file", "uuid", uuid, "err", err)
 		}
@@ -53,21 +54,8 @@ func (db *Database) StoreUserAvatars(ctx context.Context) (int64, error) {
 			if !found {
 				continue
 			}
-			fileID, err := db.Q.PublishFile(ctx, sql.PublishFileParams{
-				Uuid:          uuid,
-				Creator:       fileInfo.Creator,
-				Created:       pgtype.Timestamptz{Time: time.Now(), Valid: true},
-				Accessibility: int32(model.FileAccessibilityInternal),
-				Filename:      fileInfo.FileName,
-				Mimetype:      fileInfo.MIMEType,
-				Size:          fileInfo.Size,
-			})
-			if err != nil {
-				slog.Warn("Unable to commit image", "err", err)
-				continue
-			}
 			if err := db.Q.UpdateUserAvatar(ctx, sql.UpdateUserAvatarParams{
-				Url: pgtype.Text{String: model.FileURL(fileID, fileInfo.FileName), Valid: true},
+				Url: pgtype.Text{String: model.FileURL(fileIDs[uuid], fileInfo.FileName), Valid: true},
 				ID:  userID,
 			}); err != nil {
 				slog.Warn("Unable to update user avatar", "err", err)
