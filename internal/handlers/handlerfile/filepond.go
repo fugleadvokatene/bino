@@ -95,20 +95,20 @@ func (h *filepondProcess) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 	defer file.Close()
 
-	result := h.DB.UploadFile(ctx, file, model.FileInfo{
+	uuid, err := h.DB.UploadFile(ctx, file, model.FileInfo{
 		FileName: header.Filename,
 		MIMEType: header.Header.Get("Content-Type"),
 		Size:     header.Size,
 		Creator:  data.User.AppuserID,
 		Created:  time.Now(),
 	})
-	if result.Error != nil {
-		request.AjaxError(w, r, err, result.HTTPStatusCode)
+	if err != nil {
+		request.AjaxError(w, r, err, db.GetHTTPStatusCode(err))
 		return
 	}
 
 	w.Header().Set("Content-Type", "text/plain")
-	w.Write([]byte(result.UniqueID))
+	w.Write([]byte(uuid))
 }
 
 type filepondRevert struct {

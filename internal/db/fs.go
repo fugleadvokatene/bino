@@ -19,14 +19,6 @@ const (
 	MaxImageSize = 20 * 1024 * 1024
 )
 
-// INTERFACE
-
-type UploadResult struct {
-	UniqueID       string
-	Error          error
-	HTTPStatusCode int
-}
-
 type DeleteResult struct {
 	Error          error
 	HTTPStatusCode int
@@ -50,86 +42,46 @@ type ListTempResult struct {
 	Error error
 }
 
-func (db *Database) UploadFile(ctx context.Context, data io.Reader, fileInfo model.FileInfo) (out UploadResult) {
+func (db *Database) UploadFile(ctx context.Context, data io.Reader, fileInfo model.FileInfo) (string, error) {
 	id := uuid.New().String()
 
 	// Create UUID subdirectory
 	if err := db.TmpRoot.Mkdir(id, 0700); err != nil {
-		return UploadResult{
-			Error:          fmt.Errorf("creating file directory: %w", err),
-			HTTPStatusCode: http.StatusInternalServerError,
-		}
+		return "", newFileError(http.StatusInternalServerError, "creating file directory: %w", err)
 	}
 
 	// Create the metadata file
 	metaFile, err := db.TmpRoot.Create(id + "/metadata.json")
 	if err != nil {
-		return UploadResult{
-			Error:          fmt.Errorf("creating metadata.json: %w", err),
-			HTTPStatusCode: http.StatusInternalServerError,
-		}
+		return "", newFileError(http.StatusInternalServerError, "creating metadata.json: %w", err)
 	}
 	if err := metaFile.Chmod(0600); err != nil {
-		return UploadResult{
-			Error:          fmt.Errorf("chmod metadata.json 0600: %w", err),
-			HTTPStatusCode: http.StatusInternalServerError,
-		}
+		return "", newFileError(http.StatusInternalServerError, "chmod metadata.json 0600: %w", err)
 	}
-	defer func() {
-		if err := metaFile.Close(); out.Error == nil && err != nil {
-			out.Error = fmt.Errorf("closing metadata.json: %w", err)
-			out.HTTPStatusCode = http.StatusInternalServerError
-			out.UniqueID = ""
-		}
-	}()
+	defer metaFile.Close()
 	jsonWriter := json.NewEncoder(metaFile)
 	if err := jsonWriter.Encode(fileInfo); err != nil {
-		return UploadResult{
-			Error:          fmt.Errorf("writing metadata.json: %w", err),
-			HTTPStatusCode: http.StatusInternalServerError,
-		}
+		return "", newFileError(http.StatusInternalServerError, "writing metadata.json: %w", err)
 	}
 
 	// Create the file
 	file, err := db.TmpRoot.Create(id + "/" + fileInfo.FileName)
 	if err != nil {
-		return UploadResult{
-			Error:          fmt.Errorf("creating %s: %w", fileInfo.FileName, err),
-			HTTPStatusCode: http.StatusInternalServerError,
-		}
+		return "", newFileError(http.StatusInternalServerError, "creating %s: %w", fileInfo.FileName, err)
 	}
-	defer func() {
-		if err := file.Close(); out.Error == nil && err != nil {
-			out.Error = fmt.Errorf("closing file: %w", err)
-			out.HTTPStatusCode = http.StatusInternalServerError
-			out.UniqueID = ""
-		}
-	}()
+	defer file.Close()
 	if err := file.Chmod(0600); err != nil {
-		return UploadResult{
-			Error:          fmt.Errorf("chmod file 0600: %w", err),
-			HTTPStatusCode: http.StatusInternalServerError,
-		}
+		return "", newFileError(http.StatusInternalServerError, "chmod %s 0600: %w", fileInfo.FileName, err)
 	}
 
 	// Copy file data
 	if n, err := io.Copy(file, data); err != nil {
-		return UploadResult{
-			Error:          fmt.Errorf("writing file contents: %w", err),
-			HTTPStatusCode: http.StatusInternalServerError,
-		}
+		return "", newFileError(http.StatusInternalServerError, "writing file contents: %w", err)
 	} else if n != fileInfo.Size {
-		return UploadResult{
-			Error:          fmt.Errorf("file size expected %d wrote %d", fileInfo.Size, n),
-			HTTPStatusCode: http.StatusInternalServerError,
-		}
+		return "", newFileError(http.StatusInternalServerError, "file size expected %d wrote %d", fileInfo.Size, n)
 	}
 
-	return UploadResult{
-		UniqueID:       id,
-		Error:          nil,
-		HTTPStatusCode: http.StatusOK,
-	}
+	return id, nil
 }
 
 func (db *Database) deleteFile(_ context.Context, dir *os.Root, id string) (out DeleteResult) {

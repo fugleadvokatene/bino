@@ -72,23 +72,23 @@ func (h *fetchImage) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if resp.Success == 0 {
-		uploadResult := db.UploadImageFromURL(ctx, req.URL, h.DB, data.User.AppuserID)
-		if uploadResult.Error != nil {
+		uuid, err := db.UploadImageFromURL(ctx, req.URL, h.DB, data.User.AppuserID)
+		if err != nil {
 			request.LogError(r, fmt.Errorf("uploading image: %w", err))
 			w.WriteHeader(http.StatusInternalServerError)
 			return
 		}
 
-		commitResult := h.DB.CommitFiles(ctx, []string{uploadResult.UniqueID})
-		fileInfo := commitResult[uploadResult.UniqueID]
-		hash, err := h.DB.Sha256File(ctx, h.DB.MainRoot, uploadResult.UniqueID, fileInfo.Commited.FileName)
+		commitResult := h.DB.CommitFiles(ctx, []string{uuid})
+		fileInfo := commitResult[uuid]
+		hash, err := h.DB.Sha256File(ctx, h.DB.MainRoot, uuid, fileInfo.Commited.FileName)
 		if err != nil {
 			request.LogError(r, fmt.Errorf("hashing image: %w", err))
 			w.WriteHeader(http.StatusInternalServerError)
 			return
 		}
 		fileID, err = h.DB.Q.PublishFile(ctx, sql.PublishFileParams{
-			Uuid:          uploadResult.UniqueID,
+			Uuid:          uuid,
 			Creator:       request.MustLoadCommonData(ctx).User.AppuserID,
 			Created:       pgtype.Timestamptz{Time: time.Now(), Valid: true},
 			Accessibility: int32(model.FileAccessibilityInternal),

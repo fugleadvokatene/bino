@@ -12,7 +12,7 @@ import (
 	"github.com/fugleadvokatene/bino/internal/security"
 )
 
-func UploadImageFromURL(ctx context.Context, rawURL string, db *Database, creatorID int32) UploadResult {
+func UploadImageFromURL(ctx context.Context, rawURL string, db *Database, creatorID int32) (string, error) {
 	r, fetchInfo, err := security.Fetch(ctx, rawURL, func(ct string) error {
 		if !strings.HasPrefix(ct, "image/") {
 			return fmt.Errorf("not an image: %s", ct)
@@ -20,7 +20,7 @@ func UploadImageFromURL(ctx context.Context, rawURL string, db *Database, creato
 		return nil
 	})
 	if err != nil {
-		return UploadResult{Error: err}
+		return "", err
 	}
 	name := "file.img"
 	if u, err := url.Parse(rawURL); err == nil {
@@ -38,6 +38,5 @@ func UploadImageFromURL(ctx context.Context, rawURL string, db *Database, creato
 		Creator:  creatorID,
 	}
 
-	result := db.UploadFile(ctx, r, info)
-	return result
+	return db.UploadFile(ctx, r, info)
 }

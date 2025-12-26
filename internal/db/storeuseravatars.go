@@ -22,17 +22,17 @@ func (db *Database) StoreUserAvatars(ctx context.Context) (int64, error) {
 	// Upload images, keeping track of the mapping from uuid to user id
 	fileIDToUserID := make(map[string]int32)
 	for _, user := range users {
-		uploadResult := UploadImageFromURL(ctx, user.AvatarUrl.String, db, user.ID)
-		if err := uploadResult.Error; err != nil {
+		uuid, err := UploadImageFromURL(ctx, user.AvatarUrl.String, db, user.ID)
+		if err != nil {
 			slog.Warn("Unable to upload image", "err", err, "url", user.AvatarUrl.String)
 			continue
 		}
-		if uploadResult.UniqueID == "" {
+		if uuid == "" {
 			slog.Warn("Got empty UUID after upload")
 			continue
 		}
-		slog.Info("Uploaded image", "uuid", uploadResult.UniqueID, "originalURL", user.AvatarUrl.String)
-		fileIDToUserID[uploadResult.UniqueID] = user.ID
+		slog.Info("Uploaded image", "uuid", uuid, "originalURL", user.AvatarUrl.String)
+		fileIDToUserID[uuid] = user.ID
 	}
 
 	// Commit images

@@ -50,29 +50,28 @@ func (h *uploadImage) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 	defer file.Close()
 
-	uploadResult := h.DB.UploadFile(ctx, file, model.FileInfo{
+	uuid, err := h.DB.UploadFile(ctx, file, model.FileInfo{
 		FileName: header.Filename,
 		MIMEType: header.Header.Get("Content-Type"),
 		Size:     header.Size,
 		Creator:  data.User.AppuserID,
 		Created:  time.Now(),
 	})
-	if uploadResult.Error != nil {
-		request.LogError(r, fmt.Errorf("uploading file file: %w", err))
-		w.WriteHeader(http.StatusBadRequest)
+	if err != nil {
+		request.LogError(r, fmt.Errorf("uploading file: %w", err))
+		w.WriteHeader(db.GetHTTPStatusCode(err))
 		return
 	}
 
-	commitResult := h.DB.CommitFiles(ctx, []string{uploadResult.UniqueID})
-	fileInfo := commitResult[uploadResult.UniqueID]
-	hash, err := h.DB.Sha256File(ctx, h.DB.MainRoot, uploadResult.UniqueID, fileInfo.Commited.FileName)
+	fileInfo := h.DB.CommitFile(ctx, uuid)
+	hash, err := h.DB.Sha256File(ctx, h.DB.MainRoot, uuid, fileInfo.Commited.FileName)
 	if err != nil {
 		request.LogError(r, fmt.Errorf("hashing image: %w", err))
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 	fileID, err := h.DB.Q.PublishFile(ctx, sql.PublishFileParams{
-		Uuid:          uploadResult.UniqueID,
+		Uuid:          uuid,
 		Creator:       request.MustLoadCommonData(ctx).User.AppuserID,
 		Created:       pgtype.Timestamptz{Time: time.Now(), Valid: true},
 		Accessibility: int32(model.FileAccessibilityInternal),
