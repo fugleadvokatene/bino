@@ -72,7 +72,7 @@ func (db *Database) UploadFile(
 	file.Seek(0, 0)
 	h := sha256.New()
 	if _, err := io.Copy(h, file); err == nil {
-		fileInfo.Sha256 = hex.Dump(h.Sum(nil))
+		fileInfo.Sha256 = hex.EncodeToString(h.Sum(nil))
 	}
 
 	// Create the metadata file
