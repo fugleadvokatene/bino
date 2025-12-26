@@ -62,7 +62,7 @@ func (q *Queries) GetFileByID(ctx context.Context, id int32) (File, error) {
 const getFileBySizeAndHash = `-- name: GetFileBySizeAndHash :one
 SELECT id, uuid, created, filename, mimetype, size, presentation_filename, miniatures_created, sha256
 FROM file
-WHERE size = $1 AND sha256 = $2
+WHERE size = $1 AND sha256 = $2 AND sha256 IS NOT NULL
 LIMIT 1
 `
 

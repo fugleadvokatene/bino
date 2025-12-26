@@ -94,7 +94,7 @@ WHERE sha256 IS NULL
 -- name: GetFileBySizeAndHash :one
 SELECT *
 FROM file
-WHERE size = @size AND sha256 = @sha256
+WHERE size = @size AND sha256 = @sha256 AND sha256 IS NOT NULL
 LIMIT 1
 ;
 

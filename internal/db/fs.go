@@ -2,6 +2,8 @@ package db
 
 import (
 	"context"
+	"crypto/sha256"
+	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -25,6 +27,7 @@ type fileInfo struct {
 	MIMEType string
 	Size     int64
 	Created  time.Time
+	Sha256   string
 }
 
 func (db *Database) UploadFile(
@@ -48,20 +51,6 @@ func (db *Database) UploadFile(
 		return "", newFileError(http.StatusInternalServerError, "creating file directory: %w", err)
 	}
 
-	// Create the metadata file
-	metaFile, err := db.TmpRoot.Create(uuid + "/metadata.json")
-	if err != nil {
-		return "", newFileError(http.StatusInternalServerError, "creating metadata.json: %w", err)
-	}
-	if err := metaFile.Chmod(0600); err != nil {
-		return "", newFileError(http.StatusInternalServerError, "chmod metadata.json 0600: %w", err)
-	}
-	defer metaFile.Close()
-	jsonWriter := json.NewEncoder(metaFile)
-	if err := jsonWriter.Encode(fileInfo); err != nil {
-		return "", newFileError(http.StatusInternalServerError, "writing metadata.json: %w", err)
-	}
-
 	// Create the file
 	file, err := db.TmpRoot.Create(uuid + "/" + fileInfo.FileName)
 	if err != nil {
@@ -77,6 +66,27 @@ func (db *Database) UploadFile(
 		return "", newFileError(http.StatusInternalServerError, "writing file contents: %w", err)
 	} else if n != fileInfo.Size {
 		return "", newFileError(http.StatusInternalServerError, "file size expected %d wrote %d", fileInfo.Size, n)
+	}
+
+	// Compute hash
+	file.Seek(0, 0)
+	h := sha256.New()
+	if _, err := io.Copy(h, file); err == nil {
+		fileInfo.Sha256 = hex.Dump(h.Sum(nil))
+	}
+
+	// Create the metadata file
+	metaFile, err := db.TmpRoot.Create(uuid + "/metadata.json")
+	if err != nil {
+		return "", newFileError(http.StatusInternalServerError, "creating metadata.json: %w", err)
+	}
+	if err := metaFile.Chmod(0600); err != nil {
+		return "", newFileError(http.StatusInternalServerError, "chmod metadata.json 0600: %w", err)
+	}
+	defer metaFile.Close()
+	jsonWriter := json.NewEncoder(metaFile)
+	if err := jsonWriter.Encode(fileInfo); err != nil {
+		return "", newFileError(http.StatusInternalServerError, "writing metadata.json: %w", err)
 	}
 
 	return uuid, nil
@@ -182,10 +192,13 @@ func (db *Database) CommitFile(ctx context.Context, uuid string) (string, int32,
 		return "", 0, err
 	}
 
-	// Compute SHA256 hash of file
-	hash, err := db.Sha256File(ctx, db.TmpRoot, uuid, meta.FileName)
+	// Get SHA256 hash of file
+	hash, err := hex.DecodeString(meta.Sha256)
 	if err != nil {
-		slog.ErrorContext(ctx, "Couldn't compute file hash", "err", err, "uuid", uuid, "filename", meta.FileName)
+		hash, err = db.Sha256File(ctx, db.TmpRoot, uuid, meta.FileName)
+	}
+	if err != nil {
+		slog.ErrorContext(ctx, "Couldn't get file hash", "err", err, "uuid", uuid, "filename", meta.FileName)
 		hash = nil
 	}
 
