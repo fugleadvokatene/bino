@@ -6,7 +6,6 @@ import (
 	"log/slog"
 	"time"
 
-	"github.com/fugleadvokatene/bino/internal/generic"
 	"github.com/fugleadvokatene/bino/internal/model"
 	"github.com/fugleadvokatene/bino/internal/sql"
 	"github.com/jackc/pgx/v5/pgtype"
@@ -36,32 +35,39 @@ func (db *Database) StoreUserAvatars(ctx context.Context) (int64, error) {
 	}
 
 	// Commit images
-	uuids := generic.MapToSlice(fileIDToUserID, func(uuid string, _ int32) string { return uuid })
-	commitResult := db.CommitFiles(ctx, uuids)
+	commitResults := make(map[string]model.FileInfo)
+	for uuid := range fileIDToUserID {
+		result, err := db.CommitFile(ctx, uuid)
+		if err == nil {
+			commitResults[uuid] = result
+		} else {
+			slog.Error("Committing file", "uuid", uuid, "err", err)
+		}
+	}
 
 	// Register images to publish them
 	if err := db.Transaction(ctx, func(ctx context.Context, db *Database) error {
 		errs := []error{}
-		for uuid, fileInfo := range commitResult {
+		for uuid, fileInfo := range commitResults {
 			userID, found := fileIDToUserID[uuid]
 			if !found {
 				continue
 			}
 			fileID, err := db.Q.PublishFile(ctx, sql.PublishFileParams{
 				Uuid:          uuid,
-				Creator:       fileInfo.Commited.Creator,
+				Creator:       fileInfo.Creator,
 				Created:       pgtype.Timestamptz{Time: time.Now(), Valid: true},
 				Accessibility: int32(model.FileAccessibilityInternal),
-				Filename:      fileInfo.Commited.FileName,
-				Mimetype:      fileInfo.Commited.MIMEType,
-				Size:          fileInfo.Commited.Size,
+				Filename:      fileInfo.FileName,
+				Mimetype:      fileInfo.MIMEType,
+				Size:          fileInfo.Size,
 			})
 			if err != nil {
 				slog.Warn("Unable to commit image", "err", err)
 				continue
 			}
 			if err := db.Q.UpdateUserAvatar(ctx, sql.UpdateUserAvatarParams{
-				Url: pgtype.Text{String: model.FileURL(fileID, fileInfo.Commited.FileName), Valid: true},
+				Url: pgtype.Text{String: model.FileURL(fileID, fileInfo.FileName), Valid: true},
 				ID:  userID,
 			}); err != nil {
 				slog.Warn("Unable to update user avatar", "err", err)
@@ -72,5 +78,5 @@ func (db *Database) StoreUserAvatars(ctx context.Context) (int64, error) {
 	}); err != nil {
 		slog.Warn("Errors registering files", "err", err)
 	}
-	return int64(len(commitResult)), err
+	return int64(len(commitResults)), err
 }

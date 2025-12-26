@@ -34,11 +34,19 @@ func (h *filepondSubmit) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	result := h.DB.CommitFiles(ctx, uuids)
+	results := make(map[string]model.FileInfo)
+	for _, uuid := range uuids {
+		result, err := h.DB.CommitFile(ctx, uuid)
+		if err != nil {
+			slog.ErrorContext(ctx, "Uploading file", "err", err, "uuid", uuid)
+		} else {
+			results[uuid] = result
+		}
+	}
 	if err := h.DB.Transaction(ctx, func(ctx context.Context, db *db.Database) error {
 		errs := []error{}
-		for uuid, fileInfo := range result {
-			hash, err := h.DB.Sha256File(ctx, h.DB.MainRoot, uuid, fileInfo.Commited.FileName)
+		for uuid, fileInfo := range results {
+			hash, err := h.DB.Sha256File(ctx, h.DB.MainRoot, uuid, fileInfo.FileName)
 			if err != nil {
 				errs = append(errs, fmt.Errorf("hashing %s: %w", uuid, err))
 				data.Error(data.Language.GenericFailed, err)
@@ -49,9 +57,9 @@ func (h *filepondSubmit) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 				Creator:       data.User.AppuserID,
 				Created:       pgtype.Timestamptz{Time: time.Now(), Valid: true},
 				Accessibility: int32(model.FileAccessibilityInternal),
-				Filename:      fileInfo.Commited.FileName,
-				Mimetype:      fileInfo.Commited.MIMEType,
-				Size:          fileInfo.Commited.Size,
+				Filename:      fileInfo.FileName,
+				Mimetype:      fileInfo.MIMEType,
+				Size:          fileInfo.Size,
 				Sha256:        hash,
 			}); err != nil {
 				errs = append(errs, fmt.Errorf("committing %s: %w", uuid, err))

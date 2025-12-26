@@ -63,8 +63,13 @@ func (h *uploadImage) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	fileInfo := h.DB.CommitFile(ctx, uuid)
-	hash, err := h.DB.Sha256File(ctx, h.DB.MainRoot, uuid, fileInfo.Commited.FileName)
+	fileInfo, err := h.DB.CommitFile(ctx, uuid)
+	if err != nil {
+		request.LogError(r, fmt.Errorf("committing file: %w", err))
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+	hash, err := h.DB.Sha256File(ctx, h.DB.MainRoot, uuid, fileInfo.FileName)
 	if err != nil {
 		request.LogError(r, fmt.Errorf("hashing image: %w", err))
 		w.WriteHeader(http.StatusInternalServerError)
@@ -75,9 +80,9 @@ func (h *uploadImage) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		Creator:       request.MustLoadCommonData(ctx).User.AppuserID,
 		Created:       pgtype.Timestamptz{Time: time.Now(), Valid: true},
 		Accessibility: int32(model.FileAccessibilityInternal),
-		Filename:      fileInfo.Commited.FileName,
-		Mimetype:      fileInfo.Commited.MIMEType,
-		Size:          fileInfo.Commited.Size,
+		Filename:      fileInfo.FileName,
+		Mimetype:      fileInfo.MIMEType,
+		Size:          fileInfo.Size,
 		Sha256:        hash,
 	})
 	if err != nil {
@@ -86,7 +91,7 @@ func (h *uploadImage) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	} else {
 		resp.Success = 1
-		resp.File.URL = model.FileURL(fileID, fileInfo.Commited.FileName)
+		resp.File.URL = model.FileURL(fileID, fileInfo.FileName)
 	}
 
 	if err := h.DB.Q.AssociateFileWithWikiPage(ctx, sql.AssociateFileWithWikiPageParams{

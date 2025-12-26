@@ -9,7 +9,6 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/fugleadvokatene/bino/internal/generic"
 	"github.com/fugleadvokatene/bino/internal/model"
 	"github.com/fugleadvokatene/bino/internal/request"
 	"github.com/google/uuid"
@@ -22,12 +21,6 @@ const (
 type ReadResult struct {
 	Data           []byte
 	FileInfo       model.FileInfo
-	Error          error
-	HTTPStatusCode int
-}
-
-type CommitResult struct {
-	Commited       model.FileInfo
 	Error          error
 	HTTPStatusCode int
 }
@@ -191,36 +184,16 @@ func (db *Database) ReadTempFile(ctx context.Context, id string) (out ReadResult
 	}
 }
 
-func (db *Database) CommitFile(ctx context.Context, uuid string) CommitResult {
-	var out CommitResult
-	out.Commited = model.FileInfo{}
-	out.HTTPStatusCode = http.StatusOK
+func (db *Database) CommitFile(ctx context.Context, uuid string) (model.FileInfo, error) {
 	if uuid == "" {
-		out.Error = fmt.Errorf("got empty uuid")
-		slog.Warn("Empty UUID")
-		return out
+		return model.FileInfo{}, fmt.Errorf("got empty uuid")
 	}
 	tmpDir := db.tmpDirectory + "/" + uuid
 	mainDir := db.mainDirectory + "/" + uuid
 	if err := os.Rename(tmpDir, mainDir); err != nil {
-		out.Error = err
-		out.HTTPStatusCode = http.StatusInternalServerError
-		return out
+		return model.FileInfo{}, err
 	}
-	meta, err := db.readMetaFile(ctx, db.MainRoot, uuid)
-	if err != nil {
-		out.Error = err
-		out.HTTPStatusCode = http.StatusInternalServerError
-		return out
-	}
-	out.Commited = meta
-	return out
-}
-
-func (db *Database) CommitFiles(ctx context.Context, ids []string) map[string]CommitResult {
-	return generic.SliceToMap(ids, func(id string) (string, CommitResult) {
-		return id, db.CommitFile(ctx, id)
-	})
+	return db.readMetaFile(ctx, db.MainRoot, uuid)
 }
 
 func (db *Database) OpenFile(ctx context.Context, id string, filename string) (io.ReadCloser, error) {
