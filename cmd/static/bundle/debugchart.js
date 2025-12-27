@@ -18575,8 +18575,6 @@ var makeChart = (dataID, canvasID) => {
           }
         },
         y: {
-          beginAtZero: true,
-          min: 0,
           grace: 0,
           grid: {
             color: "rgba(0,0,0,0.05)"
