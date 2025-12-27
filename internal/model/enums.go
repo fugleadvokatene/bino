@@ -170,15 +170,15 @@ func (fvid FileVariantID) IsMiniature() bool {
 }
 
 // ENUM(
-//
-//	P,
-//	H1,
-//	H2,
-//	H3,
-//	H4,
-//	H5,
-//	H6,
-//	Bullet
-//
+// MachineDiskSizeGB      = 0,
+// MachineDiskAvailableGB = 1,
+// MachineDiskUsedGB      = 2,
+// MachineLoadPercent     = 10,
+// MachineMemSizeMB       = 20,
+// MachineMemUsedMB       = 21,
+// MachineMemAvailableMB  = 22,
+// ProcNGoroutines        = 40,
+// ProcMemAllocatedMB     = 41,
+// ProcVRAMReservedMB     = 42,
 // )
-type DocElemType string
+type DebugStatKey int16

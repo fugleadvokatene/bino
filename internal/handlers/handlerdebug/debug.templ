@@ -5,15 +5,24 @@ import (
 	"github.com/fugleadvokatene/bino/internal/debug"
 	"github.com/fugleadvokatene/bino/internal/request"
     "github.com/fugleadvokatene/bino/internal/templbase"
+	"github.com/fugleadvokatene/bino/internal/model"
 )
 
-templ DebugPage(data *request.CommonData, info []debug.DebugInfo) {
+templ DebugPage(data *request.CommonData, info []debug.DebugInfo, timeSeries map[int16]*TSSeries) {
 	@templbase.Layout(data) {
+        <div class="card p-2">
+            @DebugChart(data, model.DebugStatKeyProcNGoroutines, timeSeries)
+            @DebugChart(data, model.DebugStatKeyProcMemAllocatedMB, timeSeries)
+            @DebugChart(data, model.DebugStatKeyMachineLoadPercent, timeSeries)
+            @DebugChart(data, model.DebugStatKeyMachineMemUsedMB, timeSeries)
+            @DebugChart(data, model.DebugStatKeyMachineDiskUsedGB, timeSeries)
+        </div>
         <div class="card p-2">
             <ul class="debug-top">
                 @DebugItems(data, info)
             </ul>
         </div>
+        @templbase.JSModule(data, "debugchart")
     }
 }
 
@@ -26,4 +35,9 @@ templ DebugItems(data *request.CommonData, info []debug.DebugInfo) {
         </ul>
         </li>
     }
+}
+
+templ DebugChart(data *request.CommonData, key model.DebugStatKey, timeSeries map[int16]*TSSeries) {
+    @templ.JSONScript(key.String() + "-data", timeSeries[int16(key)])
+    <canvas id={key.String() + "-chart"}></canvas>
 }

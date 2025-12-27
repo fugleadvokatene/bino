@@ -140,7 +140,7 @@ func realMain() error {
 		handleradminroot.Routes(),
 		handlercalendar.Routes(db),
 		handlerdashboard.Routes(ctx, db, gdriveWorker, broker, config),
-		handlerdebug.Routes(),
+		handlerdebug.Routes(db),
 		handlerevent.Routes(db),
 		handlerfeatureflag.Routes(db),
 		handlerfile.Routes(db, &jobs),

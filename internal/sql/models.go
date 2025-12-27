@@ -175,6 +175,12 @@ type SpeciesLanguage struct {
 	Name string
 }
 
+type StatDebug struct {
+	Key   int16
+	Time  pgtype.Timestamptz
+	Value float32
+}
+
 type WikiPage struct {
 	ID        int32
 	SortOrder pgtype.Int4

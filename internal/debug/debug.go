@@ -129,9 +129,17 @@ func GetDebugInfo(ctx context.Context, runtimeInfo ConstantInfo) []DebugInfo {
 }
 
 func toMB(v uint64) string {
-	return fmt.Sprintf("%.0f", float64(v)/1024/1024)
+	return fmt.Sprintf("%.0f", toMBf(v))
+}
+
+func toMBf(v uint64) float32 {
+	return float32(v) / 1024 / 1024
 }
 
 func toGB(v uint64) string {
-	return fmt.Sprintf("%.0f", float64(v)/1024/1024/1024)
+	return fmt.Sprintf("%.0f", toGBf(v))
+}
+
+func toGBf(v uint64) float32 {
+	return float32(v) / 1024 / 1024 / 1024
 }

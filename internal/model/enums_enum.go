@@ -317,69 +317,95 @@ func ParseCap(name string) (Cap, error) {
 }
 
 const (
-	// DocElemTypeP is a DocElemType of type P.
-	DocElemTypeP DocElemType = "P"
-	// DocElemTypeH1 is a DocElemType of type H1.
-	DocElemTypeH1 DocElemType = "H1"
-	// DocElemTypeH2 is a DocElemType of type H2.
-	DocElemTypeH2 DocElemType = "H2"
-	// DocElemTypeH3 is a DocElemType of type H3.
-	DocElemTypeH3 DocElemType = "H3"
-	// DocElemTypeH4 is a DocElemType of type H4.
-	DocElemTypeH4 DocElemType = "H4"
-	// DocElemTypeH5 is a DocElemType of type H5.
-	DocElemTypeH5 DocElemType = "H5"
-	// DocElemTypeH6 is a DocElemType of type H6.
-	DocElemTypeH6 DocElemType = "H6"
-	// DocElemTypeBullet is a DocElemType of type Bullet.
-	DocElemTypeBullet DocElemType = "Bullet"
+	// DebugStatKeyMachineDiskSizeGB is a DebugStatKey of type MachineDiskSizeGB.
+	DebugStatKeyMachineDiskSizeGB DebugStatKey = 0
+	// DebugStatKeyMachineDiskAvailableGB is a DebugStatKey of type MachineDiskAvailableGB.
+	DebugStatKeyMachineDiskAvailableGB DebugStatKey = 1
+	// DebugStatKeyMachineDiskUsedGB is a DebugStatKey of type MachineDiskUsedGB.
+	DebugStatKeyMachineDiskUsedGB DebugStatKey = 2
+	// DebugStatKeyMachineLoadPercent is a DebugStatKey of type MachineLoadPercent.
+	DebugStatKeyMachineLoadPercent DebugStatKey = 10
+	// DebugStatKeyMachineMemSizeMB is a DebugStatKey of type MachineMemSizeMB.
+	DebugStatKeyMachineMemSizeMB DebugStatKey = 20
+	// DebugStatKeyMachineMemUsedMB is a DebugStatKey of type MachineMemUsedMB.
+	DebugStatKeyMachineMemUsedMB DebugStatKey = 21
+	// DebugStatKeyMachineMemAvailableMB is a DebugStatKey of type MachineMemAvailableMB.
+	DebugStatKeyMachineMemAvailableMB DebugStatKey = 22
+	// DebugStatKeyProcNGoroutines is a DebugStatKey of type ProcNGoroutines.
+	DebugStatKeyProcNGoroutines DebugStatKey = 40
+	// DebugStatKeyProcMemAllocatedMB is a DebugStatKey of type ProcMemAllocatedMB.
+	DebugStatKeyProcMemAllocatedMB DebugStatKey = 41
+	// DebugStatKeyProcVRAMReservedMB is a DebugStatKey of type ProcVRAMReservedMB.
+	DebugStatKeyProcVRAMReservedMB DebugStatKey = 42
 )
 
-var ErrInvalidDocElemType = errors.New("not a valid DocElemType")
+var ErrInvalidDebugStatKey = errors.New("not a valid DebugStatKey")
 
-// DocElemTypeValues returns a list of the values for DocElemType
-func DocElemTypeValues() []DocElemType {
-	return []DocElemType{
-		DocElemTypeP,
-		DocElemTypeH1,
-		DocElemTypeH2,
-		DocElemTypeH3,
-		DocElemTypeH4,
-		DocElemTypeH5,
-		DocElemTypeH6,
-		DocElemTypeBullet,
+const _DebugStatKeyName = "MachineDiskSizeGBMachineDiskAvailableGBMachineDiskUsedGBMachineLoadPercentMachineMemSizeMBMachineMemUsedMBMachineMemAvailableMBProcNGoroutinesProcMemAllocatedMBProcVRAMReservedMB"
+
+// DebugStatKeyValues returns a list of the values for DebugStatKey
+func DebugStatKeyValues() []DebugStatKey {
+	return []DebugStatKey{
+		DebugStatKeyMachineDiskSizeGB,
+		DebugStatKeyMachineDiskAvailableGB,
+		DebugStatKeyMachineDiskUsedGB,
+		DebugStatKeyMachineLoadPercent,
+		DebugStatKeyMachineMemSizeMB,
+		DebugStatKeyMachineMemUsedMB,
+		DebugStatKeyMachineMemAvailableMB,
+		DebugStatKeyProcNGoroutines,
+		DebugStatKeyProcMemAllocatedMB,
+		DebugStatKeyProcVRAMReservedMB,
 	}
 }
 
+var _DebugStatKeyMap = map[DebugStatKey]string{
+	DebugStatKeyMachineDiskSizeGB:      _DebugStatKeyName[0:17],
+	DebugStatKeyMachineDiskAvailableGB: _DebugStatKeyName[17:39],
+	DebugStatKeyMachineDiskUsedGB:      _DebugStatKeyName[39:56],
+	DebugStatKeyMachineLoadPercent:     _DebugStatKeyName[56:74],
+	DebugStatKeyMachineMemSizeMB:       _DebugStatKeyName[74:90],
+	DebugStatKeyMachineMemUsedMB:       _DebugStatKeyName[90:106],
+	DebugStatKeyMachineMemAvailableMB:  _DebugStatKeyName[106:127],
+	DebugStatKeyProcNGoroutines:        _DebugStatKeyName[127:142],
+	DebugStatKeyProcMemAllocatedMB:     _DebugStatKeyName[142:160],
+	DebugStatKeyProcVRAMReservedMB:     _DebugStatKeyName[160:178],
+}
+
 // String implements the Stringer interface.
-func (x DocElemType) String() string {
-	return string(x)
+func (x DebugStatKey) String() string {
+	if str, ok := _DebugStatKeyMap[x]; ok {
+		return str
+	}
+	return fmt.Sprintf("DebugStatKey(%d)", x)
 }
 
 // IsValid provides a quick way to determine if the typed value is
 // part of the allowed enumerated values
-func (x DocElemType) IsValid() bool {
-	_, err := ParseDocElemType(string(x))
-	return err == nil
+func (x DebugStatKey) IsValid() bool {
+	_, ok := _DebugStatKeyMap[x]
+	return ok
 }
 
-var _DocElemTypeValue = map[string]DocElemType{
-	"P":      DocElemTypeP,
-	"H1":     DocElemTypeH1,
-	"H2":     DocElemTypeH2,
-	"H3":     DocElemTypeH3,
-	"H4":     DocElemTypeH4,
-	"H5":     DocElemTypeH5,
-	"H6":     DocElemTypeH6,
-	"Bullet": DocElemTypeBullet,
+var _DebugStatKeyValue = map[string]DebugStatKey{
+	_DebugStatKeyName[0:17]:    DebugStatKeyMachineDiskSizeGB,
+	_DebugStatKeyName[17:39]:   DebugStatKeyMachineDiskAvailableGB,
+	_DebugStatKeyName[39:56]:   DebugStatKeyMachineDiskUsedGB,
+	_DebugStatKeyName[56:74]:   DebugStatKeyMachineLoadPercent,
+	_DebugStatKeyName[74:90]:   DebugStatKeyMachineMemSizeMB,
+	_DebugStatKeyName[90:106]:  DebugStatKeyMachineMemUsedMB,
+	_DebugStatKeyName[106:127]: DebugStatKeyMachineMemAvailableMB,
+	_DebugStatKeyName[127:142]: DebugStatKeyProcNGoroutines,
+	_DebugStatKeyName[142:160]: DebugStatKeyProcMemAllocatedMB,
+	_DebugStatKeyName[160:178]: DebugStatKeyProcVRAMReservedMB,
 }
 
-// ParseDocElemType attempts to convert a string to a DocElemType.
-func ParseDocElemType(name string) (DocElemType, error) {
-	if x, ok := _DocElemTypeValue[name]; ok {
+// ParseDebugStatKey attempts to convert a string to a DebugStatKey.
+func ParseDebugStatKey(name string) (DebugStatKey, error) {
+	if x, ok := _DebugStatKeyValue[name]; ok {
 		return x, nil
 	}
-	return DocElemType(""), fmt.Errorf("%s is %w", name, ErrInvalidDocElemType)
+	return DebugStatKey(0), fmt.Errorf("%s is %w", name, ErrInvalidDebugStatKey)
 }
 
 const (

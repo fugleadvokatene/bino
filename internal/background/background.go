@@ -5,6 +5,7 @@ import (
 	"time"
 
 	dblib "github.com/fugleadvokatene/bino/internal/db"
+	"github.com/fugleadvokatene/bino/internal/debug"
 	"github.com/fugleadvokatene/bino/internal/job"
 	"github.com/fugleadvokatene/bino/internal/model"
 	"github.com/fugleadvokatene/bino/internal/security"
@@ -28,6 +29,7 @@ func StartJobs(
 	job.Run("Delete false Wiki links", time.Hour, func() (any, error) { return db.RemoveFalseFileWikiLinks(ctx) })
 	job.Run("Suggest journal URLs", time.Hour, func() (any, error) { return db.SuggestJournalURLs(ctx, systemLanguageID) })
 	job.Run("Unset old journal-pending status", time.Minute*10, func() (any, error) { return db.UnsetOldPendingStatus(ctx) })
+	job.Run("Collect stats", time.Minute, func() (any, error) { return debug.StoreDebugStats(ctx, db) })
 
 	jobs.ImageHint = job.Run("Create image variants and hashes", time.Minute*10, func() (any, error) {
 		// Create image variants before hashes so that the new variants are ready to be hashed

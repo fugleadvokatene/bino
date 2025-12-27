@@ -39,10 +39,21 @@ func SliceToMap[TIn any, KOut comparable, VOut any](in []TIn, f func(TIn) (KOut,
 	if in == nil {
 		return nil
 	}
-	out := make(map[KOut]VOut)
+	out := make(map[KOut]VOut, len(in))
 	for _, vin := range in {
 		k, vout := f(vin)
 		out[k] = vout
+	}
+	return out
+}
+
+func MapToMap[TKey comparable, VIn any, VOut any](in map[TKey]VIn, f func(TKey) VOut) map[TKey]VOut {
+	if in == nil {
+		return nil
+	}
+	out := make(map[TKey]VOut, len(in))
+	for k := range in {
+		out[k] = f(k)
 	}
 	return out
 }

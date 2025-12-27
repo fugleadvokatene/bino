@@ -21,6 +21,7 @@
     "@tiptap/core": "^3.13.0",
     "@tiptap/starter-kit": "^3.13.0",
     "bootstrap": "^5.3.8",
+    "chartjs-adapter-date-fns": "^3.0.0",
     "filepond": "^4.32.10",
     "filepond-plugin-file-validate-size": "^2.2.8",
     "filepond-plugin-image-crop": "^2.0.6",

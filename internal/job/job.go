@@ -38,6 +38,7 @@ func Run[T any](
 			// Desync jobs with similar duration
 			if first {
 				next = time.Duration(float64(next) * spread)
+				first = false
 			}
 
 			// Log info

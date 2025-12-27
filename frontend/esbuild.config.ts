@@ -6,6 +6,7 @@ rmSync('../cmd/static/bundle', { recursive: true, force: true })
 build({
   entryPoints: [
     'common.ts',
+    'debugchart.ts',
     'dashboard.ts',
     'sharedscript.ts',
     'editor2.ts',
