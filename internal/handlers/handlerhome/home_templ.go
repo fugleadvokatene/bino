@@ -688,7 +688,7 @@ func UnavailableEditor(data *request.CommonData, view *model.Home) templ.Compone
 			data,
 			view.URLSuffix("add-unavailable"),
 			"POST",
-			"card p-2",
+			"card p-2 mb-4",
 		).Render(templ.WithChildren(ctx, templ_7745c5c3_Var26), templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err

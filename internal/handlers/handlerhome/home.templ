@@ -94,7 +94,7 @@ templ UnavailableEditor(data *request.CommonData, view *model.Home) {
         data,
         view.URLSuffix("add-unavailable"),
         "POST",
-        "card p-2",
+        "card p-2 mb-4",
     ) {
         <form-group class="d-flex justify-content-between form-control-sm form-control-plaintext">
             <label for={FormID("#", "unavailable-from", view.ID)} class="input-group-text short-label">{data.Language.GenericFrom}</label>
