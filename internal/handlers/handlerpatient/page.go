@@ -95,7 +95,7 @@ func (h *page) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	var journal document.Document
 	var journalUpdated time.Time
-	if row, err := h.DB.Q.GetJournalJSON(ctx, id); err == nil {
+	if row, err := h.DB.Q.GetJournalJSON(ctx, patientData.GoogleID.String); err == nil {
 		if err := json.Unmarshal(row.Json, &journal); err != nil {
 			generic.Clear(&journal)
 		}

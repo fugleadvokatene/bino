@@ -5,8 +5,10 @@ import (
 	"fmt"
 
 	"github.com/fugleadvokatene/bino/internal/calendar"
+	"github.com/fugleadvokatene/bino/internal/gdrive/url"
 	"github.com/fugleadvokatene/bino/internal/language"
 	"github.com/fugleadvokatene/bino/internal/model"
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 // ---- Home
@@ -33,7 +35,7 @@ func (in GetCurrentPatientsForHomeRow) ToModel() model.Patient {
 		},
 		TimeCheckin:           in.TimeCheckin.Time,
 		TimeCheckout:          in.TimeCheckout.Time,
-		SuggestedJournalURL:   in.SuggestedJournalUrl.String,
+		SuggestedJournalURL:   pgGoogleIDToURL(in.SuggestedGoogleID),
 		SuggestedJournalTitle: in.SuggestedJournalTitle.String,
 		CurrentHomeID:         in.CurrHomeID.Int32,
 		HasCurrentHome:        in.CurrHomeID.Valid,
@@ -51,7 +53,7 @@ func (in GetFormerPatientsRow) ToModel() model.Patient {
 		},
 		TimeCheckin:           in.TimeCheckin.Time,
 		TimeCheckout:          in.TimeCheckout.Time,
-		SuggestedJournalURL:   in.SuggestedJournalUrl.String,
+		SuggestedJournalURL:   pgGoogleIDToURL(in.SuggestedGoogleID),
 		SuggestedJournalTitle: in.SuggestedJournalTitle.String,
 		CurrentHomeID:         in.CurrHomeID.Int32,
 		HasCurrentHome:        in.CurrHomeID.Valid,
@@ -68,10 +70,10 @@ func (in GetPatientWithSpeciesRow) ToModel() model.Patient {
 			ID:   in.SpeciesID,
 			Name: in.SpeciesName,
 		},
-		JournalURL:            in.JournalUrl.String,
+		JournalURL:            pgGoogleIDToURL(in.GoogleID),
 		TimeCheckin:           in.TimeCheckin.Time,
 		TimeCheckout:          in.TimeCheckout.Time,
-		SuggestedJournalURL:   in.SuggestedJournalUrl.String,
+		SuggestedJournalURL:   pgGoogleIDToURL(in.SuggestedGoogleID),
 		SuggestedJournalTitle: in.SuggestedJournalTitle.String,
 		CurrentHomeID:         in.CurrHomeID.Int32,
 		HasCurrentHome:        in.CurrHomeID.Valid,
@@ -87,10 +89,10 @@ func (in GetActivePatientsRow) ToModel() model.Patient {
 		},
 		Name:                  in.Name,
 		Status:                in.Status,
-		JournalURL:            in.JournalUrl.String,
+		JournalURL:            pgGoogleIDToURL(in.GoogleID),
 		TimeCheckin:           in.TimeCheckin.Time,
 		TimeCheckout:          in.TimeCheckout.Time,
-		SuggestedJournalURL:   in.SuggestedJournalUrl.String,
+		SuggestedJournalURL:   pgGoogleIDToURL(in.SuggestedGoogleID),
 		SuggestedJournalTitle: in.SuggestedJournalTitle.String,
 		CurrentHomeID:         in.CurrHomeID.Int32,
 		HasCurrentHome:        in.CurrHomeID.Valid,
@@ -370,4 +372,11 @@ func (in *ImageVariant) ToModel() model.ImageVariant {
 		Width:     in.Width,
 		Height:    in.Height,
 	}
+}
+
+func pgGoogleIDToURL(id pgtype.Text) string {
+	if id.Valid {
+		return url.DocBaseURL + id.String
+	}
+	return ""
 }

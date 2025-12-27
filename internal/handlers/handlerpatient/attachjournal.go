@@ -33,12 +33,13 @@ func (h *attachJournal) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	baseURL := url.JournalRegex.FindString(urlValue)
-	if baseURL == "" {
+	matches := url.DocumentIDRegex.FindStringSubmatch(urlValue)
+	if len(matches) < 2 {
 		commonData.Error(commonData.Language.TODO("bad URL"), err)
 		request.RedirectToReferer(w, r)
 		return
 	}
+	googleID := matches[1]
 
 	patientData, err := h.DB.Q.GetPatient(ctx, patient)
 	if err != nil {
@@ -48,8 +49,8 @@ func (h *attachJournal) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	if tag, err := h.DB.Q.SetPatientJournal(ctx, sql.SetPatientJournalParams{
 		ID: patient,
-		JournalUrl: pgtype.Text{
-			String: baseURL,
+		GoogleID: pgtype.Text{
+			String: googleID,
 			Valid:  true,
 		},
 	}); err != nil || tag.RowsAffected() == 0 {

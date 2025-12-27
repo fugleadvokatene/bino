@@ -103,11 +103,11 @@ type Invitation struct {
 }
 
 type Journal struct {
-	PatientID int32
-	Updated   pgtype.Timestamptz
-	Json      []byte
-	Markdown  pgtype.Text
-	Html      pgtype.Text
+	Updated  pgtype.Timestamptz
+	Json     []byte
+	Markdown pgtype.Text
+	Html     pgtype.Text
+	GoogleID string
 }
 
 // Each row represents a patient
@@ -117,11 +117,11 @@ type Patient struct {
 	CurrHomeID            pgtype.Int4
 	Name                  string
 	Status                int32
-	JournalUrl            pgtype.Text
+	GoogleID              pgtype.Text
 	SortOrder             int32
 	TimeCheckin           pgtype.Timestamptz
 	TimeCheckout          pgtype.Timestamptz
-	SuggestedJournalUrl   pgtype.Text
+	SuggestedGoogleID     pgtype.Text
 	SuggestedJournalTitle pgtype.Text
 	JournalPending        bool
 }

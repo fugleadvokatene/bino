@@ -13,7 +13,6 @@ import (
 	"github.com/fugleadvokatene/bino/internal/config"
 	dblib "github.com/fugleadvokatene/bino/internal/db"
 	"github.com/fugleadvokatene/bino/internal/gdrive"
-	"github.com/fugleadvokatene/bino/internal/gdrive/url"
 	"github.com/fugleadvokatene/bino/internal/handlers/handlererror"
 	"github.com/fugleadvokatene/bino/internal/model"
 	"github.com/fugleadvokatene/bino/internal/request"
@@ -37,27 +36,7 @@ func (h *fetchJournal) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	patientData, err := h.DB.Q.GetPatient(ctx, patient)
-	if err != nil {
-		handlererror.Error(w, r, err)
-		return
-	}
-
-	journalURL := patientData.JournalUrl
-	if !journalURL.Valid || journalURL.String == "" {
-		handlererror.Error(w, r, fmt.Errorf("no journal found"))
-		return
-	}
-
-	match := url.DocumentIDRegex.FindStringSubmatch(journalURL.String)
-	if match == nil || len(match) < 2 {
-		commonData.Error(commonData.Language.TODO("bad URL"), err)
-		request.RedirectToReferer(w, r)
-		return
-	}
-	documentID := match[1]
-
-	go fetch(h.DB, h.GDriveWorker, h.Jobs, patient, documentID)
+	go fetch(h.DB, h.GDriveWorker, h.Jobs, patient)
 
 	commonData.Success(commonData.Language.TODO("Journalen innhentes, oppdater siden om noen sekunder"))
 	request.RedirectToReferer(w, r)
@@ -68,7 +47,6 @@ func fetch(
 	worker *gdrive.Worker,
 	jobs *background.Jobs,
 	patientID int32,
-	documentID string,
 ) {
 	ctx := context.Background()
 	defer func() {
@@ -77,7 +55,20 @@ func fetch(
 			debug.PrintStack()
 		}
 	}()
-	doc, err := worker.GetDocument(documentID)
+
+	patientData, err := db.Q.GetPatient(ctx, patientID)
+	if err != nil {
+		fmt.Printf("Err: %s\n", err)
+		return
+	}
+
+	googleID := patientData.GoogleID
+	if !googleID.Valid || googleID.String == "" {
+		fmt.Printf("Err: %s\n", err)
+		return
+	}
+
+	doc, err := worker.GetDocument(googleID.String)
 	if err != nil {
 		fmt.Printf("Err: %s\n", err)
 	} else {
@@ -107,7 +98,7 @@ func fetch(
 	}
 
 	updateParams := sql.UpsertJournalParams{
-		PatientID: patientID,
+		GoogleID: googleID.String,
 	}
 
 	// Marshall to JSON, Markdown and HTML

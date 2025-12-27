@@ -40,7 +40,7 @@ func (h *createJournal) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if patientData.JournalUrl.Valid {
+	if patientData.GoogleID.Valid {
 		commonData.Warning(commonData.Language.TODO("journal URL already exists"), nil)
 		request.RedirectToReferer(w, r)
 		return
@@ -69,8 +69,8 @@ func (h *createJournal) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	if tag, err := h.DB.Q.SetPatientJournal(ctx, sql.SetPatientJournalParams{
 		ID: patient,
-		JournalUrl: pgtype.Text{
-			String: item.DocumentURL(),
+		GoogleID: pgtype.Text{
+			String: item.ID,
 			Valid:  true,
 		},
 	}); err != nil || tag.RowsAffected() == 0 {

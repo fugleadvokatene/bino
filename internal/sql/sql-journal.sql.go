@@ -14,7 +14,7 @@ import (
 const getJournalHTML = `-- name: GetJournalHTML :one
 SELECT updated, html
 FROM journal
-WHERE patient_id = $1
+WHERE google_id = $1
 `
 
 type GetJournalHTMLRow struct {
@@ -22,8 +22,8 @@ type GetJournalHTMLRow struct {
 	Html    pgtype.Text
 }
 
-func (q *Queries) GetJournalHTML(ctx context.Context, patientID int32) (GetJournalHTMLRow, error) {
-	row := q.db.QueryRow(ctx, getJournalHTML, patientID)
+func (q *Queries) GetJournalHTML(ctx context.Context, googleID string) (GetJournalHTMLRow, error) {
+	row := q.db.QueryRow(ctx, getJournalHTML, googleID)
 	var i GetJournalHTMLRow
 	err := row.Scan(&i.Updated, &i.Html)
 	return i, err
@@ -32,7 +32,7 @@ func (q *Queries) GetJournalHTML(ctx context.Context, patientID int32) (GetJourn
 const getJournalJSON = `-- name: GetJournalJSON :one
 SELECT updated, json
 FROM journal
-WHERE patient_id = $1
+WHERE google_id = $1
 `
 
 type GetJournalJSONRow struct {
@@ -40,30 +40,30 @@ type GetJournalJSONRow struct {
 	Json    []byte
 }
 
-func (q *Queries) GetJournalJSON(ctx context.Context, patientID int32) (GetJournalJSONRow, error) {
-	row := q.db.QueryRow(ctx, getJournalJSON, patientID)
+func (q *Queries) GetJournalJSON(ctx context.Context, googleID string) (GetJournalJSONRow, error) {
+	row := q.db.QueryRow(ctx, getJournalJSON, googleID)
 	var i GetJournalJSONRow
 	err := row.Scan(&i.Updated, &i.Json)
 	return i, err
 }
 
 const upsertJournal = `-- name: UpsertJournal :exec
-INSERT INTO journal (patient_id, updated, json, markdown, html)
+INSERT INTO journal (google_id, updated, json, markdown, html)
 VALUES ($1, NOW(), $2, $3, $4)
-ON CONFLICT (patient_id) DO UPDATE
+ON CONFLICT (google_id) DO UPDATE
     SET updated=NOW(), json=EXCLUDED.json, markdown=EXCLUDED.markdown, html=EXCLUDED.html
 `
 
 type UpsertJournalParams struct {
-	PatientID int32
-	Json      []byte
-	Markdown  pgtype.Text
-	Html      pgtype.Text
+	GoogleID string
+	Json     []byte
+	Markdown pgtype.Text
+	Html     pgtype.Text
 }
 
 func (q *Queries) UpsertJournal(ctx context.Context, arg UpsertJournalParams) error {
 	_, err := q.db.Exec(ctx, upsertJournal,
-		arg.PatientID,
+		arg.GoogleID,
 		arg.Json,
 		arg.Markdown,
 		arg.Html,

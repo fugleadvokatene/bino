@@ -4,12 +4,12 @@ SELECT
   p.name,
   p.curr_home_id,
   p.status,
-  p.journal_url,
+  p.google_id,
   p.time_checkin,
   p.time_checkout,
   COALESCE(sl.name, '???') AS species,
   p.suggested_journal_title,
-  p.suggested_journal_url,
+  p.suggested_google_id,
   p.journal_pending
 FROM patient AS p
 LEFT JOIN species_language AS sl
@@ -25,39 +25,39 @@ SELECT
   p.name,
   p.curr_home_id,
   p.status,
-  p.journal_url,
+  p.google_id,
   p.time_checkin,
   p.time_checkout,
   COALESCE(sl.name, '???') AS species,
   p.suggested_journal_title,
-  p.suggested_journal_url
+  p.suggested_google_id
 FROM patient AS p
 LEFT JOIN species_language AS sl
     ON sl.species_id = p.species_id
 WHERE curr_home_id IS NOT NULL
   AND language_id = $1
-  AND (suggested_journal_title IS NULL OR suggested_journal_url IS NULL)
-  AND (journal_url IS NULL OR journal_url='') 
+  AND (suggested_journal_title IS NULL OR suggested_google_id IS NULL)
+  AND (google_id IS NULL OR google_id='') 
   AND NOT journal_pending
 ORDER BY p.curr_home_id, p.sort_order, p.id
 ;
 
 -- name: SuggestJournal :exec
 UPDATE patient
-SET suggested_journal_url = @url, suggested_journal_title = @title
+SET suggested_google_id = @url, suggested_journal_title = @title
 WHERE id = @id
 ;
 
 -- name: AcceptSuggestedJournal :exec
 UPDATE patient
-SET journal_url = suggested_journal_url, suggested_journal_title = '', suggested_journal_url = ''
+SET google_id = suggested_google_id, suggested_journal_title = '', suggested_google_id = ''
 WHERE id = @id
-  AND suggested_journal_url IS NOT NULL
+  AND suggested_google_id IS NOT NULL
 ;
 
 -- name: DeclineSuggestedJournal :exec
 UPDATE patient
-SET suggested_journal_url = '', suggested_journal_title = ''
+SET suggested_google_id = '', suggested_journal_title = ''
 WHERE id = @id
 ;
 
@@ -65,7 +65,7 @@ WHERE id = @id
 SELECT
   p.id
 FROM patient AS p
-WHERE p.journal_url LIKE CONCAT('%', @lookup::TEXT, '%')
+WHERE p.google_id LIKE CONCAT('%', @lookup::TEXT, '%')
 ;
 
 -- name: GetFormerPatients :many
@@ -74,12 +74,12 @@ SELECT
   p.name,
   p.curr_home_id,
   p.status,
-  p.journal_url,
+  p.google_id,
   p.time_checkin,
   p.time_checkout,
   COALESCE(sl.name, '???') AS species,
   p.suggested_journal_title,
-  p.suggested_journal_url,
+  p.suggested_google_id,
   p.journal_pending
 FROM patient AS p
 LEFT JOIN species_language AS sl
@@ -96,12 +96,12 @@ RETURNING id
 ;
 
 -- name: AddPatients :many
-INSERT INTO patient (species_id, name, curr_home_id, status, journal_url, time_checkin)
+INSERT INTO patient (species_id, name, curr_home_id, status, google_id, time_checkin)
 SELECT UNNEST(@species::int[]),
        UNNEST(@name::text[]),
        UNNEST(@curr_home_id::int[]),
        UNNEST(@status::int[]),
-       UNNEST(@journal_url::text[]),
+       UNNEST(@google_id::text[]),
        NOW()
 RETURNING id
 ;
@@ -159,7 +159,7 @@ WHERE id = $1
 
 -- name: SetPatientJournal :execresult
 UPDATE patient
-SET journal_url=$2, journal_pending=FALSE
+SET google_id=$2, journal_pending=FALSE
 WHERE id = $1
 ;
 

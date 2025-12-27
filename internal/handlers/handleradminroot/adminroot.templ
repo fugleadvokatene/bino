@@ -14,9 +14,6 @@ templ AdminRootPage(data *request.CommonData) {
         <li class="card mb-1"><div class="card-header"><a href="/event">{data.Language.EventList}</a></div></li>
         if data.User.AccessLevel >= model.AccessLevelCoordinator {
             <li class="card mb-1"><div class="card-header"><a href="/species">{data.Language.AdminManageSpecies}</a></div></li>
-            if data.FeatureFlag("Import tool") {
-                <li class="card mb-1"><div class="card-header"><a href="/import">{data.Language.ImportHeader}</a></div></li>
-            }
         }
         if data.User.AccessLevel >= model.AccessLevelAdmin {
             <li class="card mb-1"><div class="card-header"><a href="/homes">{data.Language.AdminManageHomes}</a></div></li>

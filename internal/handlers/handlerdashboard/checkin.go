@@ -126,8 +126,8 @@ func (h *checkin) createOrSuggestJournal(
 			slog.Warn(language.GDriveCreateJournalFailed, "error", err)
 		} else {
 			if tag, err := h.DB.Q.SetPatientJournal(ctx, sql.SetPatientJournalParams{
-				ID:         patientID,
-				JournalUrl: pgtype.Text{String: item.DocumentURL(), Valid: true},
+				ID:       patientID,
+				GoogleID: pgtype.Text{String: item.ID, Valid: true},
 			}); err != nil || tag.RowsAffected() == 0 {
 				slog.Warn(language.GDriveCreateJournalFailed, "error", err)
 			} else {
