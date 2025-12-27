@@ -13,21 +13,14 @@ templ HomePage(ctx context.Context, data *request.CommonData, homes []model.Home
     @templbase.Layout(data, "home-page") {
         <h1>{self.Name}</h1>
         @templbase.Card() {
-            <h2>{data.Language.HomesPatients} ({len(self.Patients)})</h2>
-            <div class="dashboard-patient-list" data-home={self.ID}>
-                for _, patient := range self.Patients {
-                    @handlerpatient.PatientCard(data, homes, patient)
-                }
-            </div>
-
-            <h2>{data.Language.GenericUpdate}</h2>
+            <h2>{data.Language.GenericSettings}</h2>
+            if len(self.Users) > 1 {
+                <p>{data.Language.HomeMultipleUsers(len(self.Users))}</p>
+            }
             <h3>{data.Language.HomeCapacity}</h3>
+            <p>{data.Language.HomeCapacityInstruction}</p>
             @CapacityForm(data, self)
-
-            <h3>{data.Language.HomeAvailability}</h3>
             @UnavailableEditor(data, self)
-
-            <h3>{data.Language.HomePreferredSpecies}</h3>
             @PreferredSpecies(data, self)
 
             <h2>{data.Language.HomesUsers}</h2>
@@ -37,6 +30,13 @@ templ HomePage(ctx context.Context, data *request.CommonData, homes []model.Home
             if len(self.Users) == 0 {
                 <p class="small">{data.Language.HomesEmptyHome}</p>
             }
+
+            <h2>{data.Language.HomesPatients} ({len(self.Patients)})</h2>
+            <div class="dashboard-patient-list" data-home={self.ID}>
+                for _, patient := range self.Patients {
+                    @handlerpatient.PatientCard(data, homes, patient)
+                }
+            </div>
         }
     }
     
@@ -56,11 +56,13 @@ templ DateView(data *request.CommonData, dv *model.Date) {
 }
 
 templ UnavailableEditor(data *request.CommonData, view *model.Home) {
+    <h3>{data.Language.HomeAvailability}</h3>
     if _, availability := data.Language.AvailabilityString(view.UnavailablePeriods); true {
-        <p>{availability}</p>
+        <p>{data.Language.GenericStatus}: <strong>{availability}</strong></p>
     }
 
     if len(view.UnavailablePeriods) > 0 {
+        <p>{data.Language.UnavailablePeriods}</p>
         <div class="card">
             <table class="table table-sm m-0">
                 <thead>
@@ -94,6 +96,7 @@ templ UnavailableEditor(data *request.CommonData, view *model.Home) {
     }
 
     <h4>{data.Language.GenericAdd}</h4>
+    <p>{data.Language.AddUnavailablePeriodInstruction}</p>
     @templbase.Form(
         data,
         view.URLSuffix("add-unavailable"),
@@ -141,6 +144,8 @@ templ CapacityForm(data *request.CommonData, view *model.Home) {
 }
 
 templ PreferredSpecies(data *request.CommonData, view *model.Home) {
+    <h3>{data.Language.HomePreferredSpecies}</h3>
+    <p>{data.Language.HomePreferredSpeciesInstruction}</p>
     <table class="table">
     <tbody id="species-list" data-home={view.ID}> 
         for _, species := range view.PreferredSpecies {

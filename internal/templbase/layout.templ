@@ -160,8 +160,11 @@ templ FullTextSearch(data *request.CommonData) {
 templ SelfInfo(data *request.UserData) {
     if data.HasAvatarURL {
         <div class="b-navbar-item">
-            <img src={data.AvatarURL} class="nav-profile-picture">
-        </div>
+            <a class="profile-wrapper dark-on-hover" href={data.PreferredHome.URL()}>
+                <img src={data.AvatarURL} class="nav-profile-picture">
+                <span class="gear-icon">🏠</span>
+            </a>
+    </div>
     } else {
         <div class="b-navbar-item logged-in-as">
             <div class="user-info">

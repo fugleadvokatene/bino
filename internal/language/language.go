@@ -148,6 +148,7 @@ type Language struct {
 	GenericNever        string
 	GenericNote         string
 	GenericNotFound     string
+	GenericSettings     string
 	GenericSpecies      string
 	GenericStatus       string
 	GenericUpdate       string
@@ -162,27 +163,29 @@ type Language struct {
 	GenericUser         string
 	GenericEnabled      string
 
-	HomesArchiveHome               string
-	HomesAddToHome                 string
-	HomesAddUserToHome             string
-	HomesCreateHome                string
-	HomesCreateHomeNote            string
-	HomesEmptyHome                 string
-	HomesHomeName                  string
-	HomesRemoveFromCurrent         string
-	HomesViewHomes                 string
-	HomesUnassignedUsers           string
-	HomesPatients                  string
-	HomesUsers                     string
-	HomeCapacity                   string
-	HomePreferredSpecies           string
-	HomeAvailability               string
-	HomePeriodInvalid              string
-	HomeAvailableIndefinitely      string
-	HomeUnavailableIndefinitely    string
-	HomeUnavailableFromInstruction string
-	HomeUnavailableToInstruction   string
-	HomeNameWasUpdated             string
+	HomesArchiveHome                string
+	HomesAddToHome                  string
+	HomesAddUserToHome              string
+	HomesCreateHome                 string
+	HomesCreateHomeNote             string
+	HomesEmptyHome                  string
+	HomesHomeName                   string
+	HomesRemoveFromCurrent          string
+	HomesViewHomes                  string
+	HomesUnassignedUsers            string
+	HomesPatients                   string
+	HomesUsers                      string
+	HomeCapacity                    string
+	HomeCapacityInstruction         string
+	HomePreferredSpecies            string
+	HomePreferredSpeciesInstruction string
+	HomeAvailability                string
+	HomePeriodInvalid               string
+	HomeAvailableIndefinitely       string
+	HomeUnavailableIndefinitely     string
+	HomeUnavailableFromInstruction  string
+	HomeUnavailableToInstruction    string
+	HomeNameWasUpdated              string
 
 	ImportHeader   string
 	ImportPatients string
@@ -228,6 +231,28 @@ type Language struct {
 	Capabilities                  map[model.Cap]string
 	CapabilitiesLink              string
 	CapabilitiesHeader            string
+
+	UnavailablePeriods              string
+	AddUnavailablePeriodInstruction string
+}
+
+func (l *Language) HomeMultipleUsers(n int) string {
+	switch l.ID {
+	case model.LanguageIDNO:
+		all := "alle"
+		if n == 2 {
+			all = "begge"
+		}
+		return fmt.Sprintf("Det er %d brukere koblet til dette rehabhjemmet (se under). Disse innstillingene vil gjelde for %s.", n, all)
+	case model.LanguageIDEN:
+		fallthrough
+	default:
+		all := "all"
+		if n == 2 {
+			all = "both"
+		}
+		return fmt.Sprintf("There are %d users in this rehab home (see below). These settings will be applied to %s of them.", n, all)
+	}
 }
 
 func (l *Language) ShowingFirstToLastOfN(first, last, n int32) string {
@@ -487,6 +512,7 @@ var NO = &Language{
 	GenericNever:        "Aldri",
 	GenericNote:         "Notis",
 	GenericNotFound:     "Ikke funnet",
+	GenericSettings:     "Innstillinger",
 	GenericSpecies:      "Art",
 	GenericStatus:       "Status",
 	GenericUpdate:       "Oppdater",
@@ -501,26 +527,28 @@ var NO = &Language{
 	GenericUser:         "Bruker",
 	GenericEnabled:      "Slått på",
 
-	HomesAddToHome:                 "Legg til",
-	HomesArchiveHome:               "Arkiver rehabhjem",
-	HomesCreateHome:                "Opprett nytt rehabhjem",
-	HomesCreateHomeNote:            "Navnet er som regel navnet på en person, men det kan være flere personer i ett rehabhjem.",
-	HomesEmptyHome:                 "Det er ingen brukere i dette rehabhjemmet.",
-	HomesHomeName:                  "Rehabhjem",
-	HomesRemoveFromCurrent:         "Fjern fra dette rehabhjemmet",
-	HomesUnassignedUsers:           "Brukere som ikke er koblet til noe rehabhjem",
-	HomesViewHomes:                 "Rehabhjem",
-	HomesPatients:                  "Pasienter",
-	HomesUsers:                     "Brukere",
-	HomeCapacity:                   "Kapasitet",
-	HomePreferredSpecies:           "Favoritter",
-	HomeAvailability:               "Tilgjengelighet",
-	HomePeriodInvalid:              "Perioden er ugyldig.",
-	HomeAvailableIndefinitely:      "Tilgjengelig.",
-	HomeUnavailableIndefinitely:    "Utilgjengelig på ubestemt tid.",
-	HomeUnavailableFromInstruction: "Datoen du blir utilgjengelig.",
-	HomeUnavailableToInstruction:   "Siste dato du er utilgjengelig. La stå tom hvis du er utilgjengelig på ubestemt tid.",
-	HomeNameWasUpdated:             "Endret navn på rehabhjemmet.",
+	HomesAddToHome:                  "Legg til",
+	HomesArchiveHome:                "Arkiver rehabhjem",
+	HomesCreateHome:                 "Opprett nytt rehabhjem",
+	HomesCreateHomeNote:             "Navnet er som regel navnet på en person, men det kan være flere personer i ett rehabhjem.",
+	HomesEmptyHome:                  "Det er ingen brukere i dette rehabhjemmet.",
+	HomesHomeName:                   "Rehabhjem",
+	HomesRemoveFromCurrent:          "Fjern fra dette rehabhjemmet",
+	HomesUnassignedUsers:            "Brukere som ikke er koblet til noe rehabhjem",
+	HomesViewHomes:                  "Rehabhjem",
+	HomesPatients:                   "Pasienter",
+	HomesUsers:                      "Brukere",
+	HomeCapacity:                    "Kapasitet",
+	HomeCapacityInstruction:         "Skriv inn hvor mange pasienter du har kapasitet til å ta, slik at andre vet om du har plass til flere eller trenger avlasting.",
+	HomePreferredSpecies:            "Favoritt-arter",
+	HomePreferredSpeciesInstruction: "Velg hvilke arter som kommer øverst på lista når du skal sjekke inn en pasient. Den aller øverste er den som blir forhåndsvalgt. Dra og slipp for å sortere.",
+	HomeAvailability:                "Tilgjengelighet",
+	HomePeriodInvalid:               "Perioden er ugyldig.",
+	HomeAvailableIndefinitely:       "Tilgjengelig.",
+	HomeUnavailableIndefinitely:     "Utilgjengelig på ubestemt tid.",
+	HomeUnavailableFromInstruction:  "Datoen du blir utilgjengelig.",
+	HomeUnavailableToInstruction:    "Siste dato du er utilgjengelig. La stå tom hvis du er utilgjengelig på ubestemt tid.",
+	HomeNameWasUpdated:              "Endret navn på rehabhjemmet.",
 
 	ImportHeader:   "Importverktøy",
 	ImportPatients: "Importer pasienter",
@@ -617,6 +645,9 @@ var NO = &Language{
 		model.CapInviteToGDrive:        "Invitere brukere til Google Drive-mappen fra Bino",
 		model.CapInviteToBino:          "Invitere nye brukere til Bino",
 	},
+
+	UnavailablePeriods:              "Utilgjengelig i følgende perioder:",
+	AddUnavailablePeriodInstruction: "Fyll inn skjemaet for å fortelle andre at du blir utilgjengelig i en periode:",
 }
 
 var EN = &Language{
@@ -793,6 +824,7 @@ var EN = &Language{
 	GenericNever:        "Never",
 	GenericNote:         "Note",
 	GenericNotFound:     "Not found",
+	GenericSettings:     "Settings",
 	GenericSpecies:      "Species",
 	GenericStatus:       "Status",
 	GenericUpdate:       "Update",
@@ -807,26 +839,28 @@ var EN = &Language{
 	GenericUser:         "User",
 	GenericEnabled:      "Enabled",
 
-	HomesAddToHome:                 "Add",
-	HomesArchiveHome:               "Archive rehab home",
-	HomesCreateHome:                "Create new rehab home",
-	HomesCreateHomeNote:            "The name is usually that of a person, but there can be multiple people in a rehab home.",
-	HomesEmptyHome:                 "There are no users in this rehab home.",
-	HomesHomeName:                  "Rehab home",
-	HomesRemoveFromCurrent:         "Remove from this rehab home",
-	HomesUnassignedUsers:           "Users that are not associated with any rehab homes",
-	HomesViewHomes:                 "Rehab homes",
-	HomesPatients:                  "Patients",
-	HomesUsers:                     "Users",
-	HomeCapacity:                   "Capacity",
-	HomePreferredSpecies:           "Favorites",
-	HomeAvailability:               "Availability",
-	HomePeriodInvalid:              "Invalid period.",
-	HomeAvailableIndefinitely:      "Available.",
-	HomeUnavailableIndefinitely:    "Unavailable until further notice.",
-	HomeUnavailableFromInstruction: "The date when you become unavailable.",
-	HomeUnavailableToInstruction:   "The last date when you are unavailable. Leave empty if you're unavailable indefinitely.",
-	HomeNameWasUpdated:             "Rehab home name was updated.",
+	HomesAddToHome:                  "Add",
+	HomesArchiveHome:                "Archive rehab home",
+	HomesCreateHome:                 "Create new rehab home",
+	HomesCreateHomeNote:             "The name is usually that of a person, but there can be multiple people in a rehab home.",
+	HomesEmptyHome:                  "There are no users in this rehab home.",
+	HomesHomeName:                   "Rehab home",
+	HomesRemoveFromCurrent:          "Remove from this rehab home",
+	HomesUnassignedUsers:            "Users that are not associated with any rehab homes",
+	HomesViewHomes:                  "Rehab homes",
+	HomesPatients:                   "Patients",
+	HomesUsers:                      "Users",
+	HomeCapacity:                    "Capacity",
+	HomeCapacityInstruction:         "Set the number of patients you can take, so that others can see if you have room for another or if you have too many.",
+	HomePreferredSpecies:            "Favorite species",
+	HomePreferredSpeciesInstruction: "Choose which species appear first in the list when you check in a new patient. The one at the very top will be selected by default. Drag and drop to reorder.",
+	HomeAvailability:                "Availability",
+	HomePeriodInvalid:               "Invalid period.",
+	HomeAvailableIndefinitely:       "Available.",
+	HomeUnavailableIndefinitely:     "Unavailable until further notice.",
+	HomeUnavailableFromInstruction:  "The date when you become unavailable.",
+	HomeUnavailableToInstruction:    "The last date when you are unavailable. Leave empty if you're unavailable indefinitely.",
+	HomeNameWasUpdated:              "Rehab home name was updated.",
 
 	ImportHeader:   "Importer",
 	ImportPatients: "Importe patients",
@@ -920,6 +954,9 @@ var EN = &Language{
 		model.CapInviteToGDrive:        "Invite users to the Google Drive folder from Bino",
 		model.CapInviteToBino:          "Invite new users to Bino",
 	},
+
+	UnavailablePeriods:              "Unavailable during the following periods:",
+	AddUnavailablePeriodInstruction: "Fill in the form to let others know that you will be unavailable for a period:",
 }
 
 func (l *Language) AccessLevelBlocked(al model.AccessLevel) string {

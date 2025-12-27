@@ -25,7 +25,10 @@ func HomeURL(id int32) templ.SafeURL {
 }
 
 func (hv Home) URL() templ.SafeURL {
-	return HomeURL(hv.ID)
+	if hv.ID > 0 {
+		return HomeURL(hv.ID)
+	}
+	return "#"
 }
 
 func (hv Home) URLSuffix(suffix string) string {
