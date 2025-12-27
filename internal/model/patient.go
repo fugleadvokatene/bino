@@ -14,10 +14,10 @@ type Patient struct {
 	Status                int32
 	Name                  string
 	Species               Species
-	JournalURL            string
+	GoogleID              string
 	TimeCheckin           time.Time
 	TimeCheckout          time.Time
-	SuggestedJournalURL   string
+	SuggestedGoogleID     string
 	SuggestedJournalTitle string
 	CurrentHomeID         int32
 	HasCurrentHome        bool

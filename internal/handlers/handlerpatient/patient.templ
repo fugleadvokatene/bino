@@ -10,6 +10,7 @@ import (
 	"github.com/fugleadvokatene/bino/internal/handlers/handlercalendar"
 	"github.com/fugleadvokatene/bino/internal/handlers/handlerevent"
 	"github.com/fugleadvokatene/bino/internal/gdrive/document"
+	"github.com/fugleadvokatene/bino/internal/gdrive/url"
 )
 
 templ PatientPage(
@@ -76,7 +77,7 @@ templ PatientPage(
                 </tbody>
             </table>
 
-            if patient.JournalURL != "" {
+            if patient.GoogleID != "" {
                 <h2>Journal</h2>
                 @templbase.SingleButtonForm(data, patient.URLSuffix("fetch-journal"), "Hent siste fra Google Drive", "POST", "btn-success")
                 if !journalUpdated.IsZero() {
@@ -150,8 +151,8 @@ templ PatientJournalUpdate(data *request.CommonData, patient model.Patient) {
     <tr>
         <th class="w-25">{data.Language.GenericJournal}</th>
         <td>
-            if patient.JournalURL != "" {
-                <a href={templ.URL(patient.JournalURL)}>
+            if patient.GoogleID != "" {
+                <a href={templ.URL(url.IDToDocumentURL(patient.GoogleID))}>
                     {data.Language.DashboardGoToJournal}
                 </a>
             } else {
@@ -171,8 +172,8 @@ templ PatientJournalUpdate(data *request.CommonData, patient model.Patient) {
                         @templbase.Button("submit", "fa-link", "")
                     </form-group>
                 }
-                if patient.SuggestedJournalTitle != "" && patient.SuggestedJournalURL != "" {
-                    <p class="mb-0 small">{data.Language.GDriveSuggestedJournal}: <a href={templ.URL(patient.SuggestedJournalURL)}>{patient.SuggestedJournalTitle}</a></p>
+                if patient.SuggestedJournalTitle != "" && patient.SuggestedGoogleID != "" {
+                    <p class="mb-0 small">{data.Language.GDriveSuggestedJournal}: <a href={templ.URL(url.IDToDocumentURL(patient.GoogleID))}>{patient.SuggestedJournalTitle}</a></p>
                     <div class="d-flex justify-content-evenly">
                         @templbase.SingleButtonForm(data, patient.URLSuffix("accept-suggested-journal"), data.Language.GDriveAcceptSuggestedJournal, "POST", "btn-success", "d-flex", "flex-column", "center", "mb-2")
                         @templbase.SingleButtonForm(data, patient.URLSuffix("decline-suggested-journal"), data.Language.GDriveDeclineSuggestedJournal, "POST", "btn-warning", "d-flex", "flex-column", "center", "mb-2")
@@ -219,9 +220,9 @@ templ PatientCard(data *request.CommonData, homes []model.Home, patient model.Pa
                 <a href={templ.URL(patient.URL())} class="filter-content must-be-clickable">{patient.Name}</a>
             </div>
             <div>
-                if patient.JournalURL != "" || patient.JournalPending {
+                if patient.GoogleID != "" || patient.JournalPending {
                     // Must be on one line to avoid whitespace issue...
-                    <a href={templ.URL(patient.JournalURL)} data-patient-id={patient.ID} class="journal-link-icon"><i data-patient-id={patient.ID} class={"link-icon-exists fa-brands fa-google-drive", templbase.ClassIf(patient.JournalURL == "" || patient.JournalPending, "d-none")}></i><i data-patient-id={patient.ID} class={"link-icon-pending fa-solid fa-spinner spin-8", templbase.ClassIf(patient.JournalURL != "" || !patient.JournalPending, "d-none")}></i></a>
+                    <a href={templ.URL(url.IDToDocumentURL(patient.GoogleID))} data-patient-id={patient.ID} class="journal-link-icon"><i data-patient-id={patient.ID} class={"link-icon-exists fa-brands fa-google-drive", templbase.ClassIf(patient.GoogleID == "" || patient.JournalPending, "d-none")}></i><i data-patient-id={patient.ID} class={"link-icon-pending fa-solid fa-spinner spin-8", templbase.ClassIf(patient.GoogleID != "" || !patient.JournalPending, "d-none")}></i></a>
                 }
                 <span class="patient-species-header filter-content">{patient.Species.Name}</span>    
                 <button
@@ -243,7 +244,7 @@ templ PatientTable(
 ) {
     <table class="patient-table table table-bordered">
         <tbody>
-            if patient.JournalURL == "" {
+            if patient.GoogleID == "" {
                 @PatientJournalUpdate(data, patient)
             }
             @PatientMove(data, homes, patient)
