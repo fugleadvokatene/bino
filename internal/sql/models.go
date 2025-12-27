@@ -103,11 +103,16 @@ type Invitation struct {
 }
 
 type Journal struct {
-	Updated  pgtype.Timestamptz
-	Json     []byte
-	Markdown pgtype.Text
-	Html     pgtype.Text
-	GoogleID string
+	Updated   pgtype.Timestamptz
+	Json      []byte
+	Markdown  pgtype.Text
+	Html      pgtype.Text
+	GoogleID  string
+	Header    pgtype.Text
+	Body      pgtype.Text
+	Lang      interface{}
+	FtsHeader interface{}
+	FtsBody   interface{}
 }
 
 // Each row represents a patient
@@ -136,20 +141,6 @@ type PatientEvent struct {
 	Time         pgtype.Timestamptz
 	AssociatedID pgtype.Int4
 	AppuserID    int32
-}
-
-type Search struct {
-	Ns            string
-	Updated       pgtype.Timestamptz
-	Header        pgtype.Text
-	Body          pgtype.Text
-	Lang          interface{}
-	FtsHeader     interface{}
-	FtsBody       interface{}
-	AssociatedUrl pgtype.Text
-	ExtraData     pgtype.Text
-	Skipped       bool
-	Created       pgtype.Timestamptz
 }
 
 type Session struct {

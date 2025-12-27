@@ -2,13 +2,16 @@ package gdrive
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log"
+	"log/slog"
 	"runtime/debug"
 	"strings"
 	"sync"
 	"time"
 
+	"github.com/fugleadvokatene/bino/internal/background"
 	"github.com/fugleadvokatene/bino/internal/gdrive/document"
 	"github.com/fugleadvokatene/bino/internal/generic"
 	"github.com/fugleadvokatene/bino/internal/model"
@@ -24,6 +27,9 @@ const (
 type Worker struct {
 	cfg Config
 	g   *Client
+	bg  *background.Jobs
+
+	indexerState IndexerState
 
 	in chan TaskRequest
 
@@ -89,6 +95,27 @@ func newGDriveTaskRequestUpdateJournal(id string, updates []JournalUpdate) TaskR
 	req.Payload = payloadUpdateDocument{
 		ID:      id,
 		Updates: updates,
+	}
+	return req
+}
+
+func newGDriveTaskRequestGetIndexerState() TaskRequest {
+	req := newGDriveTaskRequest()
+	req.Type = model.GDriveTaskRequestIDGetIndexerState
+	return req
+}
+
+func newGDriveTaskRequestSetIndexerState(
+	enable bool,
+	maxCreatedPerRound int,
+	minutesBetweenRounds int,
+) TaskRequest {
+	req := newGDriveTaskRequest()
+	req.Type = model.GDriveTaskRequestIDSetIndexerState
+	req.Payload = IndexerState{
+		Enabled:                     enable,
+		MaxDocumentsCreatedPerRound: maxCreatedPerRound,
+		Interval:                    time.Minute * time.Duration(minutesBetweenRounds),
 	}
 	return req
 }
@@ -160,6 +187,14 @@ func (req TaskRequest) decodeUpdateJournal() (payloadUpdateDocument, error) {
 	return updates, nil
 }
 
+func (req TaskRequest) decodeSetIndexerState() (IndexerState, error) {
+	state, ok := req.Payload.(IndexerState)
+	if !ok {
+		return IndexerState{}, fmt.Errorf("decodeSetIndexerState ")
+	}
+	return state, nil
+}
+
 func (req TaskRequest) decodeListFiles() (ListFilesParams, error) {
 	payload, ok := req.Payload.(ListFilesParams)
 	if !ok {
@@ -223,6 +258,30 @@ func (resp TaskResponse) decodeAppendUpdates() error {
 	return nil
 }
 
+func (resp TaskResponse) decodeSetIndexerState() error {
+	if err := resp.decodeError(); err != nil {
+		return err
+	}
+	if resp.Type != model.GDriveTaskRequestIDSetIndexerState {
+		return fmt.Errorf("decodeSetIndexerState called on response of type %s", resp.Type.String())
+	}
+	return nil
+}
+
+func (resp TaskResponse) decodeGetIndexerState() (IndexerState, error) {
+	if err := resp.decodeError(); err != nil {
+		return IndexerState{}, err
+	}
+	if resp.Type != model.GDriveTaskRequestIDGetIndexerState {
+		return IndexerState{}, fmt.Errorf("decodeGetIndexerState called on response of type %s", resp.Type.String())
+	}
+	state, ok := resp.Payload.(IndexerState)
+	if !ok {
+		return IndexerState{}, fmt.Errorf("decodeGetIndexerState called with bad payload type %T", resp.Payload)
+	}
+	return state, nil
+}
+
 func (resp TaskResponse) decodeCreateJournal() (Item, error) {
 	if err := resp.decodeError(); err != nil {
 		return Item{}, err
@@ -261,12 +320,18 @@ func (gdtr TaskResponse) String() string {
 	return fmt.Sprintf("<GDriveTaskResponse of type %s>", gdtr.Type)
 }
 
-func NewWorker(ctx context.Context, cfg Config, g *Client) *Worker {
+func NewWorker(ctx context.Context, cfg Config, g *Client, bg *background.Jobs) *Worker {
 	w := &Worker{
 		cfg:          cfg,
 		g:            g,
+		bg:           bg,
 		in:           make(chan TaskRequest, maxNConcurrentGDriveTaskRequests),
 		cachedInfoMu: &sync.Mutex{},
+		indexerState: IndexerState{
+			Enabled:                     false,
+			MaxDocumentsCreatedPerRound: 10,
+			Interval:                    time.Minute,
+		},
 	}
 
 	// Warm the cache on gdrive info, then start pollin
@@ -284,24 +349,41 @@ func NewWorker(ctx context.Context, cfg Config, g *Client) *Worker {
 	return w
 }
 
+func validateTemplate(tpl *document.Document) error {
+	s := document.GetIndexableText(tpl)
+	errs := []error{}
+	for _, k := range model.TemplateValues() {
+		if !strings.Contains(s, k.String()) {
+			errs = append(errs, fmt.Errorf("template is missing variable '%s'", k))
+		}
+	}
+	return errors.Join(errs...)
+}
+
 func (w *Worker) GetGDriveConfigInfo() ConfigInfo {
 	w.cachedInfoMu.Lock()
 	defer w.cachedInfoMu.Unlock()
 	if w.cachedInfo == nil {
 		w.cachedInfo = new(ConfigInfo)
-		item, err := w.g.GetFile(w.cfg.JournalFolder)
+		folderItem, err := w.g.GetFile(w.cfg.JournalFolder)
 		if err != nil {
 			panic(err)
 		}
-		w.cachedInfo.JournalFolder = item
+		w.cachedInfo.JournalFolder = folderItem
 
-		doc, err := w.g.ExportDocument(w.cfg.TemplateFile)
+		fileItem, err := w.g.GetFile(w.cfg.TemplateFile)
+		if err != nil {
+			panic(err)
+		}
+		w.cachedInfo.TemplateItem = fileItem
+
+		doc, err := w.g.GetDocument(w.cfg.TemplateFile)
 		if err != nil {
 			panic(err)
 		}
 		w.cachedInfo.TemplateDoc = doc
 
-		if err := doc.Validate(); err != nil {
+		if err := validateTemplate(&doc); err != nil {
 			panic(err)
 		}
 
@@ -351,6 +433,14 @@ func (w *Worker) AppendUpdates(id string, updates []JournalUpdate) error {
 	return w.Exec(newGDriveTaskRequestUpdateJournal(id, updates)).decodeAppendUpdates()
 }
 
+func (w *Worker) GetIndexerState() (IndexerState, error) {
+	return w.Exec(newGDriveTaskRequestGetIndexerState()).decodeGetIndexerState()
+}
+
+func (w *Worker) SetIndexerState(enable bool, maxCreatedPerRound int, minutesBetweenRounds int) error {
+	return w.Exec(newGDriveTaskRequestSetIndexerState(enable, maxCreatedPerRound, minutesBetweenRounds)).decodeSetIndexerState()
+}
+
 func (w *Worker) worker(workerID int) {
 	for {
 		req := <-w.in
@@ -380,6 +470,10 @@ func (w *Worker) handleRequest(req TaskRequest) (resp TaskResponse) {
 		return w.handleRequestListFiles(req)
 	case model.GDriveTaskRequestIDUpdateJournal:
 		return w.handleRequestUpdateJournal(req)
+	case model.GDriveTaskRequestIDGetIndexerState:
+		return w.handleRequestGetIndexerState(req)
+	case model.GDriveTaskRequestIDSetIndexerState:
+		return w.handleRequestSetIndexerState(req)
 	}
 	return w.errorResponse(req, fmt.Errorf("unknown request type"))
 }
@@ -458,6 +552,20 @@ func (w *Worker) handleRequestUpdateJournal(req TaskRequest) TaskResponse {
 	if err := w.g.AppendUpdates(updates.ID, updates.Updates); err != nil {
 		return w.errorResponse(req, err)
 	}
+	return w.successResponse(req, nil)
+}
+
+func (w *Worker) handleRequestGetIndexerState(req TaskRequest) TaskResponse {
+	return w.successResponse(req, w.indexerState)
+}
+
+func (w *Worker) handleRequestSetIndexerState(req TaskRequest) TaskResponse {
+	state, err := req.decodeSetIndexerState()
+	if err != nil {
+		return w.errorResponse(req, err)
+	}
+	w.indexerState = state
+	slog.Info("Indexer state updated", "enabled", state.Enabled, "interval", state.Interval, "max documents created per round", state.MaxDocumentsCreatedPerRound)
 	return w.successResponse(req, nil)
 }
 

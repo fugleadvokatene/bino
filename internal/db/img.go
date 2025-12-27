@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"image"
 	"io"
-	"log/slog"
 	"math"
 	"os"
 	"path"
@@ -183,8 +182,6 @@ func DownscaleImage(
 		Width:           int32(newWidth),
 		Height:          int32(newHeight),
 	}
-
-	slog.DebugContext(ctx, "Created miniature", "mini", mini)
 
 	return mini, nil
 }

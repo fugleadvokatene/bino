@@ -3,19 +3,33 @@ package document
 import (
 	"encoding/json"
 	"fmt"
-	"io"
+	"strings"
 
 	"github.com/a-h/templ"
 )
 
 type Element struct {
 	Type  string
-	Value interface {
-		Markdown(w io.Writer)
-		IndexableText(w io.Writer)
-		Images() []*DocImage
-		Templ() templ.Component
-	}
+	Value ElementValue
+}
+
+type ElementValue interface {
+	Markdown(w *strings.Builder)
+	IndexableText(w *strings.Builder)
+	Images() []*DocImage
+	Templ() templ.Component
+}
+
+func GetMarkdown(e ElementValue) string {
+	builder := strings.Builder{}
+	e.Markdown(&builder)
+	return builder.String()
+}
+
+func GetIndexableText(e ElementValue) string {
+	builder := strings.Builder{}
+	e.IndexableText(&builder)
+	return builder.String()
 }
 
 func (e *Element) UnmarshalJSON(b []byte) error {

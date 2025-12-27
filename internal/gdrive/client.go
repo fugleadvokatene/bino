@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"io"
 	"regexp"
 	"strings"
 	"time"
@@ -138,35 +137,9 @@ func (g *Client) GetDocument(id string) (document.Document, error) {
 	return document.New(doc)
 }
 
-func (g *Client) ExportDocument(id string) (Journal, error) {
-	item, err := g.GetFile(id)
-	if err != nil {
-		return Journal{}, err
-	}
-
-	call := g.Drive.Files.Export(id, "text/markdown")
-	f, err := call.Download()
-	if err != nil {
-		return Journal{}, err
-	}
-	defer f.Body.Close()
-	content, err := io.ReadAll(f.Body)
-	if err != nil {
-		return Journal{}, err
-	}
-
-	content = ReImages.ReplaceAll(content, []byte{})
-	content = ReUnbold.ReplaceAll(content, []byte("$1"))
-
-	return Journal{
-		Content: string(content),
-		Item:    item,
-	}, nil
-}
-
 func (g *Client) CreateDocument(conf ConfigInfo, vars TemplateVars) (Item, error) {
-	copyCall := g.Drive.Files.Copy(conf.TemplateDoc.Item.ID, &drive.File{
-		Name:    vars.ApplyToString(conf.TemplateDoc.Item.Name),
+	copyCall := g.Drive.Files.Copy(conf.TemplateItem.ID, &drive.File{
+		Name:    vars.ApplyToString(conf.TemplateItem.Name),
 		Parents: []string{conf.JournalFolder.ID},
 	})
 

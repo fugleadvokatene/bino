@@ -1,7 +1,6 @@
 package document
 
 import (
-	"bytes"
 	"context"
 	"encoding/json"
 	"log/slog"
@@ -49,23 +48,23 @@ func TestDocument(t *testing.T) {
 		t.Fatalf("unmarshalling test doc: %v", err)
 	}
 
-	var txtBuffer bytes.Buffer
+	var txtBuffer strings.Builder
 	doc.IndexableText(&txtBuffer)
-	dir.WriteFile("actual.txt", txtBuffer.Bytes(), 0600)
+	dir.WriteFile("actual.txt", []byte(txtBuffer.String()), 0600)
 	if s := strings.TrimSpace(txtBuffer.String()); s != strings.TrimSpace(string(txtText)) {
 		t.Fatal("incorrect IndexableText, if the expected output has changed please copy actual.txt to test.txt", string(txtText), s)
 	}
 
-	var mdBuffer bytes.Buffer
+	var mdBuffer strings.Builder
 	doc.Markdown(&mdBuffer)
-	dir.WriteFile("actual.md", mdBuffer.Bytes(), 0600)
+	dir.WriteFile("actual.md", []byte(mdBuffer.String()), 0600)
 	if s := strings.TrimSpace(mdBuffer.String()); s != strings.TrimSpace(string(mdText)) {
 		t.Fatal("incorrect Markdown, if the expected output has changed please copy actual.md to test.md", string(mdText), s)
 	}
 
-	var htmlBuffer bytes.Buffer
+	var htmlBuffer strings.Builder
 	doc.Templ().Render(ctx, &htmlBuffer)
-	dir.WriteFile("actual.html", htmlBuffer.Bytes(), 0600)
+	dir.WriteFile("actual.html", []byte(htmlBuffer.String()), 0600)
 	if s := strings.TrimSpace(htmlBuffer.String()); s != strings.TrimSpace(string(htmlText)) {
 		t.Fatal("incorrect HTML, if the expected output has changed please copy actual.html to test.html", string(htmlText), s)
 	}

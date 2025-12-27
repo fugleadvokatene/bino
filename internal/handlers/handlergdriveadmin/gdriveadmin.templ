@@ -18,12 +18,25 @@ templ GDrivePage(
     homes []model.Home,
     predictedInviteIDs map[string]string,
     db *db.Database,
+    indexerState gdrive.IndexerState,
 ) {
     @templbase.Layout(data) {
         <h1>{data.Language.AdminManageGoogleDrive}</h1>
         @templbase.Card() {
+            @templbase.Form(data, "/gdrive/indexer", "POST") {
+                <label class="small" for="enabled">Indexer enabled</label>
+                <input type="checkbox" checked?={indexerState.Enabled} name="enabled">
+                <label class="small" for="max-per-round">Max documents created per round</label>
+                <input type="number" value={indexerState.MaxDocumentsCreatedPerRound} name="max-per-round">
+                <label class="small" for="minutes-between-rounds">Minutes between rounds</label>
+                <input type="number" value={indexerState.Interval.Minutes()} name="minutes-between-rounds">
+                <button type="submit" class={"btn btn-sm", "btn-primary"}>{data.Language.GenericUpdate}</button>
+            }
+        }
+
+        @templbase.Card() {
             <p>{data.Language.GDriveBaseDir} <a href={info.JournalFolder.FolderURL()}>{info.JournalFolder.Name}</a></p>
-            <p>{data.Language.GDriveTemplateFile} <a href={templ.URL(info.TemplateDoc.Item.DocumentURL())}>{info.TemplateDoc.Item.Name}</a></p>
+            <p>{data.Language.GDriveTemplateFile} <a href={templ.URL(info.TemplateItem.DocumentURL())}>{info.TemplateItem.Name}</a></p>
             if len(info.ExtraFolders) > 0 {
                 <p>{data.Language.GDriveExtraDirs}</p>
                 <ul>

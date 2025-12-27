@@ -3,6 +3,8 @@ package document
 import (
 	"fmt"
 	"io"
+	"log/slog"
+	"strings"
 
 	"github.com/fugleadvokatene/bino/internal/generic"
 	"google.golang.org/api/docs/v1"
@@ -15,12 +17,13 @@ type Document struct {
 	Content    []Element
 }
 
-func (d *Document) Markdown(w io.Writer) {
+func (d *Document) Markdown(w *strings.Builder) {
 	for _, elem := range d.Content {
 		elem.Value.Markdown(w)
 	}
 }
-func (d *Document) IndexableText(w io.Writer) {
+
+func (d *Document) IndexableText(w *strings.Builder) {
 	for _, elem := range d.Content {
 		elem.Value.IndexableText(w)
 		io.WriteString(w, "\n")
@@ -152,7 +155,7 @@ func parseParagraphElements(elements []*docs.ParagraphElement, inlineObjects map
 			}
 			continue
 		}
-		fmt.Printf("non-text and non-inlineobjectelement: %+v", elem)
+		slog.Warn("skipped non-text, non-inlineobjectelement", "elem", elem)
 	}
 	return out
 }

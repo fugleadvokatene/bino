@@ -7,6 +7,7 @@ import (
 	"log/slog"
 
 	dblib "github.com/fugleadvokatene/bino/internal/db"
+	"github.com/fugleadvokatene/bino/internal/generic"
 	"github.com/fugleadvokatene/bino/internal/model"
 	"github.com/fugleadvokatene/bino/internal/sql"
 )
@@ -64,7 +65,14 @@ func CreateImageVariants(
 		if err != nil {
 			return successfulConversions, fmt.Errorf("creating miniatures: %w", err)
 		}
-		slog.InfoContext(ctx, "Creating miniatures", "file", file.Filename, "miniatures", miniatures)
+		slog.InfoContext(
+			ctx,
+			"Creating miniatures",
+			"file", file.Filename,
+			"miniatures", generic.SliceToSlice(miniatures, func(in dblib.Miniature) model.FileVariantID {
+				return in.Variant
+			}),
+		)
 		if err := db.Transaction(ctx, func(ctx context.Context, db *dblib.Database) error {
 			for _, mini := range miniatures {
 				hash, err := db.Sha256File(ctx, db.MainRoot, file.Uuid, mini.VariantFilename)

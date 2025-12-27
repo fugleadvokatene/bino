@@ -5,14 +5,11 @@ import (
 )
 
 type Match struct {
-	URL           string
-	Type          MatchType
+	GoogleID      string
 	HeaderRuns    []HighlightRun
 	BodyFragments []HighlightFragment
 	Rank          float32
 	RankParts     map[string]float32
-
-	ExtraData string
 }
 
 type HighlightFragment struct {

@@ -48,15 +48,33 @@ func (q *Queries) GetJournalJSON(ctx context.Context, googleID string) (GetJourn
 }
 
 const upsertJournal = `-- name: UpsertJournal :exec
-INSERT INTO journal (google_id, updated, json, markdown, html)
-VALUES ($1, NOW(), $2, $3, $4)
+INSERT INTO journal (
+    google_id,
+    updated,
+    json,
+    lang,
+    header,
+    body,
+    markdown,
+    html
+)
+VALUES ($1, NOW(), $2, $3, $4, $5, $6, $7)
 ON CONFLICT (google_id) DO UPDATE
-    SET updated=NOW(), json=EXCLUDED.json, markdown=EXCLUDED.markdown, html=EXCLUDED.html
+    SET updated=NOW(),
+        json=EXCLUDED.json,
+        lang=EXCLUDED.lang,
+        header=EXCLUDED.header,
+        body=EXCLUDED.body,
+        markdown=EXCLUDED.markdown,
+        html=EXCLUDED.html
 `
 
 type UpsertJournalParams struct {
 	GoogleID string
 	Json     []byte
+	Lang     interface{}
+	Header   pgtype.Text
+	Body     pgtype.Text
 	Markdown pgtype.Text
 	Html     pgtype.Text
 }
@@ -65,6 +83,9 @@ func (q *Queries) UpsertJournal(ctx context.Context, arg UpsertJournalParams) er
 	_, err := q.db.Exec(ctx, upsertJournal,
 		arg.GoogleID,
 		arg.Json,
+		arg.Lang,
+		arg.Header,
+		arg.Body,
 		arg.Markdown,
 		arg.Html,
 	)

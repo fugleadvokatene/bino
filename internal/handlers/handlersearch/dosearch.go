@@ -44,13 +44,7 @@ func doSearch(r *http.Request, db *dblib.Database) (dblib.SearchResult, error) {
 	if err != nil {
 		page = 0
 	}
-	minCreated, maxCreated, minUpdated, maxUpdated := int64(0), int64(0), int64(0), int64(0)
-	if t, err := time.Parse(formValues["created-from"], time.DateOnly); err == nil {
-		minCreated = t.Unix()
-	}
-	if t, err := time.Parse(formValues["created-to"], time.DateOnly); err == nil {
-		maxCreated = t.Unix()
-	}
+	minUpdated, maxUpdated := int64(0), int64(0)
 	if t, err := time.Parse(formValues["updated-from"], time.DateOnly); err == nil {
 		minUpdated = t.Unix()
 	}
@@ -63,8 +57,6 @@ func doSearch(r *http.Request, db *dblib.Database) (dblib.SearchResult, error) {
 		Mode:           mode,
 		Page:           int32(page),
 		TimePreference: timePref,
-		MinCreated:     minCreated,
-		MaxCreated:     maxCreated,
 		MinUpdated:     minUpdated,
 		MaxUpdated:     maxUpdated,
 		DebugRank:      formValues["debug-rank"] != "",

@@ -3,8 +3,8 @@ package handlersearch
 import "github.com/fugleadvokatene/bino/internal/db"
 import "github.com/fugleadvokatene/bino/internal/model"
 import "github.com/fugleadvokatene/bino/internal/request"
-import "github.com/fugleadvokatene/bino/internal/sql"
 import "github.com/fugleadvokatene/bino/internal/templbase"
+import "github.com/fugleadvokatene/bino/internal/gdrive/url"
 
 templ SearchPage(data *request.CommonData, result db.SearchResult, fallbackMsg string) {
 	@templbase.Layout(data) {
@@ -71,17 +71,9 @@ templ SearchMatches(data *request.CommonData, result db.SearchResult, fallbackMs
                 <div class="card">
                     <div class="card-header match-header">
                         <div class="match-name">
-                            <a href={templ.URL(match.URL)}>
+                            <a href={templ.URL(url.IDToDocumentURL(match.GoogleID))}>
                                 @Runs(match.HeaderRuns, false)
                             </a>
-                        </div>
-                        <div class="match-meta">
-                            <div class="match-type d-flex justify-content-end">
-                                {data.Language.MatchType[match.Type]}
-                            </div>
-                            <div class="match-extra-info">
-                                @ExtraInfo(&match)
-                            </div>
                         </div>
                     </div>
                     <div>
@@ -129,22 +121,5 @@ templ RunComponent(r *model.HighlightRun) {
         <mark class="hl">{r.Text}</mark>
     } else {
         <span class="nohl">{r.Text}</span>
-    }
-}
-
-templ ExtraInfo(mv *model.Match) {
-    switch mv.Type {
-        case model.MatchTypePatient:
-            if info := sql.ParseJSON[db.SearchPatientInfo](mv.ExtraData); info != nil {
-                <span class="micro">
-                    <a href={templ.URL(info.JournalURL)}>Journal</a> i <a href={templ.URL(info.JournalInfo.FolderURL)}>{info.JournalInfo.FolderName}</a>
-                </span>
-            }
-        case model.MatchTypeJournal:
-            if info := sql.ParseJSON[db.SearchJournalInfo](mv.ExtraData); info != nil {
-                <span class="micro">
-                    <a href={templ.URL(info.FolderURL)}>{info.FolderName}</a>
-                </span>
-            }
     }
 }

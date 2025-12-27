@@ -1,74 +1,13 @@
--- name: UpsertSearchEntry :exec
-INSERT INTO search (ns, associated_url, created, updated, header, body, lang, extra_data, skipped)
-VALUES (
-    @namespace,
-    @associated_url,
-    @created,
-    @updated,
-    @header,
-    @body,
-    @lang,
-    @extra_data,
-    FALSE
-)
-ON CONFLICT (ns, associated_url) DO UPDATE SET
-    created        = EXCLUDED.created,
-    updated        = EXCLUDED.updated,
-    header         = EXCLUDED.header,
-    body           = EXCLUDED.body,
-    lang           = EXCLUDED.lang,
-    associated_url = EXCLUDED.associated_url,
-    extra_data     = EXCLUDED.extra_data,
-    skipped        = EXCLUDED.skipped
-;
-
--- name: UpsertSkippedSearchEntry :exec
-INSERT INTO search (ns, associated_url, created, updated, header, body, lang, extra_data, skipped)
-VALUES (
-  @namespace,
-  @associated_url,
-  @created,
-  @updated,
-  @header,
-  @body,
-  @lang,
-  @extra_data,
-  TRUE
-)
-ON CONFLICT (ns, associated_url) DO UPDATE SET
-    created        = EXCLUDED.created,
-    updated        = EXCLUDED.updated,
-    header         = EXCLUDED.header,
-    body           = EXCLUDED.body,
-    lang           = EXCLUDED.lang,
-    associated_url = EXCLUDED.associated_url,
-    extra_data     = EXCLUDED.extra_data,
-    skipped        = EXCLUDED.skipped
-;
-
--- name: UpdateSearchMetadata :execresult
-UPDATE search
-SET
-  extra_data = @extra_data,
-  created = @created,
-  updated = @updated,
-  header = @header
-WHERE ns = @namespace
-  AND associated_url = @associated_url
-;
-
--- name: DeleteSearchEntry :exec
+-- name: DeleteJournal :exec
 DELETE
-FROM search
-WHERE ns = @namespace
-  AND associated_url = @associated_url
+FROM journal
+WHERE google_id = @google_id
 ;
 
--- name: GetSearchUpdatedTime :one
+-- name: GetJournalUpdatedTime :one
 SELECT updated
-FROM search
-WHERE ns = @namespace
-  AND associated_url = @associated_url
+FROM journal
+WHERE google_id = @google_id
 ;
 
 -- name: SearchBasic :many
@@ -88,14 +27,11 @@ FROM (
     ts_headline(sqlc.arg('lang')::regconfig, s.header, q.qry, 'StartSel=[START],StopSel=[STOP],HighlightAll=true')::text AS header_headline,
     ts_headline(sqlc.arg('lang')::regconfig, s.body,   q.qry, 'StartSel=[START],StopSel=[STOP],MaxFragments=5,MinWords=3,MaxWords=10,FragmentDelimiter=[CUT]')::text AS body_headline,
     s.header,
-    s.ns,
-    s.associated_url,
-    s.created,
-    s.updated,
-    s.extra_data
-  FROM search s
+    s.google_id,
+    s.updated
+  FROM journal s
   CROSS JOIN q
-  WHERE search_match_basic(s, q.qry)
+  WHERE journal_match_basic(s, q.qry)
 ) i
 ORDER BY rank DESC
 LIMIT sqlc.arg('limit')
@@ -107,9 +43,9 @@ WITH q AS (
   SELECT websearch_to_tsquery(sqlc.arg('lang')::regconfig, sqlc.arg('query')::text) AS qry
 )
 SELECT COUNT(*)::int AS n
-FROM search s
+FROM journal s
 CROSS JOIN q
-WHERE search_match_basic(s, q.qry)
+WHERE journal_match_basic(s, q.qry)
 ;
 
 -- name: SearchAdvanced :many
@@ -129,6 +65,7 @@ SELECT
   )::real AS rank
 FROM (
   SELECT
+    s.google_id,
     (sqlc.arg('w_fts_header')::real   * ts_rank(s.fts_header, q.qry))::real AS r_fts_header,
     (sqlc.arg('w_fts_body')::real     * ts_rank(s.fts_body,   q.qry))::real AS r_fts_body,
     (sqlc.arg('w_sim_header')::real   * f.sim_header)::real                 AS r_sim_header,
@@ -140,12 +77,8 @@ FROM (
     COALESCE(s.body, '') AS body,
     ts_headline(sqlc.arg('lang')::regconfig, s.header, q.qry, 'StartSel=[START],StopSel=[STOP],HighlightAll=true')::text AS header_headline,
     ts_headline(sqlc.arg('lang')::regconfig, s.body,   q.qry, 'StartSel=[START],StopSel=[STOP],MaxFragments=5,MinWords=3,MaxWords=10,FragmentDelimiter=[CUT]')::text AS body_headline,
-    s.ns,
-    s.associated_url,
-    s.created,
-    s.updated,
-    s.extra_data
-  FROM search s
+    s.updated
+  FROM journal s
   CROSS JOIN q
   CROSS JOIN LATERAL (
     SELECT
@@ -158,13 +91,11 @@ FROM (
           (sqlc.arg('recency_half_life_days')::real * 86400.0)
       ) AS recency
   ) f
-  WHERE search_match_advanced(
+  WHERE journal_match_advanced(
     s,
     q.qry,
     sqlc.arg('query'),
     sqlc.arg('simthreshold')::real,
-    sqlc.narg('min_created')::timestamptz,
-    sqlc.narg('max_created')::timestamptz,
     sqlc.narg('min_updated')::timestamptz,
     sqlc.narg('max_updated')::timestamptz
   )
@@ -179,22 +110,18 @@ WITH q AS (
   SELECT websearch_to_tsquery(sqlc.arg('lang')::regconfig, sqlc.arg('query')::text) AS qry
 )
 SELECT COUNT(*)::int AS n
-FROM search s
+FROM journal s
 CROSS JOIN q
-WHERE search_match_advanced(
+WHERE journal_match_advanced(
   s,
   q.qry,
   sqlc.arg('query'),
   sqlc.arg('simthreshold')::real,
-  sqlc.narg('min_created')::timestamptz,
-  sqlc.narg('max_created')::timestamptz,
   sqlc.narg('min_updated')::timestamptz,
   sqlc.narg('max_updated')::timestamptz
 );
 
--- name: DeleteSearchEntriesByNamespaceAndURL :exec
-DELETE FROM search
-WHERE
-  (ns = @namespace)
-  AND (associated_url = @url)
+-- name: DeleteSearchEntriesByGoogleID :exec
+DELETE FROM journal
+WHERE google_id = @google_id
 ;

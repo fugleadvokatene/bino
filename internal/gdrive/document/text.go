@@ -31,7 +31,7 @@ const (
 	FlagLink          = (1 << 4)
 )
 
-func (dt *DocText) Markdown(w io.Writer) {
+func (dt *DocText) Markdown(w *strings.Builder) {
 	contentTrimmedRight := strings.TrimRight(dt.Content, "\r\n \t")
 	endSpace := ""
 	if len(contentTrimmedRight) < len(dt.Content) {
@@ -61,7 +61,7 @@ func (dt *DocText) Markdown(w io.Writer) {
 	io.WriteString(w, contentTrimmedRight)
 }
 
-func (dt *DocText) IndexableText(w io.Writer) {
+func (dt *DocText) IndexableText(w *strings.Builder) {
 	io.WriteString(w, dt.Trim())
 }
 

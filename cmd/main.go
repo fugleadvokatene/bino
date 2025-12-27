@@ -102,18 +102,18 @@ func realMain() error {
 	}
 	defer db.Close()
 
-	// Set up Google Drive client
-	gdriveClient, err := gdrive.NewClient(ctx, config.GoogleDrive, db)
-	if err != nil {
-		return fmt.Errorf("setting up google drive client: %w", err)
-	}
-	gdriveWorker := gdrive.NewWorker(ctx, config.GoogleDrive, gdriveClient)
-
 	// Set up broker
 	broker := sse.NewBroker(ctx)
 
 	// Start all background jobs
 	jobs := background.StartJobs(ctx, db, config.SystemLanguage, &config.Security)
+
+	// Set up Google Drive client
+	gdriveClient, err := gdrive.NewClient(ctx, config.GoogleDrive, db)
+	if err != nil {
+		return fmt.Errorf("setting up google drive client: %w", err)
+	}
+	gdriveWorker := gdrive.NewWorker(ctx, config.GoogleDrive, gdriveClient, &jobs)
 
 	// Set up authentication
 	authenticator, err := auth.New(ctx, config.Auth, db)
@@ -148,7 +148,7 @@ func realMain() error {
 		handlerhome.Routes(db),
 		handlerhomeadmin.Routes(db),
 		handlerlanguage.Routes(db),
-		handlerpatient.Routes(db, gdriveWorker, config, &jobs),
+		handlerpatient.Routes(db, gdriveWorker, config),
 		handlerprivacy.Routes(db, config.Privacy),
 		handlersearch.Routes(db),
 		handlerspeciesadmin.Routes(db),

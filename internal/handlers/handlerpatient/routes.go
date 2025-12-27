@@ -1,7 +1,6 @@
 package handlerpatient
 
 import (
-	"github.com/fugleadvokatene/bino/internal/background"
 	"github.com/fugleadvokatene/bino/internal/config"
 	"github.com/fugleadvokatene/bino/internal/db"
 	"github.com/fugleadvokatene/bino/internal/gdrive"
@@ -13,7 +12,6 @@ func Routes(
 	db *db.Database,
 	gdriveWorker *gdrive.Worker,
 	config *config.Config,
-	jobs *background.Jobs,
 ) []route.Route {
 	return []route.Route{
 		{
@@ -68,7 +66,7 @@ func Routes(
 		},
 		{
 			Path:    "POST /patient/{patient}/fetch-journal",
-			Handler: &fetchJournal{DB: db, GDriveWorker: gdriveWorker, Config: config, Jobs: jobs},
+			Handler: &fetchJournal{DB: db, GDriveWorker: gdriveWorker, Config: config},
 			Cap:     model.CapManageOwnPatients,
 		},
 	}

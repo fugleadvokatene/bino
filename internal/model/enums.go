@@ -53,6 +53,7 @@ type Availability int
 // ManageFeatureFlags,
 // HardDeletePatient,
 // Live,
+// SetIndexerState,
 // )
 type Cap int32
 
@@ -99,6 +100,8 @@ func (fbt FB) CSSClass() string {
 //	ListFiles,
 //	UpdateJournal,
 //	GetDocument,
+//	GetIndexerState,
+//	SetIndexerState,
 //
 // )
 type GDriveTaskRequestID int
@@ -110,12 +113,6 @@ type GDriveTaskRequestID int
 //
 // )
 type LanguageID int32
-
-// ENUM(
-// journal,
-// patient,
-// )
-type MatchType string
 
 // ENUM(
 //

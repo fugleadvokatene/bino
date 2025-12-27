@@ -1,5 +1,7 @@
 package gdrive
 
+import "github.com/fugleadvokatene/bino/internal/gdrive/document"
+
 type Config struct {
 	ServiceAccountKeyLocation string
 	DriveBase                 string
@@ -10,6 +12,7 @@ type Config struct {
 
 type ConfigInfo struct {
 	JournalFolder Item
-	TemplateDoc   Journal
+	TemplateItem  Item
+	TemplateDoc   document.Document
 	ExtraFolders  []Item
 }

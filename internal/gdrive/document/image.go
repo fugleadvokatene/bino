@@ -2,7 +2,7 @@ package document
 
 import (
 	"fmt"
-	"io"
+	"strings"
 
 	"google.golang.org/api/docs/v1"
 )
@@ -26,14 +26,14 @@ func (di *DocImage) Scale() float64 {
 	)
 }
 
-func (di *DocImage) Markdown(w io.Writer) {
+func (di *DocImage) Markdown(w *strings.Builder) {
 	if di == nil {
 		return
 	}
 	fmt.Fprintf(w, "![%s %s](%s)\n", di.Title, di.Description, di.URL)
 }
 
-func (*DocImage) IndexableText(io.Writer) {
+func (*DocImage) IndexableText(*strings.Builder) {
 }
 
 func (di *DocImage) Images() []*DocImage {

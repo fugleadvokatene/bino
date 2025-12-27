@@ -1,7 +1,6 @@
 package db
 
 import (
-	"fmt"
 	"time"
 
 	"github.com/fugleadvokatene/bino/internal/model"
@@ -18,37 +17,9 @@ type SearchQuery struct {
 	Query          string
 	TimePreference model.TimePreference
 	Page           int32
-	MinCreated     int64
-	MaxCreated     int64
 	MinUpdated     int64
 	MaxUpdated     int64
 	DebugRank      bool
-}
-
-type SearchSkipInfo struct {
-	Reason string
-}
-
-type SearchJournalInfo struct {
-	FolderURL  string
-	FolderName string
-}
-
-func (sji *SearchJournalInfo) IndexableText() string {
-	return fmt.Sprintf(`
-
-FolderName = %s
-
-`, sji.FolderName)
-}
-
-type SearchPatientInfo struct {
-	JournalInfo SearchJournalInfo
-	JournalURL  string
-}
-
-func (spi *SearchPatientInfo) IndexableText() string {
-	return spi.JournalInfo.IndexableText()
 }
 
 func NewBasicSearchParams(q SearchQuery) sql.SearchBasicParams {
@@ -87,8 +58,6 @@ func NewSearchAdvancedParams(q SearchQuery) sql.SearchAdvancedParams {
 		RecencyHalfLifeDays: 60,
 		Offset:              q.Page * PageSize,
 		Limit:               PageSize,
-		MinCreated:          pgtype.Timestamptz{Time: time.Unix(q.MinCreated, 0), Valid: q.MinCreated > 0},
-		MaxCreated:          pgtype.Timestamptz{Time: time.Unix(q.MaxCreated, 0), Valid: q.MaxCreated > 0},
 		MinUpdated:          pgtype.Timestamptz{Time: time.Unix(q.MinUpdated, 0), Valid: q.MinUpdated > 0},
 		MaxUpdated:          pgtype.Timestamptz{Time: time.Unix(q.MaxUpdated, 0), Valid: q.MaxUpdated > 0},
 	}

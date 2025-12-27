@@ -222,9 +222,8 @@ type Language struct {
 
 	WikiHeader string
 
-	Status    map[model.Status]string
-	Event     map[model.EventID]string
-	MatchType map[model.MatchType]string
+	Status map[model.Status]string
+	Event  map[model.EventID]string
 
 	CapabilitiesExplanation       string
 	CapabilitiesYourAccessLevelIs string
@@ -614,11 +613,6 @@ var NO = &Language{
 		model.EventIDSpeciesChanged:                 "Endret art",
 	},
 
-	MatchType: map[model.MatchType]string{
-		model.MatchTypeJournal: "📝 Journal",
-		model.MatchTypePatient: "❤️‍🩹 Pasient",
-	},
-
 	CapabilitiesLink:              "Les om brukertilganger i Bino",
 	CapabilitiesHeader:            "Brukertilganger",
 	CapabilitiesYourAccessLevelIs: "Ditt tilgangsnivå er: ",
@@ -921,11 +915,6 @@ var EN = &Language{
 		model.EventIDJournalAttached:                "Linked journal",
 		model.EventIDJournalDetached:                "Unlinked journal",
 		model.EventIDSpeciesChanged:                 "Changed species",
-	},
-
-	MatchType: map[model.MatchType]string{
-		model.MatchTypeJournal: "📝 Journal",
-		model.MatchTypePatient: "❤️‍🩹 Patient",
 	},
 
 	CapabilitiesHeader:            "Access levels and capabilities",

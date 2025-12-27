@@ -18,6 +18,11 @@ func Routes(
 			Cap:     model.CapViewGDriveSettings,
 		},
 		{
+			Path:    "POST /gdrive/indexer",
+			Handler: &setIndexerState{Worker: worker, DB: db},
+			Cap:     model.CapSetIndexerState,
+		},
+		{
 			Path:    "POST /gdrive/invite/{email}",
 			Handler: &invite{Worker: worker},
 			Cap:     model.CapInviteToGDrive,

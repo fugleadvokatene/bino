@@ -2,6 +2,7 @@ package document
 
 import (
 	"io"
+	"strings"
 
 	"github.com/fugleadvokatene/bino/internal/generic"
 )
@@ -16,7 +17,7 @@ func (li *List) Images() []*DocImage {
 	return generic.Flatten(li.Items, func(in Element) []*DocImage { return in.Value.Images() })
 }
 
-func (dt *List) Markdown(w io.Writer) {
+func (dt *List) Markdown(w *strings.Builder) {
 	for _, elem := range dt.Items {
 		for range dt.Nesting {
 			io.WriteString(w, "  ")
@@ -28,7 +29,7 @@ func (dt *List) Markdown(w io.Writer) {
 	}
 }
 
-func (dt *List) IndexableText(w io.Writer) {
+func (dt *List) IndexableText(w *strings.Builder) {
 	for _, item := range dt.Items {
 		item.Value.IndexableText(w)
 		io.WriteString(w, "\n")

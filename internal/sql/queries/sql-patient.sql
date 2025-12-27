@@ -44,7 +44,7 @@ ORDER BY p.curr_home_id, p.sort_order, p.id
 
 -- name: SuggestJournal :exec
 UPDATE patient
-SET suggested_google_id = @url, suggested_journal_title = @title
+SET suggested_google_id = @google_id, suggested_journal_title = @title
 WHERE id = @id
 ;
 

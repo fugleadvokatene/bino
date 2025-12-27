@@ -30,7 +30,6 @@ templ (img *DocImage) Templ() {
         <img
             src={img.URL + "?variant=Medium"}
             class="user-image dark-on-hover"
-            style={fmt.Sprintf("--top: %f; --right: %f; --bottom: %f; --left: %f; --scale: %f", img.Crop[0], img.Crop[1], img.Crop[2], img.Crop[3], img.Scale())}
         />
     </a>
 }

@@ -637,13 +637,13 @@ WHERE id = $3
 `
 
 type SuggestJournalParams struct {
-	Url   pgtype.Text
-	Title pgtype.Text
-	ID    int32
+	GoogleID pgtype.Text
+	Title    pgtype.Text
+	ID       int32
 }
 
 func (q *Queries) SuggestJournal(ctx context.Context, arg SuggestJournalParams) error {
-	_, err := q.db.Exec(ctx, suggestJournal, arg.Url, arg.Title, arg.ID)
+	_, err := q.db.Exec(ctx, suggestJournal, arg.GoogleID, arg.Title, arg.ID)
 	return err
 }
 

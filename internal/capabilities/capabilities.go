@@ -38,6 +38,7 @@ var RequiredAccessLevel = map[model.Cap]model.AccessLevel{
 	model.CapDebug:              model.AccessLevelAdmin,
 	model.CapManageFeatureFlags: model.AccessLevelAdmin,
 	model.CapHardDeletePatient:  model.AccessLevelAdmin,
+	model.CapSetIndexerState:    model.AccessLevelAdmin,
 }
 
 var AccessLevelToCapabilities = func() (out struct {

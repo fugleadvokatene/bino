@@ -216,11 +216,9 @@ func (in *SearchBasicRow) ToModel() model.Match {
 	bodyRuns := model.ParseHeadline(in.BodyHeadline)
 
 	return model.Match{
-		URL:           in.AssociatedUrl.String,
-		Type:          model.MatchType(in.Ns),
+		GoogleID:      in.GoogleID,
 		HeaderRuns:    headerRuns,
 		BodyFragments: model.SplitFragments(bodyRuns),
-		ExtraData:     in.ExtraData.String,
 		Rank:          in.Rank,
 	}
 }
@@ -237,11 +235,9 @@ func (in *SearchAdvancedRow) ToModel(q string) model.Match {
 	}
 
 	return model.Match{
-		URL:           in.AssociatedUrl.String,
-		Type:          model.MatchType(in.Ns),
+		GoogleID:      in.GoogleID,
 		HeaderRuns:    headerRuns,
 		BodyFragments: model.SplitFragments(bodyRuns),
-		ExtraData:     in.ExtraData.String,
 		Rank:          in.Rank,
 		RankParts: map[string]float32{
 			"FTSBody":     in.RFtsBody,

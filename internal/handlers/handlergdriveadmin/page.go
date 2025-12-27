@@ -37,7 +37,9 @@ func (h *page) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		predictedInviteIDs[p.Email] = closest(p.Email, homeNames)
 	}
 
-	GDrivePage(ctx, commonData, info, homes, predictedInviteIDs, h.DB).Render(ctx, w)
+	indexerState, _ := h.Worker.GetIndexerState()
+
+	GDrivePage(ctx, commonData, info, homes, predictedInviteIDs, h.DB, indexerState).Render(ctx, w)
 }
 
 func closest(email string, names []string) string {

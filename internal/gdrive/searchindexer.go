@@ -2,33 +2,55 @@ package gdrive
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"log"
 	"log/slog"
-	"strings"
 	"time"
 
-	"github.com/fugleadvokatene/bino/internal/db"
-	"github.com/fugleadvokatene/bino/internal/model"
-	"github.com/fugleadvokatene/bino/internal/sql"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
+type IndexerState struct {
+	Enabled                     bool
+	MaxDocumentsCreatedPerRound int
+	Interval                    time.Duration
+}
+
 func (w *Worker) searchIndexWorker(ctx context.Context) {
 	for {
-		w.searchIndexAll(ctx)
-		time.Sleep(time.Minute * 10)
+		var n int
+		if w.indexerState.Enabled {
+			n = w.searchIndexAll(ctx)
+		}
+
+		sleepTime := w.indexerState.Interval
+		if sleepTime < time.Second {
+			sleepTime = time.Second
+		}
+
+		if w.indexerState.Enabled {
+			slog.InfoContext(ctx, "Indexer done", "n created", n, "time to next", sleepTime)
+		}
+
+		time.Sleep(sleepTime)
 	}
 }
 
-func (w *Worker) searchIndexAll(ctx context.Context) {
-	w.searchIndexFolder(ctx, w.cfg.JournalFolder)
-	for _, folder := range w.cfg.ExtraJournalFolders {
-		w.searchIndexFolder(ctx, folder)
+func (w *Worker) searchIndexAll(ctx context.Context) int {
+	created := 0
+	w.searchIndexFolder(ctx, w.cfg.JournalFolder, &created)
+	if created >= w.indexerState.MaxDocumentsCreatedPerRound {
+		return created
 	}
+	for _, folder := range w.cfg.ExtraJournalFolders {
+		w.searchIndexFolder(ctx, folder, &created)
+		if created >= w.indexerState.MaxDocumentsCreatedPerRound {
+			return created
+		}
+	}
+	return created
 }
 
 func (w *Worker) listFiles(ctx context.Context, folderID string, pageToken string) (ListFilesResult, error) {
@@ -46,7 +68,7 @@ func (w *Worker) listFiles(ctx context.Context, folderID string, pageToken strin
 	}, nil
 }
 
-func (w *Worker) searchIndexFolder(ctx context.Context, folderID string) {
+func (w *Worker) searchIndexFolder(ctx context.Context, folderID string, created *int) {
 	pageToken := ""
 	for {
 		res, err := w.listFiles(ctx, folderID, pageToken)
@@ -56,8 +78,14 @@ func (w *Worker) searchIndexFolder(ctx context.Context, folderID string) {
 		}
 
 		for _, file := range res.Files {
-			if err := w.searchIndexFile(ctx, res.Folder, file); err != nil {
+			if didCreate, err := w.searchIndexFile(ctx, res.Folder, file); err != nil {
 				slog.Warn("Error converting file", "name", file.Name, "err", err)
+			} else if didCreate {
+				*created++
+				slog.InfoContext(ctx, "Journal created", "title", file.Name, "created this round", *created)
+				if *created > w.indexerState.MaxDocumentsCreatedPerRound {
+					return
+				}
 			}
 		}
 
@@ -68,159 +96,34 @@ func (w *Worker) searchIndexFolder(ctx context.Context, folderID string) {
 	}
 }
 
-func (w *Worker) searchIndexFile(ctx context.Context, folder, file Item) error {
-	// Initialize to be used in the extraData field
-	journalInfo := db.SearchJournalInfo{
-		FolderURL:  string(folder.FolderURL()),
-		FolderName: folder.Name,
-	}
-
-	// Get info
-	info, err := w.getSearchIndexInfo(ctx, file, journalInfo)
-	if err != nil {
-		return fmt.Errorf("fetching info for patient: %w", err)
-	}
-
-	// Delete trashed files
-	if file.Trashed {
-		if info.didSearchEntryExist() {
-			if err := w.g.DB.Q.DeleteSearchEntry(ctx, sql.DeleteSearchEntryParams{
-				Namespace:     info.namespace,
-				AssociatedUrl: info.urlField,
-			}); err != nil {
-				return fmt.Errorf("deleting search query: %w", err)
-			}
-		}
-		return nil
-	}
-
-	// If search-entry is synced, only update extra-data
-	if info.didSearchEntryExist() && !file.ModifiedTime.After(info.dbUpdatedField.Time) {
-		if info.extraDataField.Valid {
-			tag, err := w.g.DB.Q.UpdateSearchMetadata(ctx, sql.UpdateSearchMetadataParams{
-				Namespace:     info.namespace,
-				AssociatedUrl: info.urlField,
-				ExtraData:     info.extraDataField,
-				Created:       info.createdField,
-				Updated:       info.dbUpdatedField,
-				Header:        info.headerField,
-			})
-			if err != nil || tag.RowsAffected() == 0 {
-				log.Printf("%s: updating extra data: err=%v", file.Name, err)
-			}
-		}
-		return nil
-	}
-
-	// Read the document
-	journal, err := w.g.ExportDocument(file.ID)
-	if err != nil {
-		// On failure, create a skipped entry. It won't show up in search, but we also won't try to read the document later.
-		if err := w.g.DB.Q.UpsertSkippedSearchEntry(ctx, sql.UpsertSkippedSearchEntryParams{
-			Namespace:     info.namespace,
-			AssociatedUrl: info.urlField,
-			Updated:       info.fileUpdatedField,
-			Created:       info.createdField,
-			Header:        info.headerField,
-			Lang:          info.language,
-			ExtraData:     info.extraDataField,
-
-			Body: pgtype.Text{String: info.extraDataText, Valid: true},
-		}); err != nil {
-			return fmt.Errorf("creating skipped entry: %w", err)
-		}
-		return fmt.Errorf("%w (created skipped entry)", err)
-	}
-
-	// Create valid search entry
-	if err := w.g.DB.Q.UpsertSearchEntry(ctx, sql.UpsertSearchEntryParams{
-		Namespace:     info.namespace,
-		AssociatedUrl: info.urlField,
-		Updated:       info.fileUpdatedField,
-		Created:       info.createdField,
-		Header:        info.headerField,
-		Lang:          info.language,
-		ExtraData:     info.extraDataField,
-
-		Body: pgtype.Text{String: journal.Content + info.extraDataText, Valid: true},
-	}); err != nil {
-		return fmt.Errorf("creating entry: %w", err)
-	}
-
-	slog.Info("Added search entry", "Header", info.headerField)
-
-	return nil
-}
-
-type searchIndexInfo struct {
-	namespace        string
-	urlField         pgtype.Text
-	extraDataText    string
-	extraDataField   pgtype.Text
-	dbUpdatedField   pgtype.Timestamptz
-	fileUpdatedField pgtype.Timestamptz
-	createdField     pgtype.Timestamptz
-	headerField      pgtype.Text
-	language         string
-}
-
-func (sii *searchIndexInfo) didSearchEntryExist() bool {
-	return sii.dbUpdatedField.Valid
-}
-
-func (w *Worker) getSearchIndexInfo(ctx context.Context, file Item, journalInfo db.SearchJournalInfo) (searchIndexInfo, error) {
-	var out searchIndexInfo
-
-	// See if there are existing patients
-	ids, err := w.g.DB.Q.GetPatientsByJournalURL(ctx, file.ID)
-	if err != nil {
-		return searchIndexInfo{}, fmt.Errorf("querying patients by journal URL: %w", err)
-	}
-
-	// Extract data that is polymorphic on whether we have a patient or not
-	var extraData interface{ IndexableText() string }
-	extraData = &journalInfo
-	out.namespace = "journal"
-	out.urlField.String = file.DocumentURL()
-	out.urlField.Valid = true
-	if len(ids) == 1 {
-		out.namespace = "patient"
-		out.urlField.String = model.PatientURL(ids[0])
-		extraData = &db.SearchPatientInfo{
-			JournalInfo: journalInfo,
-			JournalURL:  file.DocumentURL(),
-		}
-	}
-
-	// Serialize extradata
-	out.extraDataText = extraData.IndexableText()
-	if extraDataStr, err := json.Marshal(extraData); err == nil {
-		out.extraDataField = pgtype.Text{String: string(extraDataStr), Valid: true}
-	} else {
-		log.Printf("Marshalling extraData for %s: %v", file.Name, err)
-	}
-
+func (w *Worker) searchIndexFile(ctx context.Context, folder, file Item) (bool, error) {
 	// Get updated-time
-	if updatedField, err := w.g.DB.Q.GetSearchUpdatedTime(ctx, sql.GetSearchUpdatedTimeParams{
-		Namespace:     out.namespace,
-		AssociatedUrl: out.urlField,
-	}); err == nil {
-		out.dbUpdatedField = updatedField
+	var updated pgtype.Timestamptz
+	if result, err := w.g.DB.Q.GetJournalUpdatedTime(ctx, file.ID); err == nil {
+		updated = result
 	} else if !errors.Is(err, pgx.ErrNoRows) {
 		log.Printf("Getting update time for %s: %v", file.Name, err)
 	}
 
-	// If the file name starts with a date, override the created-time to that date
-	out.createdField = pgtype.Timestamptz{Time: file.CreatedTime, Valid: true}
-	if fields := strings.Fields(file.Name); len(fields) > 0 {
-		if t, err := time.Parse(time.DateOnly, fields[0]); err == nil {
-			out.createdField = pgtype.Timestamptz{Time: t, Valid: true}
+	// Delete trashed files
+	if file.Trashed {
+		if updated.Valid {
+			if err := w.g.DB.Q.DeleteJournal(ctx, file.ID); err != nil {
+				return false, fmt.Errorf("deleting search query: %w", err)
+			}
 		}
+		return false, nil
 	}
 
-	out.fileUpdatedField = pgtype.Timestamptz{Time: file.ModifiedTime, Valid: !file.ModifiedTime.IsZero()}
-	out.headerField = pgtype.Text{String: file.Name, Valid: true}
-	out.language = "norwegian"
+	// If search-entry is synced, don't do anything
+	if updated.Valid && !file.ModifiedTime.After(updated.Time) {
+		return false, nil
+	}
 
-	return out, nil
+	go func() {
+		if err := w.FetchJournal(file.ID); err != nil {
+			slog.ErrorContext(ctx, "Error fetching journal", "err", err, "name", file.Name)
+		}
+	}()
+	return true, nil
 }

@@ -6,7 +6,6 @@ import (
 	"log"
 	"log/slog"
 
-	"github.com/fugleadvokatene/bino/internal/gdrive/url"
 	"github.com/fugleadvokatene/bino/internal/model"
 	"github.com/fugleadvokatene/bino/internal/sql"
 	"github.com/jackc/pgx/v5/pgtype"
@@ -44,13 +43,11 @@ func (db *Database) SuggestJournalBasedOnSearch(ctx context.Context, id int32, n
 		return err
 	} else if len(results) == 0 {
 		return fmt.Errorf("no results")
-	} else if baseURL := url.JournalRegex.FindString(results[0].AssociatedUrl.String); baseURL != "" {
-		return db.Q.SuggestJournal(ctx, sql.SuggestJournalParams{
-			Url:   pgtype.Text{String: baseURL, Valid: true},
-			Title: pgtype.Text{String: results[0].Header.String, Valid: true},
-			ID:    id,
-		})
 	} else {
-		return fmt.Errorf("invalid journal URL '%s'", results[0].AssociatedUrl.String)
+		return db.Q.SuggestJournal(ctx, sql.SuggestJournalParams{
+			GoogleID: pgtype.Text{String: results[0].GoogleID, Valid: true},
+			Title:    pgtype.Text{String: results[0].Header.String, Valid: true},
+			ID:       id,
+		})
 	}
 }

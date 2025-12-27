@@ -8,58 +8,38 @@ package sql
 import (
 	"context"
 
-	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
-const deleteSearchEntriesByNamespaceAndURL = `-- name: DeleteSearchEntriesByNamespaceAndURL :exec
-DELETE FROM search
-WHERE
-  (ns = $1)
-  AND (associated_url = $2)
-`
-
-type DeleteSearchEntriesByNamespaceAndURLParams struct {
-	Namespace string
-	Url       pgtype.Text
-}
-
-func (q *Queries) DeleteSearchEntriesByNamespaceAndURL(ctx context.Context, arg DeleteSearchEntriesByNamespaceAndURLParams) error {
-	_, err := q.db.Exec(ctx, deleteSearchEntriesByNamespaceAndURL, arg.Namespace, arg.Url)
-	return err
-}
-
-const deleteSearchEntry = `-- name: DeleteSearchEntry :exec
+const deleteJournal = `-- name: DeleteJournal :exec
 DELETE
-FROM search
-WHERE ns = $1
-  AND associated_url = $2
+FROM journal
+WHERE google_id = $1
 `
 
-type DeleteSearchEntryParams struct {
-	Namespace     string
-	AssociatedUrl pgtype.Text
-}
-
-func (q *Queries) DeleteSearchEntry(ctx context.Context, arg DeleteSearchEntryParams) error {
-	_, err := q.db.Exec(ctx, deleteSearchEntry, arg.Namespace, arg.AssociatedUrl)
+func (q *Queries) DeleteJournal(ctx context.Context, googleID string) error {
+	_, err := q.db.Exec(ctx, deleteJournal, googleID)
 	return err
 }
 
-const getSearchUpdatedTime = `-- name: GetSearchUpdatedTime :one
-SELECT updated
-FROM search
-WHERE ns = $1
-  AND associated_url = $2
+const deleteSearchEntriesByGoogleID = `-- name: DeleteSearchEntriesByGoogleID :exec
+DELETE FROM journal
+WHERE google_id = $1
 `
 
-type GetSearchUpdatedTimeParams struct {
-	Namespace     string
-	AssociatedUrl pgtype.Text
+func (q *Queries) DeleteSearchEntriesByGoogleID(ctx context.Context, googleID string) error {
+	_, err := q.db.Exec(ctx, deleteSearchEntriesByGoogleID, googleID)
+	return err
 }
 
-func (q *Queries) GetSearchUpdatedTime(ctx context.Context, arg GetSearchUpdatedTimeParams) (pgtype.Timestamptz, error) {
-	row := q.db.QueryRow(ctx, getSearchUpdatedTime, arg.Namespace, arg.AssociatedUrl)
+const getJournalUpdatedTime = `-- name: GetJournalUpdatedTime :one
+SELECT updated
+FROM journal
+WHERE google_id = $1
+`
+
+func (q *Queries) GetJournalUpdatedTime(ctx context.Context, googleID string) (pgtype.Timestamptz, error) {
+	row := q.db.QueryRow(ctx, getJournalUpdatedTime, googleID)
 	var updated pgtype.Timestamptz
 	err := row.Scan(&updated)
 	return updated, err
@@ -70,7 +50,7 @@ WITH q AS (
   SELECT websearch_to_tsquery($8::regconfig, $9::text) AS qry
 )
 SELECT
-  i.r_fts_header, i.r_fts_body, i.r_sim_header, i.r_sim_body, i.r_ilike_header, i.r_ilike_body, i.r_recency, i.header, i.body, i.header_headline, i.body_headline, i.ns, i.associated_url, i.created, i.updated, i.extra_data,
+  i.google_id, i.r_fts_header, i.r_fts_body, i.r_sim_header, i.r_sim_body, i.r_ilike_header, i.r_ilike_body, i.r_recency, i.header, i.body, i.header_headline, i.body_headline, i.updated,
   (
       i.r_fts_header
     + i.r_fts_body
@@ -82,6 +62,7 @@ SELECT
   )::real AS rank
 FROM (
   SELECT
+    s.google_id,
     ($1::real   * ts_rank(s.fts_header, q.qry))::real AS r_fts_header,
     ($2::real     * ts_rank(s.fts_body,   q.qry))::real AS r_fts_body,
     ($3::real   * f.sim_header)::real                 AS r_sim_header,
@@ -93,12 +74,8 @@ FROM (
     COALESCE(s.body, '') AS body,
     ts_headline($8::regconfig, s.header, q.qry, 'StartSel=[START],StopSel=[STOP],HighlightAll=true')::text AS header_headline,
     ts_headline($8::regconfig, s.body,   q.qry, 'StartSel=[START],StopSel=[STOP],MaxFragments=5,MinWords=3,MaxWords=10,FragmentDelimiter=[CUT]')::text AS body_headline,
-    s.ns,
-    s.associated_url,
-    s.created,
-    s.updated,
-    s.extra_data
-  FROM search s
+    s.updated
+  FROM journal s
   CROSS JOIN q
   CROSS JOIN LATERAL (
     SELECT
@@ -111,20 +88,18 @@ FROM (
           ($10::real * 86400.0)
       ) AS recency
   ) f
-  WHERE search_match_advanced(
+  WHERE journal_match_advanced(
     s,
     q.qry,
     $9,
     $11::real,
     $12::timestamptz,
-    $13::timestamptz,
-    $14::timestamptz,
-    $15::timestamptz
+    $13::timestamptz
   )
 ) i
 ORDER BY rank DESC
-LIMIT $17
-OFFSET $16
+LIMIT $15
+OFFSET $14
 `
 
 type SearchAdvancedParams struct {
@@ -139,8 +114,6 @@ type SearchAdvancedParams struct {
 	Query               string
 	RecencyHalfLifeDays float32
 	Simthreshold        float32
-	MinCreated          pgtype.Timestamptz
-	MaxCreated          pgtype.Timestamptz
 	MinUpdated          pgtype.Timestamptz
 	MaxUpdated          pgtype.Timestamptz
 	Offset              int32
@@ -148,6 +121,7 @@ type SearchAdvancedParams struct {
 }
 
 type SearchAdvancedRow struct {
+	GoogleID       string
 	RFtsHeader     float32
 	RFtsBody       float32
 	RSimHeader     float32
@@ -159,11 +133,7 @@ type SearchAdvancedRow struct {
 	Body           string
 	HeaderHeadline string
 	BodyHeadline   string
-	Ns             string
-	AssociatedUrl  pgtype.Text
-	Created        pgtype.Timestamptz
 	Updated        pgtype.Timestamptz
-	ExtraData      pgtype.Text
 	Rank           float32
 }
 
@@ -180,8 +150,6 @@ func (q *Queries) SearchAdvanced(ctx context.Context, arg SearchAdvancedParams) 
 		arg.Query,
 		arg.RecencyHalfLifeDays,
 		arg.Simthreshold,
-		arg.MinCreated,
-		arg.MaxCreated,
 		arg.MinUpdated,
 		arg.MaxUpdated,
 		arg.Offset,
@@ -195,6 +163,7 @@ func (q *Queries) SearchAdvanced(ctx context.Context, arg SearchAdvancedParams) 
 	for rows.Next() {
 		var i SearchAdvancedRow
 		if err := rows.Scan(
+			&i.GoogleID,
 			&i.RFtsHeader,
 			&i.RFtsBody,
 			&i.RSimHeader,
@@ -206,11 +175,7 @@ func (q *Queries) SearchAdvanced(ctx context.Context, arg SearchAdvancedParams) 
 			&i.Body,
 			&i.HeaderHeadline,
 			&i.BodyHeadline,
-			&i.Ns,
-			&i.AssociatedUrl,
-			&i.Created,
 			&i.Updated,
-			&i.ExtraData,
 			&i.Rank,
 		); err != nil {
 			return nil, err
@@ -225,28 +190,24 @@ func (q *Queries) SearchAdvanced(ctx context.Context, arg SearchAdvancedParams) 
 
 const searchAdvancedCount = `-- name: SearchAdvancedCount :one
 WITH q AS (
-  SELECT websearch_to_tsquery($7::regconfig, $1::text) AS qry
+  SELECT websearch_to_tsquery($5::regconfig, $1::text) AS qry
 )
 SELECT COUNT(*)::int AS n
-FROM search s
+FROM journal s
 CROSS JOIN q
-WHERE search_match_advanced(
+WHERE journal_match_advanced(
   s,
   q.qry,
   $1,
   $2::real,
   $3::timestamptz,
-  $4::timestamptz,
-  $5::timestamptz,
-  $6::timestamptz
+  $4::timestamptz
 )
 `
 
 type SearchAdvancedCountParams struct {
 	Query        string
 	Simthreshold float32
-	MinCreated   pgtype.Timestamptz
-	MaxCreated   pgtype.Timestamptz
 	MinUpdated   pgtype.Timestamptz
 	MaxUpdated   pgtype.Timestamptz
 	Lang         string
@@ -256,8 +217,6 @@ func (q *Queries) SearchAdvancedCount(ctx context.Context, arg SearchAdvancedCou
 	row := q.db.QueryRow(ctx, searchAdvancedCount,
 		arg.Query,
 		arg.Simthreshold,
-		arg.MinCreated,
-		arg.MaxCreated,
 		arg.MinUpdated,
 		arg.MaxUpdated,
 		arg.Lang,
@@ -272,7 +231,7 @@ WITH q AS (
   SELECT websearch_to_tsquery($3::regconfig, $6::text) AS qry
 )
 SELECT
-  i.r_fts_header, i.r_fts_body, i.header_headline, i.body_headline, i.header, i.ns, i.associated_url, i.created, i.updated, i.extra_data,
+  i.r_fts_header, i.r_fts_body, i.header_headline, i.body_headline, i.header, i.google_id, i.updated,
   (
       i.r_fts_header
     + i.r_fts_body
@@ -284,14 +243,11 @@ FROM (
     ts_headline($3::regconfig, s.header, q.qry, 'StartSel=[START],StopSel=[STOP],HighlightAll=true')::text AS header_headline,
     ts_headline($3::regconfig, s.body,   q.qry, 'StartSel=[START],StopSel=[STOP],MaxFragments=5,MinWords=3,MaxWords=10,FragmentDelimiter=[CUT]')::text AS body_headline,
     s.header,
-    s.ns,
-    s.associated_url,
-    s.created,
-    s.updated,
-    s.extra_data
-  FROM search s
+    s.google_id,
+    s.updated
+  FROM journal s
   CROSS JOIN q
-  WHERE search_match_basic(s, q.qry)
+  WHERE journal_match_basic(s, q.qry)
 ) i
 ORDER BY rank DESC
 LIMIT $5
@@ -313,11 +269,8 @@ type SearchBasicRow struct {
 	HeaderHeadline string
 	BodyHeadline   string
 	Header         pgtype.Text
-	Ns             string
-	AssociatedUrl  pgtype.Text
-	Created        pgtype.Timestamptz
+	GoogleID       string
 	Updated        pgtype.Timestamptz
-	ExtraData      pgtype.Text
 	Rank           float32
 }
 
@@ -343,11 +296,8 @@ func (q *Queries) SearchBasic(ctx context.Context, arg SearchBasicParams) ([]Sea
 			&i.HeaderHeadline,
 			&i.BodyHeadline,
 			&i.Header,
-			&i.Ns,
-			&i.AssociatedUrl,
-			&i.Created,
+			&i.GoogleID,
 			&i.Updated,
-			&i.ExtraData,
 			&i.Rank,
 		); err != nil {
 			return nil, err
@@ -365,9 +315,9 @@ WITH q AS (
   SELECT websearch_to_tsquery($1::regconfig, $2::text) AS qry
 )
 SELECT COUNT(*)::int AS n
-FROM search s
+FROM journal s
 CROSS JOIN q
-WHERE search_match_basic(s, q.qry)
+WHERE journal_match_basic(s, q.qry)
 `
 
 type SearchBasicCountParams struct {
@@ -380,133 +330,4 @@ func (q *Queries) SearchBasicCount(ctx context.Context, arg SearchBasicCountPara
 	var n int32
 	err := row.Scan(&n)
 	return n, err
-}
-
-const updateSearchMetadata = `-- name: UpdateSearchMetadata :execresult
-UPDATE search
-SET
-  extra_data = $1,
-  created = $2,
-  updated = $3,
-  header = $4
-WHERE ns = $5
-  AND associated_url = $6
-`
-
-type UpdateSearchMetadataParams struct {
-	ExtraData     pgtype.Text
-	Created       pgtype.Timestamptz
-	Updated       pgtype.Timestamptz
-	Header        pgtype.Text
-	Namespace     string
-	AssociatedUrl pgtype.Text
-}
-
-func (q *Queries) UpdateSearchMetadata(ctx context.Context, arg UpdateSearchMetadataParams) (pgconn.CommandTag, error) {
-	return q.db.Exec(ctx, updateSearchMetadata,
-		arg.ExtraData,
-		arg.Created,
-		arg.Updated,
-		arg.Header,
-		arg.Namespace,
-		arg.AssociatedUrl,
-	)
-}
-
-const upsertSearchEntry = `-- name: UpsertSearchEntry :exec
-INSERT INTO search (ns, associated_url, created, updated, header, body, lang, extra_data, skipped)
-VALUES (
-    $1,
-    $2,
-    $3,
-    $4,
-    $5,
-    $6,
-    $7,
-    $8,
-    FALSE
-)
-ON CONFLICT (ns, associated_url) DO UPDATE SET
-    created        = EXCLUDED.created,
-    updated        = EXCLUDED.updated,
-    header         = EXCLUDED.header,
-    body           = EXCLUDED.body,
-    lang           = EXCLUDED.lang,
-    associated_url = EXCLUDED.associated_url,
-    extra_data     = EXCLUDED.extra_data,
-    skipped        = EXCLUDED.skipped
-`
-
-type UpsertSearchEntryParams struct {
-	Namespace     string
-	AssociatedUrl pgtype.Text
-	Created       pgtype.Timestamptz
-	Updated       pgtype.Timestamptz
-	Header        pgtype.Text
-	Body          pgtype.Text
-	Lang          interface{}
-	ExtraData     pgtype.Text
-}
-
-func (q *Queries) UpsertSearchEntry(ctx context.Context, arg UpsertSearchEntryParams) error {
-	_, err := q.db.Exec(ctx, upsertSearchEntry,
-		arg.Namespace,
-		arg.AssociatedUrl,
-		arg.Created,
-		arg.Updated,
-		arg.Header,
-		arg.Body,
-		arg.Lang,
-		arg.ExtraData,
-	)
-	return err
-}
-
-const upsertSkippedSearchEntry = `-- name: UpsertSkippedSearchEntry :exec
-INSERT INTO search (ns, associated_url, created, updated, header, body, lang, extra_data, skipped)
-VALUES (
-  $1,
-  $2,
-  $3,
-  $4,
-  $5,
-  $6,
-  $7,
-  $8,
-  TRUE
-)
-ON CONFLICT (ns, associated_url) DO UPDATE SET
-    created        = EXCLUDED.created,
-    updated        = EXCLUDED.updated,
-    header         = EXCLUDED.header,
-    body           = EXCLUDED.body,
-    lang           = EXCLUDED.lang,
-    associated_url = EXCLUDED.associated_url,
-    extra_data     = EXCLUDED.extra_data,
-    skipped        = EXCLUDED.skipped
-`
-
-type UpsertSkippedSearchEntryParams struct {
-	Namespace     string
-	AssociatedUrl pgtype.Text
-	Created       pgtype.Timestamptz
-	Updated       pgtype.Timestamptz
-	Header        pgtype.Text
-	Body          pgtype.Text
-	Lang          interface{}
-	ExtraData     pgtype.Text
-}
-
-func (q *Queries) UpsertSkippedSearchEntry(ctx context.Context, arg UpsertSkippedSearchEntryParams) error {
-	_, err := q.db.Exec(ctx, upsertSkippedSearchEntry,
-		arg.Namespace,
-		arg.AssociatedUrl,
-		arg.Created,
-		arg.Updated,
-		arg.Header,
-		arg.Body,
-		arg.Lang,
-		arg.ExtraData,
-	)
-	return err
 }

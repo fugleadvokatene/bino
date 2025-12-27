@@ -191,11 +191,13 @@ const (
 	CapHardDeletePatient Cap = 26
 	// CapLive is a Cap of type Live.
 	CapLive Cap = 27
+	// CapSetIndexerState is a Cap of type SetIndexerState.
+	CapSetIndexerState Cap = 28
 )
 
 var ErrInvalidCap = errors.New("not a valid Cap")
 
-const _CapName = "LoggedInViewAllActivePatientsViewAllFormerPatientsViewAllHomesViewAllUsersViewCalendarSearchSetOwnPreferencesCheckInPatientManageOwnPatientsManageAllPatientsManageOwnHomesManageAllHomesCreatePatientJournalManageSpeciesManageUsersDeleteUsersViewAdminToolsViewGDriveSettingsInviteToGDriveInviteToBinoUseImportToolDebugUploadFileEditWikiManageFeatureFlagsHardDeletePatientLive"
+const _CapName = "LoggedInViewAllActivePatientsViewAllFormerPatientsViewAllHomesViewAllUsersViewCalendarSearchSetOwnPreferencesCheckInPatientManageOwnPatientsManageAllPatientsManageOwnHomesManageAllHomesCreatePatientJournalManageSpeciesManageUsersDeleteUsersViewAdminToolsViewGDriveSettingsInviteToGDriveInviteToBinoUseImportToolDebugUploadFileEditWikiManageFeatureFlagsHardDeletePatientLiveSetIndexerState"
 
 // CapValues returns a list of the values for Cap
 func CapValues() []Cap {
@@ -228,6 +230,7 @@ func CapValues() []Cap {
 		CapManageFeatureFlags,
 		CapHardDeletePatient,
 		CapLive,
+		CapSetIndexerState,
 	}
 }
 
@@ -260,6 +263,7 @@ var _CapMap = map[Cap]string{
 	CapManageFeatureFlags:    _CapName[334:352],
 	CapHardDeletePatient:     _CapName[352:369],
 	CapLive:                  _CapName[369:373],
+	CapSetIndexerState:       _CapName[373:388],
 }
 
 // String implements the Stringer interface.
@@ -306,6 +310,7 @@ var _CapValue = map[string]Cap{
 	_CapName[334:352]: CapManageFeatureFlags,
 	_CapName[352:369]: CapHardDeletePatient,
 	_CapName[369:373]: CapLive,
+	_CapName[373:388]: CapSetIndexerState,
 }
 
 // ParseCap attempts to convert a string to a Cap.
@@ -651,11 +656,15 @@ const (
 	GDriveTaskRequestIDUpdateJournal GDriveTaskRequestID = 4
 	// GDriveTaskRequestIDGetDocument is a GDriveTaskRequestID of type GetDocument.
 	GDriveTaskRequestIDGetDocument GDriveTaskRequestID = 5
+	// GDriveTaskRequestIDGetIndexerState is a GDriveTaskRequestID of type GetIndexerState.
+	GDriveTaskRequestIDGetIndexerState GDriveTaskRequestID = 6
+	// GDriveTaskRequestIDSetIndexerState is a GDriveTaskRequestID of type SetIndexerState.
+	GDriveTaskRequestIDSetIndexerState GDriveTaskRequestID = 7
 )
 
 var ErrInvalidGDriveTaskRequestID = errors.New("not a valid GDriveTaskRequestID")
 
-const _GDriveTaskRequestIDName = "GetFileInviteUserCreateJournalListFilesUpdateJournalGetDocument"
+const _GDriveTaskRequestIDName = "GetFileInviteUserCreateJournalListFilesUpdateJournalGetDocumentGetIndexerStateSetIndexerState"
 
 // GDriveTaskRequestIDValues returns a list of the values for GDriveTaskRequestID
 func GDriveTaskRequestIDValues() []GDriveTaskRequestID {
@@ -666,16 +675,20 @@ func GDriveTaskRequestIDValues() []GDriveTaskRequestID {
 		GDriveTaskRequestIDListFiles,
 		GDriveTaskRequestIDUpdateJournal,
 		GDriveTaskRequestIDGetDocument,
+		GDriveTaskRequestIDGetIndexerState,
+		GDriveTaskRequestIDSetIndexerState,
 	}
 }
 
 var _GDriveTaskRequestIDMap = map[GDriveTaskRequestID]string{
-	GDriveTaskRequestIDGetFile:       _GDriveTaskRequestIDName[0:7],
-	GDriveTaskRequestIDInviteUser:    _GDriveTaskRequestIDName[7:17],
-	GDriveTaskRequestIDCreateJournal: _GDriveTaskRequestIDName[17:30],
-	GDriveTaskRequestIDListFiles:     _GDriveTaskRequestIDName[30:39],
-	GDriveTaskRequestIDUpdateJournal: _GDriveTaskRequestIDName[39:52],
-	GDriveTaskRequestIDGetDocument:   _GDriveTaskRequestIDName[52:63],
+	GDriveTaskRequestIDGetFile:         _GDriveTaskRequestIDName[0:7],
+	GDriveTaskRequestIDInviteUser:      _GDriveTaskRequestIDName[7:17],
+	GDriveTaskRequestIDCreateJournal:   _GDriveTaskRequestIDName[17:30],
+	GDriveTaskRequestIDListFiles:       _GDriveTaskRequestIDName[30:39],
+	GDriveTaskRequestIDUpdateJournal:   _GDriveTaskRequestIDName[39:52],
+	GDriveTaskRequestIDGetDocument:     _GDriveTaskRequestIDName[52:63],
+	GDriveTaskRequestIDGetIndexerState: _GDriveTaskRequestIDName[63:78],
+	GDriveTaskRequestIDSetIndexerState: _GDriveTaskRequestIDName[78:93],
 }
 
 // String implements the Stringer interface.
@@ -700,6 +713,8 @@ var _GDriveTaskRequestIDValue = map[string]GDriveTaskRequestID{
 	_GDriveTaskRequestIDName[30:39]: GDriveTaskRequestIDListFiles,
 	_GDriveTaskRequestIDName[39:52]: GDriveTaskRequestIDUpdateJournal,
 	_GDriveTaskRequestIDName[52:63]: GDriveTaskRequestIDGetDocument,
+	_GDriveTaskRequestIDName[63:78]: GDriveTaskRequestIDGetIndexerState,
+	_GDriveTaskRequestIDName[78:93]: GDriveTaskRequestIDSetIndexerState,
 }
 
 // ParseGDriveTaskRequestID attempts to convert a string to a GDriveTaskRequestID.
@@ -806,48 +821,6 @@ func ParseLiveEventType(name string) (LiveEventType, error) {
 		return x, nil
 	}
 	return LiveEventType(""), fmt.Errorf("%s is %w", name, ErrInvalidLiveEventType)
-}
-
-const (
-	// MatchTypeJournal is a MatchType of type journal.
-	MatchTypeJournal MatchType = "journal"
-	// MatchTypePatient is a MatchType of type patient.
-	MatchTypePatient MatchType = "patient"
-)
-
-var ErrInvalidMatchType = errors.New("not a valid MatchType")
-
-// MatchTypeValues returns a list of the values for MatchType
-func MatchTypeValues() []MatchType {
-	return []MatchType{
-		MatchTypeJournal,
-		MatchTypePatient,
-	}
-}
-
-// String implements the Stringer interface.
-func (x MatchType) String() string {
-	return string(x)
-}
-
-// IsValid provides a quick way to determine if the typed value is
-// part of the allowed enumerated values
-func (x MatchType) IsValid() bool {
-	_, err := ParseMatchType(string(x))
-	return err == nil
-}
-
-var _MatchTypeValue = map[string]MatchType{
-	"journal": MatchTypeJournal,
-	"patient": MatchTypePatient,
-}
-
-// ParseMatchType attempts to convert a string to a MatchType.
-func ParseMatchType(name string) (MatchType, error) {
-	if x, ok := _MatchTypeValue[name]; ok {
-		return x, nil
-	}
-	return MatchType(""), fmt.Errorf("%s is %w", name, ErrInvalidMatchType)
 }
 
 const (
