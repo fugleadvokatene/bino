@@ -1,6 +1,7 @@
 package job
 
 import (
+	"context"
 	"log/slog"
 	"math"
 	"time"
@@ -10,9 +11,10 @@ var phi float64 = (1.0 + math.Sqrt(5.0)) / 2.0
 var gSpread = phi
 
 func Run[T any](
+	ctx context.Context,
 	what string,
 	interval time.Duration,
-	f func() (T, error),
+	f func(ctx context.Context) (T, error),
 ) Hint {
 	hint := make(Hint, 1)
 
@@ -29,7 +31,7 @@ func Run[T any](
 
 			// Run job, capture time taken
 			t0 := time.Now()
-			result, err := f()
+			result, err := f(ctx)
 			elapsed := time.Since(t0)
 
 			// Compute time to next invocation
@@ -53,6 +55,8 @@ func Run[T any](
 
 			// Wait for next round
 			select {
+			case <-ctx.Done():
+				return
 			case <-time.After(next):
 			case _ = <-hint:
 			}
