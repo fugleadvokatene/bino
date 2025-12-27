@@ -34,6 +34,7 @@ func (h *addHomeUnavailablePeriod) ServeHTTP(w http.ResponseWriter, r *http.Requ
 
 	var fromV model.Date
 	var toV model.Date
+
 	note, hasNote := values["unavailable-note"]
 
 	if n, err := fmt.Sscanf(values["unavailable-from"], "%d-%d-%d", &fromV.Year, &fromV.Month, &fromV.Day); err != nil || n != 3 {
@@ -41,13 +42,15 @@ func (h *addHomeUnavailablePeriod) ServeHTTP(w http.ResponseWriter, r *http.Requ
 		request.RedirectToReferer(w, r)
 		return
 	}
-	if n, err := fmt.Sscanf(values["unavailable-to"], "%d-%d-%d", &toV.Year, &toV.Month, &toV.Day); err != nil || n != 3 {
-		commonData.Warning(commonData.Language.HomePeriodInvalid, err)
-		request.RedirectToReferer(w, r)
-		return
+	if values["unavailable-to"] != "" {
+		if n, err := fmt.Sscanf(values["unavailable-to"], "%d-%d-%d", &toV.Year, &toV.Month, &toV.Day); err != nil || n != 3 {
+			commonData.Warning(commonData.Language.HomePeriodInvalid, err)
+			request.RedirectToReferer(w, r)
+			return
+		}
 	}
 
-	if toV.Before(fromV) {
+	if toV.Valid() && toV.Before(fromV) {
 		commonData.Warning(commonData.Language.HomePeriodInvalid, fmt.Errorf("to is before from: %+v < %+v", toV, fromV))
 		request.RedirectToReferer(w, r)
 		return

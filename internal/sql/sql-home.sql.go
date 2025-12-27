@@ -101,7 +101,7 @@ func (q *Queries) DeletePreferredSpecies(ctx context.Context, arg DeletePreferre
 const getAllUnavailablePeriods = `-- name: GetAllUnavailablePeriods :many
 SELECT id, home_id, from_date, to_date, note
 FROM home_unavailable
-WHERE to_date + INTERVAL '1 DAY' >= NOW()
+WHERE (to_date + INTERVAL '1 DAY' >= NOW() OR to_date IS NULL)
 ORDER BY home_id, to_date
 `
 
@@ -183,7 +183,7 @@ const getHomeUnavailablePeriods = `-- name: GetHomeUnavailablePeriods :many
 SELECT id, home_id, from_date, to_date, note
 FROM home_unavailable
 WHERE home_id = $1
-  AND to_date + INTERVAL '1 DAY' >= NOW()
+  AND (to_date + INTERVAL '1 DAY' >= NOW() OR to_date IS NULL)
 ORDER BY to_date
 `
 
@@ -351,7 +351,7 @@ FROM home_unavailable AS hu
 INNER JOIN home AS h
   ON hu.home_id = h.id
 WHERE from_date <= $1
-  AND to_date >= $2
+  AND (to_date >= $2 OR to_date IS NULL)
 `
 
 type GetUnavailablePeriodsInRangeParams struct {

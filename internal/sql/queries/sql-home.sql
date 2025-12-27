@@ -124,14 +124,14 @@ WHERE id = $1
 SELECT *
 FROM home_unavailable
 WHERE home_id = $1
-  AND to_date + INTERVAL '1 DAY' >= NOW()
+  AND (to_date + INTERVAL '1 DAY' >= NOW() OR to_date IS NULL)
 ORDER BY to_date
 ;
 
 -- name: GetAllUnavailablePeriods :many
 SELECT *
 FROM home_unavailable
-WHERE to_date + INTERVAL '1 DAY' >= NOW()
+WHERE (to_date + INTERVAL '1 DAY' >= NOW() OR to_date IS NULL)
 ORDER BY home_id, to_date
 ;
 
@@ -141,7 +141,7 @@ FROM home_unavailable AS hu
 INNER JOIN home AS h
   ON hu.home_id = h.id
 WHERE from_date <= @range_end
-  AND to_date >= @range_begin
+  AND (to_date >= @range_begin OR to_date IS NULL)
 ;
 
 -- name: GetHomeByName :many

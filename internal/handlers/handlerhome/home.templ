@@ -47,7 +47,11 @@ templ HomePage(ctx context.Context, data *request.CommonData, homes []model.Home
 
 templ DateView(data *request.CommonData, dv *model.Date) {
     <span class="date-view">
-        {dv.Year}-{int(dv.Month)}-{dv.Day}
+        if dv.Valid() {
+            {dv.Year}-{int(dv.Month)}-{dv.Day}
+        } else {
+            {data.Language.HomeUnavailableIndefinitely}
+        }
     </span>
 }
 

@@ -519,7 +519,7 @@ var NO = &Language{
 	HomeAvailableIndefinitely:      "Tilgjengelig.",
 	HomeUnavailableIndefinitely:    "Utilgjengelig på ubestemt tid.",
 	HomeUnavailableFromInstruction: "Datoen du blir utilgjengelig.",
-	HomeUnavailableToInstruction:   "Siste dato du er utilgjengelig.",
+	HomeUnavailableToInstruction:   "Siste dato du er utilgjengelig. La stå tom hvis du er utilgjengelig på ubestemt tid.",
 	HomeNameWasUpdated:             "Endret navn på rehabhjemmet.",
 
 	ImportHeader:   "Importverktøy",
@@ -825,7 +825,7 @@ var EN = &Language{
 	HomeAvailableIndefinitely:      "Available.",
 	HomeUnavailableIndefinitely:    "Unavailable until further notice.",
 	HomeUnavailableFromInstruction: "The date when you become unavailable.",
-	HomeUnavailableToInstruction:   "The last date when you are unavailable.",
+	HomeUnavailableToInstruction:   "The last date when you are unavailable. Leave empty if you're unavailable indefinitely.",
 	HomeNameWasUpdated:             "Rehab home name was updated.",
 
 	ImportHeader:   "Importer",

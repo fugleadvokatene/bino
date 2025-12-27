@@ -2,7 +2,6 @@ package model
 
 import (
 	"fmt"
-	"time"
 
 	"github.com/a-h/templ"
 )
@@ -41,20 +40,4 @@ func (h Home) OccupancyClass() string {
 		return "text-warning"
 	}
 	return "text-danger"
-}
-
-func AvailabilityDate(unavailablePeriods []Period) (Availability, Date) {
-	tomorrow := DateViewFromTime(time.Now().AddDate(0, 0, 1))
-	for _, pv := range unavailablePeriods {
-		if pv.From.Before(tomorrow) && tomorrow.Before(pv.To) {
-			if pv.To.Year > tomorrow.Year+2 {
-				return AvailabilityUnavailableIndefinitely, pv.To
-			}
-			return AvailabilityUnavailableUntil, pv.To
-		}
-		if tomorrow.Before(pv.From) {
-			return AvailabilityAvailableUntil, pv.From
-		}
-	}
-	return AvailabilityAvailableIndefinitely, tomorrow
 }

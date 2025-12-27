@@ -2,6 +2,7 @@ package handlerdashboard
 
 import (
 	"cmp"
+	"fmt"
 	"net/http"
 	"slices"
 
@@ -57,6 +58,7 @@ func (h *Page) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		handlererror.Error(w, r, err)
 		return
 	}
+	fmt.Printf("unavailable periods=%+v\n", unavailablePeriods)
 
 	// Attach patients to homes
 	generic.GroupByID(
