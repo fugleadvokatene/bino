@@ -7,9 +7,10 @@ import (
 )
 
 type Item struct {
-	ID    string
-	Name  string
-	Valid bool
+	ID       string
+	Name     string
+	Valid    bool
+	ParentID string
 
 	// Optional
 	Permissions  []Permission

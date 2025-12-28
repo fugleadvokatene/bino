@@ -40,7 +40,7 @@ func StartJobs(
 		"Delete old staged files",
 		time.Hour,
 		func(ctx context.Context) (any, error) {
-			return dblib.DeleteOldStagedFiles(ctx, db, 24*time.Hour)
+			return dblib.DeleteOldStagedFiles(ctx, db, 6*time.Hour)
 		},
 	)
 	job.Run(

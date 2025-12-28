@@ -20,7 +20,7 @@ import (
 
 const (
 	maxNConcurrentGDriveTaskRequests = 100
-	nWorkers                         = 1
+	nWorkers                         = 4
 	timeFormatDriveQ                 = "2006-01-02T15:04:05"
 )
 

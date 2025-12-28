@@ -79,6 +79,11 @@ func GDriveItemFromFile(f *drive.File, p *drive.PermissionList) Item {
 	modifiedTime, _ := time.Parse(time.RFC3339, f.ModifiedTime)
 	createdTime, _ := time.Parse(time.RFC3339, f.CreatedTime)
 
+	var parentID string
+	if len(f.Parents) > 0 {
+		parentID = f.Parents[0]
+	}
+
 	return Item{
 		ID:           f.Id,
 		Name:         f.Name,
@@ -87,6 +92,7 @@ func GDriveItemFromFile(f *drive.File, p *drive.PermissionList) Item {
 		ModifiedTime: modifiedTime,
 		CreatedTime:  createdTime,
 		Trashed:      f.Trashed,
+		ParentID:     parentID,
 	}
 }
 
@@ -109,7 +115,7 @@ func (g *Client) fileToItem(file *drive.File) (Item, error) {
 
 func (g *Client) GetFile(id string) (Item, error) {
 	call := g.Drive.Files.Get(id).
-		Fields("id, name, capabilities")
+		Fields("id, name, capabilities, parents")
 
 	if g.DriveBase != "" {
 		call = call.

@@ -179,3 +179,10 @@ func (fvid FileVariantID) IsMiniature() bool {
 // ProcVRAMReservedMB     = 42,
 // )
 type DebugStatKey int16
+
+// ENUM(
+// Google   = 0,
+// Bino     = 1,
+// Evernote = 2,
+// )
+type JournalOriginID int16

@@ -121,7 +121,7 @@ func (w *Worker) searchIndexFile(ctx context.Context, folder, file Item) (bool, 
 	}
 
 	go func() {
-		if err := w.FetchJournal(file.ID); err != nil {
+		if err := w.FetchJournal(file.ID, &ParentInfo{ID: folder.ID, Name: folder.Name}); err != nil {
 			slog.ErrorContext(ctx, "Error fetching journal", "err", err, "name", file.Name)
 		}
 	}()

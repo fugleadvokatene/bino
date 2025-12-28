@@ -37,7 +37,7 @@ func (h *fetchJournal) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		handlererror.Error(w, r, err)
 		return
 	}
-	go h.GDriveWorker.FetchJournal(googleID.String)
+	go h.GDriveWorker.FetchJournal(googleID.String, nil)
 
 	commonData.Success(commonData.Language.TODO("Journalen innhentes, oppdater siden om noen sekunder"))
 	request.RedirectToReferer(w, r)

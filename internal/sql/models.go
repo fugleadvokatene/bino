@@ -103,16 +103,18 @@ type Invitation struct {
 }
 
 type Journal struct {
-	Updated   pgtype.Timestamptz
-	Json      []byte
-	Markdown  pgtype.Text
-	Html      pgtype.Text
-	GoogleID  string
-	Header    pgtype.Text
-	Body      pgtype.Text
-	Lang      interface{}
-	FtsHeader interface{}
-	FtsBody   interface{}
+	Updated        pgtype.Timestamptz
+	Json           []byte
+	Markdown       pgtype.Text
+	Html           pgtype.Text
+	GoogleID       string
+	Header         pgtype.Text
+	Body           pgtype.Text
+	Lang           interface{}
+	FtsHeader      interface{}
+	FtsBody        interface{}
+	Origin         int16
+	ParentGoogleID pgtype.Text
 }
 
 // Each row represents a patient

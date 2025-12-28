@@ -726,6 +726,63 @@ func ParseGDriveTaskRequestID(name string) (GDriveTaskRequestID, error) {
 }
 
 const (
+	// JournalOriginIDGoogle is a JournalOriginID of type Google.
+	JournalOriginIDGoogle JournalOriginID = 0
+	// JournalOriginIDBino is a JournalOriginID of type Bino.
+	JournalOriginIDBino JournalOriginID = 1
+	// JournalOriginIDEvernote is a JournalOriginID of type Evernote.
+	JournalOriginIDEvernote JournalOriginID = 2
+)
+
+var ErrInvalidJournalOriginID = errors.New("not a valid JournalOriginID")
+
+const _JournalOriginIDName = "GoogleBinoEvernote"
+
+// JournalOriginIDValues returns a list of the values for JournalOriginID
+func JournalOriginIDValues() []JournalOriginID {
+	return []JournalOriginID{
+		JournalOriginIDGoogle,
+		JournalOriginIDBino,
+		JournalOriginIDEvernote,
+	}
+}
+
+var _JournalOriginIDMap = map[JournalOriginID]string{
+	JournalOriginIDGoogle:   _JournalOriginIDName[0:6],
+	JournalOriginIDBino:     _JournalOriginIDName[6:10],
+	JournalOriginIDEvernote: _JournalOriginIDName[10:18],
+}
+
+// String implements the Stringer interface.
+func (x JournalOriginID) String() string {
+	if str, ok := _JournalOriginIDMap[x]; ok {
+		return str
+	}
+	return fmt.Sprintf("JournalOriginID(%d)", x)
+}
+
+// IsValid provides a quick way to determine if the typed value is
+// part of the allowed enumerated values
+func (x JournalOriginID) IsValid() bool {
+	_, ok := _JournalOriginIDMap[x]
+	return ok
+}
+
+var _JournalOriginIDValue = map[string]JournalOriginID{
+	_JournalOriginIDName[0:6]:   JournalOriginIDGoogle,
+	_JournalOriginIDName[6:10]:  JournalOriginIDBino,
+	_JournalOriginIDName[10:18]: JournalOriginIDEvernote,
+}
+
+// ParseJournalOriginID attempts to convert a string to a JournalOriginID.
+func ParseJournalOriginID(name string) (JournalOriginID, error) {
+	if x, ok := _JournalOriginIDValue[name]; ok {
+		return x, nil
+	}
+	return JournalOriginID(0), fmt.Errorf("%s is %w", name, ErrInvalidJournalOriginID)
+}
+
+const (
 	// LanguageIDNO is a LanguageID of type NO.
 	LanguageIDNO LanguageID = 1
 	// LanguageIDEN is a LanguageID of type EN.

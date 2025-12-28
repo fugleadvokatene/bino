@@ -1,6 +1,8 @@
 -- name: UpsertJournal :exec
 INSERT INTO journal (
     google_id,
+    origin,
+    parent_google_id,
     updated,
     json,
     lang,
@@ -9,9 +11,22 @@ INSERT INTO journal (
     markdown,
     html
 )
-VALUES (@google_id, NOW(), @json, @lang, @header, @body, @markdown, @html)
+VALUES (
+    @google_id,
+    @origin,
+    @parent_google_id, 
+    NOW(),
+    @json,
+    @lang,
+    @header,
+    @body,
+    @markdown,
+    @html
+)
 ON CONFLICT (google_id) DO UPDATE
     SET updated=NOW(),
+        origin=EXCLUDED.origin,
+        parent_google_id=EXCLUDED.parent_google_id,
         json=EXCLUDED.json,
         lang=EXCLUDED.lang,
         header=EXCLUDED.header,

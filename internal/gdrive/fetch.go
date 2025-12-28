@@ -15,8 +15,14 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
+type ParentInfo struct {
+	ID   string
+	Name string
+}
+
 func (w *Worker) FetchJournal(
 	googleID string,
+	parentInfo *ParentInfo,
 ) (errOut error) {
 	ctx := context.Background()
 	defer func() {
@@ -26,6 +32,21 @@ func (w *Worker) FetchJournal(
 			errOut = fmt.Errorf("panicked: %v", r)
 		}
 	}()
+
+	var parentGoogleID pgtype.Text
+	if parentInfo != nil {
+		parentGoogleID.String = parentInfo.ID
+		parentGoogleID.Valid = true
+	} else {
+		file, err := w.GetFile(googleID)
+		if err != nil {
+			slog.ErrorContext(ctx, "Looking up file to get ctx", "err", err)
+		} else {
+			parentGoogleID.String = file.ParentID
+			parentGoogleID.Valid = file.ParentID != ""
+		}
+	}
+	fmt.Printf("parentGoogleID=%+v\n", parentGoogleID)
 
 	doc, err := w.GetDocument(googleID)
 	if err != nil {
@@ -59,9 +80,11 @@ func (w *Worker) FetchJournal(
 	}
 
 	updateParams := sql.UpsertJournalParams{
-		GoogleID: googleID,
-		Header:   pgtype.Text{String: doc.Title, Valid: true},
-		Lang:     "norwegian",
+		GoogleID:       googleID,
+		Origin:         int16(model.JournalOriginIDGoogle),
+		ParentGoogleID: parentGoogleID,
+		Header:         pgtype.Text{String: doc.Title, Valid: true},
+		Lang:           "norwegian",
 	}
 
 	// Marshall to JSON, Markdown and HTML
