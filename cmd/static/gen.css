@@ -11904,6 +11904,12 @@ textarea.form-control-lg {
   color: rgb(126.75, 127.125, 141.875);
 }
 
+.go-to-patient-link {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
 .debug-top,
 .debug-list {
   list-style: none;

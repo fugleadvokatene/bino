@@ -249,19 +249,13 @@ templ PatientTable(
             }
             @PatientMove(data, homes, patient)
             @CheckoutForm(data, patient)
+            <tr class="go-to-patient-row">
+                <td colspan="2" class="go-to-patient center dark-on-hover bg-success-subtle must-be-clickable p-1" >
+                    <a href={templ.URL(patient.URL())} class="small must-be-clickable go-to-patient-link">{data.Language.DashboardGoToPatientPage}</a>
+                </td>
+            </tr>
         </tbody>
     </table>
-}
-
-templ GoToPatientPage(data *request.CommonData, patient model.Patient) {
-    <tr>
-        <th class="w-25">{data.Language.GenericDetails}</th>
-        <td>
-            <a href={templ.URL(patient.URL())}>
-                {data.Language.DashboardGoToPatientPage}
-            </a>
-        </td>
-    </tr>
 }
 
 
