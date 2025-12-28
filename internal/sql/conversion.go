@@ -216,10 +216,13 @@ func (in *SearchBasicRow) ToModel() model.Match {
 	bodyRuns := model.ParseHeadline(in.BodyHeadline)
 
 	return model.Match{
-		GoogleID:      in.GoogleID,
-		HeaderRuns:    headerRuns,
-		BodyFragments: model.SplitFragments(bodyRuns),
-		Rank:          in.Rank,
+		GoogleID:         in.GoogleID,
+		ParentGoogleID:   in.ParentGoogleID.String,
+		ParentGoogleName: in.ParentFolderName.String,
+		PatientID:        in.PatientID.Int32,
+		HeaderRuns:       headerRuns,
+		BodyFragments:    model.SplitFragments(bodyRuns),
+		Rank:             in.Rank,
 	}
 }
 

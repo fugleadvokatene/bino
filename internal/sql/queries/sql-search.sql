@@ -1,15 +1,3 @@
--- name: DeleteJournal :exec
-DELETE
-FROM journal
-WHERE google_id = @google_id
-;
-
--- name: GetJournalUpdatedTime :one
-SELECT updated
-FROM journal
-WHERE google_id = @google_id
-;
-
 -- name: SearchBasic :many
 WITH q AS (
   SELECT websearch_to_tsquery(sqlc.arg('lang')::regconfig, sqlc.arg('query')::text) AS qry
@@ -28,10 +16,14 @@ FROM (
     ts_headline(sqlc.arg('lang')::regconfig, s.body,   q.qry, 'StartSel=[START],StopSel=[STOP],MaxFragments=5,MinWords=3,MaxWords=10,FragmentDelimiter=[CUT]')::text AS body_headline,
     s.header,
     s.google_id,
-    s.updated
+    s.updated,
+    s.parent_google_id,
+    gf.name AS parent_folder_name,
+    p.id AS patient_id
   FROM journal s
-  CROSS JOIN q
-  WHERE journal_match_basic(s, q.qry)
+  LEFT JOIN google_folder gf ON gf.google_id = s.parent_google_id
+  LEFT JOIN patient p ON p.google_id = s.google_id
+  CROSS JOIN q WHERE journal_match_basic(s, q.qry)
 ) i
 ORDER BY rank DESC
 LIMIT sqlc.arg('limit')

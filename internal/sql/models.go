@@ -54,6 +54,11 @@ type FileWiki struct {
 	WikiID int32
 }
 
+type GoogleFolder struct {
+	GoogleID string
+	Name     string
+}
+
 // Each row is a rehab home
 type Home struct {
 	ID       int32

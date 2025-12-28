@@ -75,6 +75,20 @@ templ SearchMatches(data *request.CommonData, result db.SearchResult, fallbackMs
                                 @Runs(match.HeaderRuns, false)
                             </a>
                         </div>
+                        if match.PatientID != 0 {
+                            <div class="match-patient micro">
+                                <a href={templ.URL(model.PatientURL(match.PatientID))}>
+                                    {data.Language.DashboardGoToPatientPage}
+                                </a>
+                            </div>
+                        }
+                        if match.ParentGoogleID != "" {
+                            <div class="match-source micro">
+                                {data.Language.GDriveParentFolder}: <a href={templ.URL(url.IDToFolderURL(match.ParentGoogleID))}>
+                                    {match.ParentGoogleName}
+                                </a>
+                            </div>
+                        }
                     </div>
                     <div>
                         for _, frag := range match.BodyFragments {

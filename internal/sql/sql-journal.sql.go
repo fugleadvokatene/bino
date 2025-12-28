@@ -11,6 +11,30 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
+const deleteJournal = `-- name: DeleteJournal :exec
+DELETE
+FROM journal
+WHERE google_id = $1
+`
+
+func (q *Queries) DeleteJournal(ctx context.Context, googleID string) error {
+	_, err := q.db.Exec(ctx, deleteJournal, googleID)
+	return err
+}
+
+const getGoogleFolder = `-- name: GetGoogleFolder :one
+SELECT google_id, name
+FROM google_folder
+WHERE google_id = $1
+`
+
+func (q *Queries) GetGoogleFolder(ctx context.Context, googleID string) (GoogleFolder, error) {
+	row := q.db.QueryRow(ctx, getGoogleFolder, googleID)
+	var i GoogleFolder
+	err := row.Scan(&i.GoogleID, &i.Name)
+	return i, err
+}
+
 const getJournalHTML = `-- name: GetJournalHTML :one
 SELECT updated, html
 FROM journal
@@ -45,6 +69,57 @@ func (q *Queries) GetJournalJSON(ctx context.Context, googleID string) (GetJourn
 	var i GetJournalJSONRow
 	err := row.Scan(&i.Updated, &i.Json)
 	return i, err
+}
+
+const getJournalMetadata = `-- name: GetJournalMetadata :one
+SELECT updated, parent_google_id
+FROM journal
+WHERE google_id = $1
+`
+
+type GetJournalMetadataRow struct {
+	Updated        pgtype.Timestamptz
+	ParentGoogleID pgtype.Text
+}
+
+func (q *Queries) GetJournalMetadata(ctx context.Context, googleID string) (GetJournalMetadataRow, error) {
+	row := q.db.QueryRow(ctx, getJournalMetadata, googleID)
+	var i GetJournalMetadataRow
+	err := row.Scan(&i.Updated, &i.ParentGoogleID)
+	return i, err
+}
+
+const saveGoogleFolder = `-- name: SaveGoogleFolder :exec
+INSERT INTO google_folder (google_id, name)
+VALUES ($1, $2)
+ON CONFLICT (google_id) DO UPDATE
+    SET name=EXCLUDED.name
+`
+
+type SaveGoogleFolderParams struct {
+	GoogleID string
+	Name     string
+}
+
+func (q *Queries) SaveGoogleFolder(ctx context.Context, arg SaveGoogleFolderParams) error {
+	_, err := q.db.Exec(ctx, saveGoogleFolder, arg.GoogleID, arg.Name)
+	return err
+}
+
+const setGoogleParentFolder = `-- name: SetGoogleParentFolder :exec
+UPDATE journal
+SET parent_google_id = $2
+WHERE google_id = $1
+`
+
+type SetGoogleParentFolderParams struct {
+	GoogleID       string
+	ParentGoogleID pgtype.Text
+}
+
+func (q *Queries) SetGoogleParentFolder(ctx context.Context, arg SetGoogleParentFolderParams) error {
+	_, err := q.db.Exec(ctx, setGoogleParentFolder, arg.GoogleID, arg.ParentGoogleID)
+	return err
 }
 
 const upsertJournal = `-- name: UpsertJournal :exec

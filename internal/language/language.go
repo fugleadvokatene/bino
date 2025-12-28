@@ -126,6 +126,7 @@ type Language struct {
 	GDriveSuggestedJournal                 string
 	GDriveAcceptSuggestedJournal           string
 	GDriveDeclineSuggestedJournal          string
+	GDriveParentFolder                     string
 
 	GenericAdd          string
 	GenericAge          string
@@ -489,6 +490,7 @@ var NO = &Language{
 	GDriveSuggestedJournal:                 "Forslag",
 	GDriveAcceptSuggestedJournal:           "Bruk foreslått",
 	GDriveDeclineSuggestedJournal:          "Ikke bruk",
+	GDriveParentFolder:                     "I mappe",
 
 	GenericAdd:          "Legg til",
 	GenericAge:          "Alder",
@@ -796,6 +798,7 @@ var EN = &Language{
 	GDriveAcceptSuggestedJournal:           "Accept suggested journal",
 	GDriveDeclineSuggestedJournal:          "Decline",
 	GDriveExtraDirs:                        "In addition, these folders are included in the document search:",
+	GDriveParentFolder:                     "In folder",
 
 	GenericAdd:          "Add",
 	GenericAge:          "Age",

@@ -11,17 +11,6 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
-const deleteJournal = `-- name: DeleteJournal :exec
-DELETE
-FROM journal
-WHERE google_id = $1
-`
-
-func (q *Queries) DeleteJournal(ctx context.Context, googleID string) error {
-	_, err := q.db.Exec(ctx, deleteJournal, googleID)
-	return err
-}
-
 const deleteSearchEntriesByGoogleID = `-- name: DeleteSearchEntriesByGoogleID :exec
 DELETE FROM journal
 WHERE google_id = $1
@@ -30,19 +19,6 @@ WHERE google_id = $1
 func (q *Queries) DeleteSearchEntriesByGoogleID(ctx context.Context, googleID string) error {
 	_, err := q.db.Exec(ctx, deleteSearchEntriesByGoogleID, googleID)
 	return err
-}
-
-const getJournalUpdatedTime = `-- name: GetJournalUpdatedTime :one
-SELECT updated
-FROM journal
-WHERE google_id = $1
-`
-
-func (q *Queries) GetJournalUpdatedTime(ctx context.Context, googleID string) (pgtype.Timestamptz, error) {
-	row := q.db.QueryRow(ctx, getJournalUpdatedTime, googleID)
-	var updated pgtype.Timestamptz
-	err := row.Scan(&updated)
-	return updated, err
 }
 
 const searchAdvanced = `-- name: SearchAdvanced :many
@@ -231,7 +207,7 @@ WITH q AS (
   SELECT websearch_to_tsquery($3::regconfig, $6::text) AS qry
 )
 SELECT
-  i.r_fts_header, i.r_fts_body, i.header_headline, i.body_headline, i.header, i.google_id, i.updated,
+  i.r_fts_header, i.r_fts_body, i.header_headline, i.body_headline, i.header, i.google_id, i.updated, i.parent_google_id, i.parent_folder_name, i.patient_id,
   (
       i.r_fts_header
     + i.r_fts_body
@@ -244,10 +220,14 @@ FROM (
     ts_headline($3::regconfig, s.body,   q.qry, 'StartSel=[START],StopSel=[STOP],MaxFragments=5,MinWords=3,MaxWords=10,FragmentDelimiter=[CUT]')::text AS body_headline,
     s.header,
     s.google_id,
-    s.updated
+    s.updated,
+    s.parent_google_id,
+    gf.name AS parent_folder_name,
+    p.id AS patient_id
   FROM journal s
-  CROSS JOIN q
-  WHERE journal_match_basic(s, q.qry)
+  LEFT JOIN google_folder gf ON gf.google_id = s.parent_google_id
+  LEFT JOIN patient p ON p.google_id = s.google_id
+  CROSS JOIN q WHERE journal_match_basic(s, q.qry)
 ) i
 ORDER BY rank DESC
 LIMIT $5
@@ -264,14 +244,17 @@ type SearchBasicParams struct {
 }
 
 type SearchBasicRow struct {
-	RFtsHeader     float32
-	RFtsBody       float32
-	HeaderHeadline string
-	BodyHeadline   string
-	Header         pgtype.Text
-	GoogleID       string
-	Updated        pgtype.Timestamptz
-	Rank           float32
+	RFtsHeader       float32
+	RFtsBody         float32
+	HeaderHeadline   string
+	BodyHeadline     string
+	Header           pgtype.Text
+	GoogleID         string
+	Updated          pgtype.Timestamptz
+	ParentGoogleID   pgtype.Text
+	ParentFolderName pgtype.Text
+	PatientID        pgtype.Int4
+	Rank             float32
 }
 
 func (q *Queries) SearchBasic(ctx context.Context, arg SearchBasicParams) ([]SearchBasicRow, error) {
@@ -298,6 +281,9 @@ func (q *Queries) SearchBasic(ctx context.Context, arg SearchBasicParams) ([]Sea
 			&i.Header,
 			&i.GoogleID,
 			&i.Updated,
+			&i.ParentGoogleID,
+			&i.ParentFolderName,
+			&i.PatientID,
 			&i.Rank,
 		); err != nil {
 			return nil, err

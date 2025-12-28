@@ -328,9 +328,9 @@ func NewWorker(ctx context.Context, cfg Config, g *Client, bg *background.Jobs) 
 		in:           make(chan TaskRequest, maxNConcurrentGDriveTaskRequests),
 		cachedInfoMu: &sync.Mutex{},
 		indexerState: IndexerState{
-			Enabled:                     false,
-			MaxDocumentsCreatedPerRound: 10,
-			Interval:                    time.Minute,
+			Enabled:                     true,
+			MaxDocumentsCreatedPerRound: 20,
+			Interval:                    10 * time.Minute,
 		},
 	}
 

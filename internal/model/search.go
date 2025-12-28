@@ -5,11 +5,14 @@ import (
 )
 
 type Match struct {
-	GoogleID      string
-	HeaderRuns    []HighlightRun
-	BodyFragments []HighlightFragment
-	Rank          float32
-	RankParts     map[string]float32
+	GoogleID         string
+	ParentGoogleID   string
+	ParentGoogleName string
+	PatientID        int32
+	HeaderRuns       []HighlightRun
+	BodyFragments    []HighlightFragment
+	Rank             float32
+	RankParts        map[string]float32
 }
 
 type HighlightFragment struct {

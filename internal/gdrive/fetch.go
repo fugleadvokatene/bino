@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"log/slog"
 	"runtime/debug"
@@ -12,6 +13,7 @@ import (
 	"github.com/fugleadvokatene/bino/internal/gdrive/document"
 	"github.com/fugleadvokatene/bino/internal/model"
 	"github.com/fugleadvokatene/bino/internal/sql"
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
@@ -38,13 +40,7 @@ func (w *Worker) FetchJournal(
 		parentGoogleID.String = parentInfo.ID
 		parentGoogleID.Valid = true
 	} else {
-		file, err := w.GetFile(googleID)
-		if err != nil {
-			slog.ErrorContext(ctx, "Looking up file to get ctx", "err", err)
-		} else {
-			parentGoogleID.String = file.ParentID
-			parentGoogleID.Valid = file.ParentID != ""
-		}
+		parentGoogleID = w.resolveParent(ctx, googleID)
 	}
 	fmt.Printf("parentGoogleID=%+v\n", parentGoogleID)
 
@@ -115,4 +111,27 @@ func (w *Worker) FetchJournal(
 	}
 
 	return w.g.DB.Q.UpsertJournal(ctx, updateParams)
+}
+
+func (w *Worker) resolveParent(ctx context.Context, googleID string) pgtype.Text {
+	// Get the ID from the parent
+	file, err := w.GetFile(googleID)
+	if err != nil {
+		slog.ErrorContext(ctx, "Looking up file to get ctx", "err", err)
+		return pgtype.Text{}
+	}
+
+	// Save the parent folder name later
+	if _, err := w.g.DB.Q.GetGoogleFolder(ctx, file.ParentID); errors.Is(err, pgx.ErrNoRows) {
+		if parent, err := w.GetFile(file.ParentID); err != nil {
+			slog.ErrorContext(ctx, "Looking up parent folder", "err", err, "file ID", file.ID, "parent ID", file.ParentID)
+		} else if err := w.g.DB.Q.SaveGoogleFolder(ctx, sql.SaveGoogleFolderParams{
+			GoogleID: parent.ID,
+			Name:     parent.Name,
+		}); err != nil {
+			slog.ErrorContext(ctx, "Saving parent folder info", "err", err)
+		}
+	}
+
+	return pgtype.Text{String: file.ParentID, Valid: file.ParentID != ""}
 }

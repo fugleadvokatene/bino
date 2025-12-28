@@ -46,3 +46,34 @@ SELECT updated, json
 FROM journal
 WHERE google_id = $1
 ;
+
+-- name: DeleteJournal :exec
+DELETE
+FROM journal
+WHERE google_id = @google_id
+;
+
+-- name: GetJournalMetadata :one
+SELECT updated, parent_google_id
+FROM journal
+WHERE google_id = @google_id
+;
+
+-- name: SetGoogleParentFolder :exec
+UPDATE journal
+SET parent_google_id = $2
+WHERE google_id = $1
+;
+
+-- name: GetGoogleFolder :one
+SELECT *
+FROM google_folder
+WHERE google_id = $1
+;
+
+-- name: SaveGoogleFolder :exec
+INSERT INTO google_folder (google_id, name)
+VALUES (@google_id, @name)
+ON CONFLICT (google_id) DO UPDATE
+    SET name=EXCLUDED.name
+;

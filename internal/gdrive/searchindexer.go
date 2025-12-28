@@ -8,6 +8,7 @@ import (
 	"log/slog"
 	"time"
 
+	"github.com/fugleadvokatene/bino/internal/sql"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgtype"
 )
@@ -70,11 +71,22 @@ func (w *Worker) listFiles(ctx context.Context, folderID string, pageToken strin
 
 func (w *Worker) searchIndexFolder(ctx context.Context, folderID string, created *int) {
 	pageToken := ""
+	first := true
 	for {
 		res, err := w.listFiles(ctx, folderID, pageToken)
 		if err != nil {
 			slog.Warn("Error listing files", "err", err)
 			return
+		}
+
+		if first {
+			if err := w.g.DB.Q.SaveGoogleFolder(ctx, sql.SaveGoogleFolderParams{
+				GoogleID: folderID,
+				Name:     res.Folder.Name,
+			}); err != nil {
+				slog.Warn("Couldn't save google folder", "name", res.Folder.Name)
+			}
+			first = false
 		}
 
 		for _, file := range res.Files {
@@ -99,8 +111,14 @@ func (w *Worker) searchIndexFolder(ctx context.Context, folderID string, created
 func (w *Worker) searchIndexFile(ctx context.Context, folder, file Item) (bool, error) {
 	// Get updated-time
 	var updated pgtype.Timestamptz
-	if result, err := w.g.DB.Q.GetJournalUpdatedTime(ctx, file.ID); err == nil {
-		updated = result
+	if meta, err := w.g.DB.Q.GetJournalMetadata(ctx, file.ID); err == nil {
+		updated = meta.Updated
+		if !meta.ParentGoogleID.Valid {
+			w.g.DB.Q.SetGoogleParentFolder(ctx, sql.SetGoogleParentFolderParams{
+				GoogleID:       file.ID,
+				ParentGoogleID: pgtype.Text{String: folder.ID, Valid: true},
+			})
+		}
 	} else if !errors.Is(err, pgx.ErrNoRows) {
 		log.Printf("Getting update time for %s: %v", file.Name, err)
 	}
