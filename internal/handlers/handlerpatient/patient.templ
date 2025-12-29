@@ -2,7 +2,6 @@ package handlerpatient
 
 import (
     "context"
-    "time"
 
 	"github.com/fugleadvokatene/bino/internal/model"
 	"github.com/fugleadvokatene/bino/internal/request"
@@ -21,7 +20,7 @@ templ PatientPage(
 	events []model.Event,
     speciesList []templbase.Option,
     journal *document.Document,
-    journalUpdated time.Time,
+    journalMeta JournalMetadata,
 ) {
 	@templbase.Layout(data, "patient-page") {
         <h1 class="editable" data-action={patient.URLSuffix("set-name")}>{patient.Name}</h1>
@@ -79,9 +78,15 @@ templ PatientPage(
 
             if patient.GoogleID != "" {
                 <h2>Journal</h2>
+                <a href={templ.URL(url.IDToDocumentURL(patient.GoogleID))}>
+                    {data.Language.DashboardGoToJournal}
+                </a>
                 @templbase.SingleButtonForm(data, patient.URLSuffix("fetch-journal"), "Hent siste fra Google Drive", "POST", "btn-success")
-                if !journalUpdated.IsZero() {
-                    <p>Sist oppdatert <span>{data.Language.FormatTimeAbs(journalUpdated)}</span></p>
+                if !journalMeta.Updated.IsZero() {
+                    <p>Sist oppdatert <span>{data.Language.FormatTimeAbs(journalMeta.Updated)}</span></p>
+                    if journalMeta.FolderID != "" {
+                        <p>I <a href={templ.URL(url.IDToFolderURL(journalMeta.FolderID))}>{journalMeta.FolderName}</a></p>
+                    }
                     @journal.Templ()
                 }
             }

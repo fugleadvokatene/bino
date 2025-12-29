@@ -42,9 +42,11 @@ WHERE google_id = $1
 ;
 
 -- name: GetJournalJSON :one
-SELECT updated, json
+SELECT updated, parent_google_id, gf.name AS parent_google_name, json
 FROM journal
-WHERE google_id = $1
+LEFT JOIN google_folder AS gf
+    ON gf.google_id = journal.parent_google_id
+WHERE journal.google_id = $1
 ;
 
 -- name: DeleteJournal :exec

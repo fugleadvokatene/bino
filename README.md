@@ -24,13 +24,9 @@ For now, bino uses Google Drive for actual patient journals, and users must have
 
 #### Data model
 
-These are the most important entities in the data model managed by Bino:
+Entities and relationships:
 
-![](doc/img/erd-main.png)
-
-Wiki and file subsystem:
-
-![](doc/img/erd-wiki.png)
+![](doc/img/bino-erd.drawio.png)
 
 File lifetime:
 
