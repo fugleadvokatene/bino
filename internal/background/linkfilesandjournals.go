@@ -18,6 +18,7 @@ func LinkFilesAndJournals(ctx context.Context, db *dblib.Database, lastSuccess t
 		return 0, err
 	}
 	nUpdated := 0
+	nFailed := 0
 	for _, journal := range journals {
 		doc, err := document.ParseJSON(journal.Json)
 		if err != nil {
@@ -42,9 +43,13 @@ func LinkFilesAndJournals(ctx context.Context, db *dblib.Database, lastSuccess t
 			return nil
 		}); err != nil {
 			slog.ErrorContext(ctx, "Updating file/journal associations", "err", err, "journal", journal.GoogleID, "files", fileIDs)
+			nFailed++
 		} else {
 			nUpdated++
 		}
 	}
-	return int64(nUpdated), nil
+	if nFailed > 0 {
+		err = fmt.Errorf("%d failed", nFailed)
+	}
+	return int64(nUpdated), err
 }
