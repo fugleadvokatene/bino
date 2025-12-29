@@ -143,7 +143,7 @@ WHERE google_id = $1
 ;
 
 -- name: InsertFileJournalAssociations :exec
-INSERT INTO file_journal (google_id, file_id) VALUES (@google_id, UNNEST(@file_id::INT[])) ON CONFLICT (google_id) DO NOTHING;
+INSERT INTO file_journal (google_id, file_id) VALUES (@google_id, UNNEST(@file_id::INT[])) ON CONFLICT (google_id, file_id) DO NOTHING;
 
 -- name: GetFilesMatchingJournals :many
 SELECT fj.google_id, fj.file_id, f.presentation_filename

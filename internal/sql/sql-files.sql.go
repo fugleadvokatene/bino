@@ -428,7 +428,7 @@ func (q *Queries) GetVariant(ctx context.Context, arg GetVariantParams) (ImageVa
 }
 
 const insertFileJournalAssociations = `-- name: InsertFileJournalAssociations :exec
-INSERT INTO file_journal (google_id, file_id) VALUES ($1, UNNEST($2::INT[])) ON CONFLICT (google_id) DO NOTHING
+INSERT INTO file_journal (google_id, file_id) VALUES ($1, UNNEST($2::INT[])) ON CONFLICT (google_id, file_id) DO NOTHING
 `
 
 type InsertFileJournalAssociationsParams struct {
