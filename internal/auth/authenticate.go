@@ -58,7 +58,7 @@ func Authenticate(
 	commonData := request.CommonData{
 		User:     &userData,
 		BuildKey: buildKey,
-		Language: language.GetLanguage(user.LanguageID),
+		Language: language.GetLanguage(user.LanguageID.Int32),
 	}
 
 	if val, ok := r.URL.Query()["_AL"]; ok && len(val) == 1 {

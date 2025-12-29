@@ -31,10 +31,8 @@ WHERE email = $1
 ;
 
 -- name: GetUser :one
-SELECT au.*, COALESCE(al.language_id, 1)
-FROM appuser AS au
-LEFT JOIN appuser_language AS al
-ON au.id = al.appuser_id
+SELECT *
+FROM appuser
 WHERE id = $1
 ;
 
@@ -46,10 +44,9 @@ ORDER BY au.id
 ;
 
 -- name: SetUserLanguage :exec
-INSERT INTO appuser_language (appuser_id, language_id)
-VALUES ($1, $2)
-ON CONFLICT (appuser_id) DO UPDATE
-    SET language_id = EXCLUDED.language_id
+UPDATE appuser
+SET language_id = $2
+WHERE id = $1
 ;
 
 -- name: SetLoggingConsent :exec
@@ -118,12 +115,6 @@ WHERE id = $1
 DELETE
 FROM appuser
 WHERE id = $1
-;
-
--- name: DeleteAppuserLanguage :exec
-DELETE
-FROM appuser_language
-WHERE appuser_id = $1
 ;
 
 -- name: GetUsersWithGoogleStoredAvatars :many

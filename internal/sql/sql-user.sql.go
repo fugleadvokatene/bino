@@ -71,17 +71,6 @@ func (q *Queries) DeleteAppuser(ctx context.Context, id int32) error {
 	return err
 }
 
-const deleteAppuserLanguage = `-- name: DeleteAppuserLanguage :exec
-DELETE
-FROM appuser_language
-WHERE appuser_id = $1
-`
-
-func (q *Queries) DeleteAppuserLanguage(ctx context.Context, appuserID int32) error {
-	_, err := q.db.Exec(ctx, deleteAppuserLanguage, appuserID)
-	return err
-}
-
 const deleteSessionsForUser = `-- name: DeleteSessionsForUser :exec
 DELETE
 FROM session
@@ -94,7 +83,7 @@ func (q *Queries) DeleteSessionsForUser(ctx context.Context, appuserID int32) er
 }
 
 const getAppusers = `-- name: GetAppusers :many
-SELECT au.id, au.display_name, au.google_sub, au.email, au.logging_consent, au.avatar_url, au.has_gdrive_access, au.access_level, ha.home_id FROM appuser AS au
+SELECT au.id, au.display_name, au.google_sub, au.email, au.logging_consent, au.avatar_url, au.has_gdrive_access, au.access_level, au.language_id, ha.home_id FROM appuser AS au
 LEFT JOIN home_appuser AS ha
     ON ha.appuser_id = au.id
 ORDER BY au.id
@@ -109,6 +98,7 @@ type GetAppusersRow struct {
 	AvatarUrl       pgtype.Text
 	HasGdriveAccess bool
 	AccessLevel     int32
+	LanguageID      pgtype.Int4
 	HomeID          pgtype.Int4
 }
 
@@ -130,6 +120,7 @@ func (q *Queries) GetAppusers(ctx context.Context) ([]GetAppusersRow, error) {
 			&i.AvatarUrl,
 			&i.HasGdriveAccess,
 			&i.AccessLevel,
+			&i.LanguageID,
 			&i.HomeID,
 		); err != nil {
 			return nil, err
@@ -143,7 +134,7 @@ func (q *Queries) GetAppusers(ctx context.Context) ([]GetAppusersRow, error) {
 }
 
 const getAppusersForHome = `-- name: GetAppusersForHome :many
-SELECT au.id, au.display_name, au.google_sub, au.email, au.logging_consent, au.avatar_url, au.has_gdrive_access, au.access_level
+SELECT au.id, au.display_name, au.google_sub, au.email, au.logging_consent, au.avatar_url, au.has_gdrive_access, au.access_level, au.language_id
 FROM home_appuser AS hau
 INNER JOIN appuser AS au
   ON hau.appuser_id = au.id
@@ -168,6 +159,7 @@ func (q *Queries) GetAppusersForHome(ctx context.Context, homeID int32) ([]Appus
 			&i.AvatarUrl,
 			&i.HasGdriveAccess,
 			&i.AccessLevel,
+			&i.LanguageID,
 		); err != nil {
 			return nil, err
 		}
@@ -213,28 +205,14 @@ func (q *Queries) GetHomesWithDataForUser(ctx context.Context, appuserID int32) 
 }
 
 const getUser = `-- name: GetUser :one
-SELECT au.id, au.display_name, au.google_sub, au.email, au.logging_consent, au.avatar_url, au.has_gdrive_access, au.access_level, COALESCE(al.language_id, 1)
-FROM appuser AS au
-LEFT JOIN appuser_language AS al
-ON au.id = al.appuser_id
+SELECT id, display_name, google_sub, email, logging_consent, avatar_url, has_gdrive_access, access_level, language_id
+FROM appuser
 WHERE id = $1
 `
 
-type GetUserRow struct {
-	ID              int32
-	DisplayName     string
-	GoogleSub       string
-	Email           string
-	LoggingConsent  pgtype.Timestamptz
-	AvatarUrl       pgtype.Text
-	HasGdriveAccess bool
-	AccessLevel     int32
-	LanguageID      int32
-}
-
-func (q *Queries) GetUser(ctx context.Context, id int32) (GetUserRow, error) {
+func (q *Queries) GetUser(ctx context.Context, id int32) (Appuser, error) {
 	row := q.db.QueryRow(ctx, getUser, id)
-	var i GetUserRow
+	var i Appuser
 	err := row.Scan(
 		&i.ID,
 		&i.DisplayName,
@@ -362,19 +340,18 @@ func (q *Queries) SetUserGDriveAccess(ctx context.Context, arg SetUserGDriveAcce
 }
 
 const setUserLanguage = `-- name: SetUserLanguage :exec
-INSERT INTO appuser_language (appuser_id, language_id)
-VALUES ($1, $2)
-ON CONFLICT (appuser_id) DO UPDATE
-    SET language_id = EXCLUDED.language_id
+UPDATE appuser
+SET language_id = $2
+WHERE id = $1
 `
 
 type SetUserLanguageParams struct {
-	AppuserID  int32
-	LanguageID int32
+	ID         int32
+	LanguageID pgtype.Int4
 }
 
 func (q *Queries) SetUserLanguage(ctx context.Context, arg SetUserLanguageParams) error {
-	_, err := q.db.Exec(ctx, setUserLanguage, arg.AppuserID, arg.LanguageID)
+	_, err := q.db.Exec(ctx, setUserLanguage, arg.ID, arg.LanguageID)
 	return err
 }
 

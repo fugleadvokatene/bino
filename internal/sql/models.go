@@ -19,12 +19,7 @@ type Appuser struct {
 	AvatarUrl       pgtype.Text
 	HasGdriveAccess bool
 	AccessLevel     int32
-}
-
-// Language preference for each user
-type AppuserLanguage struct {
-	AppuserID  int32
-	LanguageID int32
+	LanguageID      pgtype.Int4
 }
 
 type FeatureFlag struct {

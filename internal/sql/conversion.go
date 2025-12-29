@@ -140,6 +140,7 @@ func (user GetAppusersRow) ToModel() model.User {
 		AvatarURL:    user.AvatarUrl.String,
 		HasAvatarURL: user.AvatarUrl.Valid,
 		AccessLevel:  model.AccessLevel(user.AccessLevel),
+		LanguageID:   user.LanguageID.Int32,
 	}
 }
 
@@ -151,17 +152,7 @@ func (user Appuser) ToModel() model.User {
 		AvatarURL:    user.AvatarUrl.String,
 		HasAvatarURL: user.AvatarUrl.Valid,
 		AccessLevel:  model.AccessLevel(user.AccessLevel),
-	}
-}
-
-func (user GetUserRow) ToModel() model.User {
-	return model.User{
-		ID:           user.ID,
-		Name:         user.DisplayName,
-		Email:        user.Email,
-		AvatarURL:    user.AvatarUrl.String,
-		HasAvatarURL: user.AvatarUrl.Valid,
-		AccessLevel:  model.AccessLevel(user.AccessLevel),
+		LanguageID:   user.LanguageID.Int32,
 	}
 }
 
