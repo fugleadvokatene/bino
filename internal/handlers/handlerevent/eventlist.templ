@@ -45,7 +45,7 @@ templ EventList(data *request.CommonData, events []model.Event, showpatient bool
                 <td class="center">
                     @templbase.Avatar(event.User)
                 </td>
-                <td>{data.Language.FormatEvent(event.EventID, event.AssociatedID)}</td>
+                <td>{data.Language.FormatEvent(event.EventID, event.Status)}</td>
                 <td><a href={event.Home.URL()}>{event.Home.Name}</a></td>
                 <td>
                     <span class="editable editable-end" data-action={event.SetNoteURL()}>

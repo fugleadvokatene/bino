@@ -33,12 +33,6 @@ func (h *move) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	patientData, err := h.DB.Q.GetPatient(ctx, patient)
-	if err != nil {
-		handlererror.Error(w, r, err)
-		return
-	}
-
 	if err := h.DB.Transaction(ctx, func(ctx context.Context, db *db.Database) error {
 		if err := db.Q.MovePatient(ctx, sql.MovePatientParams{
 			ID:         patient,
@@ -48,13 +42,12 @@ func (h *move) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		}
 
 		if _, err := db.Q.AddPatientEvent(ctx, sql.AddPatientEventParams{
-			PatientID:    patient,
-			AppuserID:    commonData.User.AppuserID,
-			HomeID:       newHomeID,
-			EventID:      int32(model.EventIDTransferredToOtherHome),
-			AssociatedID: patientData.CurrHomeID,
-			Note:         "",
-			Time:         pgtype.Timestamptz{Time: time.Now(), Valid: true},
+			PatientID: patient,
+			AppuserID: commonData.User.AppuserID,
+			HomeID:    newHomeID,
+			EventID:   int32(model.EventIDTransferredToOtherHome),
+			Note:      "",
+			Time:      pgtype.Timestamptz{Time: time.Now(), Valid: true},
 		}); err != nil {
 			return err
 		}

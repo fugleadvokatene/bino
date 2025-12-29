@@ -135,14 +135,14 @@ type Patient struct {
 
 // Each row represents an event that has occurred to a specific patient
 type PatientEvent struct {
-	ID           int32
-	PatientID    int32
-	HomeID       int32
-	Note         string
-	EventID      int32
-	Time         pgtype.Timestamptz
-	AssociatedID pgtype.Int4
-	AppuserID    int32
+	ID        int32
+	PatientID int32
+	HomeID    int32
+	Note      string
+	EventID   int32
+	Time      pgtype.Timestamptz
+	Status    pgtype.Int4
+	AppuserID int32
 }
 
 type Session struct {

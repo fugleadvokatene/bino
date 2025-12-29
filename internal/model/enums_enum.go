@@ -431,7 +431,6 @@ const (
 	// EventIDEuthanized is a EventID of type Euthanized.
 	EventIDEuthanized EventID = 8
 	// EventIDStatusChanged is a EventID of type StatusChanged.
-	// Associated ID is status
 	EventIDStatusChanged EventID = 11
 	// EventIDDeleted is a EventID of type Deleted.
 	EventIDDeleted EventID = 12

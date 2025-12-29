@@ -8,17 +8,17 @@ import (
 )
 
 type Event struct {
-	ID           int32
-	PatientID    int32
-	HomeID       int32
-	Note         string
-	EventID      int32
-	AssociatedID pgtype.Int4
-	AppuserID    int32
-	HomeName     string
-	UserName     string
-	PatientName  string
-	AvatarUrl    pgtype.Text
+	ID          int32
+	PatientID   int32
+	HomeID      int32
+	Note        string
+	EventID     int32
+	Status      pgtype.Int4
+	AppuserID   int32
+	HomeName    string
+	UserName    string
+	PatientName string
+	AvatarUrl   pgtype.Text
 
 	TimeAbs string
 	TimeRel string

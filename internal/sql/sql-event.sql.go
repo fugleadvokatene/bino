@@ -12,19 +12,19 @@ import (
 )
 
 const addPatientEvent = `-- name: AddPatientEvent :one
-INSERT INTO patient_event (patient_id, home_id, event_id, associated_id, note, appuser_id, time)
+INSERT INTO patient_event (patient_id, home_id, event_id, status, note, appuser_id, time)
 VALUES ($1, $2, $3, $4, $5, $6, $7)
 RETURNING id
 `
 
 type AddPatientEventParams struct {
-	PatientID    int32
-	HomeID       int32
-	EventID      int32
-	AssociatedID pgtype.Int4
-	Note         string
-	AppuserID    int32
-	Time         pgtype.Timestamptz
+	PatientID int32
+	HomeID    int32
+	EventID   int32
+	Status    pgtype.Int4
+	Note      string
+	AppuserID int32
+	Time      pgtype.Timestamptz
 }
 
 func (q *Queries) AddPatientEvent(ctx context.Context, arg AddPatientEventParams) (int32, error) {
@@ -32,7 +32,7 @@ func (q *Queries) AddPatientEvent(ctx context.Context, arg AddPatientEventParams
 		arg.PatientID,
 		arg.HomeID,
 		arg.EventID,
-		arg.AssociatedID,
+		arg.Status,
 		arg.Note,
 		arg.AppuserID,
 		arg.Time,
@@ -43,7 +43,7 @@ func (q *Queries) AddPatientEvent(ctx context.Context, arg AddPatientEventParams
 }
 
 const addPatientRegisteredEvents = `-- name: AddPatientRegisteredEvents :exec
-INSERT INTO patient_event (patient_id, home_id, event_id, associated_id, note, appuser_id, time)
+INSERT INTO patient_event (patient_id, home_id, event_id, status, note, appuser_id, time)
 VALUES (
   UNNEST($1::int[]),
   UNNEST($2::int[]),
@@ -95,7 +95,7 @@ func (q *Queries) DeleteEventsForPatient(ctx context.Context, patientID int32) e
 
 const getEvents = `-- name: GetEvents :many
 SELECT
-    pe.id, pe.patient_id, pe.home_id, pe.note, pe.event_id, pe.time, pe.associated_id, pe.appuser_id,
+    pe.id, pe.patient_id, pe.home_id, pe.note, pe.event_id, pe.time, pe.status, pe.appuser_id,
     p.name AS patient_name,
     h.name AS home_name,
     au.display_name AS user_name,
@@ -117,18 +117,18 @@ type GetEventsParams struct {
 }
 
 type GetEventsRow struct {
-	ID           int32
-	PatientID    int32
-	HomeID       int32
-	Note         string
-	EventID      int32
-	Time         pgtype.Timestamptz
-	AssociatedID pgtype.Int4
-	AppuserID    int32
-	PatientName  string
-	HomeName     string
-	UserName     string
-	AvatarUrl    pgtype.Text
+	ID          int32
+	PatientID   int32
+	HomeID      int32
+	Note        string
+	EventID     int32
+	Time        pgtype.Timestamptz
+	Status      pgtype.Int4
+	AppuserID   int32
+	PatientName string
+	HomeName    string
+	UserName    string
+	AvatarUrl   pgtype.Text
 }
 
 func (q *Queries) GetEvents(ctx context.Context, arg GetEventsParams) ([]GetEventsRow, error) {
@@ -147,7 +147,7 @@ func (q *Queries) GetEvents(ctx context.Context, arg GetEventsParams) ([]GetEven
 			&i.Note,
 			&i.EventID,
 			&i.Time,
-			&i.AssociatedID,
+			&i.Status,
 			&i.AppuserID,
 			&i.PatientName,
 			&i.HomeName,
@@ -166,7 +166,7 @@ func (q *Queries) GetEvents(ctx context.Context, arg GetEventsParams) ([]GetEven
 
 const getEventsForCalendar = `-- name: GetEventsForCalendar :many
 SELECT
-  pe.id, pe.patient_id, pe.home_id, pe.note, pe.event_id, pe.time, pe.associated_id, pe.appuser_id,
+  pe.id, pe.patient_id, pe.home_id, pe.note, pe.event_id, pe.time, pe.status, pe.appuser_id,
   h.name AS home_name,
   p.name AS patient_name
 FROM patient_event AS pe
@@ -185,16 +185,16 @@ type GetEventsForCalendarParams struct {
 }
 
 type GetEventsForCalendarRow struct {
-	ID           int32
-	PatientID    int32
-	HomeID       int32
-	Note         string
-	EventID      int32
-	Time         pgtype.Timestamptz
-	AssociatedID pgtype.Int4
-	AppuserID    int32
-	HomeName     string
-	PatientName  string
+	ID          int32
+	PatientID   int32
+	HomeID      int32
+	Note        string
+	EventID     int32
+	Time        pgtype.Timestamptz
+	Status      pgtype.Int4
+	AppuserID   int32
+	HomeName    string
+	PatientName string
 }
 
 func (q *Queries) GetEventsForCalendar(ctx context.Context, arg GetEventsForCalendarParams) ([]GetEventsForCalendarRow, error) {
@@ -213,7 +213,7 @@ func (q *Queries) GetEventsForCalendar(ctx context.Context, arg GetEventsForCale
 			&i.Note,
 			&i.EventID,
 			&i.Time,
-			&i.AssociatedID,
+			&i.Status,
 			&i.AppuserID,
 			&i.HomeName,
 			&i.PatientName,
@@ -230,7 +230,7 @@ func (q *Queries) GetEventsForCalendar(ctx context.Context, arg GetEventsForCale
 
 const getEventsForPatient = `-- name: GetEventsForPatient :many
 SELECT
-    pe.id, pe.patient_id, pe.home_id, pe.note, pe.event_id, pe.time, pe.associated_id, pe.appuser_id,
+    pe.id, pe.patient_id, pe.home_id, pe.note, pe.event_id, pe.time, pe.status, pe.appuser_id,
     h.name AS home_name,
     au.display_name AS user_name,
     au.avatar_url AS avatar_url
@@ -244,17 +244,17 @@ ORDER BY pe.time
 `
 
 type GetEventsForPatientRow struct {
-	ID           int32
-	PatientID    int32
-	HomeID       int32
-	Note         string
-	EventID      int32
-	Time         pgtype.Timestamptz
-	AssociatedID pgtype.Int4
-	AppuserID    int32
-	HomeName     string
-	UserName     string
-	AvatarUrl    pgtype.Text
+	ID        int32
+	PatientID int32
+	HomeID    int32
+	Note      string
+	EventID   int32
+	Time      pgtype.Timestamptz
+	Status    pgtype.Int4
+	AppuserID int32
+	HomeName  string
+	UserName  string
+	AvatarUrl pgtype.Text
 }
 
 func (q *Queries) GetEventsForPatient(ctx context.Context, patientID int32) ([]GetEventsForPatientRow, error) {
@@ -273,7 +273,7 @@ func (q *Queries) GetEventsForPatient(ctx context.Context, patientID int32) ([]G
 			&i.Note,
 			&i.EventID,
 			&i.Time,
-			&i.AssociatedID,
+			&i.Status,
 			&i.AppuserID,
 			&i.HomeName,
 			&i.UserName,

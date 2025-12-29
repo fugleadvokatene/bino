@@ -1,11 +1,11 @@
 -- name: AddPatientEvent :one
-INSERT INTO patient_event (patient_id, home_id, event_id, associated_id, note, appuser_id, time)
+INSERT INTO patient_event (patient_id, home_id, event_id, status, note, appuser_id, time)
 VALUES ($1, $2, $3, $4, $5, $6, $7)
 RETURNING id
 ;
 
 -- name: AddPatientRegisteredEvents :exec
-INSERT INTO patient_event (patient_id, home_id, event_id, associated_id, note, appuser_id, time)
+INSERT INTO patient_event (patient_id, home_id, event_id, status, note, appuser_id, time)
 VALUES (
   UNNEST(@patient_id::int[]),
   UNNEST(@home_id::int[]),

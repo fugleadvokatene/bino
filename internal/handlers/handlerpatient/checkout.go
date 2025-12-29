@@ -66,7 +66,7 @@ func (h *checkout) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		}
 
 		var event model.EventID
-		var associatedID pgtype.Int4
+		var statusField pgtype.Int4
 		switch status {
 		case int32(model.StatusDead):
 			event = model.EventIDDied
@@ -80,17 +80,17 @@ func (h *checkout) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			event = model.EventIDTransferredOutsideOrganization
 		default:
 			event = model.EventIDStatusChanged
-			associatedID = pgtype.Int4{Int32: int32(status), Valid: true}
+			statusField = pgtype.Int4{Int32: int32(status), Valid: true}
 		}
 
 		if _, err := db.Q.AddPatientEvent(ctx, sql.AddPatientEventParams{
-			PatientID:    patient,
-			AppuserID:    commonData.User.AppuserID,
-			HomeID:       patientData.CurrHomeID.Int32,
-			EventID:      int32(event),
-			AssociatedID: associatedID,
-			Note:         note,
-			Time:         now,
+			PatientID: patient,
+			AppuserID: commonData.User.AppuserID,
+			HomeID:    patientData.CurrHomeID.Int32,
+			EventID:   int32(event),
+			Status:    statusField,
+			Note:      note,
+			Time:      now,
 		}); err != nil {
 			return err
 		}

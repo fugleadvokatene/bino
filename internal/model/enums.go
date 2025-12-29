@@ -67,7 +67,7 @@ type Cap int32
 //	TransferredOutsideOrganization = 6,
 //	Died                           = 7,
 //	Euthanized                     = 8,
-//	StatusChanged                  = 11, // Associated ID is status
+//	StatusChanged                  = 11,
 //	Deleted                        = 12,
 //	NameChanged                    = 13,
 //	JournalCreated                 = 14,
