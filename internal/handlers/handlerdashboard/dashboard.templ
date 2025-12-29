@@ -15,12 +15,13 @@ templ DashboardPage(
     selfHome *model.Home,
     homes []model.Home,
     mascotURL string,
+    speciesDistribution []model.SpeciesCountRow,
 ) {
 	@templbase.Layout(data, "dashboard-container") {
         <div class="dashboard-left-sidebar">
             @DashboardForm(data, defaultSelectedSpecies, selfHome, homes)
             @DashboardSearch(data)
-            @DashboardTotalPatients(homes)
+            @DashboardTotalPatients(data, speciesDistribution)
             @templbase.Mascot(data, mascotURL, true)
         </div>
         if selfHome.ID != 0 {
@@ -33,16 +34,27 @@ templ DashboardPage(
     @templbase.JSModule(data, "reorder-patients")
 }
 
-templ DashboardTotalPatients(homes []model.Home) {
-    <div class="hide-on-mobile m-auto">
-        <p class="micro total-patients">Totalt {nPatients(homes)} pasienter inne nå.</p>
+templ DashboardTotalPatients(data *request.CommonData, speciesDistribution []model.SpeciesCountRow) {
+    <div class="hide-on-mobile m-auto w-100 center">
+        <p class="micro total-patients m-auto center">Totalt {nPatients(speciesDistribution)} pasienter inne nå.
+        if len(speciesDistribution) > 0 {
+            <a href="#" class="expander" data-target="#patient-distribution-chart">Vis arter</a>
+        }
+        </p>
+        if len(speciesDistribution) > 0 {
+            <div id="patient-distribution-chart" class="hide-on-mobile w-100" hidden>
+                @templ.JSONScript("patient-chart-data", speciesDistribution)
+                <canvas id={"patient-chart"} height="200"></canvas>
+                @templbase.JSModule(data, "patientchart")
+            </div>
+        }
     </div>
 }
 
-func nPatients(homes []model.Home) int {
+func nPatients(dist []model.SpeciesCountRow) int {
     n := 0
-    for _, home := range homes {
-        n += len(home.Patients)
+    for _, s := range dist {
+        n += s.Count
     }
     return n
 } 

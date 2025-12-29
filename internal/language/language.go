@@ -218,6 +218,8 @@ type Language struct {
 	SearchTimePreferenceNewer string
 	SearchTimePreferenceOlder string
 
+	SpeciesOther string
+
 	NavbarCalendar  string
 	NavbarDashboard string
 
@@ -586,6 +588,8 @@ var NO = &Language{
 	SearchTimePreferenceOlder: "Eldre",
 	SearchTimePreferenceNewer: "Nyere",
 
+	SpeciesOther: "Andre",
+
 	Status: map[model.Status]string{
 		model.StatusUnknown:                        "Ukjent",
 		model.StatusAdmitted:                       "I rehab",
@@ -890,6 +894,8 @@ var EN = &Language{
 	SearchTimePreferenceNone:  "None",
 	SearchTimePreferenceOlder: "Older",
 	SearchTimePreferenceNewer: "Newer",
+
+	SpeciesOther: "Other",
 
 	Status: map[model.Status]string{
 		model.StatusUnknown:                        "Unknown",

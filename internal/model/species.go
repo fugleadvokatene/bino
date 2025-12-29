@@ -5,3 +5,8 @@ type Species struct {
 	Name      string
 	Preferred bool
 }
+
+type SpeciesCountRow struct {
+	Species string
+	Count   int
+}

@@ -179,6 +179,13 @@ type StatDebug struct {
 	Value float32
 }
 
+type StatPatient struct {
+	Date      pgtype.Date
+	SpeciesID int32
+	HomeID    int32
+	PatientID int32
+}
+
 type WikiPage struct {
 	ID        int32
 	SortOrder pgtype.Int4

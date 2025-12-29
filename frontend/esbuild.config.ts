@@ -15,6 +15,7 @@ build({
     'home.ts',
     'imageupload.ts',
     'reorder-patients.ts',
+    'patientchart.ts',
     'search.ts',
     'speciesadmin.ts'
   ],

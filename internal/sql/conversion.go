@@ -353,3 +353,12 @@ func (in *ImageVariant) ToModel() model.ImageVariant {
 		Height:    in.Height,
 	}
 }
+
+// ---- Stats
+
+func (in StatPatientGetCurrentSpeciesDistributionRow) ToModel() model.SpeciesCountRow {
+	return model.SpeciesCountRow{
+		Species: in.Name,
+		Count:   int(in.Count),
+	}
+}

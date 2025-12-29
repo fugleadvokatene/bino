@@ -19,6 +19,15 @@ WHERE curr_home_id IS NOT NULL
 ORDER BY p.curr_home_id, p.sort_order, p.id
 ;
 
+-- name: GetActivePatientsForStatCollection :many
+SELECT
+  p.id,
+  p.species_id,
+  P.curr_home_id
+FROM patient AS p
+WHERE curr_home_id IS NOT NULL
+;
+
 -- name: GetActivePatientsMissingJournal :many
 SELECT 
   p.id,

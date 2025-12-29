@@ -51,6 +51,9 @@ const makeChart = (dataID, canvasID) => {
         mode: 'index',
         intersect: false
       },
+      animation: {
+        duration: 0
+      },
       plugins: {
         tooltip: {
           mode: 'index',

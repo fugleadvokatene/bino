@@ -200,6 +200,41 @@ func (q *Queries) GetActivePatients(ctx context.Context, languageID int32) ([]Ge
 	return items, nil
 }
 
+const getActivePatientsForStatCollection = `-- name: GetActivePatientsForStatCollection :many
+SELECT
+  p.id,
+  p.species_id,
+  P.curr_home_id
+FROM patient AS p
+WHERE curr_home_id IS NOT NULL
+`
+
+type GetActivePatientsForStatCollectionRow struct {
+	ID         int32
+	SpeciesID  int32
+	CurrHomeID pgtype.Int4
+}
+
+func (q *Queries) GetActivePatientsForStatCollection(ctx context.Context) ([]GetActivePatientsForStatCollectionRow, error) {
+	rows, err := q.db.Query(ctx, getActivePatientsForStatCollection)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetActivePatientsForStatCollectionRow
+	for rows.Next() {
+		var i GetActivePatientsForStatCollectionRow
+		if err := rows.Scan(&i.ID, &i.SpeciesID, &i.CurrHomeID); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getActivePatientsMissingJournal = `-- name: GetActivePatientsMissingJournal :many
 SELECT 
   p.id,

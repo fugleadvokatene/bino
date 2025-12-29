@@ -80,10 +80,19 @@ func StartJobs(
 	job.Run(
 		ctx,
 		db,
-		"Collect stats",
+		"Collect debug stats",
 		time.Minute,
 		func(ctx context.Context, _ time.Time) (any, error) {
 			return debug.StoreDebugStats(ctx, db)
+		},
+	)
+	job.Run(
+		ctx,
+		db,
+		"Collect patient stats",
+		time.Hour*2,
+		func(ctx context.Context, lastSuccess time.Time) (any, error) {
+			return CollectPatientStats(ctx, db)
 		},
 	)
 	job.Run(

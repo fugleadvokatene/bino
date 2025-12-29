@@ -18520,78 +18520,60 @@ adapters._date.override({
   }
 });
 
-// debugchart.ts
+// patientchart.ts
 var makeChart = (dataID, canvasID) => {
   const el = document.getElementById(dataID);
   if (!el) {
     throw new Error(`missing ${dataID} data element`);
   }
-  const series = JSON.parse(el.textContent || "{}");
-  const points = series.Values.map((p) => ({
-    x: new Date(p.x),
-    y: p.y
-  }));
-  const xs = points.map((p) => p.x.getTime());
+  const rows = JSON.parse(el.textContent || "{}");
+  const labels = rows.map((p) => p.Species);
+  const data = rows.map((p) => p.Count);
   const canvas = document.getElementById(canvasID);
   if (!canvas) {
     throw new Error("missing chart canvas");
   }
   new auto_default(canvas, {
-    type: "line",
+    type: "bar",
     data: {
+      labels,
       datasets: [
         {
-          label: series.Name,
-          data: points,
-          tension: 0.15,
-          borderWidth: 2,
-          pointRadius: 2
+          data
         }
       ]
     },
     options: {
-      parsing: false,
-      responsive: true,
-      interaction: {
-        mode: "index",
-        intersect: false
-      },
       animation: {
         duration: 0
       },
       plugins: {
-        tooltip: {
-          mode: "index",
-          intersect: false
-        }
-      },
-      scales: {
-        x: {
-          type: "time",
-          min: Math.min(...xs),
-          max: Math.max(...xs),
-          grid: {
-            display: false
-          },
-          ticks: {
-            maxRotation: 0
-          }
+        legend: {
+          display: false
         },
-        y: {
-          grace: 0,
-          grid: {
-            color: "rgba(0,0,0,0.05)"
-          }
+        tooltip: {
+          enabled: false
         }
       }
-    }
+    },
+    plugins: [
+      {
+        id: "valueLabels",
+        afterDatasetsDraw(chart) {
+          const { ctx } = chart;
+          chart.getDatasetMeta(0).data.forEach((bar, i) => {
+            ctx.save();
+            ctx.textAlign = "center";
+            ctx.textBaseline = "bottom";
+            ctx.fillText(String(data[i]), bar.x, bar.y - 4);
+            ctx.restore();
+          });
+        }
+      }
+    ]
   });
 };
-makeChart("ProcNGoroutines-data", "ProcNGoroutines-chart");
-makeChart("ProcMemAllocatedMB-data", "ProcMemAllocatedMB-chart");
-makeChart("MachineLoadPercent-data", "MachineLoadPercent-chart");
-makeChart("MachineMemUsedMB-data", "MachineMemUsedMB-chart");
-makeChart("MachineDiskUsedGB-data", "MachineDiskUsedGB-chart");
+makeChart("patient-chart-data", "patient-chart");
 /*! Bundled license information:
 
 @kurkle/color/dist/color.esm.js:
