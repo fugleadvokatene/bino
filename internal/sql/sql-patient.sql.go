@@ -96,21 +96,6 @@ func (q *Queries) AddPatients(ctx context.Context, arg AddPatientsParams) ([]int
 	return items, nil
 }
 
-const associateFileWithPatient = `-- name: AssociateFileWithPatient :exec
-INSERT INTO file_patient (file_id, patient_id)
-VALUES ($1, $2)
-`
-
-type AssociateFileWithPatientParams struct {
-	FileID    int32
-	PatientID int32
-}
-
-func (q *Queries) AssociateFileWithPatient(ctx context.Context, arg AssociateFileWithPatientParams) error {
-	_, err := q.db.Exec(ctx, associateFileWithPatient, arg.FileID, arg.PatientID)
-	return err
-}
-
 const checkoutPatient = `-- name: CheckoutPatient :exec
 UPDATE patient
 SET time_checkout = $2
@@ -135,16 +120,6 @@ WHERE id = $1
 
 func (q *Queries) DeclineSuggestedJournal(ctx context.Context, id int32) error {
 	_, err := q.db.Exec(ctx, declineSuggestedJournal, id)
-	return err
-}
-
-const deleteFileAssociationsForPatient = `-- name: DeleteFileAssociationsForPatient :exec
-DELETE FROM file_patient
-WHERE patient_id = $1
-`
-
-func (q *Queries) DeleteFileAssociationsForPatient(ctx context.Context, patientID int32) error {
-	_, err := q.db.Exec(ctx, deleteFileAssociationsForPatient, patientID)
 	return err
 }
 

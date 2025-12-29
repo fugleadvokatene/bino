@@ -36,23 +36,6 @@ func (db *Database) GetFiles(
 		},
 	)
 
-	// Attach patient associations
-	filePatientAssociations, err := db.Q.GetFilePatientAssociations(ctx)
-	if err != nil {
-		return nil, fmt.Errorf("getting file patient associations: %w", err)
-	}
-	generic.GroupByID(
-		files,
-		filePatientAssociations,
-		getFileID,
-		func(fpa *sql.GetFilePatientAssociationsRow) int32 {
-			return fpa.FileID
-		},
-		func(f *model.File, fpa *sql.GetFilePatientAssociationsRow) {
-			f.PatientAssociations = append(f.PatientAssociations, fpa.ToModel())
-		},
-	)
-
 	// Attach image variants
 	imageVariants, err := db.Q.GetImageVariants(ctx)
 	if err != nil {

@@ -47,16 +47,6 @@ INNER JOIN wiki_page AS wp
 ORDER BY fw.wiki_id
 ;
 
--- name: GetFilePatientAssociations :many
-SELECT fp.file_id, fp.patient_id, p.name
-FROM file
-INNER JOIN file_patient AS fp
-  ON file.id = fp.file_id
-INNER JOIN patient AS p
-  ON p.id = fp.patient_id
-ORDER BY fp.patient_id
-;
-
 -- name: GetImageVariants :many
 SELECT iv.*
 FROM file
@@ -145,4 +135,20 @@ delete from file_wiki fw
 using unused u
 where fw.file_id = u.file_id
   and fw.wiki_id = u.wiki_id
+;
+
+-- name: DeleteFileJournalAssociations :exec
+DELETE FROM file_journal
+WHERE google_id = $1
+;
+
+-- name: InsertFileJournalAssociations :exec
+INSERT INTO file_journal (google_id, file_id) VALUES (@google_id, UNNEST(@file_id::INT[])) ON CONFLICT (google_id) DO NOTHING;
+
+-- name: GetFilesMatchingJournals :many
+SELECT fj.google_id, fj.file_id, f.presentation_filename
+FROM file_journal AS fj
+INNER JOIN file AS f
+  ON (f.id = fj.file_id)
+WHERE fj.google_id = ANY(@google_id::TEXT[])
 ;

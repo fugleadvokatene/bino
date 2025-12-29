@@ -10,9 +10,6 @@ func (db *Database) DeletePatient(ctx context.Context, id int32) error {
 		if err := db.Q.DeleteEventsForPatient(ctx, id); err != nil {
 			return fmt.Errorf("deleting events for patient: %w", err)
 		}
-		if err := db.Q.DeleteFileAssociationsForPatient(ctx, id); err != nil {
-			return fmt.Errorf("deleting file associations for patient: %w", err)
-		}
 		if err := db.Q.DeletePatient(ctx, id); err != nil {
 			return fmt.Errorf("deleting patient: %w", err)
 		}

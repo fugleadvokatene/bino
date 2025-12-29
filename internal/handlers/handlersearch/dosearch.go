@@ -17,6 +17,8 @@ import (
 )
 
 func doSearch(r *http.Request, db *dblib.Database) (dblib.SearchResult, error) {
+	ctx := r.Context()
+
 	q, err := request.GetFormValue(r, "q")
 	if err != nil {
 		return dblib.SearchResult{}, err
@@ -68,7 +70,7 @@ func doSearch(r *http.Request, db *dblib.Database) (dblib.SearchResult, error) {
 	t0 := time.Now()
 	if mode == "advanced" {
 		searchParams := dblib.NewSearchAdvancedParams(query)
-		rows, err := db.Q.SearchAdvanced(r.Context(), searchParams)
+		rows, err := db.Q.SearchAdvanced(ctx, searchParams)
 		if err != nil {
 			return dblib.SearchResult{Query: query}, err
 		}
@@ -76,7 +78,7 @@ func doSearch(r *http.Request, db *dblib.Database) (dblib.SearchResult, error) {
 			return in.ToModel(q)
 		})
 		if searchParams.Offset > 0 || len(matches) >= int(searchParams.Limit) {
-			totalMatches, err = db.Q.SearchAdvancedCount(r.Context(), sql.SearchAdvancedCountParams{
+			totalMatches, err = db.Q.SearchAdvancedCount(ctx, sql.SearchAdvancedCountParams{
 				Query:        query.Query,
 				Simthreshold: searchParams.Simthreshold,
 				Lang:         searchParams.Lang,
@@ -91,7 +93,7 @@ func doSearch(r *http.Request, db *dblib.Database) (dblib.SearchResult, error) {
 		offset = searchParams.Offset
 	} else {
 		searchParams := dblib.NewBasicSearchParams(query)
-		rows, err := db.Q.SearchBasic(r.Context(), searchParams)
+		rows, err := db.Q.SearchBasic(ctx, searchParams)
 		if err != nil {
 			return dblib.SearchResult{Query: query}, err
 		}
@@ -99,7 +101,7 @@ func doSearch(r *http.Request, db *dblib.Database) (dblib.SearchResult, error) {
 			return in.ToModel()
 		})
 		if searchParams.Offset > 0 || len(matches) >= int(searchParams.Limit) {
-			totalMatches, err = db.Q.SearchBasicCount(r.Context(), sql.SearchBasicCountParams{
+			totalMatches, err = db.Q.SearchBasicCount(ctx, sql.SearchBasicCountParams{
 				Query: query.Query,
 				Lang:  searchParams.Lang,
 			})
@@ -112,6 +114,28 @@ func doSearch(r *http.Request, db *dblib.Database) (dblib.SearchResult, error) {
 		}
 		offset = searchParams.Offset
 	}
+
+	// Attach file IDs to images
+	googleIDs := generic.SliceToSlice(matches, func(in model.Match) string { return in.GoogleID })
+	if files, err := db.Q.GetFilesMatchingJournals(ctx, googleIDs); err == nil {
+		generic.GroupByID(
+			matches,
+			files,
+			func(in *model.Match) string {
+				return in.GoogleID
+			},
+			func(in *sql.GetFilesMatchingJournalsRow) string {
+				return in.GoogleID
+			},
+			func(match *model.Match, fi *sql.GetFilesMatchingJournalsRow) {
+				match.Images = append(match.Images, model.ImageInJournal{
+					FileID:               fi.FileID,
+					PresentationFilename: fi.PresentationFilename,
+				})
+			},
+		)
+	}
+
 	elapsed := time.Since(t0)
 
 	return dblib.SearchResult{

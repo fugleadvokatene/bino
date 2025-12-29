@@ -1,6 +1,7 @@
 package model
 
 import (
+	"fmt"
 	"strings"
 )
 
@@ -13,6 +14,16 @@ type Match struct {
 	BodyFragments    []HighlightFragment
 	Rank             float32
 	RankParts        map[string]float32
+	Images           []ImageInJournal
+}
+
+type ImageInJournal struct {
+	FileID               int32
+	PresentationFilename string
+}
+
+func (iij *ImageInJournal) URL(variant FileVariantID) string {
+	return fmt.Sprintf("/file/%d/%s?variant=%s", iij.FileID, iij.PresentationFilename, variant.String())
 }
 
 type HighlightFragment struct {

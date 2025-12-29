@@ -1,6 +1,7 @@
 package document
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 	"log/slog"
@@ -15,6 +16,12 @@ type Document struct {
 	Title      string
 	RevisionID string
 	Content    []Element
+}
+
+func ParseJSON(in []byte) (*Document, error) {
+	doc := new(Document)
+	err := json.Unmarshal(in, doc)
+	return doc, err
 }
 
 func (d *Document) Markdown(w *strings.Builder) {

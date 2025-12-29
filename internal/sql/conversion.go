@@ -339,14 +339,6 @@ func (in *GetFileWikiAssociationsRow) ToModel() model.FileWikiAssociation {
 
 // ---- File Patient association
 
-func (in *GetFilePatientAssociationsRow) ToModel() model.FilePatientAssociation {
-	return model.FilePatientAssociation{
-		FileID:      in.FileID,
-		PatientID:   in.PatientID,
-		PatientName: in.Name,
-	}
-}
-
 // --- Image variant
 
 func (in *ImageVariant) ToModel() model.ImageVariant {

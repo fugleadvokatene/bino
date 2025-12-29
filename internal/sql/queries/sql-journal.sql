@@ -79,3 +79,10 @@ VALUES (@google_id, @name)
 ON CONFLICT (google_id) DO UPDATE
     SET name=EXCLUDED.name
 ;
+
+-- name: GetJournalsUpdatedAfter :many
+SELECT google_id, json
+FROM journal
+WHERE updated > $1
+ORDER BY updated ASC
+;

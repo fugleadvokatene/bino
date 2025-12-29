@@ -39,9 +39,9 @@ type File struct {
 	Sha256               []byte
 }
 
-type FilePatient struct {
-	FileID    int32
-	PatientID int32
+type FileJournal struct {
+	GoogleID string
+	FileID   int32
 }
 
 type FileWiki struct {
@@ -100,6 +100,11 @@ type Invitation struct {
 	Created     pgtype.Timestamptz
 	AccessLevel int32
 	Home        pgtype.Int4
+}
+
+type Job struct {
+	Name        string
+	LastSuccess pgtype.Timestamptz
 }
 
 type Journal struct {

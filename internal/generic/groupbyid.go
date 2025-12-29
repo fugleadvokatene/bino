@@ -7,11 +7,11 @@ import (
 
 // GroupByID attaches items to collections by ID.
 // Note that the input slice is mutated (stably sorted in place) to avoid quadratic behavior
-func GroupByID[TCollection any, TItem any](
+func GroupByID[TCollection any, TItem any, TKey cmp.Ordered](
 	collections []TCollection,
 	items []TItem,
-	getCollectionID func(*TCollection) int32,
-	getItemID func(*TItem) int32,
+	getCollectionID func(*TCollection) TKey,
+	getItemID func(*TItem) TKey,
 	attachItem func(*TCollection, *TItem),
 ) {
 	// Stably sort collections and items by ID

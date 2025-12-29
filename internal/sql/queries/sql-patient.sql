@@ -191,12 +191,3 @@ SET time_checkout = $2
 WHERE id = $1
 ;
 
--- name: AssociateFileWithPatient :exec
-INSERT INTO file_patient (file_id, patient_id)
-VALUES (@file_id, @patient_id)
-;
-
--- name: DeleteFileAssociationsForPatient :exec
-DELETE FROM file_patient
-WHERE patient_id = $1
-;

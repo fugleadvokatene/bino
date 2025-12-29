@@ -54,6 +54,8 @@ templ SearchPage(data *request.CommonData, result db.SearchResult, fallbackMsg s
         @SearchMatches(data, result, fallbackMsg)
 	}
     @templbase.JSModule(data, "search")
+    <link rel="stylesheet" href={data.StaticFile("bundle/imageupload.css")}></link>
+    @templbase.JSModule(data, "imageupload")
 }
 
 templ SearchMatches(data *request.CommonData, result db.SearchResult, fallbackMsg string) {
@@ -97,6 +99,20 @@ templ SearchMatches(data *request.CommonData, result db.SearchResult, fallbackMs
                                     @Runs(frag.Runs, true)
                                 </pre>
                             </div>
+                        }
+                    </div>
+                    <div class="search-image-row d-flex gap-2 p-1 justify-content-evenly flex-wrap align-items-center">
+                        for _, img := range match.Images {
+                            <a
+                                href={templ.URL(img.URL(model.FileVariantIDOriginal))}
+                                data-lightbox="user-files"
+                                class="user-image-link journal-image-frame d-block"
+                            >
+                                <img
+                                    src={img.URL(model.FileVariantIDSmall)}
+                                    class="user-image dark-on-hover"
+                                />
+                            </a>
                         }
                     </div>
                     if result.Query.DebugRank {

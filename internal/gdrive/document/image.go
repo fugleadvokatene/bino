@@ -2,10 +2,14 @@ package document
 
 import (
 	"fmt"
+	"regexp"
+	"strconv"
 	"strings"
 
 	"google.golang.org/api/docs/v1"
 )
+
+var fileIDRegex = regexp.MustCompile("/file/(\\d+)/")
 
 type DocImage struct {
 	Title       string
@@ -19,18 +23,23 @@ type DocImage struct {
 	Angle       float64
 }
 
-func (di *DocImage) Scale() float64 {
-	return max(
-		1/(1-di.Crop[3]-di.Crop[1]),
-		1/(1-di.Crop[0]-di.Crop[2]),
-	)
-}
-
 func (di *DocImage) Markdown(w *strings.Builder) {
 	if di == nil {
 		return
 	}
 	fmt.Fprintf(w, "![%s %s](%s)\n", di.Title, di.Description, di.URL)
+}
+
+func (di *DocImage) FileID() (int32, bool) {
+	if di.Volatile {
+		return 0, false
+	}
+	matches := fileIDRegex.FindStringSubmatch(di.URL)
+	if len(matches) <= 1 {
+		return 0, false
+	}
+	i, err := strconv.ParseInt(matches[1], 10, 32)
+	return int32(i), err == nil
 }
 
 func (*DocImage) IndexableText(*strings.Builder) {

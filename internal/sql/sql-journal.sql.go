@@ -98,6 +98,38 @@ func (q *Queries) GetJournalMetadata(ctx context.Context, googleID string) (GetJ
 	return i, err
 }
 
+const getJournalsUpdatedAfter = `-- name: GetJournalsUpdatedAfter :many
+SELECT google_id, json
+FROM journal
+WHERE updated > $1
+ORDER BY updated ASC
+`
+
+type GetJournalsUpdatedAfterRow struct {
+	GoogleID string
+	Json     []byte
+}
+
+func (q *Queries) GetJournalsUpdatedAfter(ctx context.Context, updated pgtype.Timestamptz) ([]GetJournalsUpdatedAfterRow, error) {
+	rows, err := q.db.Query(ctx, getJournalsUpdatedAfter, updated)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetJournalsUpdatedAfterRow
+	for rows.Next() {
+		var i GetJournalsUpdatedAfterRow
+		if err := rows.Scan(&i.GoogleID, &i.Json); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const saveGoogleFolder = `-- name: SaveGoogleFolder :exec
 INSERT INTO google_folder (google_id, name)
 VALUES ($1, $2)

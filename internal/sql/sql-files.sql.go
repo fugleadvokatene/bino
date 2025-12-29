@@ -12,6 +12,16 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
+const deleteFileJournalAssociations = `-- name: DeleteFileJournalAssociations :exec
+DELETE FROM file_journal
+WHERE google_id = $1
+`
+
+func (q *Queries) DeleteFileJournalAssociations(ctx context.Context, googleID string) error {
+	_, err := q.db.Exec(ctx, deleteFileJournalAssociations, googleID)
+	return err
+}
+
 const getAllFileWikiAssociations = `-- name: GetAllFileWikiAssociations :many
 SELECT file_id, wiki_id from file_wiki
 `
@@ -88,42 +98,6 @@ func (q *Queries) GetFileBySizeAndHash(ctx context.Context, arg GetFileBySizeAnd
 	return i, err
 }
 
-const getFilePatientAssociations = `-- name: GetFilePatientAssociations :many
-SELECT fp.file_id, fp.patient_id, p.name
-FROM file
-INNER JOIN file_patient AS fp
-  ON file.id = fp.file_id
-INNER JOIN patient AS p
-  ON p.id = fp.patient_id
-ORDER BY fp.patient_id
-`
-
-type GetFilePatientAssociationsRow struct {
-	FileID    int32
-	PatientID int32
-	Name      string
-}
-
-func (q *Queries) GetFilePatientAssociations(ctx context.Context) ([]GetFilePatientAssociationsRow, error) {
-	rows, err := q.db.Query(ctx, getFilePatientAssociations)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	var items []GetFilePatientAssociationsRow
-	for rows.Next() {
-		var i GetFilePatientAssociationsRow
-		if err := rows.Scan(&i.FileID, &i.PatientID, &i.Name); err != nil {
-			return nil, err
-		}
-		items = append(items, i)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	return items, nil
-}
-
 const getFileWikiAssociations = `-- name: GetFileWikiAssociations :many
 SELECT fw.file_id, fw.wiki_id, wp.title
 FROM file
@@ -185,6 +159,40 @@ func (q *Queries) GetFiles(ctx context.Context) ([]File, error) {
 			&i.MiniaturesCreated,
 			&i.Sha256,
 		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getFilesMatchingJournals = `-- name: GetFilesMatchingJournals :many
+SELECT fj.google_id, fj.file_id, f.presentation_filename
+FROM file_journal AS fj
+INNER JOIN file AS f
+  ON (f.id = fj.file_id)
+WHERE fj.google_id = ANY($1::TEXT[])
+`
+
+type GetFilesMatchingJournalsRow struct {
+	GoogleID             string
+	FileID               int32
+	PresentationFilename string
+}
+
+func (q *Queries) GetFilesMatchingJournals(ctx context.Context, googleID []string) ([]GetFilesMatchingJournalsRow, error) {
+	rows, err := q.db.Query(ctx, getFilesMatchingJournals, googleID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetFilesMatchingJournalsRow
+	for rows.Next() {
+		var i GetFilesMatchingJournalsRow
+		if err := rows.Scan(&i.GoogleID, &i.FileID, &i.PresentationFilename); err != nil {
 			return nil, err
 		}
 		items = append(items, i)
@@ -417,6 +425,20 @@ func (q *Queries) GetVariant(ctx context.Context, arg GetVariantParams) (ImageVa
 		&i.Sha256,
 	)
 	return i, err
+}
+
+const insertFileJournalAssociations = `-- name: InsertFileJournalAssociations :exec
+INSERT INTO file_journal (google_id, file_id) VALUES ($1, UNNEST($2::INT[])) ON CONFLICT (google_id) DO NOTHING
+`
+
+type InsertFileJournalAssociationsParams struct {
+	GoogleID string
+	FileID   []int32
+}
+
+func (q *Queries) InsertFileJournalAssociations(ctx context.Context, arg InsertFileJournalAssociationsParams) error {
+	_, err := q.db.Exec(ctx, insertFileJournalAssociations, arg.GoogleID, arg.FileID)
+	return err
 }
 
 const publishFile = `-- name: PublishFile :one
