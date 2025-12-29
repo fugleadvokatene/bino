@@ -28,10 +28,6 @@ templ SearchPage(data *request.CommonData, result db.SearchResult, fallbackMsg s
                     autocapitalize="off"
                     value={result.Query.Query}
                 >
-                <div class="mt-2">
-                    <label><input type="radio" name="mode" value="basic" checked?={result.Query.Mode=="basic"}> {data.Language.SearchModeBasic}</label>
-                    <label><input type="radio" name="mode" value="advanced" checked?={result.Query.Mode=="advanced"}> {data.Language.SearchModeAdvanced}</label>
-                </div>
                 <div class="search-advanced-options" data-show={result.Query.Mode=="advanced"}>
                     <div class="d-flex justify-content-between form-control-sm form-control-plaintext">
                         <label class="me-2 align-self-center">{data.Language.SearchFilterCreated}</label>
