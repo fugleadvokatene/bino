@@ -4,6 +4,7 @@ import (
 	"cmp"
 	"net/http"
 	"slices"
+	"time"
 
 	"github.com/fugleadvokatene/bino/internal/db"
 	"github.com/fugleadvokatene/bino/internal/generic"
@@ -58,16 +59,21 @@ func (h *Page) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	speciesDistribution, err := h.DB.GetCurrentSpeciesDistribution(ctx, commonData.Lang())
+	currSpeciesDistribution, err := h.DB.GetCurrentSpeciesDistribution(ctx, commonData.Lang())
 	if err != nil {
-		speciesDistribution = nil
+		currSpeciesDistribution = nil
 	}
-	if len(speciesDistribution) > 8 {
-		speciesDistribution[7].Species = commonData.Language.SpeciesOther
-		for i := 8; i < len(speciesDistribution); i++ {
-			speciesDistribution[7].Count += speciesDistribution[i].Count
+	if len(currSpeciesDistribution) > 8 {
+		currSpeciesDistribution[7].Species = commonData.Language.SpeciesOther
+		for i := 8; i < len(currSpeciesDistribution); i++ {
+			currSpeciesDistribution[7].Count += currSpeciesDistribution[i].Count
 		}
-		speciesDistribution = speciesDistribution[:8]
+		currSpeciesDistribution = currSpeciesDistribution[:8]
+	}
+
+	historicalSpeciesDistribution, err := h.DB.GetSpeciesDistributionOverTime(ctx, time.Now().AddDate(-1, 0, 0), time.Now(), commonData.Lang())
+	if err != nil {
+		historicalSpeciesDistribution = nil
 	}
 
 	// Attach patients to homes
@@ -120,5 +126,5 @@ func (h *Page) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	slices.SortStableFunc(homes, func(a, b model.Home) int { return cmp.Compare(a.Name, b.Name) })
 
-	_ = DashboardPage(commonData, defaultSpecies, &preferredHomeView, homes, h.MascotURL, speciesDistribution).Render(r.Context(), w)
+	_ = DashboardPage(commonData, defaultSpecies, &preferredHomeView, homes, h.MascotURL, currSpeciesDistribution, historicalSpeciesDistribution).Render(r.Context(), w)
 }

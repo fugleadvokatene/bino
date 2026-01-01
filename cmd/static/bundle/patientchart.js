@@ -18521,17 +18521,19 @@ adapters._date.override({
 });
 
 // patientchart.ts
-var makeChart = (dataID, canvasID) => {
+var makeCurrDistributionChart = (dataID, canvasID) => {
   const el = document.getElementById(dataID);
   if (!el) {
-    throw new Error(`missing ${dataID} data element`);
+    console.warn(`missing ${dataID} data element`);
+    return;
   }
   const rows = JSON.parse(el.textContent || "{}");
   const labels = rows.map((p) => p.Species);
   const data = rows.map((p) => p.Count);
   const canvas = document.getElementById(canvasID);
   if (!canvas) {
-    throw new Error("missing chart canvas");
+    console.warn("missing chart canvas");
+    return;
   }
   new auto_default(canvas, {
     type: "bar",
@@ -18573,7 +18575,53 @@ var makeChart = (dataID, canvasID) => {
     ]
   });
 };
-makeChart("patient-chart-data", "patient-chart");
+makeCurrDistributionChart("patient-chart-data", "patient-chart");
+var makeHistoricalDistributionChart = (dataID, canvasID) => {
+  const el = document.getElementById(dataID);
+  if (!el) {
+    console.warn(`missing ${dataID} data element`);
+    return;
+  }
+  const rows = JSON.parse(el.textContent || "{}");
+  const labels = rows[0].Data.map((r) => r.Date);
+  const datasets = rows.map((p) => ({
+    label: p.Name,
+    data: p.Data.map((r) => r.Count),
+    fill: true
+  }));
+  const canvas = document.getElementById(canvasID);
+  if (!canvas) {
+    console.warn("missing chart canvas");
+    return;
+  }
+  new auto_default(canvas, {
+    type: "line",
+    data: {
+      labels,
+      datasets
+    },
+    options: {
+      animation: { duration: 0 },
+      scales: {
+        x: {
+          type: "time",
+          time: {
+            unit: "day",
+            displayFormats: {
+              day: "MMM d, yyyy"
+            }
+          }
+        },
+        y: { stacked: true, min: 0 }
+      },
+      plugins: {
+        legend: { display: true },
+        tooltip: { enabled: false }
+      }
+    }
+  });
+};
+makeHistoricalDistributionChart("historical-chart-data", "historical-chart");
 /*! Bundled license information:
 
 @kurkle/color/dist/color.esm.js:

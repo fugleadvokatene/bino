@@ -16,12 +16,13 @@ templ DashboardPage(
     homes []model.Home,
     mascotURL string,
     speciesDistribution []model.SpeciesCountRow,
+     historicalSpeciesDistribution []model.SpeciesDistributionSeries,
 ) {
 	@templbase.Layout(data, "dashboard-container") {
         <div class="dashboard-left-sidebar">
             @DashboardForm(data, defaultSelectedSpecies, selfHome, homes)
             @DashboardSearch(data)
-            @DashboardTotalPatients(data, speciesDistribution)
+            @DashboardTotalPatients(data, speciesDistribution, historicalSpeciesDistribution)
             @templbase.Mascot(data, mascotURL, true)
         </div>
         if selfHome.ID != 0 {
@@ -34,7 +35,7 @@ templ DashboardPage(
     @templbase.JSModule(data, "reorder-patients")
 }
 
-templ DashboardTotalPatients(data *request.CommonData, speciesDistribution []model.SpeciesCountRow) {
+templ DashboardTotalPatients(data *request.CommonData, speciesDistribution []model.SpeciesCountRow, historicalSpeciesDistribution []model.SpeciesDistributionSeries) {
     <div class="hide-on-mobile m-auto w-100 center">
         <p class="micro total-patients m-auto center">Totalt {nPatients(speciesDistribution)} pasienter inne nå.
         if len(speciesDistribution) > 0 {
@@ -45,6 +46,10 @@ templ DashboardTotalPatients(data *request.CommonData, speciesDistribution []mod
             <div id="patient-distribution-chart" class="hide-on-mobile w-100" hidden>
                 @templ.JSONScript("patient-chart-data", speciesDistribution)
                 <canvas id={"patient-chart"} height="200"></canvas>
+                if data.FeatureFlag("Historical data chart") {
+                    @templ.JSONScript("historical-chart-data", historicalSpeciesDistribution)
+                    <canvas id={"historical-chart"} height="200"></canvas>
+                }
                 @templbase.JSModule(data, "patientchart")
             </div>
         }
