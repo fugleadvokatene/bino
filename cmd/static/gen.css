@@ -11715,7 +11715,11 @@ textarea.form-control-lg {
   align-self: flex-start;
   margin-top: 0 !important;
   margin-left: 0 !important;
-  margin-right: 1rem !important;
+}
+@media (min-width: 1000px) {
+  .dashboard-form {
+    margin-right: 1rem !important;
+  }
 }
 
 .dashboard-left-sidebar {
