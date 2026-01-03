@@ -242,9 +242,9 @@ func UserAdmin(data *request.CommonData, homes []model.Home, users []model.User,
 							return templ_7745c5c3_Err
 						}
 						var templ_7745c5c3_Var16 string
-						templ_7745c5c3_Var16, templ_7745c5c3_Err = templ.JoinStringErrs(al)
+						templ_7745c5c3_Var16, templ_7745c5c3_Err = templ.JoinStringErrs(int(al))
 						if templ_7745c5c3_Err != nil {
-							return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handlers/handleruseradmin/useradmin.templ`, Line: 43, Col: 65}
+							return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handlers/handleruseradmin/useradmin.templ`, Line: 43, Col: 70}
 						}
 						_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var16))
 						if templ_7745c5c3_Err != nil {
@@ -267,7 +267,7 @@ func UserAdmin(data *request.CommonData, homes []model.Home, users []model.User,
 						var templ_7745c5c3_Var17 string
 						templ_7745c5c3_Var17, templ_7745c5c3_Err = templ.JoinStringErrs(data.Language.AccessLevels[al])
 						if templ_7745c5c3_Err != nil {
-							return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handlers/handleruseradmin/useradmin.templ`, Line: 43, Col: 142}
+							return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handlers/handleruseradmin/useradmin.templ`, Line: 43, Col: 147}
 						}
 						_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var17))
 						if templ_7745c5c3_Err != nil {

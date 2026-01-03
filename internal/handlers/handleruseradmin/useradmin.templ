@@ -40,7 +40,7 @@ templ UserAdmin(data *request.CommonData, homes []model.Home, users []model.User
                                     <div class="input-group">
                                         <select class="form-control form-select" id="access-level" name="access-level" placeholder={model.AccessLevelRehabber}>
                                             for _, al := range model.AccessLevelValues() {
-                                                <option value={al} selected?={al == model.AccessLevelRehabber}>{data.Language.AccessLevels[al]}</option>
+                                                <option value={int(al)} selected?={al == model.AccessLevelRehabber}>{data.Language.AccessLevels[al]}</option>
                                             }
                                         </select>
                                     </div>
