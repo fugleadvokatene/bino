@@ -149,3 +149,9 @@ SELECT *
 FROM home
 WHERE name = $1
 ;
+
+-- name: MoveHome :exec
+UPDATE home
+SET division = $2
+WHERE id = $1
+;

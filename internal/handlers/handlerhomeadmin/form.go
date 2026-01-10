@@ -26,6 +26,10 @@ func (h *form) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	switch formID {
 	case "create-home":
 		h.postHomeCreateHome(w, r)
+	case "move-home":
+		h.postHomeMoveHome(w, r)
+	case "create-division":
+		h.postHomeCreateDivision(w, r)
 	case "add-user":
 		h.postHomeAddUser(w, r)
 	default:
@@ -43,6 +47,45 @@ func (h *form) postHomeCreateHome(w http.ResponseWriter, r *http.Request) {
 	}
 
 	err = h.DB.Q.InsertHome(ctx, name)
+	if err != nil {
+		handlererror.Error(w, r, err)
+		return
+	}
+
+	request.RedirectToReferer(w, r)
+}
+
+func (h *form) postHomeMoveHome(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
+	fields, err := request.GetFormIDs(r, "home-id", "division-id")
+	if err != nil {
+		handlererror.Error(w, r, err)
+		return
+	}
+	homeID, divisionID := fields["home-id"], fields["division-id"]
+
+	if err := h.DB.Q.MoveHome(ctx, sql.MoveHomeParams{
+		ID:       homeID,
+		Division: divisionID,
+	}); err != nil {
+		handlererror.Error(w, r, err)
+		return
+	}
+
+	request.RedirectToReferer(w, r)
+}
+
+func (h *form) postHomeCreateDivision(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
+	name, err := request.GetFormValue(r, "name")
+	if err != nil {
+		handlererror.Error(w, r, err)
+		return
+	}
+
+	err = h.DB.Q.InsertDivision(ctx, name)
 	if err != nil {
 		handlererror.Error(w, r, err)
 		return

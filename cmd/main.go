@@ -176,6 +176,9 @@ func realMain() error {
 					BuildKey,
 				)
 			}
+
+			// handler = debug.FormatHTML(handler)
+
 			mux.Handle(route.Path, handler)
 		}
 	}

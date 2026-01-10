@@ -4,34 +4,57 @@ import "github.com/fugleadvokatene/bino/internal/model"
 import "github.com/fugleadvokatene/bino/internal/request"
 import "github.com/fugleadvokatene/bino/internal/templbase"
 
-templ HomesPage(data *request.CommonData, homes []HomeViewAdmin, homeless []model.User) {
+templ HomesPage(
+    data *request.CommonData,
+    homeless []model.User,
+    divisions []model.Division,
+) {
     @templbase.Layout(data) {
+        <h1>{data.Language.HomeAdmin}</h1>
+
+        // Create division-form
+        @templbase.Card() {
+            <h2>{data.Language.HomesCreateDivision}</h2>
+            <p class="small">{data.Language.HomesCreateDivisionNote}</p>
+            @templbase.Form(data, "/homes", "POST", "form-inline") {
+                <label for="name">{data.Language.GenericName}</label>
+                <input type="text" id="created-home" name="name">
+                <button type="submit" class="btn btn-primary mb-2">{data.Language.GenericAdd}</button>
+                <input type="hidden" name="form-id" value="create-division">
+            }
+        }
 
         // Create home-form
-        <h2>{data.Language.HomesCreateHome}</h2>
         @templbase.Card() {
+            <h2>{data.Language.HomesCreateHome}</h2>
             <p class="small">{data.Language.HomesCreateHomeNote}</p>
             @templbase.Form(data, "/homes", "POST", "form-inline") {
-                <label for="name">{data.Language.HomesHomeName}</label>
+                <label for="name">{data.Language.GenericName}</label>
                 <input type="text" id="created-home" name="name">
+                <label for="division">{data.Language.HomesHomeDivision}</label>
+                <select class="form-control-color r-2 select-user" name="division">
+                    for _, div := range divisions {
+                        <option value={div.ID}>{div.Name}</option>
+                    }
+                </select>
                 <button type="submit" class="btn btn-primary mb-2">{data.Language.GenericAdd}</button>
                 <input type="hidden" name="form-id" value="create-home">
             }
         }
 
-        <h2>{data.Language.HomesViewHomes}</h2>
-
         // Unassigned users
         if len(homeless) > 0 {
-            <h2>{data.Language.HomesUnassignedUsers}</h2>
             @templbase.Card() {
+            <h2>{data.Language.HomesUnassignedUsers}</h2>
                 for _, user := range homeless {
                     @templbase.UserComponent(data, &user) {
                         @templbase.Form(data, "/homes", "POST", "form-inline") {
-                            <label>{data.Language.HomesAddToHome}</label>
+                            <label>{data.Language.HomesAddUserToHome}</label>
                             <select class="form-control-color r-2 select-user" name="home-id">
-                                for _, home := range homes {
-                                    <option value={home.ID}>{home.Name}</option>
+                                for _, division := range divisions {
+                                    for _, home := range division.Homes {
+                                        <option value={home.ID}>{home.Name}</option>
+                                    }
                                 }
                             </select>
                             <input type="hidden" name="form-id" value="add-user">
@@ -43,11 +66,50 @@ templ HomesPage(data *request.CommonData, homes []HomeViewAdmin, homeless []mode
             }
         }
 
-        @templbase.Card() {
-            // List of homes
-            for _, home := range homes {
+        // List of homes
+        for _, division := range divisions {
+            <h2 class="editable" data-action={division.SetNameURL()}>{division.Name}</h2>
+            for _, home := range division.Homes {
                 @templbase.Card() {
-                    <h2 class="editable" data-action={home.SetNameURL()}>{home.Name}</h2>
+                    <h3 class="editable" data-action={home.URLSuffix("set-name")}>{home.Name}</h3>
+
+                    @templbase.Form(data, "/homes", "POST", "form-inline") {
+                        <label>{data.Language.HomesMoveHomeToDivision}</label>
+                        <select autocomplete="off" class="form-control-color r-2 select-user" name="division-id">
+                            <option value="" disabled selected>{data.Language.GenericChoose}</option>
+                            for _, division := range divisions {
+                                if division.ID != home.Division {
+                                    <option value={division.ID}>{division.Name}</option>
+                                }
+                            }
+                        </select>
+                        <input type="hidden" name="form-id" value="move-home">
+                        <input type="hidden" name="home-id" value={home.ID}>
+                        <button type="submit" class="btn btn-primary mb-2">{data.Language.GenericMove}</button>
+                    }
+
+                    // Add user to this home
+                    if len(homeless) > 0 {
+                        @templbase.Form(data, "/homes", "POST", "form-inline") {
+                            <label>{data.Language.HomesAddUserToHome}</label>
+                            <select autocomplete="off" class="form-control-color r-2 select-user" name="user-id">
+                                <option value="" disabled selected>{data.Language.DashboardSelectHome}</option>
+                                for _, user := range homeless {
+                                    <option value={user.ID}>{user.Name}</option>
+                                }
+                            </select>
+                            <input type="hidden" name="form-id" value="add-user">
+                            <input type="hidden" name="home-id" value={home.ID}>
+                            <button type="submit" class="btn btn-primary mb-2">{data.Language.GenericAdd}</button>
+                        }
+                    }
+
+                    // Archive rehab home
+                    @templbase.Form(data, "/homes", "POST", "form-inline") {
+                        <input type="hidden" name="form-id" value="archive-home">
+                        <button disabled type="submit" class="btn btn-warning mb-2 btn-sm" name="home" value={home.ID}>{data.Language.HomesArchiveHome}</button>
+                    }
+
                     for _, user := range home.Users {
                         @templbase.Card() {
                             @templbase.UserComponent(data, &user) {
@@ -55,7 +117,7 @@ templ HomesPage(data *request.CommonData, homes []HomeViewAdmin, homeless []mode
                                 @templbase.Form(data, "/homes", "POST", "form-inline") {
                                     <label>{data.Language.GenericMoveTo}</label>
                                     <select class="form-control-color r-2 select-user" name="home-id">
-                                        for _, newHome := range homes {
+                                        for _, newHome := range division.Homes {
                                             if home.ID != newHome.ID {
                                                 <option value={newHome.ID}>{newHome.Name}</option>
                                             }
@@ -77,28 +139,6 @@ templ HomesPage(data *request.CommonData, homes []HomeViewAdmin, homeless []mode
                         
                     if len(home.Users) == 0 {
                         <p class="small">{data.Language.HomesEmptyHome}</p>
-                    }
-
-                    // Add user to this home
-                    if len(homeless) > 0 {
-                        @templbase.Form(data, "/homes", "POST", "form-inline") {
-                            <label>{data.Language.HomesAddToHome}</label>
-                            <select autocomplete="off" class="form-control-color r-2 select-user" name="user-id">
-                                <option value="" disabled selected>{data.Language.DashboardSelectHome}</option>
-                                for _, user := range homeless {
-                                    <option value={user.ID}>{user.Name}</option>
-                                }
-                            </select>
-                            <input type="hidden" name="form-id" value="add-user">
-                            <input type="hidden" name="home-id" value={home.ID}>
-                            <button type="submit" class="btn btn-primary mb-2">{data.Language.GenericAdd}</button>
-                        }
-                    }
-
-                    // Archive rehab home
-                    @templbase.Form(data, "/homes", "POST", "form-inline") {
-                        <input type="hidden" name="form-id" value="archive-home">
-                        <button disabled type="submit" class="btn btn-warning mb-2 btn-sm" name="home" value={home.ID}>{data.Language.HomesArchiveHome}</button>
                     }
                 }
             }

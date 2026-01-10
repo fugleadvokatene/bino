@@ -12,12 +12,11 @@ templ UserPage(ctx context.Context, data *request.CommonData, user model.User) {
         <h1>{user.Name}</h1>
         @templbase.Card() {
             <h2>{data.Language.UserHomes}</h2>
-            <ul>
-                for _, home := range user.Homes {
-                    <li><a href={home.URL()}>{home.Name}</a></li>
-                }
-            </ul>
-            if len(user.Homes) == 0 {
+            if user.Home != nil {
+                <ul>
+                    <li><a href={user.Home.URL()}>{user.Home.Name}</a></li>
+                </ul>
+            } else {
                 <p class="small">{data.Language.UserIsHomeless}</p>
             }
             <h2>{data.Language.AccessLevel}</h2>

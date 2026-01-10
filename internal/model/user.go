@@ -12,9 +12,10 @@ type User struct {
 	HasAvatarURL bool
 	AccessLevel  AccessLevel
 	LanguageID   int32
+	HomeID       int32
 
 	// Optional
-	Homes []Home
+	Home *Home
 }
 
 func (u *User) Valid() bool {

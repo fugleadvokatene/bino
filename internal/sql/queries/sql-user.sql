@@ -80,7 +80,7 @@ INNER JOIN appuser AS au
 WHERE home_id = $1
 ;
 
--- name: GetHomesWithDataForUser :many
+-- name: GetHomeWithDataForUser :one
 SELECT h.*
 FROM home AS h
 INNER JOIN home_appuser AS hau
@@ -88,7 +88,7 @@ INNER JOIN home_appuser AS hau
 WHERE appuser_id = $1
 ;
 
--- name: RemoveHomesForAppuser :exec
+-- name: RemoveHomeForAppuser :exec
 DELETE
 FROM home_appuser
 WHERE appuser_id = $1

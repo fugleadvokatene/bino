@@ -11,6 +11,7 @@ type Home struct {
 	Capacity int32
 	Name     string
 	Note     string
+	Division int32
 
 	// Optional
 	Patients            []Patient

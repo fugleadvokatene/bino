@@ -20,6 +20,8 @@ require (
 	google.golang.org/api v0.251.0
 )
 
+require github.com/a-h/htmlformat v0.0.0-20250209132643-c2a3d62ad1fc // indirect
+
 require (
 	cel.dev/expr v0.24.0 // indirect
 	cloud.google.com/go/auth v0.16.5 // indirect

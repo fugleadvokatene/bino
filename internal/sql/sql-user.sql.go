@@ -171,37 +171,25 @@ func (q *Queries) GetAppusersForHome(ctx context.Context, homeID int32) ([]Appus
 	return items, nil
 }
 
-const getHomesWithDataForUser = `-- name: GetHomesWithDataForUser :many
-SELECT h.id, h.name, h.capacity, h.note
+const getHomeWithDataForUser = `-- name: GetHomeWithDataForUser :one
+SELECT h.id, h.name, h.capacity, h.note, h.division
 FROM home AS h
 INNER JOIN home_appuser AS hau
   ON hau.home_id = h.id
 WHERE appuser_id = $1
 `
 
-func (q *Queries) GetHomesWithDataForUser(ctx context.Context, appuserID int32) ([]Home, error) {
-	rows, err := q.db.Query(ctx, getHomesWithDataForUser, appuserID)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	var items []Home
-	for rows.Next() {
-		var i Home
-		if err := rows.Scan(
-			&i.ID,
-			&i.Name,
-			&i.Capacity,
-			&i.Note,
-		); err != nil {
-			return nil, err
-		}
-		items = append(items, i)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	return items, nil
+func (q *Queries) GetHomeWithDataForUser(ctx context.Context, appuserID int32) (Home, error) {
+	row := q.db.QueryRow(ctx, getHomeWithDataForUser, appuserID)
+	var i Home
+	err := row.Scan(
+		&i.ID,
+		&i.Name,
+		&i.Capacity,
+		&i.Note,
+		&i.Division,
+	)
+	return i, err
 }
 
 const getUser = `-- name: GetUser :one
@@ -271,14 +259,14 @@ func (q *Queries) GetUsersWithGoogleStoredAvatars(ctx context.Context) ([]GetUse
 	return items, nil
 }
 
-const removeHomesForAppuser = `-- name: RemoveHomesForAppuser :exec
+const removeHomeForAppuser = `-- name: RemoveHomeForAppuser :exec
 DELETE
 FROM home_appuser
 WHERE appuser_id = $1
 `
 
-func (q *Queries) RemoveHomesForAppuser(ctx context.Context, appuserID int32) error {
-	_, err := q.db.Exec(ctx, removeHomesForAppuser, appuserID)
+func (q *Queries) RemoveHomeForAppuser(ctx context.Context, appuserID int32) error {
+	_, err := q.db.Exec(ctx, removeHomeForAppuser, appuserID)
 	return err
 }
 

@@ -22,6 +22,11 @@ type Appuser struct {
 	LanguageID      pgtype.Int4
 }
 
+type Division struct {
+	ID   int32
+	Name string
+}
+
 type FeatureFlag struct {
 	Flag      string
 	AppuserID int32
@@ -60,6 +65,7 @@ type Home struct {
 	Name     string
 	Capacity int32
 	Note     string
+	Division int32
 }
 
 // Each row associates an app user with a rehab home

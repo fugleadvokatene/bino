@@ -5,6 +5,10 @@ import (
 	"strconv"
 )
 
+func Pointer[T any](x T) *T {
+	return &x
+}
+
 func MapToMapErr[K comparable, VIn any, VOut any](in map[K]VIn, f func(VIn) (VOut, error)) (map[K]VOut, error) {
 	if in == nil {
 		return nil, fmt.Errorf("called MapToMapErr on nil map")
@@ -114,6 +118,22 @@ func FilterSlice[TIn any](in []TIn, f func(v TIn) bool) []TIn {
 		}
 	}
 	return out
+}
+
+func PartitionSlice[TIn any](in []TIn, f func(v TIn) bool) ([]TIn, []TIn) {
+	if in == nil {
+		return nil, nil
+	}
+	outTrue := make([]TIn, 0)
+	outFalse := make([]TIn, 0)
+	for _, v := range in {
+		if f(v) {
+			outTrue = append(outTrue, v)
+		} else {
+			outFalse = append(outFalse, v)
+		}
+	}
+	return outTrue, outFalse
 }
 
 func Find[TIn any](in []TIn, f func(v TIn) bool) int {

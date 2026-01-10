@@ -131,6 +131,7 @@ type Language struct {
 	GenericAdd          string
 	GenericAge          string
 	GenericAvatar       string
+	GenericChoose       string
 	GenericCancel       string
 	GenericConfirm      string
 	GenericDelete       string
@@ -164,13 +165,19 @@ type Language struct {
 	GenericUser         string
 	GenericEnabled      string
 
+	HomeAdmin                       string
 	HomesArchiveHome                string
+	HomesDivisions                  string
 	HomesAddToHome                  string
 	HomesAddUserToHome              string
 	HomesCreateHome                 string
 	HomesCreateHomeNote             string
+	HomesCreateDivision             string
+	HomesCreateDivisionNote         string
+	HomesMoveHomeToDivision         string
 	HomesEmptyHome                  string
 	HomesHomeName                   string
+	HomesHomeDivision               string
 	HomesRemoveFromCurrent          string
 	HomesViewHomes                  string
 	HomesUnassignedUsers            string
@@ -497,6 +504,7 @@ var NO = &Language{
 	GenericAdd:          "Legg til",
 	GenericAge:          "Alder",
 	GenericAvatar:       "Profilbilde",
+	GenericChoose:       "Velg",
 	GenericCancel:       "Avbryt",
 	GenericConfirm:      "Bekreft",
 	GenericDelete:       "Slett",
@@ -530,12 +538,19 @@ var NO = &Language{
 	GenericUser:         "Bruker",
 	GenericEnabled:      "Slått på",
 
+	HomeAdmin:                       "Administrer avdelinger og rehabhjem",
 	HomesAddToHome:                  "Legg til",
+	HomesAddUserToHome:              "Legg til bruker i rehabhjem",
+	HomesDivisions:                  "Avdelinger",
 	HomesArchiveHome:                "Arkiver rehabhjem",
 	HomesCreateHome:                 "Opprett nytt rehabhjem",
 	HomesCreateHomeNote:             "Navnet er som regel navnet på en person, men det kan være flere personer i ett rehabhjem.",
+	HomesCreateDivision:             "Opprett ny avdeling",
+	HomesCreateDivisionNote:         "En avdeling er en samling rehabhjem innenfor et geografisk område.",
+	HomesMoveHomeToDivision:         "Flytt rehabhjem til en annen avdeling",
 	HomesEmptyHome:                  "Det er ingen brukere i dette rehabhjemmet.",
 	HomesHomeName:                   "Rehabhjem",
+	HomesHomeDivision:               "Avdeling",
 	HomesRemoveFromCurrent:          "Fjern fra dette rehabhjemmet",
 	HomesUnassignedUsers:            "Brukere som ikke er koblet til noe rehabhjem",
 	HomesViewHomes:                  "Rehabhjem",
@@ -807,6 +822,7 @@ var EN = &Language{
 	GenericAdd:          "Add",
 	GenericAge:          "Age",
 	GenericAvatar:       "Avatar",
+	GenericChoose:       "Choose",
 	GenericCancel:       "Cancel",
 	GenericConfirm:      "Confirm",
 	GenericDelete:       "Delete",
@@ -840,12 +856,19 @@ var EN = &Language{
 	GenericUser:         "User",
 	GenericEnabled:      "Enabled",
 
+	HomeAdmin:                       "Manage homes and divisions",
 	HomesAddToHome:                  "Add",
+	HomesAddUserToHome:              "Add user to rehab home",
+	HomesDivisions:                  "Divisions",
 	HomesArchiveHome:                "Archive rehab home",
 	HomesCreateHome:                 "Create new rehab home",
 	HomesCreateHomeNote:             "The name is usually that of a person, but there can be multiple people in a rehab home.",
+	HomesCreateDivision:             "Create new division",
+	HomesCreateDivisionNote:         "A division is a collection of rehab homes within a geographical area.",
+	HomesMoveHomeToDivision:         "Move rehab home to another division",
 	HomesEmptyHome:                  "There are no users in this rehab home.",
 	HomesHomeName:                   "Rehab home",
+	HomesHomeDivision:               "Division",
 	HomesRemoveFromCurrent:          "Remove from this rehab home",
 	HomesUnassignedUsers:            "Users that are not associated with any rehab homes",
 	HomesViewHomes:                  "Rehab homes",

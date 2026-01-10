@@ -17,6 +17,7 @@ func (h Home) ToModel() model.Home {
 		Capacity: h.Capacity,
 		Name:     h.Name,
 		Note:     h.Note,
+		Division: h.Division,
 	}
 }
 
@@ -141,6 +142,7 @@ func (user GetAppusersRow) ToModel() model.User {
 		HasAvatarURL: user.AvatarUrl.Valid,
 		AccessLevel:  model.AccessLevel(user.AccessLevel),
 		LanguageID:   user.LanguageID.Int32,
+		HomeID:       user.HomeID.Int32,
 	}
 }
 
@@ -360,5 +362,14 @@ func (in StatPatientGetCurrentSpeciesDistributionRow) ToModel() model.SpeciesCou
 	return model.SpeciesCountRow{
 		Species: in.Name,
 		Count:   int(in.Count),
+	}
+}
+
+// ---- Division
+
+func (in Division) ToModel() model.Division {
+	return model.Division{
+		ID:   in.ID,
+		Name: in.Name,
 	}
 }

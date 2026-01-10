@@ -132,7 +132,7 @@ func (q *Queries) GetAllUnavailablePeriods(ctx context.Context) ([]HomeUnavailab
 }
 
 const getHome = `-- name: GetHome :one
-SELECT id, name, capacity, note FROM home
+SELECT id, name, capacity, note, division FROM home
 WHERE id = $1
 `
 
@@ -144,12 +144,13 @@ func (q *Queries) GetHome(ctx context.Context, id int32) (Home, error) {
 		&i.Name,
 		&i.Capacity,
 		&i.Note,
+		&i.Division,
 	)
 	return i, err
 }
 
 const getHomeByName = `-- name: GetHomeByName :many
-SELECT id, name, capacity, note
+SELECT id, name, capacity, note, division
 FROM home
 WHERE name = $1
 `
@@ -168,6 +169,7 @@ func (q *Queries) GetHomeByName(ctx context.Context, name string) ([]Home, error
 			&i.Name,
 			&i.Capacity,
 			&i.Note,
+			&i.Division,
 		); err != nil {
 			return nil, err
 		}
@@ -214,7 +216,7 @@ func (q *Queries) GetHomeUnavailablePeriods(ctx context.Context, homeID int32) (
 }
 
 const getHomes = `-- name: GetHomes :many
-SELECT id, name, capacity, note FROM home
+SELECT id, name, capacity, note, division FROM home
 ORDER BY name
 `
 
@@ -232,6 +234,7 @@ func (q *Queries) GetHomes(ctx context.Context) ([]Home, error) {
 			&i.Name,
 			&i.Capacity,
 			&i.Note,
+			&i.Division,
 		); err != nil {
 			return nil, err
 		}
@@ -244,7 +247,7 @@ func (q *Queries) GetHomes(ctx context.Context) ([]Home, error) {
 }
 
 const getHomesForUser = `-- name: GetHomesForUser :many
-SELECT h.id, h.name, h.capacity, h.note FROM home_appuser AS ha
+SELECT h.id, h.name, h.capacity, h.note, h.division FROM home_appuser AS ha
 INNER JOIN home AS h
   ON h.id = ha.home_id
 WHERE appuser_id = $1
@@ -264,6 +267,7 @@ func (q *Queries) GetHomesForUser(ctx context.Context, appuserID int32) ([]Home,
 			&i.Name,
 			&i.Capacity,
 			&i.Note,
+			&i.Division,
 		); err != nil {
 			return nil, err
 		}
@@ -402,6 +406,22 @@ VALUES ($1)
 
 func (q *Queries) InsertHome(ctx context.Context, name string) error {
 	_, err := q.db.Exec(ctx, insertHome, name)
+	return err
+}
+
+const moveHome = `-- name: MoveHome :exec
+UPDATE home
+SET division = $2
+WHERE id = $1
+`
+
+type MoveHomeParams struct {
+	ID       int32
+	Division int32
+}
+
+func (q *Queries) MoveHome(ctx context.Context, arg MoveHomeParams) error {
+	_, err := q.db.Exec(ctx, moveHome, arg.ID, arg.Division)
 	return err
 }
 

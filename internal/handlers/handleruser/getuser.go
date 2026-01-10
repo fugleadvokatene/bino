@@ -6,9 +6,7 @@ import (
 	"github.com/fugleadvokatene/bino/internal/db"
 	"github.com/fugleadvokatene/bino/internal/generic"
 	"github.com/fugleadvokatene/bino/internal/handlers/handlererror"
-	"github.com/fugleadvokatene/bino/internal/model"
 	"github.com/fugleadvokatene/bino/internal/request"
-	"github.com/fugleadvokatene/bino/internal/sql"
 )
 
 type getUser struct {
@@ -32,14 +30,11 @@ func (h *getUser) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 	commonData.Subtitle = user.DisplayName
 
-	homes, err := h.DB.Q.GetHomesWithDataForUser(ctx, user.ID)
-	if err != nil {
-		handlererror.Error(w, r, err)
-		return
-	}
-
 	userView := user.ToModel()
-	userView.Homes = generic.SliceToSlice(homes, func(h sql.Home) model.Home { return h.ToModel() })
+
+	if home, err := h.DB.Q.GetHomeWithDataForUser(ctx, user.ID); err == nil {
+		userView.Home = generic.Pointer(home.ToModel())
+	}
 
 	UserPage(ctx, commonData, userView).Render(r.Context(), w)
 }

@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/fugleadvokatene/bino/internal/db"
+	"github.com/fugleadvokatene/bino/internal/generic"
 	"github.com/fugleadvokatene/bino/internal/handlers/handlererror"
 	"github.com/fugleadvokatene/bino/internal/model"
 	"github.com/fugleadvokatene/bino/internal/request"
@@ -17,45 +18,49 @@ func (h *page) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	commonData := request.MustLoadCommonData(ctx)
 
-	homesDB, err := h.DB.Q.GetHomes(ctx)
-	if err != nil {
-		handlererror.Error(w, r, err)
-		return
-	}
-
+	// Get all users
 	usersDB, err := h.DB.Q.GetAppusers(ctx)
 	if err != nil {
 		handlererror.Error(w, r, err)
 		return
 	}
+	users := model.SliceToModel(usersDB)
+	users, homeless := generic.PartitionSlice(users, func(in model.User) bool {
+		return in.HomeID != 0
+	})
 
-	homes := make([]HomeViewAdmin, len(homesDB))
-	for i, home := range homesDB {
-		homes[i] = HomeViewAdmin{
-			ID:    home.ID,
-			Name:  home.Name,
-			Users: nil,
-		}
+	// Get all homes
+	homesDB, err := h.DB.Q.GetHomes(ctx)
+	if err != nil {
+		handlererror.Error(w, r, err)
+		return
+	}
+	homes := model.SliceToModel(homesDB)
+
+	// Put users in homes
+	generic.GroupByID(
+		homes,
+		users,
+		func(h *model.Home) int32 { return h.ID },
+		func(u *model.User) int32 { return u.HomeID },
+		func(h *model.Home, u *model.User) { h.Users = append(h.Users, *u) },
+	)
+
+	// Get all divisions
+	divisions, err := h.DB.GetDivisions(ctx)
+	if err != nil {
+		handlererror.Error(w, r, err)
+		return
 	}
 
-	// todo(perf): make it not O(N^2)
-	homeless := []model.User{}
-	for _, user := range usersDB {
-		view := user.ToModel()
-		found := false
-		if user.HomeID.Valid {
-			for i, home := range homesDB {
-				if home.ID == user.HomeID.Int32 {
-					homes[i].Users = append(homes[i].Users, view)
-					found = true
-					break
-				}
-			}
-		}
-		if !found {
-			homeless = append(homeless, view)
-		}
-	}
+	// Put homes in divisions
+	generic.GroupByID(
+		divisions,
+		homes,
+		func(d *model.Division) int32 { return d.ID },
+		func(h *model.Home) int32 { return h.Division },
+		func(d *model.Division, h *model.Home) { d.Homes = append(d.Homes, *h) },
+	)
 
-	_ = HomesPage(commonData, homes, homeless).Render(ctx, w)
+	_ = HomesPage(commonData, homeless, divisions).Render(ctx, w)
 }
