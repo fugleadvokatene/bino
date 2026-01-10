@@ -584,7 +584,7 @@ func (w *Worker) handleRequestCreateJournal(ctx context.Context, req TaskRequest
 	var divisionConfig DivisionConfig
 	var found bool
 	for _, div := range info.DivisionConfigs {
-		if div.DivisionID == division {
+		if div.DivisionID == division.Division {
 			divisionConfig = div
 			found = true
 			break

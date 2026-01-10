@@ -182,16 +182,23 @@ func (q *Queries) GetHomeByName(ctx context.Context, name string) ([]Home, error
 }
 
 const getHomeDivision = `-- name: GetHomeDivision :one
-SELECT division
-FROM home
-WHERE id = $1
+SELECT h.division, d.name
+FROM home AS h
+LEFT JOIN division AS d
+  ON h.division = d.id
+WHERE h.id = $1
 `
 
-func (q *Queries) GetHomeDivision(ctx context.Context, id int32) (int32, error) {
+type GetHomeDivisionRow struct {
+	Division int32
+	Name     pgtype.Text
+}
+
+func (q *Queries) GetHomeDivision(ctx context.Context, id int32) (GetHomeDivisionRow, error) {
 	row := q.db.QueryRow(ctx, getHomeDivision, id)
-	var division int32
-	err := row.Scan(&division)
-	return division, err
+	var i GetHomeDivisionRow
+	err := row.Scan(&i.Division, &i.Name)
+	return i, err
 }
 
 const getHomeUnavailablePeriods = `-- name: GetHomeUnavailablePeriods :many

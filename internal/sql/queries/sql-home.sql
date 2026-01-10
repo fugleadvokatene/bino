@@ -157,7 +157,9 @@ WHERE id = $1
 ;
 
 -- name: GetHomeDivision :one
-SELECT division
-FROM home
-WHERE id = $1
+SELECT h.division, d.name
+FROM home AS h
+LEFT JOIN division AS d
+  ON h.division = d.id
+WHERE h.id = $1
 ;

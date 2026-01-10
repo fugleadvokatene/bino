@@ -14,6 +14,9 @@ templ HomePage(ctx context.Context, data *request.CommonData, homes []model.Home
         <h1>{self.Name}</h1>
         @templbase.Card() {
             <h2>{data.Language.GenericSettings}</h2>
+            <h3>{data.Language.GenericDivision}</h3>
+            <p>{self.DivisionName}</p>
+
             if len(self.Users) > 1 {
                 <p>{data.Language.HomeMultipleUsers(len(self.Users))}</p>
             }
@@ -39,8 +42,7 @@ templ HomePage(ctx context.Context, data *request.CommonData, homes []model.Home
             </div>
         }
     }
-    
-    
+
     @templbase.JSModule(data, "home")
     @templbase.JSModule(data, "reorder-patients")
 }

@@ -136,6 +136,7 @@ type Language struct {
 	GenericConfirm      string
 	GenericDelete       string
 	GenericDetails      string
+	GenericDivision     string
 	GenericEmail        string
 	GenericFrom         string
 	GenericTo           string
@@ -509,6 +510,7 @@ var NO = &Language{
 	GenericConfirm:      "Bekreft",
 	GenericDelete:       "Slett",
 	GenericDetails:      "Detaljer",
+	GenericDivision:     "Avdeling",
 	GenericEmail:        "Email",
 	GenericFrom:         "Fra",
 	GenericTo:           "Til",
@@ -827,6 +829,7 @@ var EN = &Language{
 	GenericConfirm:      "Confirm",
 	GenericDelete:       "Delete",
 	GenericDetails:      "Details",
+	GenericDivision:     "Division",
 	GenericEmail:        "Email",
 	GenericFrom:         "From",
 	GenericTo:           "To",

@@ -4,7 +4,6 @@ import (
 	"net/http"
 
 	"github.com/fugleadvokatene/bino/internal/db"
-	"github.com/fugleadvokatene/bino/internal/generic"
 	"github.com/fugleadvokatene/bino/internal/handlers/handlererror"
 	"github.com/fugleadvokatene/bino/internal/model"
 	"github.com/fugleadvokatene/bino/internal/request"
@@ -26,19 +25,20 @@ func (h *page) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	homeData, err := h.DB.Q.GetHome(ctx, id)
+	home, err := h.DB.GetHome(ctx, id)
 	if err != nil {
 		handlererror.Error(w, r, err)
 		return
 	}
 
-	commonData.Subtitle = homeData.Name
+	commonData.Subtitle = home.Name
 
 	users, err := h.DB.Q.GetAppusersForHome(ctx, id)
 	if err != nil {
 		handlererror.Error(w, r, err)
 		return
 	}
+	home.Users = model.SliceToModel(users)
 
 	patients, err := h.DB.Q.GetCurrentPatientsForHome(ctx, sql.GetCurrentPatientsForHomeParams{
 		CurrHomeID: pgtype.Int4{Int32: id, Valid: true},
@@ -48,6 +48,7 @@ func (h *page) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		handlererror.Error(w, r, err)
 		return
 	}
+	home.Patients = model.SliceToModel(patients)
 
 	homes, err := h.DB.Q.GetHomes(ctx)
 	if err != nil {
@@ -55,36 +56,20 @@ func (h *page) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	preferredSpecies, otherSpecies, err := h.DB.GetSpeciesForUser(ctx, homeData.ID, commonData.Lang())
+	preferredSpecies, otherSpecies, err := h.DB.GetSpeciesForUser(ctx, home.ID, commonData.Lang())
 	if err != nil {
 		handlererror.Error(w, r, err)
 		return
 	}
+	home.PreferredSpecies = preferredSpecies
+	home.NonPreferredSpecies = otherSpecies
 
 	unavailablePeriods, err := h.DB.Q.GetHomeUnavailablePeriods(ctx, id)
 	if err != nil {
 		handlererror.Error(w, r, err)
 		return
 	}
+	home.UnavailablePeriods = model.SliceToModel(unavailablePeriods)
 
-	HomePage(ctx, commonData, generic.SliceToSlice(homes, func(h sql.Home) model.Home {
-		return h.ToModel()
-	}),
-		&model.Home{
-			ID:       homeData.ID,
-			Name:     homeData.Name,
-			Note:     homeData.Note,
-			Capacity: homeData.Capacity,
-			Users: generic.SliceToSlice(users, func(u sql.Appuser) model.User {
-				return u.ToModel()
-			}),
-			Patients: generic.SliceToSlice(patients, func(p sql.GetCurrentPatientsForHomeRow) model.Patient {
-				return p.ToModel()
-			}),
-			PreferredSpecies:    preferredSpecies,
-			NonPreferredSpecies: otherSpecies,
-			UnavailablePeriods: generic.SliceToSlice(unavailablePeriods, func(in sql.HomeUnavailable) model.Period {
-				return in.ToModel()
-			}),
-		}).Render(r.Context(), w)
+	HomePage(ctx, commonData, model.SliceToModel(homes), &home).Render(r.Context(), w)
 }

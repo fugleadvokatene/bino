@@ -14,6 +14,7 @@ type Home struct {
 	Division int32
 
 	// Optional
+	DivisionName        string
 	Patients            []Patient
 	Users               []User
 	PreferredSpecies    []Species
