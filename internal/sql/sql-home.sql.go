@@ -404,12 +404,17 @@ func (q *Queries) GetUnavailablePeriodsInRange(ctx context.Context, arg GetUnava
 }
 
 const insertHome = `-- name: InsertHome :exec
-INSERT INTO home (name)
-VALUES ($1)
+INSERT INTO home (name, division)
+VALUES ($1, $2)
 `
 
-func (q *Queries) InsertHome(ctx context.Context, name string) error {
-	_, err := q.db.Exec(ctx, insertHome, name)
+type InsertHomeParams struct {
+	Name     string
+	Division int32
+}
+
+func (q *Queries) InsertHome(ctx context.Context, arg InsertHomeParams) error {
+	_, err := q.db.Exec(ctx, insertHome, arg.Name, arg.Division)
 	return err
 }
 

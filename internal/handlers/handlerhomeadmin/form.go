@@ -46,8 +46,16 @@ func (h *form) postHomeCreateHome(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = h.DB.Q.InsertHome(ctx, name)
+	division, err := request.GetFormID(r, "division")
 	if err != nil {
+		handlererror.Error(w, r, err)
+		return
+	}
+
+	if err := h.DB.Q.InsertHome(ctx, sql.InsertHomeParams{
+		Name:     name,
+		Division: division,
+	}); err != nil {
 		handlererror.Error(w, r, err)
 		return
 	}

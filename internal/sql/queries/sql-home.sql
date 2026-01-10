@@ -10,8 +10,8 @@ ORDER BY name
 ;
 
 -- name: InsertHome :exec
-INSERT INTO home (name)
-VALUES ($1)
+INSERT INTO home (name, division)
+VALUES ($1, $2)
 ;
 
 -- name: UpdateHomeName :exec
