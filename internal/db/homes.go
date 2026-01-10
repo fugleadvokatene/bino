@@ -5,10 +5,18 @@ import (
 	"fmt"
 
 	"github.com/fugleadvokatene/bino/internal/model"
+	"github.com/fugleadvokatene/bino/internal/sql"
 )
 
-func (db *Database) Homes(ctx context.Context) ([]model.Home, error) {
-	homesRaw, err := db.Q.GetHomes(ctx)
+func (db *Database) Homes(ctx context.Context, division int32) ([]model.Home, error) {
+	var homesRaw []sql.Home
+	var err error
+	if division == 0 {
+		homesRaw, err = db.Q.GetHomes(ctx)
+	} else {
+		homesRaw, err = db.Q.GetHomesInDivision(ctx, division)
+	}
+
 	return model.SliceToModel(homesRaw), err
 }
 

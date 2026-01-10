@@ -4,13 +4,15 @@ INSERT INTO appuser (
   google_sub,
   email, 
   avatar_url,
-  access_level
+  access_level,
+  home_id
 ) VALUES (
   $1,
   $2,
   $3,
   $4,
-  $5
+  $5,
+  $6
 )
 RETURNING id
 ;
@@ -37,9 +39,17 @@ WHERE id = $1
 ;
 
 -- name: GetAppusers :many
-SELECT au.*, ha.home_id FROM appuser AS au
-LEFT JOIN home_appuser AS ha
-    ON ha.appuser_id = au.id
+SELECT *
+FROM appuser
+ORDER BY id
+;
+
+-- name: GetAppusersInDivision :many
+SELECT au.*
+FROM appuser AS au
+LEFT JOIN home AS h
+  ON h.id = au.home_id
+WHERE h.division = $1
 ORDER BY au.id
 ;
 
@@ -59,7 +69,6 @@ UPDATE appuser SET logging_consent = NULL
 WHERE id = $1
 ;
 
-
 -- name: SetUserGDriveAccess :exec
 UPDATE appuser
 SET has_gdrive_access = $2
@@ -73,25 +82,23 @@ WHERE 1
 ;
 
 -- name: GetAppusersForHome :many
-SELECT au.*
-FROM home_appuser AS hau
-INNER JOIN appuser AS au
-  ON hau.appuser_id = au.id
+SELECT *
+FROM appuser
 WHERE home_id = $1
 ;
 
 -- name: GetHomeWithDataForUser :one
 SELECT h.*
-FROM home AS h
-INNER JOIN home_appuser AS hau
-  ON hau.home_id = h.id
-WHERE appuser_id = $1
+FROM appuser AS a
+INNER JOIN home AS h
+  ON h.id = a.id
+WHERE a.id = $1
 ;
 
 -- name: RemoveHomeForAppuser :exec
-DELETE
-FROM home_appuser
-WHERE appuser_id = $1
+UPDATE appuser
+SET home_id = 0
+WHERE id = $1
 ;
 
 -- name: DeleteSessionsForUser :exec
@@ -127,4 +134,12 @@ WHERE avatar_url LIKE '%googleusercontent.com%'
 UPDATE appuser
 SET avatar_url = @url
 WHERE id = @id
+;
+
+-- name: GetHomeForUser :one
+SELECT h.* 
+FROM appuser AS a
+INNER JOIN home AS h
+  ON h.id = a.home_id
+WHERE a.id = $1
 ;

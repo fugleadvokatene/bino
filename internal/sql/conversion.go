@@ -133,19 +133,6 @@ func (in GetEventsRow) ToModel(lang *language.Language) model.Event {
 
 // ---- User
 
-func (user GetAppusersRow) ToModel() model.User {
-	return model.User{
-		ID:           user.ID,
-		Name:         user.DisplayName,
-		Email:        user.Email,
-		AvatarURL:    user.AvatarUrl.String,
-		HasAvatarURL: user.AvatarUrl.Valid,
-		AccessLevel:  model.AccessLevel(user.AccessLevel),
-		LanguageID:   user.LanguageID.Int32,
-		HomeID:       user.HomeID.Int32,
-	}
-}
-
 func (user Appuser) ToModel() model.User {
 	return model.User{
 		ID:           user.ID,
@@ -155,6 +142,7 @@ func (user Appuser) ToModel() model.User {
 		HasAvatarURL: user.AvatarUrl.Valid,
 		AccessLevel:  model.AccessLevel(user.AccessLevel),
 		LanguageID:   user.LanguageID.Int32,
+		HomeID:       user.HomeID.Int32,
 	}
 }
 

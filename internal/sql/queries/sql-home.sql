@@ -3,6 +3,12 @@ SELECT * FROM home
 ORDER BY name
 ;
 
+-- name: GetHomesInDivision :many
+SELECT * FROM home
+WHERE division = $1
+ORDER BY name
+;
+
 -- name: InsertHome :exec
 INSERT INTO home (name)
 VALUES ($1)
@@ -12,24 +18,6 @@ VALUES ($1)
 UPDATE home
 SET name = $2
 WHERE id = $1
-;
-
--- name: AddUserToHome :exec
-INSERT INTO home_appuser (home_id, appuser_id)
-VALUES ($1, $2)
-;
-
--- name: RemoveUserFromHome :exec
-DELETE FROM home_appuser
-WHERE home_id = $1
-  AND appuser_id = $2
-;
-
--- name: GetHomesForUser :many
-SELECT h.* FROM home_appuser AS ha
-INNER JOIN home AS h
-  ON h.id = ha.home_id
-WHERE appuser_id = $1
 ;
 
 -- name: GetHome :one

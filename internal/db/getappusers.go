@@ -13,7 +13,7 @@ func (db *Database) EmailToUserMapping(ctx context.Context) (map[string]model.Us
 	if err != nil {
 		return nil, err
 	}
-	return generic.SliceToMap(users, func(user sql.GetAppusersRow) (string, model.User) {
+	return generic.SliceToMap(users, func(user sql.Appuser) (string, model.User) {
 		return user.Email, user.ToModel()
 	}), nil
 }

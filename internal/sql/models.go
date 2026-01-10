@@ -20,6 +20,7 @@ type Appuser struct {
 	HasGdriveAccess bool
 	AccessLevel     int32
 	LanguageID      pgtype.Int4
+	HomeID          pgtype.Int4
 }
 
 type Division struct {
@@ -70,12 +71,6 @@ type Home struct {
 	Capacity int32
 	Note     string
 	Division int32
-}
-
-// Each row associates an app user with a rehab home
-type HomeAppuser struct {
-	AppuserID int32
-	HomeID    int32
 }
 
 type HomePreferredSpecy struct {

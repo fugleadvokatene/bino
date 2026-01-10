@@ -51,16 +51,6 @@ func NewClient(ctx context.Context, config Config, db *db.Database) (*Client, er
 	}, nil
 }
 
-func UserCanShare(ctx context.Context, item Item, email string) bool {
-	for _, p := range item.Permissions {
-		if p.Email == email {
-			return p.CanWrite()
-		}
-	}
-
-	return false
-}
-
 func GDriveItemFromFile(f *drive.File, p *drive.PermissionList) Item {
 	if f == nil {
 		return Item{}

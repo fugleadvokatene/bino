@@ -103,15 +103,12 @@ func (h *page) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		journalMeta.FolderID = row.ParentGoogleID.String
 		journalMeta.FolderName = row.ParentGoogleName.String
 	}
-	fmt.Printf("journalmeta=%+v\n", journalMeta)
 
 	PatientPage(
 		ctx,
 		commonData,
 		patientData.ToModel(),
-		generic.SliceToSlice(homes, func(home sql.Home) model.Home {
-			return home.ToModel()
-		}),
+		model.SliceToModel(homes),
 		events,
 		speciesList,
 		&journal,

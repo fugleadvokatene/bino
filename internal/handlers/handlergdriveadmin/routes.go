@@ -22,10 +22,5 @@ func Routes(
 			Handler: &setIndexerState{Worker: worker, DB: db},
 			Cap:     model.CapSetIndexerState,
 		},
-		{
-			Path:    "POST /gdrive/invite/{email}",
-			Handler: &invite{Worker: worker},
-			Cap:     model.CapInviteToGDrive,
-		},
 	}
 }

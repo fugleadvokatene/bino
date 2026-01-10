@@ -4,12 +4,12 @@ import (
 	"context"
 	"fmt"
 	"net/http"
-	"strconv"
 
 	"github.com/fugleadvokatene/bino/internal/db"
 	"github.com/fugleadvokatene/bino/internal/handlers/handlererror"
 	"github.com/fugleadvokatene/bino/internal/request"
 	"github.com/fugleadvokatene/bino/internal/sql"
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 type form struct {
@@ -97,11 +97,6 @@ func (h *form) postHomeCreateDivision(w http.ResponseWriter, r *http.Request) {
 func (h *form) postHomeAddUser(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
-	optionalFields, _ := request.GetFormValues(r, "remove-from-current", "curr-home-id")
-	currentStr := optionalFields["curr-home-id"]
-	currentHomeID, err := strconv.ParseInt(currentStr, 10, 32)
-	removeFromCurrent := err == nil && optionalFields["remove-from-current"] == "on"
-
 	fields, err := request.GetFormIDs(r, "home-id", "user-id")
 	if err != nil {
 		handlererror.Error(w, r, err)
@@ -112,18 +107,10 @@ func (h *form) postHomeAddUser(w http.ResponseWriter, r *http.Request) {
 	if err := h.DB.Transaction(ctx, func(ctx context.Context, db *db.Database) error {
 		if homeID > 0 {
 			if err := h.DB.Q.AddUserToHome(ctx, sql.AddUserToHomeParams{
-				HomeID:    int32(homeID),
-				AppuserID: int32(userID),
+				HomeID: pgtype.Int4{Int32: homeID, Valid: true},
+				ID:     int32(userID),
 			}); err != nil {
 				return fmt.Errorf("adding user to home: %w", err)
-			}
-		}
-		if removeFromCurrent {
-			if err := h.DB.Q.RemoveUserFromHome(ctx, sql.RemoveUserFromHomeParams{
-				HomeID:    int32(currentHomeID),
-				AppuserID: int32(userID),
-			}); err != nil {
-				return fmt.Errorf("removing user from home: %w", err)
 			}
 		}
 		return nil

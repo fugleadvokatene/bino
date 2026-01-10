@@ -33,7 +33,7 @@ func (h *page) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	commonData.Subtitle = home.Name
 
-	users, err := h.DB.Q.GetAppusersForHome(ctx, id)
+	users, err := h.DB.Q.GetAppusersForHome(ctx, pgtype.Int4{Int32: id, Valid: true})
 	if err != nil {
 		handlererror.Error(w, r, err)
 		return

@@ -28,13 +28,15 @@ INSERT INTO appuser (
   google_sub,
   email, 
   avatar_url,
-  access_level
+  access_level,
+  home_id
 ) VALUES (
   $1,
   $2,
   $3,
   $4,
-  $5
+  $5,
+  $6
 )
 RETURNING id
 `
@@ -45,6 +47,7 @@ type CreateUserParams struct {
 	Email       string
 	AvatarUrl   pgtype.Text
 	AccessLevel int32
+	HomeID      pgtype.Int4
 }
 
 func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (int32, error) {
@@ -54,6 +57,7 @@ func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (int32, 
 		arg.Email,
 		arg.AvatarUrl,
 		arg.AccessLevel,
+		arg.HomeID,
 	)
 	var id int32
 	err := row.Scan(&id)
@@ -83,34 +87,20 @@ func (q *Queries) DeleteSessionsForUser(ctx context.Context, appuserID int32) er
 }
 
 const getAppusers = `-- name: GetAppusers :many
-SELECT au.id, au.display_name, au.google_sub, au.email, au.logging_consent, au.avatar_url, au.has_gdrive_access, au.access_level, au.language_id, ha.home_id FROM appuser AS au
-LEFT JOIN home_appuser AS ha
-    ON ha.appuser_id = au.id
-ORDER BY au.id
+SELECT id, display_name, google_sub, email, logging_consent, avatar_url, has_gdrive_access, access_level, language_id, home_id
+FROM appuser
+ORDER BY id
 `
 
-type GetAppusersRow struct {
-	ID              int32
-	DisplayName     string
-	GoogleSub       string
-	Email           string
-	LoggingConsent  pgtype.Timestamptz
-	AvatarUrl       pgtype.Text
-	HasGdriveAccess bool
-	AccessLevel     int32
-	LanguageID      pgtype.Int4
-	HomeID          pgtype.Int4
-}
-
-func (q *Queries) GetAppusers(ctx context.Context) ([]GetAppusersRow, error) {
+func (q *Queries) GetAppusers(ctx context.Context) ([]Appuser, error) {
 	rows, err := q.db.Query(ctx, getAppusers)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []GetAppusersRow
+	var items []Appuser
 	for rows.Next() {
-		var i GetAppusersRow
+		var i Appuser
 		if err := rows.Scan(
 			&i.ID,
 			&i.DisplayName,
@@ -134,14 +124,12 @@ func (q *Queries) GetAppusers(ctx context.Context) ([]GetAppusersRow, error) {
 }
 
 const getAppusersForHome = `-- name: GetAppusersForHome :many
-SELECT au.id, au.display_name, au.google_sub, au.email, au.logging_consent, au.avatar_url, au.has_gdrive_access, au.access_level, au.language_id
-FROM home_appuser AS hau
-INNER JOIN appuser AS au
-  ON hau.appuser_id = au.id
+SELECT id, display_name, google_sub, email, logging_consent, avatar_url, has_gdrive_access, access_level, language_id, home_id
+FROM appuser
 WHERE home_id = $1
 `
 
-func (q *Queries) GetAppusersForHome(ctx context.Context, homeID int32) ([]Appuser, error) {
+func (q *Queries) GetAppusersForHome(ctx context.Context, homeID pgtype.Int4) ([]Appuser, error) {
 	rows, err := q.db.Query(ctx, getAppusersForHome, homeID)
 	if err != nil {
 		return nil, err
@@ -160,6 +148,7 @@ func (q *Queries) GetAppusersForHome(ctx context.Context, homeID int32) ([]Appus
 			&i.HasGdriveAccess,
 			&i.AccessLevel,
 			&i.LanguageID,
+			&i.HomeID,
 		); err != nil {
 			return nil, err
 		}
@@ -171,16 +160,77 @@ func (q *Queries) GetAppusersForHome(ctx context.Context, homeID int32) ([]Appus
 	return items, nil
 }
 
-const getHomeWithDataForUser = `-- name: GetHomeWithDataForUser :one
-SELECT h.id, h.name, h.capacity, h.note, h.division
-FROM home AS h
-INNER JOIN home_appuser AS hau
-  ON hau.home_id = h.id
-WHERE appuser_id = $1
+const getAppusersInDivision = `-- name: GetAppusersInDivision :many
+SELECT au.id, au.display_name, au.google_sub, au.email, au.logging_consent, au.avatar_url, au.has_gdrive_access, au.access_level, au.language_id, au.home_id
+FROM appuser AS au
+LEFT JOIN home AS h
+  ON h.id = au.home_id
+WHERE h.division = $1
+ORDER BY au.id
 `
 
-func (q *Queries) GetHomeWithDataForUser(ctx context.Context, appuserID int32) (Home, error) {
-	row := q.db.QueryRow(ctx, getHomeWithDataForUser, appuserID)
+func (q *Queries) GetAppusersInDivision(ctx context.Context, division int32) ([]Appuser, error) {
+	rows, err := q.db.Query(ctx, getAppusersInDivision, division)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Appuser
+	for rows.Next() {
+		var i Appuser
+		if err := rows.Scan(
+			&i.ID,
+			&i.DisplayName,
+			&i.GoogleSub,
+			&i.Email,
+			&i.LoggingConsent,
+			&i.AvatarUrl,
+			&i.HasGdriveAccess,
+			&i.AccessLevel,
+			&i.LanguageID,
+			&i.HomeID,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getHomeForUser = `-- name: GetHomeForUser :one
+SELECT h.id, h.name, h.capacity, h.note, h.division 
+FROM appuser AS a
+INNER JOIN home AS h
+  ON h.id = a.home_id
+WHERE a.id = $1
+`
+
+func (q *Queries) GetHomeForUser(ctx context.Context, id int32) (Home, error) {
+	row := q.db.QueryRow(ctx, getHomeForUser, id)
+	var i Home
+	err := row.Scan(
+		&i.ID,
+		&i.Name,
+		&i.Capacity,
+		&i.Note,
+		&i.Division,
+	)
+	return i, err
+}
+
+const getHomeWithDataForUser = `-- name: GetHomeWithDataForUser :one
+SELECT h.id, h.name, h.capacity, h.note, h.division
+FROM appuser AS a
+INNER JOIN home AS h
+  ON h.id = a.id
+WHERE a.id = $1
+`
+
+func (q *Queries) GetHomeWithDataForUser(ctx context.Context, id int32) (Home, error) {
+	row := q.db.QueryRow(ctx, getHomeWithDataForUser, id)
 	var i Home
 	err := row.Scan(
 		&i.ID,
@@ -193,7 +243,7 @@ func (q *Queries) GetHomeWithDataForUser(ctx context.Context, appuserID int32) (
 }
 
 const getUser = `-- name: GetUser :one
-SELECT id, display_name, google_sub, email, logging_consent, avatar_url, has_gdrive_access, access_level, language_id
+SELECT id, display_name, google_sub, email, logging_consent, avatar_url, has_gdrive_access, access_level, language_id, home_id
 FROM appuser
 WHERE id = $1
 `
@@ -211,6 +261,7 @@ func (q *Queries) GetUser(ctx context.Context, id int32) (Appuser, error) {
 		&i.HasGdriveAccess,
 		&i.AccessLevel,
 		&i.LanguageID,
+		&i.HomeID,
 	)
 	return i, err
 }
@@ -260,13 +311,13 @@ func (q *Queries) GetUsersWithGoogleStoredAvatars(ctx context.Context) ([]GetUse
 }
 
 const removeHomeForAppuser = `-- name: RemoveHomeForAppuser :exec
-DELETE
-FROM home_appuser
-WHERE appuser_id = $1
+UPDATE appuser
+SET home_id = 0
+WHERE id = $1
 `
 
-func (q *Queries) RemoveHomeForAppuser(ctx context.Context, appuserID int32) error {
-	_, err := q.db.Exec(ctx, removeHomeForAppuser, appuserID)
+func (q *Queries) RemoveHomeForAppuser(ctx context.Context, id int32) error {
+	_, err := q.db.Exec(ctx, removeHomeForAppuser, id)
 	return err
 }
 

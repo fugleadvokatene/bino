@@ -407,13 +407,13 @@ func (w *Worker) GetGDriveConfigInfo(ctx context.Context) ConfigInfo {
 			}
 			divisionConfig.JournalFolder = folderItem
 
-			fileItem, err := w.g.GetFile(w.cfg.TemplateFile)
+			fileItem, err := w.g.GetFile(div.TemplateJournalID)
 			if err != nil {
 				panic(err)
 			}
 			divisionConfig.TemplateItem = fileItem
 
-			doc, err := w.g.GetDocument(w.cfg.TemplateFile)
+			doc, err := w.g.GetDocument(div.TemplateJournalID)
 			if err != nil {
 				panic(err)
 			}
@@ -422,6 +422,8 @@ func (w *Worker) GetGDriveConfigInfo(ctx context.Context) ConfigInfo {
 			if err := validateTemplate(&doc); err != nil {
 				panic(err)
 			}
+
+			w.cachedInfo.DivisionConfigs = append(w.cachedInfo.DivisionConfigs, divisionConfig)
 		}
 
 		for _, id := range w.cfg.ExtraJournalFolders {
@@ -591,7 +593,7 @@ func (w *Worker) handleRequestCreateJournal(ctx context.Context, req TaskRequest
 		}
 	}
 	if !found {
-		return w.errorResponse(req, fmt.Errorf("no division config found matching ID=%d", payload.Home))
+		return w.errorResponse(req, fmt.Errorf("no division config found matching ID=%d (%s)", division.Division, division.Name.String))
 	}
 
 	item, err := w.g.CreateDocument(

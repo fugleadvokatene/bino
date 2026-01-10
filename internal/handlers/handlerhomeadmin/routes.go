@@ -23,7 +23,7 @@ func Routes(
 			Cap:     model.CapManageAllHomes,
 		},
 		{
-			Path:    "POST /homes/{home}/set-name",
+			Path:    "POST /home/{home}/set-name",
 			Handler: &setName{DB: db},
 			Cap:     model.CapManageOwnHomes,
 		},

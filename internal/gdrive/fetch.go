@@ -42,7 +42,6 @@ func (w *Worker) FetchJournal(
 	} else {
 		parentGoogleID = w.resolveParent(ctx, googleID)
 	}
-	fmt.Printf("parentGoogleID=%+v\n", parentGoogleID)
 
 	doc, err := w.GetDocument(googleID)
 	if err != nil {

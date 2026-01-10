@@ -5,8 +5,6 @@ import "github.com/fugleadvokatene/bino/internal/gdrive/document"
 type Config struct {
 	ServiceAccountKeyLocation string
 	DriveBase                 string
-	JournalFolder             string
-	TemplateFile              string
 	ExtraJournalFolders       []string
 }
 

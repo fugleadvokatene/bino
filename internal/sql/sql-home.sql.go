@@ -56,21 +56,6 @@ func (q *Queries) AddPreferredSpecies(ctx context.Context, arg AddPreferredSpeci
 	return err
 }
 
-const addUserToHome = `-- name: AddUserToHome :exec
-INSERT INTO home_appuser (home_id, appuser_id)
-VALUES ($1, $2)
-`
-
-type AddUserToHomeParams struct {
-	HomeID    int32
-	AppuserID int32
-}
-
-func (q *Queries) AddUserToHome(ctx context.Context, arg AddUserToHomeParams) error {
-	_, err := q.db.Exec(ctx, addUserToHome, arg.HomeID, arg.AppuserID)
-	return err
-}
-
 const deleteHomeUnavailablePeriod = `-- name: DeleteHomeUnavailablePeriod :exec
 DELETE
 FROM home_unavailable
@@ -266,15 +251,14 @@ func (q *Queries) GetHomes(ctx context.Context) ([]Home, error) {
 	return items, nil
 }
 
-const getHomesForUser = `-- name: GetHomesForUser :many
-SELECT h.id, h.name, h.capacity, h.note, h.division FROM home_appuser AS ha
-INNER JOIN home AS h
-  ON h.id = ha.home_id
-WHERE appuser_id = $1
+const getHomesInDivision = `-- name: GetHomesInDivision :many
+SELECT id, name, capacity, note, division FROM home
+WHERE division = $1
+ORDER BY name
 `
 
-func (q *Queries) GetHomesForUser(ctx context.Context, appuserID int32) ([]Home, error) {
-	rows, err := q.db.Query(ctx, getHomesForUser, appuserID)
+func (q *Queries) GetHomesInDivision(ctx context.Context, division int32) ([]Home, error) {
+	rows, err := q.db.Query(ctx, getHomesInDivision, division)
 	if err != nil {
 		return nil, err
 	}
@@ -442,22 +426,6 @@ type MoveHomeParams struct {
 
 func (q *Queries) MoveHome(ctx context.Context, arg MoveHomeParams) error {
 	_, err := q.db.Exec(ctx, moveHome, arg.ID, arg.Division)
-	return err
-}
-
-const removeUserFromHome = `-- name: RemoveUserFromHome :exec
-DELETE FROM home_appuser
-WHERE home_id = $1
-  AND appuser_id = $2
-`
-
-type RemoveUserFromHomeParams struct {
-	HomeID    int32
-	AppuserID int32
-}
-
-func (q *Queries) RemoveUserFromHome(ctx context.Context, arg RemoveUserFromHomeParams) error {
-	_, err := q.db.Exec(ctx, removeUserFromHome, arg.HomeID, arg.AppuserID)
 	return err
 }
 

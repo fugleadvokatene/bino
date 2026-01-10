@@ -4,11 +4,9 @@ import (
 	"net/http"
 
 	"github.com/fugleadvokatene/bino/internal/db"
-	"github.com/fugleadvokatene/bino/internal/generic"
 	"github.com/fugleadvokatene/bino/internal/handlers/handlererror"
 	"github.com/fugleadvokatene/bino/internal/model"
 	"github.com/fugleadvokatene/bino/internal/request"
-	"github.com/fugleadvokatene/bino/internal/sql"
 )
 
 type page struct {
@@ -37,11 +35,10 @@ func (h *page) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	UserAdmin(data, generic.SliceToSlice(homes, func(in sql.Home) model.Home {
-		return in.ToModel()
-	}), generic.SliceToSlice(users, func(in sql.GetAppusersRow) model.User {
-		return in.ToModel()
-	}), generic.SliceToSlice(invitations, func(in sql.GetInvitationsRow) model.Invitation {
-		return in.ToModel()
-	})).Render(ctx, w)
+	UserAdmin(
+		data,
+		model.SliceToModel(homes),
+		model.SliceToModel(users),
+		model.SliceToModel(invitations),
+	).Render(ctx, w)
 }

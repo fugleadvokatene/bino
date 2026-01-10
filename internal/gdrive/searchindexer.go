@@ -41,9 +41,23 @@ func (w *Worker) searchIndexWorker(ctx context.Context) {
 
 func (w *Worker) searchIndexAll(ctx context.Context) int {
 	created := 0
-	w.searchIndexFolder(ctx, w.cfg.JournalFolder, &created)
-	if created >= w.indexerState.MaxDocumentsCreatedPerRound {
-		return created
+
+	divisions, err := w.g.DB.GetDivisions(ctx)
+	if err != nil {
+		slog.ErrorContext(ctx, "Failed to get divisions", "err", err)
+		return 0
+	}
+
+	for _, div := range divisions {
+		if div.JournalFolderID == "" {
+			slog.ErrorContext(ctx, "Empty journal folder ID for division", "division", div.Name, "id", div.ID)
+			continue
+		}
+
+		w.searchIndexFolder(ctx, div.JournalFolderID, &created)
+		if created >= w.indexerState.MaxDocumentsCreatedPerRound {
+			return created
+		}
 	}
 	for _, folder := range w.cfg.ExtraJournalFolders {
 		w.searchIndexFolder(ctx, folder, &created)

@@ -40,3 +40,16 @@ LEFT JOIN division AS d
     ON h.division_id = d.id
 WHERE h.id = $1
 ;
+
+-- name: AddUserToHome :exec
+UPDATE appuser
+SET home_id = $1
+WHERE id = $2
+;
+
+-- name: RemoveUserFromHome :exec
+UPDATE appuser
+SET home_id = 0
+WHERE home_id = $1
+  AND id = $2
+;

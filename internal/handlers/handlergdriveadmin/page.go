@@ -24,7 +24,7 @@ func (h *page) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	commonData := request.MustLoadCommonData(ctx)
 
 	info := h.Worker.GetGDriveConfigInfo(ctx)
-	homes, err := h.DB.Homes(ctx)
+	homes, err := h.DB.Homes(ctx, 0)
 	if err != nil {
 		handlererror.Error(w, r, err)
 		return

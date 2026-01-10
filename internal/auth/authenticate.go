@@ -2,13 +2,13 @@ package auth
 
 import (
 	"fmt"
+	"log/slog"
 	"net/http"
 	"time"
 
 	"github.com/fugleadvokatene/bino/internal/language"
 	"github.com/fugleadvokatene/bino/internal/model"
 	"github.com/fugleadvokatene/bino/internal/request"
-	"github.com/fugleadvokatene/bino/internal/sql"
 )
 
 func Authenticate(
@@ -27,10 +27,9 @@ func Authenticate(
 		return request.CommonData{}, err
 	}
 
-	homes, err := auth.db.Q.GetHomesForUser(ctx, user.ID)
-	var preferredHome sql.Home
-	if len(homes) > 0 {
-		preferredHome = homes[0]
+	preferredHome, err := auth.db.Q.GetHomeForUser(ctx, user.ID)
+	if err != nil {
+		slog.WarnContext(ctx, "user is not assigned to any home", "id", user.ID, "err", err)
 	}
 
 	featureFlags, err := auth.db.GetFeatureFlagsForUser(ctx, user.ID)

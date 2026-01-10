@@ -11,6 +11,22 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
+const addUserToHome = `-- name: AddUserToHome :exec
+UPDATE appuser
+SET home_id = $1
+WHERE id = $2
+`
+
+type AddUserToHomeParams struct {
+	HomeID pgtype.Int4
+	ID     int32
+}
+
+func (q *Queries) AddUserToHome(ctx context.Context, arg AddUserToHomeParams) error {
+	_, err := q.db.Exec(ctx, addUserToHome, arg.HomeID, arg.ID)
+	return err
+}
+
 const deleteDivision = `-- name: DeleteDivision :exec
 DELETE FROM division WHERE id = $1
 `
@@ -88,6 +104,23 @@ INSERT INTO division (name) VALUES ($1)
 
 func (q *Queries) InsertDivision(ctx context.Context, name string) error {
 	_, err := q.db.Exec(ctx, insertDivision, name)
+	return err
+}
+
+const removeUserFromHome = `-- name: RemoveUserFromHome :exec
+UPDATE appuser
+SET home_id = 0
+WHERE home_id = $1
+  AND id = $2
+`
+
+type RemoveUserFromHomeParams struct {
+	HomeID pgtype.Int4
+	ID     int32
+}
+
+func (q *Queries) RemoveUserFromHome(ctx context.Context, arg RemoveUserFromHomeParams) error {
+	_, err := q.db.Exec(ctx, removeUserFromHome, arg.HomeID, arg.ID)
 	return err
 }
 

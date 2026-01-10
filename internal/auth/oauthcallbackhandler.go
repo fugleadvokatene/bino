@@ -104,15 +104,11 @@ func (h *oauthCallbackHandler) ServeHTTP(
 				GoogleSub:   claims.Sub,
 				AvatarUrl:   pgtype.Text{String: claims.Picture, Valid: claims.Picture != ""},
 				AccessLevel: invitation.AccessLevel,
+				HomeID:      invitation.Home,
 			}); err != nil {
 				return err
 			} else {
 				userID = createdUserID
-			}
-			if invitation.Home.Valid {
-				if err := h.auth.db.Q.AddUserToHome(ctx, sql.AddUserToHomeParams{HomeID: invitation.Home.Int32, AppuserID: userID}); err != nil {
-					slog.Error("Couldn't add user to home", "home", invitation.Home.Int32, "User", userID)
-				}
 			}
 			if err := h.auth.db.Q.DeleteInvitation(ctx, invitation.ID); err != nil {
 				slog.Error("Couldn't delete invitation", "invitation", invitation)

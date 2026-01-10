@@ -35,13 +35,13 @@ func (h *Page) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	users, err := h.DB.Q.GetAppusers(ctx) // TODO(perf) use a more specific query
+	users, err := h.DB.Q.GetAppusersInDivision(ctx, commonData.User.PreferredHome.Division) // TODO(perf) use a more specific query
 	if err != nil {
 		handlererror.Error(w, r, err)
 		return
 	}
 
-	homes, err := h.DB.Homes(ctx)
+	homes, err := h.DB.Homes(ctx, commonData.User.PreferredHome.Division)
 	if err != nil {
 		handlererror.Error(w, r, err)
 		return
@@ -92,8 +92,8 @@ func (h *Page) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		homes,
 		users,
 		func(h *model.Home) int32 { return h.ID },
-		func(u *sql.GetAppusersRow) int32 { return u.HomeID.Int32 },
-		func(h *model.Home, u *sql.GetAppusersRow) {
+		func(u *sql.Appuser) int32 { return u.HomeID.Int32 },
+		func(h *model.Home, u *sql.Appuser) {
 			h.Users = append(h.Users, u.ToModel())
 		},
 	)

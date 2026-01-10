@@ -152,9 +152,6 @@ templ GDrivePage(
                             <td>{user.Email}</td>
                             
                             <td>
-                            if gdrive.UserCanShare(ctx, config.JournalFolder, data.User.Email) {
-                                @templbase.SingleButtonForm(data, fmt.Sprintf("/gdrive/invite/%s", user.Email), data.Language.GDriveGiveAccess, "POST", "btn-primary")
-                            }
                             </td>
                         </tr>
                     }
