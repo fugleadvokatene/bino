@@ -23,8 +23,12 @@ type Appuser struct {
 }
 
 type Division struct {
-	ID   int32
-	Name string
+	ID                  int32
+	Name                string
+	JournalFolderID     pgtype.Text
+	JournalFolderName   pgtype.Text
+	TemplateJournalID   pgtype.Text
+	TemplateJournalName pgtype.Text
 }
 
 type FeatureFlag struct {

@@ -9,7 +9,6 @@ import (
 	"github.com/agnivade/levenshtein"
 	"github.com/fugleadvokatene/bino/internal/db"
 	"github.com/fugleadvokatene/bino/internal/gdrive"
-	"github.com/fugleadvokatene/bino/internal/generic"
 	"github.com/fugleadvokatene/bino/internal/handlers/handlererror"
 	"github.com/fugleadvokatene/bino/internal/model"
 	"github.com/fugleadvokatene/bino/internal/request"
@@ -24,22 +23,22 @@ func (h *page) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	commonData := request.MustLoadCommonData(ctx)
 
-	info := h.Worker.GetGDriveConfigInfo()
+	info := h.Worker.GetGDriveConfigInfo(ctx)
 	homes, err := h.DB.Homes(ctx)
 	if err != nil {
 		handlererror.Error(w, r, err)
 		return
 	}
 
-	homeNames := generic.SliceToSlice(homes, func(in model.Home) string { return strings.ToLower(in.Name) })
-	predictedInviteIDs := make(map[string]string, len(info.JournalFolder.Permissions))
-	for _, p := range info.JournalFolder.Permissions {
-		predictedInviteIDs[p.Email] = closest(p.Email, homeNames)
+	divisions, err := h.DB.GetDivisions(ctx)
+	if err != nil {
+		handlererror.Error(w, r, err)
+		return
 	}
 
 	indexerState, _ := h.Worker.GetIndexerState()
 
-	GDrivePage(ctx, commonData, info, homes, predictedInviteIDs, h.DB, indexerState).Render(ctx, w)
+	GDrivePage(ctx, commonData, info, divisions, homes, h.DB, indexerState).Render(ctx, w)
 }
 
 func closest(email string, names []string) string {

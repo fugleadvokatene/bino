@@ -68,7 +68,7 @@ templ HomesPage(
 
         // List of homes
         for _, division := range divisions {
-            <h2 class="editable" data-action={division.SetNameURL()}>{division.Name}</h2>
+            <h2 class="editable" data-action={division.URLSuffix("set-name")}>{division.Name}</h2>
             for _, home := range division.Homes {
                 @templbase.Card() {
                     <h3 class="editable" data-action={home.URLSuffix("set-name")}>{home.Name}</h3>

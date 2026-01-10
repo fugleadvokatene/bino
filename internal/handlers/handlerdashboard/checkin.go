@@ -117,12 +117,15 @@ func (h *checkin) createOrSuggestJournal(
 ) {
 	ctx := h.BackgroundCtx
 	if tryCreate {
-		if item, err := h.GDriveWorker.CreateJournal(gdrive.TemplateVars{
-			Time:    time.Now(),
-			Name:    name,
-			Species: systemSpeciesName,
-			BinoURL: h.Config.BinoURLForPatient(patientID),
-		}); err != nil {
+		if item, err := h.GDriveWorker.CreateJournal(
+			homeID,
+			gdrive.TemplateVars{
+				Time:    time.Now(),
+				Name:    name,
+				Species: systemSpeciesName,
+				BinoURL: h.Config.BinoURLForPatient(patientID),
+			},
+		); err != nil {
 			slog.Warn(language.GDriveCreateJournalFailed, "error", err)
 		} else {
 			if tag, err := h.DB.Q.SetPatientJournal(ctx, sql.SetPatientJournalParams{

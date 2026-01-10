@@ -143,7 +143,7 @@ func (g *Client) GetDocument(id string) (document.Document, error) {
 	return document.New(doc)
 }
 
-func (g *Client) CreateDocument(conf ConfigInfo, vars TemplateVars) (Item, error) {
+func (g *Client) CreateDocument(conf DivisionConfig, vars TemplateVars) (Item, error) {
 	copyCall := g.Drive.Files.Copy(conf.TemplateItem.ID, &drive.File{
 		Name:    vars.ApplyToString(conf.TemplateItem.Name),
 		Parents: []string{conf.JournalFolder.ID},

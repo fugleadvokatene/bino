@@ -55,7 +55,7 @@ func (h *createJournal) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		created = pgtype.Timestamptz{Time: time.Now(), Valid: true}
 	}
 
-	item, err := h.GDriveWorker.CreateJournal(gdrive.TemplateVars{
+	item, err := h.GDriveWorker.CreateJournal(patientData.CurrHomeID.Int32, gdrive.TemplateVars{
 		Time:    created.Time,
 		Name:    patientData.Name,
 		Species: patientData.SpeciesName,

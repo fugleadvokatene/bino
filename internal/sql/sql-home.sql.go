@@ -181,6 +181,19 @@ func (q *Queries) GetHomeByName(ctx context.Context, name string) ([]Home, error
 	return items, nil
 }
 
+const getHomeDivision = `-- name: GetHomeDivision :one
+SELECT division
+FROM home
+WHERE id = $1
+`
+
+func (q *Queries) GetHomeDivision(ctx context.Context, id int32) (int32, error) {
+	row := q.db.QueryRow(ctx, getHomeDivision, id)
+	var division int32
+	err := row.Scan(&division)
+	return division, err
+}
+
 const getHomeUnavailablePeriods = `-- name: GetHomeUnavailablePeriods :many
 SELECT id, home_id, from_date, to_date, note
 FROM home_unavailable

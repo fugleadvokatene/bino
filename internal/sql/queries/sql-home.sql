@@ -155,3 +155,9 @@ UPDATE home
 SET division = $2
 WHERE id = $1
 ;
+
+-- name: GetHomeDivision :one
+SELECT division
+FROM home
+WHERE id = $1
+;

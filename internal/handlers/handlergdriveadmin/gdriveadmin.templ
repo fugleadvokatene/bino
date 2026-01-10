@@ -3,7 +3,6 @@ package handlergdriveadmin
 import (
     "context"
     "fmt"
-    "strings"
 	"github.com/fugleadvokatene/bino/internal/model"
 	"github.com/fugleadvokatene/bino/internal/request"
 	"github.com/fugleadvokatene/bino/internal/templbase"
@@ -15,8 +14,8 @@ templ GDrivePage(
     ctx context.Context,
     data *request.CommonData,
     info gdrive.ConfigInfo,
+    divisions []model.Division,
     homes []model.Home,
-    predictedInviteIDs map[string]string,
     db *db.Database,
     indexerState gdrive.IndexerState,
 ) {
@@ -35,8 +34,43 @@ templ GDrivePage(
         }
 
         @templbase.Card() {
-            <p>{data.Language.GDriveBaseDir} <a href={info.JournalFolder.FolderURL()}>{info.JournalFolder.Name}</a></p>
-            <p>{data.Language.GDriveTemplateFile} <a href={templ.URL(info.TemplateItem.DocumentURL())}>{info.TemplateItem.Name}</a></p>
+            <table class="table table-xs">
+            <thead>
+                <tr>
+                    <td>Avdeling</td>
+                    <td>Journalmappe-ID</td>
+                    <td>Journalmappe-navn</td>
+                    <td>Mal-ID</td>
+                    <td>Mal-navn</td>
+                </tr>
+            </thead>
+            <tbody>
+            for _, division := range divisions {
+                <tr>
+                    <td>{division.Name}</td>
+                    <td>
+                        <span class="editable" data-action={division.URLSuffix("set-journal-folder")}>
+                            {division.JournalFolderID}
+                        </span>
+                    </td>
+                    <td>{division.JournalFolderName}</td>
+                    <td>
+                        <span class="editable" data-action={division.URLSuffix("set-template-journal")}>
+                            {division.TemplateJournalID}
+                        </span>
+                    </td>
+                    <td>{division.TemplateJournalName}</td>
+                </tr>
+            }
+            </tbody>
+            </table>
+        }
+
+        @templbase.Card() {
+            for _, config := range info.DivisionConfigs {
+                <p>{data.Language.GDriveBaseDir} <a href={config.JournalFolder.FolderURL()}>{config.JournalFolder.Name}</a></p>
+                <p>{data.Language.GDriveTemplateFile} <a href={templ.URL(config.TemplateItem.DocumentURL())}>{config.TemplateItem.Name}</a></p>
+            }
             if len(info.ExtraFolders) > 0 {
                 <p>{data.Language.GDriveExtraDirs}</p>
                 <ul>
@@ -47,84 +81,86 @@ templ GDrivePage(
             }
         }
 
-        @templbase.Card() {
-            <h2>{data.Language.GDrivePermissionsForBaseDir}</h2>
-            <p>{data.Language.GDrivePermissionsForBaseDirInstruction}</p>
-            <table class="table table-sm">
-            <thead>
-                <tr>
-                    <th>{data.Language.GDriveDisplayName}</th>
-                    <th>{data.Language.GDriveEmail}</th>
-                    <th>{data.Language.GDriveRole}</th>
-                    <th>{data.Language.GDriveFoundBinoUser}</th>
-                </tr>
-            </thead>
-            <tbody>
-            for _, p := range info.JournalFolder.Permissions {
-                <tr>
-                    <td class="td-displayname">
-                        {p.DisplayName}
-                    </td>
-                    <td class="td-email">
-                        {p.Email}
-                    </td>
-                    <td>
-                        {p.Role} ({data.Language.GDriveRoles[p.Role]})
-                    </td>
-                    <td>
-                        if view := request.LookupUserByEmail(ctx, db, p.Email); view.Valid() {
-                            @templbase.Avatar(view)
-                        } else {
-                            @templbase.Form(data, fmt.Sprintf("/invite/%s", p.Email), "POST") {
-                                <label class="small" for="access-level">{data.Language.AccessLevel}</label>
-                                <select autocomplete="off" class="form-control form-select" name="access-level" id="access-level">
-                                    for _, al := range model.AccessLevelValues() {
-                                        <option value={int(al)} selected?={al==model.AccessLevelCoordinator}>{data.Language.AccessLevels[al]}</option>
-                                    }
-                                </select>
-                                <label class="small" for="home">{data.Language.HomesHomeName}</label>
-                                <select autocomplete="off" class="form-control form-select" name="home" id="home">
-                                    for _, home := range homes {
-                                        <option value={home.ID} selected?={predictedInviteIDs[p.Email]==strings.ToLower(home.Name)}>{home.Name}</option>
-                                    }
-                                </select>
-                                <input id="email" type="hidden" class="d-none" name="email" value={p.Email}>
-                                <button type="submit" class={"btn btn-sm", "btn-primary"}>{data.Language.AdminInviteToBino}</button>
-                            }
-                        }
-                    </td>
-                </tr>
-            }
-            </tbody>
-            </table>
-
-            if extraBinoUsers := getExtraBinoUsers(ctx, info.JournalFolder, db); len(extraBinoUsers) > 0 {
-                <p>{data.Language.GDriveBinoUsersMissingWritePermission}</p>
+        for _, config := range info.DivisionConfigs {
+            @templbase.Card() {
+                <h2>{data.Language.GDrivePermissionsForBaseDir}</h2>
+                <p>{data.Language.GDrivePermissionsForBaseDirInstruction}</p>
                 <table class="table table-sm">
                 <thead>
                     <tr>
-                        <th>{data.Language.GenericName}</th>
-                        <th>{data.Language.GDriveEmailInBino}</th>
-                        <th></th>
+                        <th>{data.Language.GDriveDisplayName}</th>
+                        <th>{data.Language.GDriveEmail}</th>
+                        <th>{data.Language.GDriveRole}</th>
+                        <th>{data.Language.GDriveFoundBinoUser}</th>
                     </tr>
                 </thead>
                 <tbody>
-                for _, user := range extraBinoUsers {
+                for _, p := range config.JournalFolder.Permissions {
                     <tr>
-                        <td>{user.Name}
-                        @templbase.Avatar(user)
+                        <td class="td-displayname">
+                            {p.DisplayName}
                         </td>
-                        <td>{user.Email}</td>
-                        
+                        <td class="td-email">
+                            {p.Email}
+                        </td>
                         <td>
-                        if gdrive.UserCanShare(ctx, info.JournalFolder, data.User.Email) {
-                            @templbase.SingleButtonForm(data, fmt.Sprintf("/gdrive/invite/%s", user.Email), data.Language.GDriveGiveAccess, "POST", "btn-primary")
-                        }
+                            {p.Role} ({data.Language.GDriveRoles[p.Role]})
+                        </td>
+                        <td>
+                            if view := request.LookupUserByEmail(ctx, db, p.Email); view.Valid() {
+                                @templbase.Avatar(view)
+                            } else {
+                                @templbase.Form(data, fmt.Sprintf("/invite/%s", p.Email), "POST") {
+                                    <label class="small" for="access-level">{data.Language.AccessLevel}</label>
+                                    <select autocomplete="off" class="form-control form-select" name="access-level" id="access-level">
+                                        for _, al := range model.AccessLevelValues() {
+                                            <option value={int(al)} selected?={al==model.AccessLevelCoordinator}>{data.Language.AccessLevels[al]}</option>
+                                        }
+                                    </select>
+                                    <label class="small" for="home">{data.Language.HomesHomeName}</label>
+                                    <select autocomplete="off" class="form-control form-select" name="home" id="home">
+                                        for _, home := range homes {
+                                            <option value={home.ID}>{home.Name}</option>
+                                        }
+                                    </select>
+                                    <input id="email" type="hidden" class="d-none" name="email" value={p.Email}>
+                                    <button type="submit" class={"btn btn-sm", "btn-primary"}>{data.Language.AdminInviteToBino}</button>
+                                }
+                            }
                         </td>
                     </tr>
                 }
                 </tbody>
                 </table>
+
+                if extraBinoUsers := getExtraBinoUsers(ctx, config.JournalFolder, db); len(extraBinoUsers) > 0 {
+                    <p>{data.Language.GDriveBinoUsersMissingWritePermission}</p>
+                    <table class="table table-sm">
+                    <thead>
+                        <tr>
+                            <th>{data.Language.GenericName}</th>
+                            <th>{data.Language.GDriveEmailInBino}</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    for _, user := range extraBinoUsers {
+                        <tr>
+                            <td>{user.Name}
+                            @templbase.Avatar(user)
+                            </td>
+                            <td>{user.Email}</td>
+                            
+                            <td>
+                            if gdrive.UserCanShare(ctx, config.JournalFolder, data.User.Email) {
+                                @templbase.SingleButtonForm(data, fmt.Sprintf("/gdrive/invite/%s", user.Email), data.Language.GDriveGiveAccess, "POST", "btn-primary")
+                            }
+                            </td>
+                        </tr>
+                    }
+                    </tbody>
+                    </table>
+                }
             }
         }
     }

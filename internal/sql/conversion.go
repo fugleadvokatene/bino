@@ -369,7 +369,11 @@ func (in StatPatientGetCurrentSpeciesDistributionRow) ToModel() model.SpeciesCou
 
 func (in Division) ToModel() model.Division {
 	return model.Division{
-		ID:   in.ID,
-		Name: in.Name,
+		ID:                  in.ID,
+		Name:                in.Name,
+		JournalFolderID:     in.JournalFolderID.String,
+		JournalFolderName:   in.JournalFolderName.String,
+		TemplateJournalID:   in.TemplateJournalID.String,
+		TemplateJournalName: in.TemplateJournalName.String,
 	}
 }

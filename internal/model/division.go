@@ -7,9 +7,13 @@ type Division struct {
 	Name string
 
 	// Optional
-	Homes []Home
+	Homes               []Home
+	JournalFolderID     string
+	JournalFolderName   string
+	TemplateJournalID   string
+	TemplateJournalName string
 }
 
-func (d *Division) SetNameURL() string {
-	return fmt.Sprintf("/homes/divisions/%d/set-name", d.ID)
+func (d *Division) URLSuffix(suffix string) string {
+	return fmt.Sprintf("/homes/divisions/%d/%s", d.ID, suffix)
 }

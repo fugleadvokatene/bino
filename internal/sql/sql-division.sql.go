@@ -7,6 +7,8 @@ package sql
 
 import (
 	"context"
+
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 const deleteDivision = `-- name: DeleteDivision :exec
@@ -18,8 +20,38 @@ func (q *Queries) DeleteDivision(ctx context.Context, id int32) error {
 	return err
 }
 
+const getDivisionJournalFolderForAppUser = `-- name: GetDivisionJournalFolderForAppUser :one
+SELECT 'TEST'
+FROM appuser
+WHERE id = $1
+`
+
+func (q *Queries) GetDivisionJournalFolderForAppUser(ctx context.Context, id int32) (string, error) {
+	row := q.db.QueryRow(ctx, getDivisionJournalFolderForAppUser, id)
+	var column_1 string
+	err := row.Scan(&column_1)
+	return column_1, err
+}
+
+const getDivisionJournalFolderForHome = `-- name: GetDivisionJournalFolderForHome :one
+
+SELECT d.journal_folder_id
+FROM home AS h
+LEFT JOIN division AS d
+    ON h.division_id = d.id
+WHERE h.id = $1
+`
+
+// TODO
+func (q *Queries) GetDivisionJournalFolderForHome(ctx context.Context, id int32) (pgtype.Text, error) {
+	row := q.db.QueryRow(ctx, getDivisionJournalFolderForHome, id)
+	var journal_folder_id pgtype.Text
+	err := row.Scan(&journal_folder_id)
+	return journal_folder_id, err
+}
+
 const getDivisions = `-- name: GetDivisions :many
-SELECT id, name FROM division
+SELECT id, name, journal_folder_id, journal_folder_name, template_journal_id, template_journal_name FROM division
 ORDER BY id ASC
 `
 
@@ -32,7 +64,14 @@ func (q *Queries) GetDivisions(ctx context.Context) ([]Division, error) {
 	var items []Division
 	for rows.Next() {
 		var i Division
-		if err := rows.Scan(&i.ID, &i.Name); err != nil {
+		if err := rows.Scan(
+			&i.ID,
+			&i.Name,
+			&i.JournalFolderID,
+			&i.JournalFolderName,
+			&i.TemplateJournalID,
+			&i.TemplateJournalName,
+		); err != nil {
 			return nil, err
 		}
 		items = append(items, i)
@@ -52,6 +91,23 @@ func (q *Queries) InsertDivision(ctx context.Context, name string) error {
 	return err
 }
 
+const setDivisionJournalFolder = `-- name: SetDivisionJournalFolder :exec
+UPDATE division
+SET journal_folder_id = $2, journal_folder_name = $3
+WHERE id = $1
+`
+
+type SetDivisionJournalFolderParams struct {
+	ID                int32
+	JournalFolderID   pgtype.Text
+	JournalFolderName pgtype.Text
+}
+
+func (q *Queries) SetDivisionJournalFolder(ctx context.Context, arg SetDivisionJournalFolderParams) error {
+	_, err := q.db.Exec(ctx, setDivisionJournalFolder, arg.ID, arg.JournalFolderID, arg.JournalFolderName)
+	return err
+}
+
 const setDivisionName = `-- name: SetDivisionName :exec
 UPDATE division SET name = $2 WHERE id = $1
 `
@@ -63,5 +119,22 @@ type SetDivisionNameParams struct {
 
 func (q *Queries) SetDivisionName(ctx context.Context, arg SetDivisionNameParams) error {
 	_, err := q.db.Exec(ctx, setDivisionName, arg.ID, arg.Name)
+	return err
+}
+
+const setDivisionTemplateJournal = `-- name: SetDivisionTemplateJournal :exec
+UPDATE division
+SET template_journal_id = $2, template_journal_name = $3
+WHERE id = $1
+`
+
+type SetDivisionTemplateJournalParams struct {
+	ID                  int32
+	TemplateJournalID   pgtype.Text
+	TemplateJournalName pgtype.Text
+}
+
+func (q *Queries) SetDivisionTemplateJournal(ctx context.Context, arg SetDivisionTemplateJournalParams) error {
+	_, err := q.db.Exec(ctx, setDivisionTemplateJournal, arg.ID, arg.TemplateJournalID, arg.TemplateJournalName)
 	return err
 }

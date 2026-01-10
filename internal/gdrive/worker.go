@@ -140,10 +140,13 @@ func newGDriveTaskRequestListFiles(params ListFilesParams) TaskRequest {
 	return req
 }
 
-func newGDriveTaskRequestCreateJournal(vars TemplateVars) TaskRequest {
+func newGDriveTaskRequestCreateJournal(home int32, vars TemplateVars) TaskRequest {
 	req := newGDriveTaskRequest()
 	req.Type = model.GDriveTaskRequestIDCreateJournal
-	req.Payload = vars
+	req.Payload = payloadCreatejournal{
+		TemplateVars: vars,
+		Home:         home,
+	}
 	return req
 }
 
@@ -171,10 +174,15 @@ func (req TaskRequest) decodeInviteUser() (payloadInviteUser, error) {
 	return inv, nil
 }
 
-func (req TaskRequest) decodeCreateJournal() (TemplateVars, error) {
-	vars, ok := req.Payload.(TemplateVars)
+type payloadCreatejournal struct {
+	Home         int32
+	TemplateVars TemplateVars
+}
+
+func (req TaskRequest) decodeCreateJournal() (payloadCreatejournal, error) {
+	vars, ok := req.Payload.(payloadCreatejournal)
 	if !ok {
-		return TemplateVars{}, fmt.Errorf("decodeCreateJournal called on request with payload of type %T", req.Payload)
+		return payloadCreatejournal{}, fmt.Errorf("decodeCreateJournal called on request with payload of type %T", req.Payload)
 	}
 	return vars, nil
 }
@@ -336,14 +344,14 @@ func NewWorker(ctx context.Context, cfg Config, g *Client, bg *background.Jobs) 
 
 	// Warm the cache on gdrive info, then start pollin
 	go func() {
-		_ = w.GetGDriveConfigInfo()
+		_ = w.GetGDriveConfigInfo(ctx)
 
 		w.searchIndexWorker(ctx)
 	}()
 
 	// Workers
 	for i := range nWorkers {
-		go w.worker(i)
+		go w.worker(ctx, i)
 	}
 
 	return w
@@ -360,31 +368,60 @@ func validateTemplate(tpl *document.Document) error {
 	return errors.Join(errs...)
 }
 
-func (w *Worker) GetGDriveConfigInfo() ConfigInfo {
+func (w *Worker) GetGDriveConfigInfo(ctx context.Context) ConfigInfo {
 	w.cachedInfoMu.Lock()
 	defer w.cachedInfoMu.Unlock()
+
 	if w.cachedInfo == nil {
+		divisions, err := w.g.DB.GetDivisions(ctx)
+		if err != nil {
+			panic(err)
+		}
+
 		w.cachedInfo = new(ConfigInfo)
-		folderItem, err := w.g.GetFile(w.cfg.JournalFolder)
-		if err != nil {
-			panic(err)
-		}
-		w.cachedInfo.JournalFolder = folderItem
 
-		fileItem, err := w.g.GetFile(w.cfg.TemplateFile)
-		if err != nil {
-			panic(err)
-		}
-		w.cachedInfo.TemplateItem = fileItem
+		for _, div := range divisions {
+			if div.JournalFolderID == "" {
+				slog.WarnContext(ctx, "Division missing journal folder ID", "id", div.ID, "name", div.Name)
+				continue
+			}
+			if div.TemplateJournalID == "" {
+				slog.WarnContext(ctx, "Division missing template journal ID", "id", div.ID, "name", div.Name)
+				continue
+			}
+			if div.JournalFolderName == "" {
+				slog.WarnContext(ctx, "Division missing journal folder name", "id", div.ID, "name", div.Name)
+				continue
+			}
+			if div.TemplateJournalName == "" {
+				slog.WarnContext(ctx, "Division missing template journal name", "id", div.ID, "name", div.Name)
+				continue
+			}
 
-		doc, err := w.g.GetDocument(w.cfg.TemplateFile)
-		if err != nil {
-			panic(err)
-		}
-		w.cachedInfo.TemplateDoc = doc
+			var divisionConfig DivisionConfig
+			divisionConfig.DivisionID = div.ID
 
-		if err := validateTemplate(&doc); err != nil {
-			panic(err)
+			folderItem, err := w.g.GetFile(div.JournalFolderID)
+			if err != nil {
+				panic(err)
+			}
+			divisionConfig.JournalFolder = folderItem
+
+			fileItem, err := w.g.GetFile(w.cfg.TemplateFile)
+			if err != nil {
+				panic(err)
+			}
+			divisionConfig.TemplateItem = fileItem
+
+			doc, err := w.g.GetDocument(w.cfg.TemplateFile)
+			if err != nil {
+				panic(err)
+			}
+			divisionConfig.TemplateDoc = doc
+
+			if err := validateTemplate(&doc); err != nil {
+				panic(err)
+			}
 		}
 
 		for _, id := range w.cfg.ExtraJournalFolders {
@@ -421,8 +458,8 @@ func (w *Worker) InviteUser(id, email, role string) error {
 	return w.Exec(newGDriveTaskRequestInviteUser(id, email, role)).decodeInviteUser()
 }
 
-func (w *Worker) CreateJournal(vars TemplateVars) (Item, error) {
-	return w.Exec(newGDriveTaskRequestCreateJournal(vars)).decodeCreateJournal()
+func (w *Worker) CreateJournal(home int32, vars TemplateVars) (Item, error) {
+	return w.Exec(newGDriveTaskRequestCreateJournal(home, vars)).decodeCreateJournal()
 }
 
 func (w *Worker) ListFiles(params ListFilesParams) (ListFilesResult, error) {
@@ -441,15 +478,15 @@ func (w *Worker) SetIndexerState(enable bool, maxCreatedPerRound int, minutesBet
 	return w.Exec(newGDriveTaskRequestSetIndexerState(enable, maxCreatedPerRound, minutesBetweenRounds)).decodeSetIndexerState()
 }
 
-func (w *Worker) worker(workerID int) {
+func (w *Worker) worker(ctx context.Context, workerID int) {
 	for {
 		req := <-w.in
-		resp := w.handleRequest(req)
+		resp := w.handleRequest(ctx, req)
 		req.Response <- resp
 	}
 }
 
-func (w *Worker) handleRequest(req TaskRequest) (resp TaskResponse) {
+func (w *Worker) handleRequest(ctx context.Context, req TaskRequest) (resp TaskResponse) {
 	defer func() {
 		if r := recover(); r != nil {
 			debug.PrintStack()
@@ -465,7 +502,7 @@ func (w *Worker) handleRequest(req TaskRequest) (resp TaskResponse) {
 	case model.GDriveTaskRequestIDInviteUser:
 		return w.handleRequestInviteUser(req)
 	case model.GDriveTaskRequestIDCreateJournal:
-		return w.handleRequestCreateJournal(req)
+		return w.handleRequestCreateJournal(ctx, req)
 	case model.GDriveTaskRequestIDListFiles:
 		return w.handleRequestListFiles(req)
 	case model.GDriveTaskRequestIDUpdateJournal:
@@ -531,13 +568,36 @@ func (w *Worker) handleRequestInviteUser(req TaskRequest) TaskResponse {
 	return w.successResponse(req, nil)
 }
 
-func (w *Worker) handleRequestCreateJournal(req TaskRequest) TaskResponse {
-	vars, err := req.decodeCreateJournal()
+func (w *Worker) handleRequestCreateJournal(ctx context.Context, req TaskRequest) TaskResponse {
+	payload, err := req.decodeCreateJournal()
 	if err != nil {
 		return w.errorResponse(req, err)
 	}
-	info := w.GetGDriveConfigInfo()
-	item, err := w.g.CreateDocument(info, vars)
+
+	division, err := w.g.DB.Q.GetHomeDivision(ctx, payload.Home)
+	if err != nil {
+		return w.errorResponse(req, fmt.Errorf("getting home division: %w", err))
+	}
+
+	info := w.GetGDriveConfigInfo(ctx)
+
+	var divisionConfig DivisionConfig
+	var found bool
+	for _, div := range info.DivisionConfigs {
+		if div.DivisionID == division {
+			divisionConfig = div
+			found = true
+			break
+		}
+	}
+	if !found {
+		return w.errorResponse(req, fmt.Errorf("no division config found matching ID=%d", payload.Home))
+	}
+
+	item, err := w.g.CreateDocument(
+		divisionConfig,
+		payload.TemplateVars,
+	)
 	if err != nil {
 		return w.errorResponse(req, err)
 	}

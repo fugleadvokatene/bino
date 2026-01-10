@@ -11,8 +11,13 @@ type Config struct {
 }
 
 type ConfigInfo struct {
+	DivisionConfigs []DivisionConfig
+	ExtraFolders    []Item
+}
+
+type DivisionConfig struct {
+	DivisionID    int32
 	JournalFolder Item
 	TemplateItem  Item
 	TemplateDoc   document.Document
-	ExtraFolders  []Item
 }

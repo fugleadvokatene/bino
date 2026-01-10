@@ -146,7 +146,7 @@ func realMain() error {
 		handlerformerpatients.Routes(db),
 		handlergdriveadmin.Routes(db, gdriveWorker),
 		handlerhome.Routes(db),
-		handlerhomeadmin.Routes(db),
+		handlerhomeadmin.Routes(db, gdriveWorker),
 		handlerlanguage.Routes(db),
 		handlerpatient.Routes(db, gdriveWorker, config),
 		handlerprivacy.Routes(db, config.Privacy),
