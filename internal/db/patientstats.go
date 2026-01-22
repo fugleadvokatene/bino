@@ -43,7 +43,7 @@ func (db *Database) GetSpeciesDistributionOverTime(ctx context.Context, from, to
 			}
 		}
 		if found {
-			break
+			continue
 		} else {
 			out = append(out, model.SpeciesDistributionSeries{
 				Name: ptIn.Name,
@@ -53,5 +53,6 @@ func (db *Database) GetSpeciesDistributionOverTime(ctx context.Context, from, to
 			})
 		}
 	}
+
 	return out, nil
 }

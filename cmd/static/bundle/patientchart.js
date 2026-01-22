@@ -18584,11 +18584,9 @@ var makeHistoricalDistributionChart = (dataID, canvasID) => {
   }
   const rows = JSON.parse(el.textContent || "{}");
   const labels = rows[0].Data.map((r) => r.Date);
-  const datasets = rows.map((p) => ({
-    label: p.Name,
-    data: p.Data.map((r) => r.Count),
-    fill: true
-  }));
+  const totals = rows[0].Data.map(
+    (_, i) => rows.reduce((sum, p) => sum + (p.Data[i]?.Count || 0), 0)
+  );
   const canvas = document.getElementById(canvasID);
   if (!canvas) {
     console.warn("missing chart canvas");
@@ -18598,7 +18596,13 @@ var makeHistoricalDistributionChart = (dataID, canvasID) => {
     type: "line",
     data: {
       labels,
-      datasets
+      datasets: [
+        {
+          label: "Total",
+          data: totals,
+          fill: false
+        }
+      ]
     },
     options: {
       animation: { duration: 0 },
@@ -18612,10 +18616,10 @@ var makeHistoricalDistributionChart = (dataID, canvasID) => {
             }
           }
         },
-        y: { stacked: true, min: 0 }
+        y: { stacked: false, min: 0 }
       },
       plugins: {
-        legend: { display: true },
+        legend: { display: false },
         tooltip: { enabled: false }
       }
     }

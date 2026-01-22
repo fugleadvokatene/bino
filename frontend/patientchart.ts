@@ -76,7 +76,6 @@ type HistDistRow = {
   Date: string
   Count: number
 }
-
 const makeHistoricalDistributionChart = (dataID, canvasID) => {
   const el = document.getElementById(dataID)
   if (!el) {
@@ -87,11 +86,9 @@ const makeHistoricalDistributionChart = (dataID, canvasID) => {
   const rows: HistDistSeries[] = JSON.parse(el.textContent || '{}')
 
   const labels = rows[0].Data.map((r) => r.Date)
-  const datasets = rows.map((p) => ({
-    label: p.Name,
-    data: p.Data.map((r) => r.Count),
-    fill: true
-  }))
+  const totals = rows[0].Data.map((_, i) =>
+    rows.reduce((sum, p) => sum + (p.Data[i]?.Count || 0), 0)
+  )
 
   const canvas = document.getElementById(canvasID) as HTMLCanvasElement
   if (!canvas) {
@@ -103,7 +100,13 @@ const makeHistoricalDistributionChart = (dataID, canvasID) => {
     type: 'line',
     data: {
       labels,
-      datasets
+      datasets: [
+        {
+          label: 'Total',
+          data: totals,
+          fill: false
+        }
+      ]
     },
     options: {
       animation: { duration: 0 },
@@ -117,10 +120,10 @@ const makeHistoricalDistributionChart = (dataID, canvasID) => {
             }
           }
         },
-        y: { stacked: true, min: 0 }
+        y: { stacked: false, min: 0 }
       },
       plugins: {
-        legend: { display: true },
+        legend: { display: false },
         tooltip: { enabled: false }
       }
     }
