@@ -29,7 +29,7 @@ var setupCreateButton = (listener) => {
   if (!btn) return;
   btn.addEventListener("click", (e) => {
     const target = e.target instanceof Element ? e.target : null;
-    const form = target?.closest("form");
+    const form = target?.closest("tr");
     if (!form) return;
     const fields = collectFields(form);
     const { url, req } = listener(fields);
@@ -45,7 +45,7 @@ var setupUpdateButtons = (listener) => {
     const target = e.target instanceof HTMLElement ? e.target : null;
     if (!target?.classList.contains("update-submit")) return;
     const id = MustDataNumber(target, "id");
-    const form = target.closest("form");
+    const form = target.closest("tr");
     if (!form) return;
     const fields = collectFields(form);
     const { url, req } = listener(id, fields);

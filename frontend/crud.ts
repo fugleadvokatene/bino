@@ -22,7 +22,7 @@ export const setupCreateButton = <T>(listener: CreateListener<T>) => {
 
   btn.addEventListener('click', (e) => {
     const target = e.target instanceof Element ? e.target : null
-    const form = target?.closest('form')
+    const form = target?.closest('tr')
     if (!form) return
 
     const fields = collectFields(form)
@@ -43,7 +43,7 @@ export const setupUpdateButtons = <T>(listener: UpdateListener<T>) => {
 
     const id = MustDataNumber(target, 'id')
 
-    const form = target.closest('form')
+    const form = target.closest('tr')
     if (!form) return
 
     const fields = collectFields(form)
