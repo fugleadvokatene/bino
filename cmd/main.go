@@ -25,6 +25,7 @@ import (
 	"github.com/fugleadvokatene/bino/internal/handlers/handlerfile"
 	"github.com/fugleadvokatene/bino/internal/handlers/handlerformerpatients"
 	"github.com/fugleadvokatene/bino/internal/handlers/handlergdriveadmin"
+	"github.com/fugleadvokatene/bino/internal/handlers/handlergdrivenotifications"
 	"github.com/fugleadvokatene/bino/internal/handlers/handlerhome"
 	"github.com/fugleadvokatene/bino/internal/handlers/handlerhomeadmin"
 	"github.com/fugleadvokatene/bino/internal/handlers/handlerlanguage"
@@ -128,7 +129,7 @@ func realMain() error {
 
 	// Set up dynamic handlers
 	for _, routes := range [][]route.Route{
-		[]route.Route{
+		{
 			{
 				Path:             "GET /{$}",
 				Handler:          &handlerdashboard.Page{DB: db, MascotURL: config.MascotURL},
@@ -145,6 +146,7 @@ func realMain() error {
 		handlerfile.Routes(db, &jobs),
 		handlerformerpatients.Routes(db),
 		handlergdriveadmin.Routes(db, gdriveWorker),
+		handlergdrivenotifications.Routes(db, gdriveWorker),
 		handlerhome.Routes(db),
 		handlerhomeadmin.Routes(db, gdriveWorker),
 		handlerlanguage.Routes(db),

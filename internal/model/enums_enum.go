@@ -659,11 +659,13 @@ const (
 	GDriveTaskRequestIDGetIndexerState GDriveTaskRequestID = 6
 	// GDriveTaskRequestIDSetIndexerState is a GDriveTaskRequestID of type SetIndexerState.
 	GDriveTaskRequestIDSetIndexerState GDriveTaskRequestID = 7
+	// GDriveTaskRequestIDListChanges is a GDriveTaskRequestID of type ListChanges.
+	GDriveTaskRequestIDListChanges GDriveTaskRequestID = 8
 )
 
 var ErrInvalidGDriveTaskRequestID = errors.New("not a valid GDriveTaskRequestID")
 
-const _GDriveTaskRequestIDName = "GetFileInviteUserCreateJournalListFilesUpdateJournalGetDocumentGetIndexerStateSetIndexerState"
+const _GDriveTaskRequestIDName = "GetFileInviteUserCreateJournalListFilesUpdateJournalGetDocumentGetIndexerStateSetIndexerStateListChanges"
 
 // GDriveTaskRequestIDValues returns a list of the values for GDriveTaskRequestID
 func GDriveTaskRequestIDValues() []GDriveTaskRequestID {
@@ -676,6 +678,7 @@ func GDriveTaskRequestIDValues() []GDriveTaskRequestID {
 		GDriveTaskRequestIDGetDocument,
 		GDriveTaskRequestIDGetIndexerState,
 		GDriveTaskRequestIDSetIndexerState,
+		GDriveTaskRequestIDListChanges,
 	}
 }
 
@@ -688,6 +691,7 @@ var _GDriveTaskRequestIDMap = map[GDriveTaskRequestID]string{
 	GDriveTaskRequestIDGetDocument:     _GDriveTaskRequestIDName[52:63],
 	GDriveTaskRequestIDGetIndexerState: _GDriveTaskRequestIDName[63:78],
 	GDriveTaskRequestIDSetIndexerState: _GDriveTaskRequestIDName[78:93],
+	GDriveTaskRequestIDListChanges:     _GDriveTaskRequestIDName[93:104],
 }
 
 // String implements the Stringer interface.
@@ -706,14 +710,15 @@ func (x GDriveTaskRequestID) IsValid() bool {
 }
 
 var _GDriveTaskRequestIDValue = map[string]GDriveTaskRequestID{
-	_GDriveTaskRequestIDName[0:7]:   GDriveTaskRequestIDGetFile,
-	_GDriveTaskRequestIDName[7:17]:  GDriveTaskRequestIDInviteUser,
-	_GDriveTaskRequestIDName[17:30]: GDriveTaskRequestIDCreateJournal,
-	_GDriveTaskRequestIDName[30:39]: GDriveTaskRequestIDListFiles,
-	_GDriveTaskRequestIDName[39:52]: GDriveTaskRequestIDUpdateJournal,
-	_GDriveTaskRequestIDName[52:63]: GDriveTaskRequestIDGetDocument,
-	_GDriveTaskRequestIDName[63:78]: GDriveTaskRequestIDGetIndexerState,
-	_GDriveTaskRequestIDName[78:93]: GDriveTaskRequestIDSetIndexerState,
+	_GDriveTaskRequestIDName[0:7]:    GDriveTaskRequestIDGetFile,
+	_GDriveTaskRequestIDName[7:17]:   GDriveTaskRequestIDInviteUser,
+	_GDriveTaskRequestIDName[17:30]:  GDriveTaskRequestIDCreateJournal,
+	_GDriveTaskRequestIDName[30:39]:  GDriveTaskRequestIDListFiles,
+	_GDriveTaskRequestIDName[39:52]:  GDriveTaskRequestIDUpdateJournal,
+	_GDriveTaskRequestIDName[52:63]:  GDriveTaskRequestIDGetDocument,
+	_GDriveTaskRequestIDName[63:78]:  GDriveTaskRequestIDGetIndexerState,
+	_GDriveTaskRequestIDName[78:93]:  GDriveTaskRequestIDSetIndexerState,
+	_GDriveTaskRequestIDName[93:104]: GDriveTaskRequestIDListChanges,
 }
 
 // ParseGDriveTaskRequestID attempts to convert a string to a GDriveTaskRequestID.

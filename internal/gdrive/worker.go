@@ -120,22 +120,37 @@ func newGDriveTaskRequestSetIndexerState(
 	return req
 }
 
-type ListFilesParams struct {
+type listFilesParams struct {
 	Parent         string
 	ModifiedAfter  time.Time
 	ModifiedBefore time.Time
 	PageToken      string
 }
 
-type ListFilesResult struct {
+type listFilesResult struct {
 	Folder        Item
 	Files         []Item
 	NextPageToken string
 }
 
-func newGDriveTaskRequestListFiles(params ListFilesParams) TaskRequest {
+func newGDriveTaskRequestListFiles(params listFilesParams) TaskRequest {
 	req := newGDriveTaskRequest()
 	req.Type = model.GDriveTaskRequestIDListFiles
+	req.Payload = params
+	return req
+}
+
+type listChangesParams struct {
+	PageToken string
+}
+
+type listChangesResult struct {
+	NextPageToken string
+}
+
+func newGDriveTaskRequestListChanges(params listChangesParams) TaskRequest {
+	req := newGDriveTaskRequest()
+	req.Type = model.GDriveTaskRequestIDListChanges
 	req.Payload = params
 	return req
 }
@@ -150,28 +165,24 @@ func newGDriveTaskRequestCreateJournal(home int32, vars TemplateVars) TaskReques
 	return req
 }
 
-func (req TaskRequest) decodeGetFile() (string, error) {
-	id, ok := req.Payload.(string)
+func decodeReq[T any](req TaskRequest) (T, error) {
+	v, ok := req.Payload.(T)
 	if !ok {
-		return "", fmt.Errorf("decodeGetFile called on request with payload of type %T", req.Payload)
+		return *new(T), fmt.Errorf("request with payload of type %T, expected %T", req.Payload, v)
 	}
-	return id, nil
+	return v, nil
+}
+
+func (req TaskRequest) decodeGetFile() (string, error) {
+	return decodeReq[string](req)
 }
 
 func (req TaskRequest) decodeGetDocument() (string, error) {
-	id, ok := req.Payload.(string)
-	if !ok {
-		return "", fmt.Errorf("decodeGetDocument called on request with payload of type %T", req.Payload)
-	}
-	return id, nil
+	return decodeReq[string](req)
 }
 
 func (req TaskRequest) decodeInviteUser() (payloadInviteUser, error) {
-	inv, ok := req.Payload.(payloadInviteUser)
-	if !ok {
-		return payloadInviteUser{}, fmt.Errorf("decodeInviteUser called on request with payload of type %T", req.Payload)
-	}
-	return inv, nil
+	return decodeReq[payloadInviteUser](req)
 }
 
 type payloadCreatejournal struct {
@@ -180,35 +191,19 @@ type payloadCreatejournal struct {
 }
 
 func (req TaskRequest) decodeCreateJournal() (payloadCreatejournal, error) {
-	vars, ok := req.Payload.(payloadCreatejournal)
-	if !ok {
-		return payloadCreatejournal{}, fmt.Errorf("decodeCreateJournal called on request with payload of type %T", req.Payload)
-	}
-	return vars, nil
+	return decodeReq[payloadCreatejournal](req)
 }
 
 func (req TaskRequest) decodeUpdateJournal() (payloadUpdateDocument, error) {
-	updates, ok := req.Payload.(payloadUpdateDocument)
-	if !ok {
-		return payloadUpdateDocument{}, fmt.Errorf("decodeUpdateJournal ")
-	}
-	return updates, nil
+	return decodeReq[payloadUpdateDocument](req)
 }
 
 func (req TaskRequest) decodeSetIndexerState() (IndexerState, error) {
-	state, ok := req.Payload.(IndexerState)
-	if !ok {
-		return IndexerState{}, fmt.Errorf("decodeSetIndexerState ")
-	}
-	return state, nil
+	return decodeReq[IndexerState](req)
 }
 
-func (req TaskRequest) decodeListFiles() (ListFilesParams, error) {
-	payload, ok := req.Payload.(ListFilesParams)
-	if !ok {
-		return ListFilesParams{}, fmt.Errorf("decodeListFiles called on request with payload of type %T", req.Payload)
-	}
-	return payload, nil
+func (req TaskRequest) decodeListFiles() (listFilesParams, error) {
+	return decodeReq[listFilesParams](req)
 }
 
 func (resp TaskResponse) decodeError() error {
@@ -218,104 +213,64 @@ func (resp TaskResponse) decodeError() error {
 	return nil
 }
 
-func (resp TaskResponse) decodeGetFile() (Item, error) {
+func decodeResp[T any](reqID model.GDriveTaskRequestID, resp TaskResponse) (T, error) {
 	if err := resp.decodeError(); err != nil {
-		return Item{}, err
+		return *new(T), err
 	}
-	if resp.Type != model.GDriveTaskRequestIDGetFile {
-		return Item{}, fmt.Errorf("decodeGetFile called on response of type %s", resp.Type.String())
+	if resp.Type != reqID {
+		return *new(T), fmt.Errorf("on response of type %s, expected %s", resp.Type.String(), reqID.String())
 	}
-	item, ok := resp.Payload.(Item)
+	item, ok := resp.Payload.(T)
 	if !ok {
-		return Item{}, fmt.Errorf("decodeGetFile called with bad payload type %T", resp.Payload)
+		return *new(T), fmt.Errorf("decodeGetFile called with bad payload type %T expected %T", resp.Payload, item)
 	}
 	return item, nil
+}
+
+func decodeEmptyResp(reqID model.GDriveTaskRequestID, resp TaskResponse) error {
+	if err := resp.decodeError(); err != nil {
+		return err
+	}
+	if resp.Type != reqID {
+		return fmt.Errorf("on response of type %s, expected %s", resp.Type.String(), reqID.String())
+	}
+	return nil
+}
+
+func (resp TaskResponse) decodeGetFile() (Item, error) {
+	return decodeResp[Item](model.GDriveTaskRequestIDGetFile, resp)
 }
 
 func (resp TaskResponse) decodeGetDocument() (document.Document, error) {
-	if err := resp.decodeError(); err != nil {
-		return document.Document{}, err
-	}
-	if resp.Type != model.GDriveTaskRequestIDGetDocument {
-		return document.Document{}, fmt.Errorf("decodeGetDocument called on response of type %s", resp.Type.String())
-	}
-	doc, ok := resp.Payload.(document.Document)
-	if !ok {
-		return document.Document{}, fmt.Errorf("decodeGetDocument called with bad payload type %T", resp.Payload)
-	}
-	return doc, nil
+	return decodeResp[document.Document](model.GDriveTaskRequestIDGetDocument, resp)
 }
 
 func (resp TaskResponse) decodeInviteUser() error {
-	if err := resp.decodeError(); err != nil {
-		return err
-	}
-	if resp.Type != model.GDriveTaskRequestIDInviteUser {
-		return fmt.Errorf("decodeInviteUser called on response of type %s", resp.Type.String())
-	}
-	return nil
+	return decodeEmptyResp(model.GDriveTaskRequestIDInviteUser, resp)
 }
 
 func (resp TaskResponse) decodeAppendUpdates() error {
-	if err := resp.decodeError(); err != nil {
-		return err
-	}
-	if resp.Type != model.GDriveTaskRequestIDUpdateJournal {
-		return fmt.Errorf("decodeAppendUpdates called on response of type %s", resp.Type.String())
-	}
-	return nil
+	return decodeEmptyResp(model.GDriveTaskRequestIDUpdateJournal, resp)
 }
 
 func (resp TaskResponse) decodeSetIndexerState() error {
-	if err := resp.decodeError(); err != nil {
-		return err
-	}
-	if resp.Type != model.GDriveTaskRequestIDSetIndexerState {
-		return fmt.Errorf("decodeSetIndexerState called on response of type %s", resp.Type.String())
-	}
-	return nil
+	return decodeEmptyResp(model.GDriveTaskRequestIDSetIndexerState, resp)
 }
 
 func (resp TaskResponse) decodeGetIndexerState() (IndexerState, error) {
-	if err := resp.decodeError(); err != nil {
-		return IndexerState{}, err
-	}
-	if resp.Type != model.GDriveTaskRequestIDGetIndexerState {
-		return IndexerState{}, fmt.Errorf("decodeGetIndexerState called on response of type %s", resp.Type.String())
-	}
-	state, ok := resp.Payload.(IndexerState)
-	if !ok {
-		return IndexerState{}, fmt.Errorf("decodeGetIndexerState called with bad payload type %T", resp.Payload)
-	}
-	return state, nil
+	return decodeResp[IndexerState](model.GDriveTaskRequestIDGetIndexerState, resp)
 }
 
 func (resp TaskResponse) decodeCreateJournal() (Item, error) {
-	if err := resp.decodeError(); err != nil {
-		return Item{}, err
-	}
-	if resp.Type != model.GDriveTaskRequestIDCreateJournal {
-		return Item{}, fmt.Errorf("decodeCreateJournal called on response of type %s", resp.Type.String())
-	}
-	item, ok := resp.Payload.(Item)
-	if !ok {
-		return Item{}, fmt.Errorf("decodeCreateJournal called with bad payload type %T", resp.Payload)
-	}
-	return item, nil
+	return decodeResp[Item](model.GDriveTaskRequestIDCreateJournal, resp)
 }
 
-func (resp TaskResponse) decodeListFiles() (ListFilesResult, error) {
-	if err := resp.decodeError(); err != nil {
-		return ListFilesResult{}, err
-	}
-	if resp.Type != model.GDriveTaskRequestIDListFiles {
-		return ListFilesResult{}, fmt.Errorf("decodeListFiles called on response of type %s", resp.Type.String())
-	}
-	result, ok := resp.Payload.(ListFilesResult)
-	if !ok {
-		return ListFilesResult{}, fmt.Errorf("decodeListFiles called with bad payload type %T", resp.Payload)
-	}
-	return result, nil
+func (resp TaskResponse) decodeListFiles() (listFilesResult, error) {
+	return decodeResp[listFilesResult](model.GDriveTaskRequestIDListFiles, resp)
+}
+
+func (resp TaskResponse) decodeListChanges() (listChangesResult, error) {
+	return decodeResp[listChangesResult](model.GDriveTaskRequestIDListChanges, resp)
 }
 
 type TaskResponse struct {
@@ -464,8 +419,12 @@ func (w *Worker) CreateJournal(home int32, vars TemplateVars) (Item, error) {
 	return w.Exec(newGDriveTaskRequestCreateJournal(home, vars)).decodeCreateJournal()
 }
 
-func (w *Worker) ListFiles(params ListFilesParams) (ListFilesResult, error) {
+func (w *Worker) ListFiles(params listFilesParams) (listFilesResult, error) {
 	return w.Exec(newGDriveTaskRequestListFiles(params)).decodeListFiles()
+}
+
+func (w *Worker) ListChanges(params listChangesParams) (listChangesResult, error) {
+	return w.Exec(newGDriveTaskRequestListChanges(params)).decodeListChanges()
 }
 
 func (w *Worker) AppendUpdates(id string, updates []JournalUpdate) error {
@@ -507,6 +466,8 @@ func (w *Worker) handleRequest(ctx context.Context, req TaskRequest) (resp TaskR
 		return w.handleRequestCreateJournal(ctx, req)
 	case model.GDriveTaskRequestIDListFiles:
 		return w.handleRequestListFiles(req)
+	case model.GDriveTaskRequestIDListChanges:
+		return w.handleRequestListChanges(req)
 	case model.GDriveTaskRequestIDUpdateJournal:
 		return w.handleRequestUpdateJournal(req)
 	case model.GDriveTaskRequestIDGetIndexerState:
@@ -681,7 +642,7 @@ func (w *Worker) handleRequestListFiles(req TaskRequest) TaskResponse {
 
 	return TaskResponse{
 		Type: model.GDriveTaskRequestIDListFiles,
-		Payload: ListFilesResult{
+		Payload: listFilesResult{
 			Folder: folderItem,
 			Files: generic.SliceToSlice(fileList.Files, func(in *drive.File) Item {
 				return GDriveItemFromFile(in, nil)
@@ -690,6 +651,10 @@ func (w *Worker) handleRequestListFiles(req TaskRequest) TaskResponse {
 		},
 		Error: nil,
 	}
+}
+
+func (w *Worker) handleRequestListChanges(req TaskRequest) TaskResponse {
+	return w.errorResponse(req, fmt.Errorf("not implemented"))
 }
 
 func (w *Worker) errorResponse(req TaskRequest, err error) TaskResponse {

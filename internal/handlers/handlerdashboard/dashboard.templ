@@ -16,12 +16,17 @@ templ DashboardPage(
     homes []model.Home,
     mascotURL string,
     speciesDistribution []model.SpeciesCountRow,
-     historicalSpeciesDistribution []model.SpeciesDistributionSeries,
+    historicalSpeciesDistribution []model.SpeciesDistributionSeries,
+    divisions []model.Division,
+    selectedDivision int32,
 ) {
 	@templbase.Layout(data, "dashboard-container") {
         <div class="dashboard-left-sidebar">
             @DashboardForm(data, defaultSelectedSpecies, selfHome, homes)
             @DashboardSearch(data)
+            if len(divisions) > 1 {
+                @DashboardChangeDivision(data, divisions, selectedDivision)
+            }
             @DashboardTotalPatients(data, speciesDistribution, historicalSpeciesDistribution)
             @templbase.Mascot(data, mascotURL, true)
         </div>
@@ -33,6 +38,23 @@ templ DashboardPage(
 
     @templbase.JSModule(data, "dashboard")
     @templbase.JSModule(data, "reorder-patients")
+}
+
+templ DashboardChangeDivision(data *request.CommonData, divisions []model.Division, selectedDivision int32) {
+    <div class="card b-card shadown-sm mb-2 dashboard-select-division">
+        <form action="/" method="get">
+            <fieldset>
+                <legend for="select-division">Velg avdeling</legend>
+                <select autocomplete="off" class="form-control form-select" id="select-division" name="division">
+                    for _, div := range divisions {
+                        <option selected?={selectedDivision==div.ID} value={div.ID}>
+                            {div.Name}
+                        </option>
+                    }
+                </select>
+            </fieldset>
+        </form>
+    </div>
 }
 
 templ DashboardTotalPatients(data *request.CommonData, speciesDistribution []model.SpeciesCountRow, historicalSpeciesDistribution []model.SpeciesDistributionSeries) {

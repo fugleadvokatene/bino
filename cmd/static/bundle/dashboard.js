@@ -175,3 +175,9 @@ source.addEventListener("JournalCreated", (event) => {
 source.onerror = () => {
   source.close();
 };
+var languageSelect2 = QuerySelector("#select-division");
+if (languageSelect2) {
+  languageSelect2.addEventListener("change", () => {
+    languageSelect2.form?.submit();
+  });
+}

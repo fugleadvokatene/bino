@@ -35,13 +35,24 @@ func (h *Page) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	users, err := h.DB.Q.GetAppusersInDivision(ctx, commonData.User.PreferredHome.Division) // TODO(perf) use a more specific query
+	division, err := request.GetQueryID(r, "division")
+	if err != nil {
+		division = commonData.User.PreferredHome.Division
+	}
+
+	users, err := h.DB.Q.GetAppusersInDivision(ctx, division)
 	if err != nil {
 		handlererror.Error(w, r, err)
 		return
 	}
 
-	homes, err := h.DB.Homes(ctx, commonData.User.PreferredHome.Division)
+	divisions, err := h.DB.GetDivisions(ctx)
+	if err != nil {
+		handlererror.Error(w, r, err)
+		return
+	}
+
+	homes, err := h.DB.Homes(ctx, division)
 	if err != nil {
 		handlererror.Error(w, r, err)
 		return
@@ -126,5 +137,15 @@ func (h *Page) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	slices.SortStableFunc(homes, func(a, b model.Home) int { return cmp.Compare(a.Name, b.Name) })
 
-	_ = DashboardPage(commonData, defaultSpecies, &preferredHomeView, homes, h.MascotURL, currSpeciesDistribution, historicalSpeciesDistribution).Render(r.Context(), w)
+	_ = DashboardPage(
+		commonData,
+		defaultSpecies,
+		&preferredHomeView,
+		homes,
+		h.MascotURL,
+		currSpeciesDistribution,
+		historicalSpeciesDistribution,
+		divisions,
+		division,
+	).Render(r.Context(), w)
 }

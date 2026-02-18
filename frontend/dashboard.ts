@@ -199,3 +199,10 @@ source.addEventListener('JournalCreated', (event: string) => {
 source.onerror = () => {
   source.close()
 }
+
+const languageSelect = QuerySelector<HTMLSelectElement>('#select-division')
+if (languageSelect) {
+  languageSelect.addEventListener('change', () => {
+    languageSelect.form?.submit()
+  })
+}

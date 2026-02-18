@@ -11685,6 +11685,11 @@ textarea.form-control-lg {
   border: 2px solid rgb(126.75, 127.125, 141.875);
 }
 
+.dashboard-select-division {
+  background-color: rgb(193.5, 194.25, 203.75);
+  border: 2px solid rgb(126.75, 127.125, 141.875);
+}
+
 .active-search {
   border: 2px solid rgb(235, 140, 75) !important;
 }

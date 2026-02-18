@@ -102,6 +102,7 @@ func (fbt FB) CSSClass() string {
 //	GetDocument,
 //	GetIndexerState,
 //	SetIndexerState,
+//	ListChanges,
 //
 // )
 type GDriveTaskRequestID int

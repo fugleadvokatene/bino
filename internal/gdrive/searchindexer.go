@@ -68,15 +68,15 @@ func (w *Worker) searchIndexAll(ctx context.Context) int {
 	return created
 }
 
-func (w *Worker) listFiles(ctx context.Context, folderID string, pageToken string) (ListFilesResult, error) {
-	res, err := w.ListFiles(ListFilesParams{
+func (w *Worker) listFiles(ctx context.Context, folderID string, pageToken string) (listFilesResult, error) {
+	res, err := w.ListFiles(listFilesParams{
 		Parent:    folderID,
 		PageToken: pageToken,
 	})
 	if err != nil {
-		return ListFilesResult{}, err
+		return listFilesResult{}, err
 	}
-	return ListFilesResult{
+	return listFilesResult{
 		Files:         res.Files,
 		Folder:        res.Folder,
 		NextPageToken: res.NextPageToken,
