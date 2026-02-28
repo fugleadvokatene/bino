@@ -11,6 +11,7 @@ import (
 
 	"github.com/fugleadvokatene/bino/internal/auth"
 	"github.com/fugleadvokatene/bino/internal/background"
+	"github.com/fugleadvokatene/bino/internal/bespoke"
 	"github.com/fugleadvokatene/bino/internal/config"
 	dblib "github.com/fugleadvokatene/bino/internal/db"
 	"github.com/fugleadvokatene/bino/internal/gdrive"
@@ -116,6 +117,9 @@ func realMain() error {
 	}
 	gdriveWorker := gdrive.NewWorker(ctx, config.GoogleDrive, gdriveClient, &jobs)
 
+	// Set up bespoke behavior
+	bespoke := bespoke.NewBespoke(config.Organization, gdriveWorker, config.SystemLanguage)
+
 	// Set up authentication
 	authenticator, err := auth.New(ctx, config.Auth, db)
 	if err != nil {
@@ -150,7 +154,7 @@ func realMain() error {
 		handlerhome.Routes(db),
 		handlerhomeadmin.Routes(db, gdriveWorker),
 		handlerlanguage.Routes(db),
-		handlerpatient.Routes(db, gdriveWorker, config),
+		handlerpatient.Routes(db, gdriveWorker, bespoke, config),
 		handlerprivacy.Routes(db, config.Privacy),
 		handlersearch.Routes(db),
 		handlerspeciesadmin.Routes(db),

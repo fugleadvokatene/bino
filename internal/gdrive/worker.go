@@ -15,6 +15,7 @@ import (
 	"github.com/fugleadvokatene/bino/internal/gdrive/document"
 	"github.com/fugleadvokatene/bino/internal/generic"
 	"github.com/fugleadvokatene/bino/internal/model"
+	"google.golang.org/api/docs/v1"
 	"google.golang.org/api/drive/v3"
 )
 
@@ -165,6 +166,30 @@ func newGDriveTaskRequestCreateJournal(home int32, vars TemplateVars) TaskReques
 	return req
 }
 
+func newGDriveTaskRequestGetRawDocument(id string) TaskRequest {
+	req := newGDriveTaskRequest()
+	req.Type = model.GDriveTaskRequestIDGetRawDocument
+	req.Payload = id
+	return req
+}
+
+type payloadInsertTextAt struct {
+	ID    string
+	Index int64
+	Text  string
+}
+
+func newGDriveTaskRequestInsertTextAt(id string, index int64, text string) TaskRequest {
+	req := newGDriveTaskRequest()
+	req.Type = model.GDriveTaskRequestIDInsertTextAt
+	req.Payload = payloadInsertTextAt{
+		ID:    id,
+		Index: index,
+		Text:  text,
+	}
+	return req
+}
+
 func decodeReq[T any](req TaskRequest) (T, error) {
 	v, ok := req.Payload.(T)
 	if !ok {
@@ -204,6 +229,14 @@ func (req TaskRequest) decodeSetIndexerState() (IndexerState, error) {
 
 func (req TaskRequest) decodeListFiles() (listFilesParams, error) {
 	return decodeReq[listFilesParams](req)
+}
+
+func (req TaskRequest) decodeGetRawDocument() (string, error) {
+	return decodeReq[string](req)
+}
+
+func (req TaskRequest) decodeInsertTextAt() (payloadInsertTextAt, error) {
+	return decodeReq[payloadInsertTextAt](req)
 }
 
 func (resp TaskResponse) decodeError() error {
@@ -271,6 +304,14 @@ func (resp TaskResponse) decodeListFiles() (listFilesResult, error) {
 
 func (resp TaskResponse) decodeListChanges() (listChangesResult, error) {
 	return decodeResp[listChangesResult](model.GDriveTaskRequestIDListChanges, resp)
+}
+
+func (resp TaskResponse) decodeGetRawDocument() (*docs.Document, error) {
+	return decodeResp[*docs.Document](model.GDriveTaskRequestIDGetRawDocument, resp)
+}
+
+func (resp TaskResponse) decodeInsertTextAt() error {
+	return decodeEmptyResp(model.GDriveTaskRequestIDInsertTextAt, resp)
 }
 
 type TaskResponse struct {
@@ -439,6 +480,13 @@ func (w *Worker) SetIndexerState(enable bool, maxCreatedPerRound int, minutesBet
 	return w.Exec(newGDriveTaskRequestSetIndexerState(enable, maxCreatedPerRound, minutesBetweenRounds)).decodeSetIndexerState()
 }
 
+func (w *Worker) GetRawDocument(id string) (*docs.Document, error) {
+	return w.Exec(newGDriveTaskRequestGetRawDocument(id)).decodeGetRawDocument()
+}
+
+func (w *Worker) InsertTextAt(id string, index int64, text string) error {
+	return w.Exec(newGDriveTaskRequestInsertTextAt(id, index, text)).decodeInsertTextAt()
+}
 func (w *Worker) worker(ctx context.Context, workerID int) {
 	for {
 		req := <-w.in
@@ -474,6 +522,10 @@ func (w *Worker) handleRequest(ctx context.Context, req TaskRequest) (resp TaskR
 		return w.handleRequestGetIndexerState(req)
 	case model.GDriveTaskRequestIDSetIndexerState:
 		return w.handleRequestSetIndexerState(req)
+	case model.GDriveTaskRequestIDGetRawDocument:
+		return w.handleRequestGetRawDocument(req)
+	case model.GDriveTaskRequestIDInsertTextAt:
+		return w.handleRequestInsertTextAt(req)
 	}
 	return w.errorResponse(req, fmt.Errorf("unknown request type"))
 }
@@ -657,6 +709,32 @@ func (w *Worker) handleRequestListChanges(req TaskRequest) TaskResponse {
 	return w.errorResponse(req, fmt.Errorf("not implemented"))
 }
 
+func (w *Worker) handleRequestGetRawDocument(req TaskRequest) TaskResponse {
+	id, err := req.decodeGetRawDocument()
+	if err != nil {
+		return w.errorResponse(req, err)
+	}
+
+	doc, err := w.g.GetRawDocument(id)
+	if err != nil {
+		return w.errorResponse(req, err)
+	}
+
+	return w.successResponse(req, doc)
+}
+
+func (w *Worker) handleRequestInsertTextAt(req TaskRequest) TaskResponse {
+	payload, err := req.decodeInsertTextAt()
+	if err != nil {
+		return w.errorResponse(req, err)
+	}
+
+	if err := w.g.InsertTextAt(payload.ID, payload.Index, payload.Text); err != nil {
+		return w.errorResponse(req, err)
+	}
+
+	return w.successResponse(req, nil)
+}
 func (w *Worker) errorResponse(req TaskRequest, err error) TaskResponse {
 	return TaskResponse{
 		Type:    req.Type,

@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"regexp"
 	"strings"
 	"time"
 
@@ -14,11 +13,6 @@ import (
 	"google.golang.org/api/docs/v1"
 	"google.golang.org/api/drive/v3"
 	"google.golang.org/api/option"
-)
-
-var (
-	ReImages = regexp.MustCompile(`<data:image/[a-zA-Z]+;base64,[^>]+>`)
-	ReUnbold = regexp.MustCompile(`\*\*(.*?)\*\*`)
 )
 
 const (
@@ -256,4 +250,30 @@ func findAppendIndex(doc []*docs.StructuralElement) int64 {
 		}
 	}
 	return finalIndex
+}
+
+func (g *Client) GetRawDocument(id string) (*docs.Document, error) {
+	call := g.Docs.Documents.Get(id).
+		SuggestionsViewMode("PREVIEW_WITHOUT_SUGGESTIONS").
+		IncludeTabsContent(true)
+
+	return call.Do()
+}
+
+func (g *Client) InsertTextAt(id string, index int64, text string) error {
+	updateCall := g.Docs.Documents.BatchUpdate(id, &docs.BatchUpdateDocumentRequest{
+		Requests: []*docs.Request{
+			{
+				InsertText: &docs.InsertTextRequest{
+					Location: &docs.Location{
+						Index: index,
+					},
+					Text: text,
+				},
+			},
+		},
+	})
+
+	_, err := updateCall.Do()
+	return err
 }

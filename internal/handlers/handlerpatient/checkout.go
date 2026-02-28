@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/fugleadvokatene/bino/internal/bespoke"
 	"github.com/fugleadvokatene/bino/internal/db"
 	"github.com/fugleadvokatene/bino/internal/handlers/handlererror"
 	"github.com/fugleadvokatene/bino/internal/model"
@@ -14,7 +15,8 @@ import (
 )
 
 type checkout struct {
-	DB *db.Database
+	DB      *db.Database
+	bespoke bespoke.Bespoke
 }
 
 func (h *checkout) ServeHTTP(w http.ResponseWriter, r *http.Request) {
@@ -80,10 +82,10 @@ func (h *checkout) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			event = model.EventIDTransferredOutsideOrganization
 		default:
 			event = model.EventIDStatusChanged
-			statusField = pgtype.Int4{Int32: int32(status), Valid: true}
+			statusField = pgtype.Int4{Int32: status, Valid: true}
 		}
 
-		if _, err := db.Q.AddPatientEvent(ctx, sql.AddPatientEventParams{
+		_, err := db.Q.AddPatientEvent(ctx, sql.AddPatientEventParams{
 			PatientID: patient,
 			AppuserID: commonData.User.AppuserID,
 			HomeID:    patientData.CurrHomeID.Int32,
@@ -91,8 +93,13 @@ func (h *checkout) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			Status:    statusField,
 			Note:      note,
 			Time:      now,
-		}); err != nil {
+		})
+		if err != nil {
 			return err
+		}
+
+		if h.bespoke != nil {
+			h.bespoke.EditJournalOnEvent(ctx, patient, event, note, now.Time)
 		}
 
 		return nil

@@ -1,6 +1,7 @@
 package handlerpatient
 
 import (
+	"github.com/fugleadvokatene/bino/internal/bespoke"
 	"github.com/fugleadvokatene/bino/internal/config"
 	"github.com/fugleadvokatene/bino/internal/db"
 	"github.com/fugleadvokatene/bino/internal/gdrive"
@@ -11,6 +12,7 @@ import (
 func Routes(
 	db *db.Database,
 	gdriveWorker *gdrive.Worker,
+	bespoke bespoke.Bespoke,
 	config *config.Config,
 ) []route.Route {
 	return []route.Route{
@@ -26,7 +28,7 @@ func Routes(
 		},
 		{
 			Path:    "POST /patient/{patient}/checkout",
-			Handler: &checkout{DB: db},
+			Handler: &checkout{DB: db, bespoke: bespoke},
 			Cap:     model.CapManageOwnPatients,
 		},
 		{
