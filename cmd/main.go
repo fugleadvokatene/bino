@@ -118,7 +118,7 @@ func realMain() error {
 	gdriveWorker := gdrive.NewWorker(ctx, config.GoogleDrive, gdriveClient, &jobs)
 
 	// Set up bespoke behavior
-	bespoke := bespoke.NewBespoke(config.Organization, gdriveWorker, config.SystemLanguage)
+	bespoke := bespoke.NewBespoke(config.Organization, db, gdriveWorker, config.SystemLanguage)
 
 	// Set up authentication
 	authenticator, err := auth.New(ctx, config.Auth, db)
