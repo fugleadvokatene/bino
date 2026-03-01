@@ -1,0 +1,40 @@
+package handlersyslog
+
+
+import (
+	"github.com/fugleadvokatene/bino/internal/model"
+	"github.com/fugleadvokatene/bino/internal/request"
+	"github.com/fugleadvokatene/bino/internal/templbase"
+	"time"
+    "fmt"
+)
+
+templ SyslogPage(data *request.CommonData, entries []model.SysLogEntry, havePrev, haveNext bool, prevOffset, nextOffset int32) {
+	@templbase.Layout(data) {
+        <h1>System log</h1>
+        <div class="card p-2">
+            if havePrev {
+                <a href={fmt.Sprintf("/syslog/%d", prevOffset)}>Later</a>
+            }
+            if haveNext {
+                <a href={fmt.Sprintf("/syslog/%d", nextOffset)}>Earlier</a>
+            }
+            <table class="table table-bordered table-sm table-striped">
+            <thead>
+                <th>Time</th>
+                <th>Severity</th>
+                <th>Message</th>
+            </thead>
+            <tbody>
+                for _, event := range entries {
+                    <tr>
+                        <td>{event.Time.Format(time.DateTime)}</td>
+                        <td>{event.Severity.String()}</td>
+                        <td>{event.Message}</td>
+                    </tr>
+                }
+            </tbody>
+            </table>
+        </div>
+    }
+}

@@ -228,6 +228,8 @@ type Language struct {
 
 	SpeciesOther string
 
+	SystemLog string
+
 	NavbarCalendar  string
 	NavbarDashboard string
 
@@ -578,6 +580,8 @@ var NO = &Language{
 	NotFoundPageHead:         "Ikke funnet",
 	NotFoundPageInstructions: "Siden ble ikke funnet. Se feilmelding:",
 
+	SystemLog: "Systemlogg",
+
 	NavbarCalendar:  "Kalender",
 	NavbarDashboard: "Hovedside",
 
@@ -893,6 +897,8 @@ var EN = &Language{
 	ImportPatients: "Importe patients",
 
 	LanguageUpdateFailed: "Failed to update language",
+
+	SystemLog: "System log",
 
 	NavbarCalendar:  "Calendar",
 	NavbarDashboard: "Dashboard",

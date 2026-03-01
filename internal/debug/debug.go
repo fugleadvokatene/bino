@@ -22,12 +22,14 @@ import (
 type ConstantInfo struct {
 	PublicIP    string
 	TimeStarted time.Time
+	BespokeName string
 }
 
-func NewRuntimeInfo() ConstantInfo {
+func NewRuntimeInfo(bespokeName string) ConstantInfo {
 	return ConstantInfo{
 		PublicIP:    fetchPublicIP(),
 		TimeStarted: time.Now(),
+		BespokeName: bespokeName,
 	}
 }
 
@@ -124,6 +126,12 @@ func GetDebugInfo(ctx context.Context, runtimeInfo ConstantInfo) []DebugInfo {
 		{
 			Name:     "Build",
 			Children: buildInfo,
+		},
+		{
+			Name: "Config",
+			Children: []DebugInfo{
+				{Name: "Bespoke behavior", Value: runtimeInfo.BespokeName},
+			},
 		},
 	}
 }

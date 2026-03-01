@@ -365,3 +365,14 @@ func (in Division) ToModel() model.Division {
 		TemplateJournalName: in.TemplateJournalName.String,
 	}
 }
+
+// ---- Syslog
+
+func (in Syslog) ToModel() model.SysLogEntry {
+	return model.SysLogEntry{
+		ID:       in.ID,
+		Severity: model.Severity(in.Severity),
+		Time:     in.Time.Time,
+		Message:  in.Message,
+	}
+}

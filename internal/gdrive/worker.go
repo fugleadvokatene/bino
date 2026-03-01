@@ -45,7 +45,7 @@ type TaskRequest struct {
 }
 
 func (gdtr TaskRequest) String() string {
-	return fmt.Sprintf("<GDriveTaskRequest of type %s>", gdtr.Type)
+	return fmt.Sprintf("GDriveTaskRequest(type=%s payload=%v)", gdtr.Type, gdtr.Payload)
 }
 
 func newGDriveTaskRequest() TaskRequest {
@@ -499,69 +499,69 @@ func (w *Worker) handleRequest(ctx context.Context, req TaskRequest) (resp TaskR
 	defer func() {
 		if r := recover(); r != nil {
 			debug.PrintStack()
-			resp = w.errorResponse(req, fmt.Errorf("panicked in handler: %v", r))
+			resp = w.errorResponse(ctx, req, fmt.Errorf("panicked in handler: %v", r))
 		}
 	}()
 
 	switch req.Type {
 	case model.GDriveTaskRequestIDGetFile:
-		return w.handleRequestGetFile(req)
+		return w.handleRequestGetFile(ctx, req)
 	case model.GDriveTaskRequestIDGetDocument:
-		return w.handleRequestGetDocument(req)
+		return w.handleRequestGetDocument(ctx, req)
 	case model.GDriveTaskRequestIDInviteUser:
-		return w.handleRequestInviteUser(req)
+		return w.handleRequestInviteUser(ctx, req)
 	case model.GDriveTaskRequestIDCreateJournal:
 		return w.handleRequestCreateJournal(ctx, req)
 	case model.GDriveTaskRequestIDListFiles:
-		return w.handleRequestListFiles(req)
+		return w.handleRequestListFiles(ctx, req)
 	case model.GDriveTaskRequestIDListChanges:
-		return w.handleRequestListChanges(req)
+		return w.handleRequestListChanges(ctx, req)
 	case model.GDriveTaskRequestIDUpdateJournal:
-		return w.handleRequestUpdateJournal(req)
+		return w.handleRequestUpdateJournal(ctx, req)
 	case model.GDriveTaskRequestIDGetIndexerState:
-		return w.handleRequestGetIndexerState(req)
+		return w.handleRequestGetIndexerState(ctx, req)
 	case model.GDriveTaskRequestIDSetIndexerState:
-		return w.handleRequestSetIndexerState(req)
+		return w.handleRequestSetIndexerState(ctx, req)
 	case model.GDriveTaskRequestIDGetRawDocument:
-		return w.handleRequestGetRawDocument(req)
+		return w.handleRequestGetRawDocument(ctx, req)
 	case model.GDriveTaskRequestIDInsertTextAt:
-		return w.handleRequestInsertTextAt(req)
+		return w.handleRequestInsertTextAt(ctx, req)
 	}
-	return w.errorResponse(req, fmt.Errorf("unknown request type"))
+	return w.errorResponse(ctx, req, fmt.Errorf("unknown request type"))
 }
 
-func (w *Worker) handleRequestGetFile(req TaskRequest) TaskResponse {
+func (w *Worker) handleRequestGetFile(ctx context.Context, req TaskRequest) TaskResponse {
 	id, err := req.decodeGetFile()
 	if err != nil {
-		return w.errorResponse(req, err)
+		return w.errorResponse(ctx, req, err)
 	}
 
 	item, err := w.g.GetFile(id)
 	if err != nil {
-		return w.errorResponse(req, err)
+		return w.errorResponse(ctx, req, err)
 	}
 
-	return w.successResponse(req, item)
+	return w.successResponse(ctx, req, item)
 }
 
-func (w *Worker) handleRequestGetDocument(req TaskRequest) TaskResponse {
+func (w *Worker) handleRequestGetDocument(ctx context.Context, req TaskRequest) TaskResponse {
 	id, err := req.decodeGetDocument()
 	if err != nil {
-		return w.errorResponse(req, err)
+		return w.errorResponse(ctx, req, err)
 	}
 
 	item, err := w.g.GetDocument(id)
 	if err != nil {
-		return w.errorResponse(req, err)
+		return w.errorResponse(ctx, req, err)
 	}
 
-	return w.successResponse(req, item)
+	return w.successResponse(ctx, req, item)
 }
 
-func (w *Worker) handleRequestInviteUser(req TaskRequest) TaskResponse {
+func (w *Worker) handleRequestInviteUser(ctx context.Context, req TaskRequest) TaskResponse {
 	payload, err := req.decodeInviteUser()
 	if err != nil {
-		return w.errorResponse(req, err)
+		return w.errorResponse(ctx, req, err)
 	}
 
 	call := w.g.Drive.Permissions.Create(payload.ID, &drive.Permission{
@@ -577,21 +577,21 @@ func (w *Worker) handleRequestInviteUser(req TaskRequest) TaskResponse {
 
 	_, err = call.Do()
 	if err != nil {
-		return w.errorResponse(req, err)
+		return w.errorResponse(ctx, req, err)
 	}
 
-	return w.successResponse(req, nil)
+	return w.successResponse(ctx, req, nil)
 }
 
 func (w *Worker) handleRequestCreateJournal(ctx context.Context, req TaskRequest) TaskResponse {
 	payload, err := req.decodeCreateJournal()
 	if err != nil {
-		return w.errorResponse(req, err)
+		return w.errorResponse(ctx, req, err)
 	}
 
 	division, err := w.g.DB.Q.GetHomeDivision(ctx, payload.Home)
 	if err != nil {
-		return w.errorResponse(req, fmt.Errorf("getting home division: %w", err))
+		return w.errorResponse(ctx, req, fmt.Errorf("getting home division: %w", err))
 	}
 
 	info := w.GetGDriveConfigInfo(ctx)
@@ -606,7 +606,7 @@ func (w *Worker) handleRequestCreateJournal(ctx context.Context, req TaskRequest
 		}
 	}
 	if !found {
-		return w.errorResponse(req, fmt.Errorf("no division config found matching ID=%d (%s)", division.Division, division.Name.String))
+		return w.errorResponse(ctx, req, fmt.Errorf("no division config found matching ID=%d (%s)", division.Division, division.Name.String))
 	}
 
 	item, err := w.g.CreateDocument(
@@ -614,45 +614,45 @@ func (w *Worker) handleRequestCreateJournal(ctx context.Context, req TaskRequest
 		payload.TemplateVars,
 	)
 	if err != nil {
-		return w.errorResponse(req, err)
+		return w.errorResponse(ctx, req, err)
 	}
-	return w.successResponse(req, item)
+	return w.successResponse(ctx, req, item)
 }
 
-func (w *Worker) handleRequestUpdateJournal(req TaskRequest) TaskResponse {
+func (w *Worker) handleRequestUpdateJournal(ctx context.Context, req TaskRequest) TaskResponse {
 	updates, err := req.decodeUpdateJournal()
 	if err != nil {
-		return w.errorResponse(req, err)
+		return w.errorResponse(ctx, req, err)
 	}
 	if err := w.g.AppendUpdates(updates.ID, updates.Updates); err != nil {
-		return w.errorResponse(req, err)
+		return w.errorResponse(ctx, req, err)
 	}
-	return w.successResponse(req, nil)
+	return w.successResponse(ctx, req, nil)
 }
 
-func (w *Worker) handleRequestGetIndexerState(req TaskRequest) TaskResponse {
-	return w.successResponse(req, w.indexerState)
+func (w *Worker) handleRequestGetIndexerState(ctx context.Context, req TaskRequest) TaskResponse {
+	return w.successResponse(ctx, req, w.indexerState)
 }
 
-func (w *Worker) handleRequestSetIndexerState(req TaskRequest) TaskResponse {
+func (w *Worker) handleRequestSetIndexerState(ctx context.Context, req TaskRequest) TaskResponse {
 	state, err := req.decodeSetIndexerState()
 	if err != nil {
-		return w.errorResponse(req, err)
+		return w.errorResponse(ctx, req, err)
 	}
 	w.indexerState = state
 	slog.Info("Indexer state updated", "enabled", state.Enabled, "interval", state.Interval, "max documents created per round", state.MaxDocumentsCreatedPerRound)
-	return w.successResponse(req, nil)
+	return w.successResponse(ctx, req, nil)
 }
 
-func (w *Worker) handleRequestListFiles(req TaskRequest) TaskResponse {
+func (w *Worker) handleRequestListFiles(ctx context.Context, req TaskRequest) TaskResponse {
 	params, err := req.decodeListFiles()
 	if err != nil {
-		return w.errorResponse(req, err)
+		return w.errorResponse(ctx, req, err)
 	}
 
 	folderItem, err := w.g.GetFile(params.Parent)
 	if err != nil {
-		return w.errorResponse(req, err)
+		return w.errorResponse(ctx, req, err)
 	}
 
 	call := w.g.Drive.Files.List()
@@ -689,7 +689,7 @@ func (w *Worker) handleRequestListFiles(req TaskRequest) TaskResponse {
 
 	fileList, err := call.Do()
 	if err != nil {
-		return w.errorResponse(req, err)
+		return w.errorResponse(ctx, req, err)
 	}
 
 	return TaskResponse{
@@ -705,37 +705,38 @@ func (w *Worker) handleRequestListFiles(req TaskRequest) TaskResponse {
 	}
 }
 
-func (w *Worker) handleRequestListChanges(req TaskRequest) TaskResponse {
-	return w.errorResponse(req, fmt.Errorf("not implemented"))
+func (w *Worker) handleRequestListChanges(ctx context.Context, req TaskRequest) TaskResponse {
+	return w.errorResponse(ctx, req, fmt.Errorf("not implemented"))
 }
 
-func (w *Worker) handleRequestGetRawDocument(req TaskRequest) TaskResponse {
+func (w *Worker) handleRequestGetRawDocument(ctx context.Context, req TaskRequest) TaskResponse {
 	id, err := req.decodeGetRawDocument()
 	if err != nil {
-		return w.errorResponse(req, err)
+		return w.errorResponse(ctx, req, err)
 	}
 
 	doc, err := w.g.GetRawDocument(id)
 	if err != nil {
-		return w.errorResponse(req, err)
+		return w.errorResponse(ctx, req, err)
 	}
 
-	return w.successResponse(req, doc)
+	return w.successResponse(ctx, req, doc)
 }
 
-func (w *Worker) handleRequestInsertTextAt(req TaskRequest) TaskResponse {
+func (w *Worker) handleRequestInsertTextAt(ctx context.Context, req TaskRequest) TaskResponse {
 	payload, err := req.decodeInsertTextAt()
 	if err != nil {
-		return w.errorResponse(req, err)
+		return w.errorResponse(ctx, req, err)
 	}
 
 	if err := w.g.InsertTextAt(payload.ID, payload.Index, payload.Text); err != nil {
-		return w.errorResponse(req, err)
+		return w.errorResponse(ctx, req, err)
 	}
 
-	return w.successResponse(req, nil)
+	return w.successResponse(ctx, req, nil)
 }
-func (w *Worker) errorResponse(req TaskRequest, err error) TaskResponse {
+func (w *Worker) errorResponse(ctx context.Context, req TaskRequest, err error) TaskResponse {
+	w.g.DB.SysLog(ctx, fmt.Sprintf("Error handling %s: %s", req.String(), err.Error()), model.SeverityError, time.Now())
 	return TaskResponse{
 		Type:    req.Type,
 		Error:   err,
@@ -743,7 +744,8 @@ func (w *Worker) errorResponse(req TaskRequest, err error) TaskResponse {
 	}
 }
 
-func (w *Worker) successResponse(req TaskRequest, obj any) TaskResponse {
+func (w *Worker) successResponse(ctx context.Context, req TaskRequest, obj any) TaskResponse {
+	w.g.DB.SysLog(ctx, fmt.Sprintf("OK: %s", req.String()), model.SeverityInfo, time.Now())
 	return TaskResponse{
 		Type:    req.Type,
 		Error:   nil,

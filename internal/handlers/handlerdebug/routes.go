@@ -7,11 +7,11 @@ import (
 	"github.com/fugleadvokatene/bino/internal/route"
 )
 
-func Routes(db *db.Database) []route.Route {
+func Routes(db *db.Database, bespoke string) []route.Route {
 	return []route.Route{
 		{
 			Path:    "GET /debug",
-			Handler: &page{ConstantInfo: debug.NewRuntimeInfo(), DB: db},
+			Handler: &page{ConstantInfo: debug.NewRuntimeInfo(bespoke), DB: db},
 			Cap:     model.CapDebug,
 		},
 	}

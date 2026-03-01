@@ -1,7 +1,10 @@
 //go:generate go tool go-enum --no-iota --values
 package model
 
-import "strings"
+import (
+	"log/slog"
+	"strings"
+)
 
 // All view defined in one file since go-enum gets kinda slow
 // when scanning many files.
@@ -54,6 +57,7 @@ type Availability int
 // HardDeletePatient,
 // Live,
 // SetIndexerState,
+// ViewSysLog,
 // )
 type Cap int32
 
@@ -189,3 +193,15 @@ type DebugStatKey int16
 // Evernote = 2,
 // )
 type JournalOriginID int16
+
+// ENUM(
+// Debug = -4
+// Info = 0
+// Warn = 4
+// Error = 8
+// )
+type Severity int32
+
+func (s Severity) ToSlogLevel() slog.Level {
+	return slog.Level(s)
+}

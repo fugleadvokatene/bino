@@ -23,6 +23,10 @@ func NewFugleAdvokatene(db *db.Database, gw *gdrive.Worker, lang model.LanguageI
 	return FugleAdvokatene{db: db, gw: gw, lang: lang}
 }
 
+func (FugleAdvokatene) Name() string {
+	return "FugleAdvokatene"
+}
+
 const (
 	fieldHeaderDied     = "Avlivet eller dødd (dato):"
 	fieldHeaderReleased = "Sluppet fri (dato og sted):"
@@ -45,17 +49,19 @@ func (fa FugleAdvokatene) EditJournalOnEvent(ctx context.Context, patientID int3
 	}
 	p, err := fa.db.Q.GetPatient(ctx, patientID)
 	if err != nil {
+		fa.db.SysLog(ctx, fmt.Sprintf("Could not find patient with ID %d, skipping bespoke actions", patientID), model.SeverityWarn, t)
 		return
 	}
 	googleID := p.GoogleID.String
 	if googleID == "" {
+		fa.db.SysLog(ctx, fmt.Sprintf("Checked out patient %q with no Google ID, skipping bespoke actions", p.Name), model.SeverityWarn, t)
 		return
 	}
 
 	go func() {
 		doc, err := fa.gw.GetRawDocument(googleID)
 		if err != nil {
-			fmt.Printf("bespoke: failed to get raw document: %v\n", err)
+			fa.db.SysLog(ctx, fmt.Sprintf("Failed to get raw document: %s", err.Error()), model.SeverityError, t)
 			return
 		}
 
@@ -96,7 +102,9 @@ func (fa FugleAdvokatene) EditJournalOnEvent(ctx context.Context, patientID int3
 		if targetIndex != -1 {
 			err := fa.gw.InsertTextAt(googleID, targetIndex, " "+txt)
 			if err != nil {
-				fmt.Printf("bespoke: failed to insert text: %v\n", err)
+				fa.db.SysLog(ctx, fmt.Sprintf("Failed to insert text: %s", err.Error()), model.SeverityError, t)
+			} else {
+				fa.db.SysLog(ctx, fmt.Sprintf("Inserted text %q at index %d", txt, targetIndex), model.SeverityInfo, t)
 			}
 		}
 	}()

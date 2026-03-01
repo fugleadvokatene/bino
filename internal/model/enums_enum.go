@@ -193,11 +193,13 @@ const (
 	CapLive Cap = 27
 	// CapSetIndexerState is a Cap of type SetIndexerState.
 	CapSetIndexerState Cap = 28
+	// CapViewSysLog is a Cap of type ViewSysLog.
+	CapViewSysLog Cap = 29
 )
 
 var ErrInvalidCap = errors.New("not a valid Cap")
 
-const _CapName = "LoggedInViewAllActivePatientsViewAllFormerPatientsViewAllHomesViewAllUsersViewCalendarSearchSetOwnPreferencesCheckInPatientManageOwnPatientsManageAllPatientsManageOwnHomesManageAllHomesCreatePatientJournalManageSpeciesManageUsersDeleteUsersViewAdminToolsViewGDriveSettingsInviteToGDriveInviteToBinoUseImportToolDebugUploadFileEditWikiManageFeatureFlagsHardDeletePatientLiveSetIndexerState"
+const _CapName = "LoggedInViewAllActivePatientsViewAllFormerPatientsViewAllHomesViewAllUsersViewCalendarSearchSetOwnPreferencesCheckInPatientManageOwnPatientsManageAllPatientsManageOwnHomesManageAllHomesCreatePatientJournalManageSpeciesManageUsersDeleteUsersViewAdminToolsViewGDriveSettingsInviteToGDriveInviteToBinoUseImportToolDebugUploadFileEditWikiManageFeatureFlagsHardDeletePatientLiveSetIndexerStateViewSysLog"
 
 // CapValues returns a list of the values for Cap
 func CapValues() []Cap {
@@ -231,6 +233,7 @@ func CapValues() []Cap {
 		CapHardDeletePatient,
 		CapLive,
 		CapSetIndexerState,
+		CapViewSysLog,
 	}
 }
 
@@ -264,6 +267,7 @@ var _CapMap = map[Cap]string{
 	CapHardDeletePatient:     _CapName[352:369],
 	CapLive:                  _CapName[369:373],
 	CapSetIndexerState:       _CapName[373:388],
+	CapViewSysLog:            _CapName[388:398],
 }
 
 // String implements the Stringer interface.
@@ -311,6 +315,7 @@ var _CapValue = map[string]Cap{
 	_CapName[352:369]: CapHardDeletePatient,
 	_CapName[369:373]: CapLive,
 	_CapName[373:388]: CapSetIndexerState,
+	_CapName[388:398]: CapViewSysLog,
 }
 
 // ParseCap attempts to convert a string to a Cap.
@@ -892,6 +897,68 @@ func ParseLiveEventType(name string) (LiveEventType, error) {
 		return x, nil
 	}
 	return LiveEventType(""), fmt.Errorf("%s is %w", name, ErrInvalidLiveEventType)
+}
+
+const (
+	// SeverityDebug is a Severity of type Debug.
+	SeverityDebug Severity = -4
+	// SeverityInfo is a Severity of type Info.
+	SeverityInfo Severity = 0
+	// SeverityWarn is a Severity of type Warn.
+	SeverityWarn Severity = 4
+	// SeverityError is a Severity of type Error.
+	SeverityError Severity = 8
+)
+
+var ErrInvalidSeverity = errors.New("not a valid Severity")
+
+const _SeverityName = "DebugInfoWarnError"
+
+// SeverityValues returns a list of the values for Severity
+func SeverityValues() []Severity {
+	return []Severity{
+		SeverityDebug,
+		SeverityInfo,
+		SeverityWarn,
+		SeverityError,
+	}
+}
+
+var _SeverityMap = map[Severity]string{
+	SeverityDebug: _SeverityName[0:5],
+	SeverityInfo:  _SeverityName[5:9],
+	SeverityWarn:  _SeverityName[9:13],
+	SeverityError: _SeverityName[13:18],
+}
+
+// String implements the Stringer interface.
+func (x Severity) String() string {
+	if str, ok := _SeverityMap[x]; ok {
+		return str
+	}
+	return fmt.Sprintf("Severity(%d)", x)
+}
+
+// IsValid provides a quick way to determine if the typed value is
+// part of the allowed enumerated values
+func (x Severity) IsValid() bool {
+	_, ok := _SeverityMap[x]
+	return ok
+}
+
+var _SeverityValue = map[string]Severity{
+	_SeverityName[0:5]:   SeverityDebug,
+	_SeverityName[5:9]:   SeverityInfo,
+	_SeverityName[9:13]:  SeverityWarn,
+	_SeverityName[13:18]: SeverityError,
+}
+
+// ParseSeverity attempts to convert a string to a Severity.
+func ParseSeverity(name string) (Severity, error) {
+	if x, ok := _SeverityValue[name]; ok {
+		return x, nil
+	}
+	return Severity(0), fmt.Errorf("%s is %w", name, ErrInvalidSeverity)
 }
 
 const (

@@ -16,6 +16,7 @@ import (
 type page struct {
 	ConstantInfo debug.ConstantInfo
 	DB           *db.Database
+	Bespoke      string
 }
 
 type TSSeries struct {

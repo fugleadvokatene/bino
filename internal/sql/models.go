@@ -191,6 +191,13 @@ type StatPatient struct {
 	PatientID int32
 }
 
+type Syslog struct {
+	ID       int32
+	Message  string
+	Severity int32
+	Time     pgtype.Timestamptz
+}
+
 type WikiPage struct {
 	ID        int32
 	SortOrder pgtype.Int4

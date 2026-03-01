@@ -10,6 +10,7 @@ import (
 )
 
 type Bespoke interface {
+	Name() string
 	EditJournalOnEvent(ctx context.Context, patientID int32, eventID model.EventID, note string, t time.Time)
 }
 

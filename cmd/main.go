@@ -38,6 +38,7 @@ import (
 	"github.com/fugleadvokatene/bino/internal/handlers/handlerrecover"
 	"github.com/fugleadvokatene/bino/internal/handlers/handlersearch"
 	"github.com/fugleadvokatene/bino/internal/handlers/handlerspeciesadmin"
+	"github.com/fugleadvokatene/bino/internal/handlers/handlersyslog"
 	"github.com/fugleadvokatene/bino/internal/handlers/handlertos"
 	"github.com/fugleadvokatene/bino/internal/handlers/handleruser"
 	"github.com/fugleadvokatene/bino/internal/handlers/handleruseradmin"
@@ -119,6 +120,10 @@ func realMain() error {
 
 	// Set up bespoke behavior
 	bespoke := bespoke.NewBespoke(config.Organization, db, gdriveWorker, config.SystemLanguage)
+	bespokeName := "None"
+	if bespoke != nil {
+		bespokeName = bespoke.Name()
+	}
 
 	// Set up authentication
 	authenticator, err := auth.New(ctx, config.Auth, db)
@@ -144,7 +149,7 @@ func realMain() error {
 		handleradminroot.Routes(),
 		handlercalendar.Routes(db),
 		handlerdashboard.Routes(ctx, db, gdriveWorker, broker, config),
-		handlerdebug.Routes(db),
+		handlerdebug.Routes(db, bespokeName),
 		handlerevent.Routes(db),
 		handlerfeatureflag.Routes(db),
 		handlerfile.Routes(db, &jobs),
@@ -161,6 +166,7 @@ func realMain() error {
 		handlertos.Routes(),
 		handleruser.Routes(db),
 		handlerlive.Routes(broker),
+		handlersyslog.Routes(db),
 		handleruseradmin.Routes(db),
 		handlerwiki.Routes(db, &config.Security),
 	} {
