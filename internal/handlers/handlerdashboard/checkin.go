@@ -93,7 +93,7 @@ func (h *checkin) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Create or suggest journal off-request
-	go h.createOrSuggestJournal(
+	h.createOrSuggestJournal(
 		commonData.Language,
 		name,
 		systemSpeciesName,
@@ -134,9 +134,6 @@ func (h *checkin) createOrSuggestJournal(
 			}); err != nil || tag.RowsAffected() == 0 {
 				slog.Warn(language.GDriveCreateJournalFailed, "error", err)
 			} else {
-				// Give the page a little time to load and set up the event source
-				time.Sleep(time.Second)
-
 				h.Broker.JournalCreated(ctx, patientID, item.DocumentURL())
 				return
 			}
