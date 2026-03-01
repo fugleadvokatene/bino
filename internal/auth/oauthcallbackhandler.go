@@ -120,7 +120,7 @@ func (h *oauthCallbackHandler) ServeHTTP(
 		}
 	} else {
 		fmt.Printf("no inv for %s\n", claims.Email)
-		http.Error(w, "user doesn't exist and is not invited", http.StatusUnauthorized)
+		http.Error(w, fmt.Sprintf("Du prøvde å logge inn med email-addressen %s, som ikke er invitert. Send melding til administrator", claims.Email), http.StatusUnauthorized)
 		return
 	}
 
