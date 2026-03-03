@@ -26,6 +26,7 @@ type checkin struct {
 	Config        *config.Config
 	GDriveWorker  *gdrive.Worker
 	Broker        *sse.Broker
+	deduplicator  *deduplicator
 }
 
 func (h *checkin) ServeHTTP(w http.ResponseWriter, r *http.Request) {
@@ -41,6 +42,13 @@ func (h *checkin) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		handlererror.Error(w, r, err)
 		return
 	}
+
+	key := fmt.Sprintf("%d-%s", commonData.User.AppuserID, name)
+	if dupe := h.deduplicator.dedup(key); dupe {
+		request.RedirectToReferer(w, r)
+		return
+	}
+	defer h.deduplicator.done(key)
 
 	createJournal := false
 	if _, err := request.GetFormValue(r, "create-journal"); err == nil {

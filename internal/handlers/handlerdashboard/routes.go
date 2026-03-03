@@ -27,6 +27,7 @@ func Routes(
 				GDriveWorker:  worker,
 				Config:        config,
 				Broker:        broker,
+				deduplicator:  newDeduplicator(),
 			},
 			Cap: model.CapCheckInPatient,
 		},
