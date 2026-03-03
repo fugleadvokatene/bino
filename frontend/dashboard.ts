@@ -200,9 +200,16 @@ source.onerror = () => {
   source.close()
 }
 
-const languageSelect = QuerySelector<HTMLSelectElement>('#select-division')
-if (languageSelect) {
-  languageSelect.addEventListener('change', () => {
-    languageSelect.form?.submit()
+const divisionSelect = QuerySelector<HTMLSelectElement>('#select-division')
+if (divisionSelect) {
+  divisionSelect.addEventListener('change', () => {
+    divisionSelect.form?.submit()
+  })
+}
+
+const checkinBtn = QuerySelector<HTMLButtonElement>('#checkin-btn')
+if (checkinBtn) {
+  checkinBtn.addEventListener('click', () => {
+    checkinBtn.classList.add('waiting')
   })
 }

@@ -208,7 +208,7 @@ templ DashboardForm(
             </div>
             
             <div class="form-group">
-                <button type="submit" disabled?={data.User.PreferredHome.ID == 0} class="b-create-patient btn btn-success">{data.Language.CheckinCheckInPatient}</button>
+                <button type="submit" disabled?={data.User.PreferredHome.ID == 0} class="b-create-patient btn btn-success" id="checkin-btn">{data.Language.CheckinCheckInPatient}</button>
             </div>
 
             if data.User.PreferredHome.ID == 0 {
