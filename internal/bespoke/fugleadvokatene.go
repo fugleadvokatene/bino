@@ -47,6 +47,9 @@ func (fa FugleAdvokatene) EditJournalOnEvent(ctx context.Context, patientID int3
 	if note != "" {
 		txt = fmt.Sprintf("%s (%s)", txt, note)
 	}
+	if fieldHeader == fieldHeaderDied {
+		txt += " #ripfugl"
+	}
 	p, err := fa.db.Q.GetPatient(ctx, patientID)
 	if err != nil {
 		fa.db.SysLog(ctx, fmt.Sprintf("Could not find patient with ID %d, skipping bespoke actions", patientID), model.SeverityWarn, t)
