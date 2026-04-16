@@ -44,8 +44,18 @@ func (fa FugleAdvokatene) EditJournalOnEvent(ctx context.Context, patientID int3
 		return
 	}
 	txt := language.GetLanguage(int32(fa.lang)).FormatDateAbs(t)
+	switch eventID {
+	case model.EventIDEuthanized:
+		if !strings.Contains(strings.ToLower(note), "avliv") {
+			txt += " Avlivet"
+		}
+	case model.EventIDDied:
+		if !strings.Contains(strings.ToLower(note), "død") {
+			txt += " Døde"
+		}
+	}
 	if note != "" {
-		txt = fmt.Sprintf("%s (%s)", txt, note)
+		txt += fmt.Sprintf(" (%s)", note)
 	}
 	if fieldHeader == fieldHeaderDied {
 		txt += " #ripfugl"
