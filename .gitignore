@@ -7,3 +7,4 @@ cache.db
 tmp/
 file/
 e2e/e2e
+.claude/

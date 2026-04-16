@@ -114,9 +114,7 @@ type Job struct {
 
 type Journal struct {
 	Updated        pgtype.Timestamptz
-	Json           []byte
-	Markdown       pgtype.Text
-	Html           pgtype.Text
+	RawJson        []byte
 	GoogleID       string
 	Header         pgtype.Text
 	Body           pgtype.Text
@@ -125,6 +123,8 @@ type Journal struct {
 	FtsBody        interface{}
 	Origin         int16
 	ParentGoogleID pgtype.Text
+	ImageUrls      []byte
+	Version        int16
 }
 
 // Each row represents a patient

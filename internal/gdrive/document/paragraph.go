@@ -8,7 +8,8 @@ import (
 )
 
 type Paragraph struct {
-	Elements []Element
+	Elements     []Element
+	HeadingLevel int // 0 = body text, 1-6 = h1-h6
 }
 
 func (dp *Paragraph) Images() []*DocImage {
@@ -16,6 +17,9 @@ func (dp *Paragraph) Images() []*DocImage {
 }
 
 func (dt *Paragraph) Markdown(w *strings.Builder) {
+	if dt.HeadingLevel > 0 {
+		io.WriteString(w, strings.Repeat("#", dt.HeadingLevel)+" ")
+	}
 	for _, elem := range dt.Elements {
 		elem.Value.Markdown(w)
 	}

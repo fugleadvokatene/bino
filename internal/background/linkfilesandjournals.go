@@ -20,7 +20,7 @@ func LinkFilesAndJournals(ctx context.Context, db *dblib.Database, lastSuccess t
 	nUpdated := 0
 	nFailed := 0
 	for _, journal := range journals {
-		doc, err := document.ParseJSON(journal.Json)
+		doc, err := document.ParseRawJSON(journal.RawJson, journal.ImageUrls)
 		if err != nil {
 			slog.ErrorContext(ctx, "Corrupted document", "ID", journal.GoogleID, "er", err)
 		}

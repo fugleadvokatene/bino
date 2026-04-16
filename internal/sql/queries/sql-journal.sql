@@ -4,45 +4,39 @@ INSERT INTO journal (
     origin,
     parent_google_id,
     updated,
-    json,
+    raw_json,
+    image_urls,
     lang,
     header,
     body,
-    markdown,
-    html
+    version
 )
 VALUES (
     @google_id,
     @origin,
-    @parent_google_id, 
+    @parent_google_id,
     NOW(),
-    @json,
+    @raw_json,
+    @image_urls,
     @lang,
     @header,
     @body,
-    @markdown,
-    @html
+    @version
 )
 ON CONFLICT (google_id) DO UPDATE
     SET updated=NOW(),
         origin=EXCLUDED.origin,
         parent_google_id=EXCLUDED.parent_google_id,
-        json=EXCLUDED.json,
+        raw_json=EXCLUDED.raw_json,
+        image_urls=EXCLUDED.image_urls,
         lang=EXCLUDED.lang,
         header=EXCLUDED.header,
         body=EXCLUDED.body,
-        markdown=EXCLUDED.markdown,
-        html=EXCLUDED.html
-;
-
--- name: GetJournalHTML :one
-SELECT updated, html
-FROM journal
-WHERE google_id = $1
+        version=EXCLUDED.version
 ;
 
 -- name: GetJournalJSON :one
-SELECT updated, parent_google_id, gf.name AS parent_google_name, json
+SELECT updated, parent_google_id, gf.name AS parent_google_name, raw_json, image_urls
 FROM journal
 LEFT JOIN google_folder AS gf
     ON gf.google_id = journal.parent_google_id
@@ -56,9 +50,15 @@ WHERE google_id = @google_id
 ;
 
 -- name: GetJournalMetadata :one
-SELECT updated, parent_google_id
+SELECT updated, parent_google_id, version
 FROM journal
 WHERE google_id = @google_id
+;
+
+-- name: GetJournalImageURLs :one
+SELECT image_urls
+FROM journal
+WHERE google_id = $1
 ;
 
 -- name: SetGoogleParentFolder :exec
@@ -81,7 +81,7 @@ ON CONFLICT (google_id) DO UPDATE
 ;
 
 -- name: GetJournalsUpdatedAfter :many
-SELECT google_id, json
+SELECT google_id, raw_json, image_urls
 FROM journal
 WHERE updated > $1
 ORDER BY updated ASC

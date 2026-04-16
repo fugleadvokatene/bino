@@ -1,7 +1,6 @@
 package gdrive
 
 import (
-	"bytes"
 	"context"
 	"encoding/json"
 	"errors"
@@ -16,6 +15,10 @@ import (
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgtype"
 )
+
+// CurrentJournalVersion is the version stored by FetchJournal. Bump this
+// whenever the stored format changes so the indexer re-fetches outdated rows.
+const CurrentJournalVersion = 1
 
 type ParentInfo struct {
 	ID   string
@@ -43,15 +46,26 @@ func (w *Worker) FetchJournal(
 		parentGoogleID = w.resolveParent(ctx, googleID)
 	}
 
-	doc, err := w.GetDocument(googleID)
+	rawDoc, err := w.GetRawDocument(googleID)
 	if err != nil {
 		return err
-	} else {
-		slog.InfoContext(ctx, "Found doc", "title", doc.Title)
 	}
+	slog.InfoContext(ctx, "Found doc", "title", rawDoc.Title)
+
+	doc, err := document.New(rawDoc)
+	if err != nil {
+		return err
+	}
+
+	// Load existing image URL overrides so we don't re-upload unchanged images.
+	imageURLs := make(map[string]string)
+	if existing, err := w.g.DB.Q.GetJournalImageURLs(ctx, googleID); err == nil {
+		json.Unmarshal(existing, &imageURLs) //nolint:errcheck
+	}
+
 	nUploaded := 0
 	for _, img := range doc.Images() {
-		if !img.Volatile {
+		if _, exists := imageURLs[img.InlineObjectID]; exists {
 			continue
 		}
 		filename, fileID, err := dblib.UploadImageFromURL(
@@ -62,11 +76,9 @@ func (w *Worker) FetchJournal(
 		if err != nil {
 			slog.ErrorContext(ctx, "Couldn't upload image from Google doc", "err", err)
 			continue
-		} else {
-			slog.InfoContext(ctx, "Uploaded image from Google doc", "id", fileID)
 		}
-		img.URL = model.FileURL(fileID, filename)
-		img.Volatile = false
+		slog.InfoContext(ctx, "Uploaded image from Google doc", "id", fileID)
+		imageURLs[img.InlineObjectID] = model.FileURL(fileID, filename)
 		nUploaded++
 	}
 
@@ -74,53 +86,38 @@ func (w *Worker) FetchJournal(
 		w.bg.ImageHint.Send()
 	}
 
-	updateParams := sql.UpsertJournalParams{
+	imageURLsJSON, err := json.Marshal(imageURLs)
+	if err != nil {
+		return fmt.Errorf("marshalling image URLs: %w", err)
+	}
+
+	rawDocJSON, err := json.MarshalIndent(rawDoc, "", "  ")
+	if err != nil {
+		return fmt.Errorf("marshalling raw document: %w", err)
+	}
+
+	txt := document.GetIndexableText(&doc)
+
+	return w.g.DB.Q.UpsertJournal(ctx, sql.UpsertJournalParams{
 		GoogleID:       googleID,
 		Origin:         int16(model.JournalOriginIDGoogle),
 		ParentGoogleID: parentGoogleID,
-		Header:         pgtype.Text{String: doc.Title, Valid: true},
+		Header:         pgtype.Text{String: rawDoc.Title, Valid: true},
 		Lang:           "norwegian",
-	}
-
-	// Marshall to JSON, Markdown and HTML
-	// Each in its own scope in case it can help the GC
-	{
-		marshalled, err := json.MarshalIndent(doc, "", "  ")
-		if err != nil {
-			slog.ErrorContext(ctx, "Couldn't marshal journal", "err", err)
-		} else {
-			updateParams.Json = marshalled
-		}
-	}
-	{
-		txt := document.GetIndexableText(&doc)
-		updateParams.Body.String = txt
-		updateParams.Body.Valid = txt != ""
-	}
-	{
-		md := document.GetMarkdown(&doc)
-		updateParams.Markdown.String = md
-		updateParams.Markdown.Valid = md != ""
-	}
-	{
-		var htmlBuffer bytes.Buffer
-		doc.Templ().Render(ctx, &htmlBuffer)
-		updateParams.Html.String = htmlBuffer.String()
-		updateParams.Html.Valid = htmlBuffer.Len() > 0
-	}
-
-	return w.g.DB.Q.UpsertJournal(ctx, updateParams)
+		RawJson:        rawDocJSON,
+		ImageUrls:      imageURLsJSON,
+		Body:           pgtype.Text{String: txt, Valid: txt != ""},
+		Version:        CurrentJournalVersion,
+	})
 }
 
 func (w *Worker) resolveParent(ctx context.Context, googleID string) pgtype.Text {
-	// Get the ID from the parent
 	file, err := w.GetFile(googleID)
 	if err != nil {
 		slog.ErrorContext(ctx, "Looking up file to get ctx", "err", err)
 		return pgtype.Text{}
 	}
 
-	// Save the parent folder name later
 	if _, err := w.g.DB.Q.GetGoogleFolder(ctx, file.ParentID); errors.Is(err, pgx.ErrNoRows) {
 		if parent, err := w.GetFile(file.ParentID); err != nil {
 			slog.ErrorContext(ctx, "Looking up parent folder", "err", err, "file ID", file.ID, "parent ID", file.ParentID)

@@ -12,15 +12,40 @@ import (
 var fileIDRegex = regexp.MustCompile("/file/(\\d+)/")
 
 type DocImage struct {
-	Title       string
-	Description string
-	Width       float64
-	Height      float64
-	Margin      [4]float64 // top right down left, like in css
-	Crop        [4]float64 // top right down left, like in css
-	URL         string
-	Volatile    bool
-	Angle       float64
+	Title          string
+	Description    string
+	Width          float64
+	Height         float64
+	Margin         [4]float64 // top right down left, like in css
+	Crop           [4]float64 // top right down left, like in css
+	URL            string
+	Angle          float64
+	InlineObjectID string
+}
+
+func (img *DocImage) ContainerStyle() string {
+	return fmt.Sprintf("width: %dpx; height: %dpx; overflow: hidden; position: relative", int(img.Width), int(img.Height))
+}
+
+func (img *DocImage) ImgStyle() string {
+	top := img.Crop[0]
+	right := img.Crop[1]
+	bottom := img.Crop[2]
+	left := img.Crop[3]
+	xFraction := 1 - left - right
+	yFraction := 1 - top - bottom
+	if xFraction <= 0 {
+		xFraction = 1
+	}
+	if yFraction <= 0 {
+		yFraction = 1
+	}
+	scaleX := 100 / xFraction
+	scaleY := 100 / yFraction
+	leftPct := -left * scaleX
+	topPct := -top * scaleY
+	return fmt.Sprintf("position: absolute; width: %.4g%%; height: %.4g%%; left: %.4g%%; top: %.4g%%; max-width: none",
+		scaleX, scaleY, leftPct, topPct)
 }
 
 func (di *DocImage) Markdown(w *strings.Builder) {
@@ -31,9 +56,6 @@ func (di *DocImage) Markdown(w *strings.Builder) {
 }
 
 func (di *DocImage) FileID() (int32, bool) {
-	if di.Volatile {
-		return 0, false
-	}
 	matches := fileIDRegex.FindStringSubmatch(di.URL)
 	if len(matches) <= 1 {
 		return 0, false
@@ -75,7 +97,7 @@ func parseInlineObjectElement(elem *docs.InlineObjectElement, inlineObjects map[
 		if embedded.Size.Width != nil {
 			out.Width = embedded.Size.Width.Magnitude
 		}
-		if embedded.Size.Width != nil {
+		if embedded.Size.Height != nil {
 			out.Height = embedded.Size.Height.Magnitude
 		}
 	}
@@ -92,8 +114,8 @@ func parseInlineObjectElement(elem *docs.InlineObjectElement, inlineObjects map[
 		out.Margin[3] = embedded.MarginLeft.Magnitude
 	}
 
+	out.InlineObjectID = elem.InlineObjectId
 	out.URL = imageProperties.ContentUri
-	out.Volatile = true
 	out.Angle = imageProperties.Angle
 	out.Crop[0] = imageProperties.CropProperties.OffsetTop
 	out.Crop[1] = imageProperties.CropProperties.OffsetRight

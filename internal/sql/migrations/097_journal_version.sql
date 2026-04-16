@@ -1,0 +1,2 @@
+-- +migrate Up
+ALTER TABLE journal ADD COLUMN version SMALLINT NOT NULL DEFAULT 0;

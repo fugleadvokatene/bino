@@ -1,7 +1,6 @@
 package handlerpatient
 
 import (
-	"encoding/json"
 	"fmt"
 	"net/http"
 	"time"
@@ -96,8 +95,8 @@ func (h *page) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	var journal document.Document
 	var journalMeta JournalMetadata
 	if row, err := h.DB.Q.GetJournalJSON(ctx, patientData.GoogleID.String); err == nil {
-		if err := json.Unmarshal(row.Json, &journal); err != nil {
-			generic.Clear(&journal)
+		if doc, err := document.ParseRawJSON(row.RawJson, row.ImageUrls); err == nil {
+			journal = *doc
 		}
 		journalMeta.Updated = row.Updated.Time
 		journalMeta.FolderID = row.ParentGoogleID.String

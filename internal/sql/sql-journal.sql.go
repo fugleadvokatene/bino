@@ -35,26 +35,21 @@ func (q *Queries) GetGoogleFolder(ctx context.Context, googleID string) (GoogleF
 	return i, err
 }
 
-const getJournalHTML = `-- name: GetJournalHTML :one
-SELECT updated, html
+const getJournalImageURLs = `-- name: GetJournalImageURLs :one
+SELECT image_urls
 FROM journal
 WHERE google_id = $1
 `
 
-type GetJournalHTMLRow struct {
-	Updated pgtype.Timestamptz
-	Html    pgtype.Text
-}
-
-func (q *Queries) GetJournalHTML(ctx context.Context, googleID string) (GetJournalHTMLRow, error) {
-	row := q.db.QueryRow(ctx, getJournalHTML, googleID)
-	var i GetJournalHTMLRow
-	err := row.Scan(&i.Updated, &i.Html)
-	return i, err
+func (q *Queries) GetJournalImageURLs(ctx context.Context, googleID string) ([]byte, error) {
+	row := q.db.QueryRow(ctx, getJournalImageURLs, googleID)
+	var image_urls []byte
+	err := row.Scan(&image_urls)
+	return image_urls, err
 }
 
 const getJournalJSON = `-- name: GetJournalJSON :one
-SELECT updated, parent_google_id, gf.name AS parent_google_name, json
+SELECT updated, parent_google_id, gf.name AS parent_google_name, raw_json, image_urls
 FROM journal
 LEFT JOIN google_folder AS gf
     ON gf.google_id = journal.parent_google_id
@@ -65,7 +60,8 @@ type GetJournalJSONRow struct {
 	Updated          pgtype.Timestamptz
 	ParentGoogleID   pgtype.Text
 	ParentGoogleName pgtype.Text
-	Json             []byte
+	RawJson          []byte
+	ImageUrls        []byte
 }
 
 func (q *Queries) GetJournalJSON(ctx context.Context, googleID string) (GetJournalJSONRow, error) {
@@ -75,13 +71,14 @@ func (q *Queries) GetJournalJSON(ctx context.Context, googleID string) (GetJourn
 		&i.Updated,
 		&i.ParentGoogleID,
 		&i.ParentGoogleName,
-		&i.Json,
+		&i.RawJson,
+		&i.ImageUrls,
 	)
 	return i, err
 }
 
 const getJournalMetadata = `-- name: GetJournalMetadata :one
-SELECT updated, parent_google_id
+SELECT updated, parent_google_id, version
 FROM journal
 WHERE google_id = $1
 `
@@ -89,25 +86,27 @@ WHERE google_id = $1
 type GetJournalMetadataRow struct {
 	Updated        pgtype.Timestamptz
 	ParentGoogleID pgtype.Text
+	Version        int16
 }
 
 func (q *Queries) GetJournalMetadata(ctx context.Context, googleID string) (GetJournalMetadataRow, error) {
 	row := q.db.QueryRow(ctx, getJournalMetadata, googleID)
 	var i GetJournalMetadataRow
-	err := row.Scan(&i.Updated, &i.ParentGoogleID)
+	err := row.Scan(&i.Updated, &i.ParentGoogleID, &i.Version)
 	return i, err
 }
 
 const getJournalsUpdatedAfter = `-- name: GetJournalsUpdatedAfter :many
-SELECT google_id, json
+SELECT google_id, raw_json, image_urls
 FROM journal
 WHERE updated > $1
 ORDER BY updated ASC
 `
 
 type GetJournalsUpdatedAfterRow struct {
-	GoogleID string
-	Json     []byte
+	GoogleID  string
+	RawJson   []byte
+	ImageUrls []byte
 }
 
 func (q *Queries) GetJournalsUpdatedAfter(ctx context.Context, updated pgtype.Timestamptz) ([]GetJournalsUpdatedAfterRow, error) {
@@ -119,7 +118,7 @@ func (q *Queries) GetJournalsUpdatedAfter(ctx context.Context, updated pgtype.Ti
 	var items []GetJournalsUpdatedAfterRow
 	for rows.Next() {
 		var i GetJournalsUpdatedAfterRow
-		if err := rows.Scan(&i.GoogleID, &i.Json); err != nil {
+		if err := rows.Scan(&i.GoogleID, &i.RawJson, &i.ImageUrls); err != nil {
 			return nil, err
 		}
 		items = append(items, i)
@@ -169,17 +168,17 @@ INSERT INTO journal (
     origin,
     parent_google_id,
     updated,
-    json,
+    raw_json,
+    image_urls,
     lang,
     header,
     body,
-    markdown,
-    html
+    version
 )
 VALUES (
     $1,
     $2,
-    $3, 
+    $3,
     NOW(),
     $4,
     $5,
@@ -192,24 +191,24 @@ ON CONFLICT (google_id) DO UPDATE
     SET updated=NOW(),
         origin=EXCLUDED.origin,
         parent_google_id=EXCLUDED.parent_google_id,
-        json=EXCLUDED.json,
+        raw_json=EXCLUDED.raw_json,
+        image_urls=EXCLUDED.image_urls,
         lang=EXCLUDED.lang,
         header=EXCLUDED.header,
         body=EXCLUDED.body,
-        markdown=EXCLUDED.markdown,
-        html=EXCLUDED.html
+        version=EXCLUDED.version
 `
 
 type UpsertJournalParams struct {
 	GoogleID       string
 	Origin         int16
 	ParentGoogleID pgtype.Text
-	Json           []byte
+	RawJson        []byte
+	ImageUrls      []byte
 	Lang           interface{}
 	Header         pgtype.Text
 	Body           pgtype.Text
-	Markdown       pgtype.Text
-	Html           pgtype.Text
+	Version        int16
 }
 
 func (q *Queries) UpsertJournal(ctx context.Context, arg UpsertJournalParams) error {
@@ -217,12 +216,12 @@ func (q *Queries) UpsertJournal(ctx context.Context, arg UpsertJournalParams) er
 		arg.GoogleID,
 		arg.Origin,
 		arg.ParentGoogleID,
-		arg.Json,
+		arg.RawJson,
+		arg.ImageUrls,
 		arg.Lang,
 		arg.Header,
 		arg.Body,
-		arg.Markdown,
-		arg.Html,
+		arg.Version,
 	)
 	return err
 }

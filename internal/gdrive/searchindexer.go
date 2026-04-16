@@ -123,10 +123,12 @@ func (w *Worker) searchIndexFolder(ctx context.Context, folderID string, created
 }
 
 func (w *Worker) searchIndexFile(ctx context.Context, folder, file Item) (bool, error) {
-	// Get updated-time
+	// Get stored metadata
 	var updated pgtype.Timestamptz
+	var storedVersion int16
 	if meta, err := w.g.DB.Q.GetJournalMetadata(ctx, file.ID); err == nil {
 		updated = meta.Updated
+		storedVersion = meta.Version
 		if !meta.ParentGoogleID.Valid {
 			w.g.DB.Q.SetGoogleParentFolder(ctx, sql.SetGoogleParentFolderParams{
 				GoogleID:       file.ID,
@@ -147,8 +149,9 @@ func (w *Worker) searchIndexFile(ctx context.Context, folder, file Item) (bool, 
 		return false, nil
 	}
 
-	// If search-entry is synced, don't do anything
-	if updated.Valid && !file.ModifiedTime.After(updated.Time) {
+	// Re-fetch if the file was modified or the stored version is outdated
+	upToDate := updated.Valid && !file.ModifiedTime.After(updated.Time) && storedVersion >= CurrentJournalVersion
+	if upToDate {
 		return false, nil
 	}
 

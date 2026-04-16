@@ -1,8 +1,5 @@
 package document
 
-import (
-    "fmt"
-)
 
 templ (doc *Document) Templ() {
     <article class="card p-1">
@@ -13,11 +10,27 @@ templ (doc *Document) Templ() {
 }
 
 templ (para *Paragraph) Templ() {
-    <p class="journal-paragraph">
-        for _, elem := range para.Elements {
-            @elem.Value.Templ()
-        }
-    </p>
+	if para.HeadingLevel == 1 {
+		<h1 class="journal-paragraph">@para.templContent()</h1>
+	} else if para.HeadingLevel == 2 {
+		<h2 class="journal-paragraph">@para.templContent()</h2>
+	} else if para.HeadingLevel == 3 {
+		<h3 class="journal-paragraph">@para.templContent()</h3>
+	} else if para.HeadingLevel == 4 {
+		<h4 class="journal-paragraph">@para.templContent()</h4>
+	} else if para.HeadingLevel == 5 {
+		<h5 class="journal-paragraph">@para.templContent()</h5>
+	} else if para.HeadingLevel == 6 {
+		<h6 class="journal-paragraph">@para.templContent()</h6>
+	} else {
+		<p class="journal-paragraph">@para.templContent()</p>
+	}
+}
+
+templ (para *Paragraph) templContent() {
+    for _, elem := range para.Elements {
+        @elem.Value.Templ()
+    }
 }
 
 templ (img *DocImage) Templ() {
@@ -25,11 +38,12 @@ templ (img *DocImage) Templ() {
         href={templ.URL(img.URL)}
         data-lightbox="user-files"
         class="user-image-link journal-image-frame d-block"
-        style={fmt.Sprintf("width: %dpx; height: %dpx", int(img.Width), int(img.Height))}
+        style={img.ContainerStyle()}
     >
         <img
             src={img.URL + "?variant=Medium"}
             class="user-image dark-on-hover"
+            style={img.ImgStyle()}
         />
     </a>
 }

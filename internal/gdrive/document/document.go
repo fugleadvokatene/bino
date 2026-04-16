@@ -18,10 +18,51 @@ type Document struct {
 	Content    []Element
 }
 
-func ParseJSON(in []byte) (*Document, error) {
-	doc := new(Document)
-	err := json.Unmarshal(in, doc)
-	return doc, err
+func ParseRawJSON(rawJSON []byte, imageURLsJSON []byte) (*Document, error) {
+	var rawDoc docs.Document
+	if err := json.Unmarshal(rawJSON, &rawDoc); err != nil {
+		return nil, err
+	}
+	if len(rawDoc.Tabs) == 0 {
+		// Legacy format: data was stored as our parsed Document struct, not raw Google API.
+		var legacyDoc Document
+		if err := json.Unmarshal(rawJSON, &legacyDoc); err != nil {
+			return nil, err
+		}
+		return &legacyDoc, nil
+	}
+	if len(imageURLsJSON) > 0 {
+		var imageURLs map[string]string
+		if err := json.Unmarshal(imageURLsJSON, &imageURLs); err == nil {
+			applyImageURLsToRawDoc(&rawDoc, imageURLs)
+		}
+	}
+	doc, err := New(&rawDoc)
+	if err != nil {
+		return nil, err
+	}
+	return &doc, nil
+}
+
+func applyImageURLsToRawDoc(rawDoc *docs.Document, imageURLs map[string]string) {
+	for _, tab := range rawDoc.Tabs {
+		if tab.DocumentTab == nil {
+			continue
+		}
+		for id, obj := range tab.DocumentTab.InlineObjects {
+			url, ok := imageURLs[id]
+			if !ok {
+				continue
+			}
+			props := obj.InlineObjectProperties
+			if props == nil || props.EmbeddedObject == nil || props.EmbeddedObject.ImageProperties == nil {
+				continue
+			}
+			props.EmbeddedObject.ImageProperties.ContentUri = url
+			obj.InlineObjectProperties = props
+			tab.DocumentTab.InlineObjects[id] = obj
+		}
+	}
 }
 
 func (d *Document) Markdown(w *strings.Builder) {
@@ -106,10 +147,36 @@ func parseStructuralElements(elements []*docs.StructuralElement, inlineObjects m
 		if para == nil {
 			continue
 		}
+		headingLevel := 0
+		if para.ParagraphStyle != nil {
+			switch para.ParagraphStyle.NamedStyleType {
+			case "TITLE":
+				headingLevel = 1
+			case "SUBTITLE", "HEADING_1":
+				headingLevel = 2
+			case "HEADING_2":
+				headingLevel = 3
+			case "HEADING_3":
+				headingLevel = 4
+			case "HEADING_4":
+				headingLevel = 5
+			case "HEADING_5", "HEADING_6":
+				headingLevel = 6
+			}
+		}
+		paraElements := parseParagraphElements(para.Elements, inlineObjects)
+		if headingLevel > 0 {
+			for i := range paraElements {
+				if t, ok := paraElements[i].Value.(*DocText); ok {
+					t.FontSize = 0
+				}
+			}
+		}
 		el := Element{
 			Type: "paragraph",
 			Value: &Paragraph{
-				Elements: parseParagraphElements(para.Elements, inlineObjects),
+				Elements:     paraElements,
+				HeadingLevel: headingLevel,
 			},
 		}
 		if para.Bullet != nil {
@@ -153,7 +220,11 @@ func parseParagraphElements(elements []*docs.ParagraphElement, inlineObjects map
 	var out []Element
 	for _, elem := range elements {
 		if elem.TextRun != nil {
-			out = append(out, parseTextRun(elem.TextRun))
+			el := parseTextRun(elem.TextRun)
+			text := el.Value.(*DocText)
+			if text.Trim() != "" || text.Flags&FlagLink != 0 {
+				out = append(out, el)
+			}
 			continue
 		}
 		if elem.InlineObjectElement != nil {
