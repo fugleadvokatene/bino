@@ -12127,8 +12127,8 @@ var CommandManager = class {
     return this.customState || this.editor.state;
   }
   get commands() {
-    const { rawCommands, editor: editor2, state } = this;
-    const { view } = editor2;
+    const { rawCommands, editor, state } = this;
+    const { view } = editor;
     const { tr: tr2 } = state;
     const props = this.buildProps(tr2);
     return Object.fromEntries(
@@ -12151,8 +12151,8 @@ var CommandManager = class {
     return () => this.createCan();
   }
   createChain(startTr, shouldDispatch = true) {
-    const { rawCommands, editor: editor2, state } = this;
-    const { view } = editor2;
+    const { rawCommands, editor, state } = this;
+    const { view } = editor;
     const callbacks = [];
     const hasStartTransaction = !!startTr;
     const tr2 = startTr || state.tr;
@@ -12194,11 +12194,11 @@ var CommandManager = class {
     };
   }
   buildProps(tr2, shouldDispatch = true) {
-    const { rawCommands, editor: editor2, state } = this;
-    const { view } = editor2;
+    const { rawCommands, editor, state } = this;
+    const { view } = editor;
     const props = {
       tr: tr2,
-      editor: editor2,
+      editor,
       view,
       state: createChainableState({
         state,
@@ -12281,10 +12281,10 @@ __export(commands_exports, {
   wrapIn: () => wrapIn2,
   wrapInList: () => wrapInList2
 });
-var blur = () => ({ editor: editor2, view }) => {
+var blur = () => ({ editor, view }) => {
   requestAnimationFrame(() => {
     var _a;
-    if (!editor2.isDestroyed) {
+    if (!editor.isDestroyed) {
       ;
       view.dom.blur();
       (_a = window == null ? void 0 : window.getSelection()) == null ? void 0 : _a.removeAllRanges();
@@ -12331,8 +12331,8 @@ var command = (fn) => (props) => {
 var createParagraphNear2 = () => ({ state, dispatch }) => {
   return createParagraphNear(state, dispatch);
 };
-var cut = (originRange, targetPos) => ({ editor: editor2, tr: tr2 }) => {
-  const { state } = editor2;
+var cut = (originRange, targetPos) => ({ editor, tr: tr2 }) => {
+  const { state } = editor;
   const contentSlice = state.doc.slice(originRange.from, originRange.to);
   tr2.deleteRange(originRange.from, originRange.to);
   const newPos = tr2.mapping.map(targetPos);
@@ -12535,7 +12535,7 @@ function isiOS() {
 function isSafari() {
   return typeof navigator !== "undefined" ? /^((?!chrome|android).)*safari/i.test(navigator.userAgent) : false;
 }
-var focus = (position = null, options = {}) => ({ editor: editor2, view, tr: tr2, dispatch }) => {
+var focus = (position = null, options = {}) => ({ editor, view, tr: tr2, dispatch }) => {
   options = {
     scrollIntoView: true,
     ...options
@@ -12550,10 +12550,10 @@ var focus = (position = null, options = {}) => ({ editor: editor2, view, tr: tr2
       view.dom.focus({ preventScroll: true });
     }
     requestAnimationFrame(() => {
-      if (!editor2.isDestroyed) {
+      if (!editor.isDestroyed) {
         view.focus();
         if (options == null ? void 0 : options.scrollIntoView) {
-          editor2.commands.scrollIntoView();
+          editor.commands.scrollIntoView();
         }
       }
     });
@@ -12565,12 +12565,12 @@ var focus = (position = null, options = {}) => ({ editor: editor2, view, tr: tr2
   } catch {
     return false;
   }
-  if (dispatch && position === null && !isTextSelection(editor2.state.selection)) {
+  if (dispatch && position === null && !isTextSelection(editor.state.selection)) {
     delayedFocus();
     return true;
   }
-  const selection = resolveFocusPosition(tr2.doc, position) || editor2.state.selection;
-  const isSameSelection = editor2.state.selection.eq(selection);
+  const selection = resolveFocusPosition(tr2.doc, position) || editor.state.selection;
+  const isSameSelection = editor.state.selection.eq(selection);
   if (dispatch) {
     if (!isSameSelection) {
       tr2.setSelection(selection);
@@ -12704,11 +12704,11 @@ function selectionToInsertionEnd2(tr2, startLen, bias) {
 var isFragment = (nodeOrFragment) => {
   return !("type" in nodeOrFragment);
 };
-var insertContentAt = (position, value, options) => ({ tr: tr2, dispatch, editor: editor2 }) => {
+var insertContentAt = (position, value, options) => ({ tr: tr2, dispatch, editor }) => {
   var _a;
   if (dispatch) {
     options = {
-      parseOptions: editor2.options.parseOptions,
+      parseOptions: editor.options.parseOptions,
       updateSelection: true,
       applyInputRules: false,
       applyPasteRules: false,
@@ -12716,13 +12716,13 @@ var insertContentAt = (position, value, options) => ({ tr: tr2, dispatch, editor
     };
     let content;
     const emitContentError = (error) => {
-      editor2.emit("contentError", {
-        editor: editor2,
+      editor.emit("contentError", {
+        editor,
         error,
         disableCollaboration: () => {
-          if ("collaboration" in editor2.storage && typeof editor2.storage.collaboration === "object" && editor2.storage.collaboration) {
+          if ("collaboration" in editor.storage && typeof editor.storage.collaboration === "object" && editor.storage.collaboration) {
             ;
-            editor2.storage.collaboration.isDisabled = true;
+            editor.storage.collaboration.isDisabled = true;
           }
         }
       });
@@ -12731,9 +12731,9 @@ var insertContentAt = (position, value, options) => ({ tr: tr2, dispatch, editor
       preserveWhitespace: "full",
       ...options.parseOptions
     };
-    if (!options.errorOnInvalidContent && !editor2.options.enableContentCheck && editor2.options.emitContentError) {
+    if (!options.errorOnInvalidContent && !editor.options.enableContentCheck && editor.options.emitContentError) {
       try {
-        createNodeFromContent(value, editor2.schema, {
+        createNodeFromContent(value, editor.schema, {
           parseOptions,
           errorOnInvalidContent: true
         });
@@ -12742,9 +12742,9 @@ var insertContentAt = (position, value, options) => ({ tr: tr2, dispatch, editor
       }
     }
     try {
-      content = createNodeFromContent(value, editor2.schema, {
+      content = createNodeFromContent(value, editor.schema, {
         parseOptions,
-        errorOnInvalidContent: (_a = options.errorOnInvalidContent) != null ? _a : editor2.options.enableContentCheck
+        errorOnInvalidContent: (_a = options.errorOnInvalidContent) != null ? _a : editor.options.enableContentCheck
       });
     } catch (e) {
       emitContentError(e);
@@ -12904,7 +12904,7 @@ function normalizeKeyName2(name) {
   }
   return result;
 }
-var keyboardShortcut = (name) => ({ editor: editor2, view, tr: tr2, dispatch }) => {
+var keyboardShortcut = (name) => ({ editor, view, tr: tr2, dispatch }) => {
   const keys2 = normalizeKeyName2(name).split(/-(?!$)/);
   const key = keys2.find((item) => !["Alt", "Ctrl", "Meta", "Shift"].includes(item));
   const event = new KeyboardEvent("keydown", {
@@ -12916,7 +12916,7 @@ var keyboardShortcut = (name) => ({ editor: editor2, view, tr: tr2, dispatch }) 
     bubbles: true,
     cancelable: true
   });
-  const capturedTransaction = editor2.captureTransaction(() => {
+  const capturedTransaction = editor.captureTransaction(() => {
     view.someProp("handleKeyDown", (f) => f(view, event));
   });
   capturedTransaction == null ? void 0 : capturedTransaction.steps.forEach((step) => {
@@ -13066,11 +13066,11 @@ function createDocument(content, schema, parseOptions = {}, options = {}) {
     errorOnInvalidContent: options.errorOnInvalidContent
   });
 }
-var setContent = (content, { errorOnInvalidContent, emitUpdate = true, parseOptions = {} } = {}) => ({ editor: editor2, tr: tr2, dispatch, commands }) => {
+var setContent = (content, { errorOnInvalidContent, emitUpdate = true, parseOptions = {} } = {}) => ({ editor, tr: tr2, dispatch, commands }) => {
   const { doc: doc3 } = tr2;
   if (parseOptions.preserveWhitespace !== "full") {
-    const document2 = createDocument(content, editor2.schema, parseOptions, {
-      errorOnInvalidContent: errorOnInvalidContent != null ? errorOnInvalidContent : editor2.options.enableContentCheck
+    const document2 = createDocument(content, editor.schema, parseOptions, {
+      errorOnInvalidContent: errorOnInvalidContent != null ? errorOnInvalidContent : editor.options.enableContentCheck
     });
     if (dispatch) {
       tr2.replaceWith(0, doc3.content.size, document2).setMeta("preventUpdate", !emitUpdate);
@@ -13082,7 +13082,7 @@ var setContent = (content, { errorOnInvalidContent, emitUpdate = true, parseOpti
   }
   return commands.insertContentAt({ from: 0, to: doc3.content.size }, content, {
     parseOptions,
-    errorOnInvalidContent: errorOnInvalidContent != null ? errorOnInvalidContent : editor2.options.enableContentCheck
+    errorOnInvalidContent: errorOnInvalidContent != null ? errorOnInvalidContent : editor.options.enableContentCheck
   });
 };
 function getMarkAttributes(state, typeOrName) {
@@ -13461,7 +13461,7 @@ function buildAttributeSpec(extensionAttribute) {
   }
   return [extensionAttribute.name, spec];
 }
-function getSchemaByResolvedExtensions(extensions, editor2) {
+function getSchemaByResolvedExtensions(extensions, editor) {
   var _a;
   const allAttributes = getAttributesFromExtensions(extensions);
   const { nodeExtensions, markExtensions } = splitExtensions(extensions);
@@ -13473,7 +13473,7 @@ function getSchemaByResolvedExtensions(extensions, editor2) {
         name: extension.name,
         options: extension.options,
         storage: extension.storage,
-        editor: editor2
+        editor
       };
       const extraNodeFields = extensions.reduce((fields, e) => {
         const extendNodeSchema = getExtensionField(e, "extendNodeSchema", context);
@@ -13527,7 +13527,7 @@ function getSchemaByResolvedExtensions(extensions, editor2) {
         name: extension.name,
         options: extension.options,
         storage: extension.storage,
-        editor: editor2
+        editor
       };
       const extraMarkFields = extensions.reduce((fields, e) => {
         const extendMarkSchema = getExtensionField(e, "extendMarkSchema", context);
@@ -14129,10 +14129,10 @@ function ensureMarks(state, splittableMarks) {
     state.tr.ensureMarks(filteredMarks);
   }
 }
-var splitBlock2 = ({ keepMarks = true } = {}) => ({ tr: tr2, state, dispatch, editor: editor2 }) => {
+var splitBlock2 = ({ keepMarks = true } = {}) => ({ tr: tr2, state, dispatch, editor }) => {
   const { selection, doc: doc3 } = tr2;
   const { $from, $to } = selection;
-  const extensionAttributes = editor2.extensionManager.attributes;
+  const extensionAttributes = editor.extensionManager.attributes;
   const newAttributes = getSplittedAttributes(extensionAttributes, $from.node().type.name, $from.node().attrs);
   if (selection instanceof NodeSelection && selection.node.isBlock) {
     if (!$from.parentOffset || !canSplit(doc3, $from.pos)) {
@@ -14140,7 +14140,7 @@ var splitBlock2 = ({ keepMarks = true } = {}) => ({ tr: tr2, state, dispatch, ed
     }
     if (dispatch) {
       if (keepMarks) {
-        ensureMarks(state, editor2.extensionManager.splittableMarks);
+        ensureMarks(state, editor.extensionManager.splittableMarks);
       }
       tr2.split($from.pos).scrollIntoView();
     }
@@ -14182,13 +14182,13 @@ var splitBlock2 = ({ keepMarks = true } = {}) => ({ tr: tr2, state, dispatch, ed
       }
     }
     if (keepMarks) {
-      ensureMarks(state, editor2.extensionManager.splittableMarks);
+      ensureMarks(state, editor.extensionManager.splittableMarks);
     }
     tr2.scrollIntoView();
   }
   return can;
 };
-var splitListItem = (typeOrName, overrideAttrs = {}) => ({ tr: tr2, state, dispatch, editor: editor2 }) => {
+var splitListItem = (typeOrName, overrideAttrs = {}) => ({ tr: tr2, state, dispatch, editor }) => {
   var _a;
   const type = getNodeType(typeOrName, state.schema);
   const { $from, $to } = state.selection;
@@ -14200,7 +14200,7 @@ var splitListItem = (typeOrName, overrideAttrs = {}) => ({ tr: tr2, state, dispa
   if (grandParent.type !== type) {
     return false;
   }
-  const extensionAttributes = editor2.extensionManager.attributes;
+  const extensionAttributes = editor.extensionManager.attributes;
   if ($from.parent.content.size === 0 && $from.node(-1).childCount === $from.indexAfter(-1)) {
     if ($from.depth === 2 || $from.node(-3).type !== type || $from.index(-2) !== $from.node(-2).childCount - 1) {
       return false;
@@ -14258,7 +14258,7 @@ var splitListItem = (typeOrName, overrideAttrs = {}) => ({ tr: tr2, state, dispa
   }
   if (dispatch) {
     const { selection, storedMarks } = state;
-    const { splittableMarks } = editor2.extensionManager;
+    const { splittableMarks } = editor.extensionManager;
     const marks = storedMarks || selection.$to.parentOffset && selection.$from.marks();
     tr2.split($from.pos, 2, types).scrollIntoView();
     if (!marks || !dispatch) {
@@ -14313,8 +14313,8 @@ function createInnerSelectionForWholeDocList(tr2) {
   const to = list.nodeSize - 1;
   return TextSelection.create(doc3, from2, to);
 }
-var toggleList = (listTypeOrName, itemTypeOrName, keepMarks, attributes = {}) => ({ editor: editor2, tr: tr2, state, dispatch, chain, commands, can }) => {
-  const { extensions, splittableMarks } = editor2.extensionManager;
+var toggleList = (listTypeOrName, itemTypeOrName, keepMarks, attributes = {}) => ({ editor, tr: tr2, state, dispatch, chain, commands, can }) => {
+  const { extensions, splittableMarks } = editor.extensionManager;
   const listType = getNodeType(listTypeOrName, state.schema);
   const itemType = getNodeType(itemTypeOrName, state.schema);
   const { selection, storedMarks } = state;
@@ -14676,8 +14676,8 @@ var inputRuleMatcherHandler = (text, find2) => {
 };
 function run(config) {
   var _a;
-  const { editor: editor2, from: from2, to, text, rules, plugin } = config;
-  const { view } = editor2;
+  const { editor, from: from2, to, text, rules, plugin } = config;
+  const { view } = editor;
   if (view.composing) {
     return false;
   }
@@ -14709,7 +14709,7 @@ function run(config) {
       to
     };
     const { commands, chain, can } = new CommandManager({
-      editor: editor2,
+      editor,
       state
     });
     const handler = rule.handler({
@@ -14737,7 +14737,7 @@ function run(config) {
   return matched;
 }
 function inputRulesPlugin(props) {
-  const { editor: editor2, rules } = props;
+  const { editor, rules } = props;
   const plugin = new Plugin({
     state: {
       init() {
@@ -14761,7 +14761,7 @@ function inputRulesPlugin(props) {
             const { from: from2 } = simulatedInputMeta;
             const to = from2 + text.length;
             run({
-              editor: editor2,
+              editor,
               from: from2,
               to,
               text,
@@ -14776,7 +14776,7 @@ function inputRulesPlugin(props) {
     props: {
       handleTextInput(view, from2, to, text) {
         return run({
-          editor: editor2,
+          editor,
           from: from2,
           to,
           text,
@@ -14790,7 +14790,7 @@ function inputRulesPlugin(props) {
             const { $cursor } = view.state.selection;
             if ($cursor) {
               run({
-                editor: editor2,
+                editor,
                 from: $cursor.pos,
                 to: $cursor.pos,
                 text: "",
@@ -14811,7 +14811,7 @@ function inputRulesPlugin(props) {
         const { $cursor } = view.state.selection;
         if ($cursor) {
           return run({
-            editor: editor2,
+            editor,
             from: $cursor.pos,
             to: $cursor.pos,
             text: "\n",
@@ -14915,9 +14915,9 @@ var Mark2 = class _Mark extends Extendable {
     const resolvedConfig = typeof config === "function" ? config() : config;
     return new _Mark(resolvedConfig);
   }
-  static handleExit({ editor: editor2, mark }) {
-    const { tr: tr2 } = editor2.state;
-    const currentPos = editor2.state.selection.$from;
+  static handleExit({ editor, mark }) {
+    const { tr: tr2 } = editor.state;
+    const currentPos = editor.state.selection.$from;
     const isAtEnd = currentPos.pos === currentPos.end();
     if (isAtEnd) {
       const currentMarks = currentPos.marks();
@@ -14930,7 +14930,7 @@ var Mark2 = class _Mark extends Extendable {
         tr2.removeStoredMark(removeMark2);
       }
       tr2.insertText(" ", currentPos.pos);
-      editor2.view.dispatch(tr2);
+      editor.view.dispatch(tr2);
       return true;
     }
     return false;
@@ -14975,9 +14975,9 @@ var pasteRuleMatcherHandler = (text, find2, event) => {
   });
 };
 function run2(config) {
-  const { editor: editor2, state, from: from2, to, rule, pasteEvent, dropEvent } = config;
+  const { editor, state, from: from2, to, rule, pasteEvent, dropEvent } = config;
   const { commands, chain, can } = new CommandManager({
-    editor: editor2,
+    editor,
     state
   });
   const handlers2 = [];
@@ -15030,7 +15030,7 @@ var createClipboardPasteEvent = (text) => {
   return event;
 };
 function pasteRulesPlugin(props) {
-  const { editor: editor2, rules } = props;
+  const { editor, rules } = props;
   let dragSourceElement = null;
   let isPastedFromProseMirror = false;
   let isDroppedFromProseMirror = false;
@@ -15054,7 +15054,7 @@ function pasteRulesPlugin(props) {
       transaction: tr2
     });
     const handler = run2({
-      editor: editor2,
+      editor,
       state: chainableState,
       from: Math.max(from2 - 1, 0),
       to: to.b - 1,
@@ -15081,7 +15081,7 @@ function pasteRulesPlugin(props) {
           var _a;
           dragSourceElement = ((_a = view.dom.parentElement) == null ? void 0 : _a.contains(event.target)) ? view.dom.parentElement : null;
           if (dragSourceElement) {
-            tiptapDragFromOtherEditor = editor2;
+            tiptapDragFromOtherEditor = editor;
           }
         };
         const handleDragend = () => {
@@ -15170,12 +15170,12 @@ function pasteRulesPlugin(props) {
   return plugins;
 }
 var ExtensionManager = class {
-  constructor(extensions, editor2) {
+  constructor(extensions, editor) {
     this.splittableMarks = [];
-    this.editor = editor2;
+    this.editor = editor;
     this.baseExtensions = extensions;
     this.extensions = resolveExtensions(extensions);
-    this.schema = getSchemaByResolvedExtensions(this.extensions, editor2);
+    this.schema = getSchemaByResolvedExtensions(this.extensions, editor);
     this.setupExtensions();
   }
   /**
@@ -15206,14 +15206,14 @@ var ExtensionManager = class {
    * @returns An array of Prosemirror plugins
    */
   get plugins() {
-    const { editor: editor2 } = this;
+    const { editor } = this;
     const extensions = sortExtensions([...this.extensions].reverse());
     const allPlugins = extensions.flatMap((extension) => {
       const context = {
         name: extension.name,
         options: extension.options,
         storage: this.editor.extensionStorage[extension.name],
-        editor: editor2,
+        editor,
         type: getSchemaTypeByName(extension.name, this.schema)
       };
       const plugins = [];
@@ -15224,12 +15224,12 @@ var ExtensionManager = class {
       );
       let defaultBindings = {};
       if (extension.type === "mark" && getExtensionField(extension, "exitable", context)) {
-        defaultBindings.ArrowRight = () => Mark2.handleExit({ editor: editor2, mark: extension });
+        defaultBindings.ArrowRight = () => Mark2.handleExit({ editor, mark: extension });
       }
       if (addKeyboardShortcuts) {
         const bindings = Object.fromEntries(
           Object.entries(addKeyboardShortcuts()).map(([shortcut, method]) => {
-            return [shortcut, () => method({ editor: editor2 })];
+            return [shortcut, () => method({ editor })];
           })
         );
         defaultBindings = { ...defaultBindings, ...bindings };
@@ -15237,11 +15237,11 @@ var ExtensionManager = class {
       const keyMapPlugin = keymap(defaultBindings);
       plugins.push(keyMapPlugin);
       const addInputRules = getExtensionField(extension, "addInputRules", context);
-      if (isExtensionRulesEnabled(extension, editor2.options.enableInputRules) && addInputRules) {
+      if (isExtensionRulesEnabled(extension, editor.options.enableInputRules) && addInputRules) {
         const rules = addInputRules();
         if (rules && rules.length) {
           const inputResult = inputRulesPlugin({
-            editor: editor2,
+            editor,
             rules
           });
           const inputPlugins = Array.isArray(inputResult) ? inputResult : [inputResult];
@@ -15249,10 +15249,10 @@ var ExtensionManager = class {
         }
       }
       const addPasteRules = getExtensionField(extension, "addPasteRules", context);
-      if (isExtensionRulesEnabled(extension, editor2.options.enablePasteRules) && addPasteRules) {
+      if (isExtensionRulesEnabled(extension, editor.options.enablePasteRules) && addPasteRules) {
         const rules = addPasteRules();
         if (rules && rules.length) {
-          const pasteRules = pasteRulesPlugin({ editor: editor2, rules });
+          const pasteRules = pasteRulesPlugin({ editor, rules });
           plugins.push(...pasteRules);
         }
       }
@@ -15281,7 +15281,7 @@ var ExtensionManager = class {
    * @returns An object with all node views where the key is the node name and the value is the node view function
    */
   get nodeViews() {
-    const { editor: editor2 } = this;
+    const { editor } = this;
     const { nodeExtensions } = splitExtensions(this.extensions);
     return Object.fromEntries(
       nodeExtensions.filter((extension) => !!getExtensionField(extension, "addNodeView")).map((extension) => {
@@ -15290,7 +15290,7 @@ var ExtensionManager = class {
           name: extension.name,
           options: extension.options,
           storage: this.editor.extensionStorage[extension.name],
-          editor: editor2,
+          editor,
           type: getNodeType(extension.name, this.schema)
         };
         const addNodeView = getExtensionField(extension, "addNodeView", context);
@@ -15311,7 +15311,7 @@ var ExtensionManager = class {
             decorations,
             innerDecorations,
             // tiptap-specific
-            editor: editor2,
+            editor,
             extension,
             HTMLAttributes
           });
@@ -15326,14 +15326,14 @@ var ExtensionManager = class {
    * @returns A composed dispatch function
    */
   dispatchTransaction(baseDispatch) {
-    const { editor: editor2 } = this;
+    const { editor } = this;
     const extensions = sortExtensions([...this.extensions].reverse());
     return extensions.reduceRight((next, extension) => {
       const context = {
         name: extension.name,
         options: extension.options,
         storage: this.editor.extensionStorage[extension.name],
-        editor: editor2,
+        editor,
         type: getSchemaTypeByName(extension.name, this.schema)
       };
       const dispatchTransaction = getExtensionField(
@@ -15355,7 +15355,7 @@ var ExtensionManager = class {
    * @returns A composed transform function that chains all extension transforms
    */
   transformPastedHTML(baseTransform) {
-    const { editor: editor2 } = this;
+    const { editor } = this;
     const extensions = sortExtensions([...this.extensions]);
     return extensions.reduce(
       (transform, extension) => {
@@ -15363,7 +15363,7 @@ var ExtensionManager = class {
           name: extension.name,
           options: extension.options,
           storage: this.editor.extensionStorage[extension.name],
-          editor: editor2,
+          editor,
           type: getSchemaTypeByName(extension.name, this.schema)
         };
         const extensionTransform = getExtensionField(
@@ -15383,7 +15383,7 @@ var ExtensionManager = class {
     );
   }
   get markViews() {
-    const { editor: editor2 } = this;
+    const { editor } = this;
     const { markExtensions } = splitExtensions(this.extensions);
     return Object.fromEntries(
       markExtensions.filter((extension) => !!getExtensionField(extension, "addMarkView")).map((extension) => {
@@ -15392,7 +15392,7 @@ var ExtensionManager = class {
           name: extension.name,
           options: extension.options,
           storage: this.editor.extensionStorage[extension.name],
-          editor: editor2,
+          editor,
           type: getMarkType(extension.name, this.schema)
         };
         const addMarkView = getExtensionField(extension, "addMarkView", context);
@@ -15407,11 +15407,11 @@ var ExtensionManager = class {
             view,
             inline,
             // tiptap-specific
-            editor: editor2,
+            editor,
             extension,
             HTMLAttributes,
             updateAttributes: (attrs) => {
-              updateMarkViewAttributes(mark, editor2, attrs);
+              updateMarkViewAttributes(mark, editor, attrs);
             }
           });
         };
@@ -15533,8 +15533,8 @@ var ClipboardTextSerializer = Extension.create({
         key: new PluginKey("clipboardTextSerializer"),
         props: {
           clipboardTextSerializer: () => {
-            const { editor: editor2 } = this;
-            const { state, schema } = editor2;
+            const { editor } = this;
+            const { state, schema } = editor;
             const { doc: doc3, selection } = state;
             const { ranges } = selection;
             const from2 = Math.min(...ranges.map((range2) => range2.$from.pos));
@@ -15667,21 +15667,21 @@ var focusEventsPluginKey = new PluginKey("focusEvents");
 var FocusEvents = Extension.create({
   name: "focusEvents",
   addProseMirrorPlugins() {
-    const { editor: editor2 } = this;
+    const { editor } = this;
     return [
       new Plugin({
         key: focusEventsPluginKey,
         props: {
           handleDOMEvents: {
             focus: (view, event) => {
-              editor2.isFocused = true;
-              const transaction = editor2.state.tr.setMeta("focus", { event }).setMeta("addToHistory", false);
+              editor.isFocused = true;
+              const transaction = editor.state.tr.setMeta("focus", { event }).setMeta("addToHistory", false);
               view.dispatch(transaction);
               return false;
             },
             blur: (view, event) => {
-              editor2.isFocused = false;
-              const transaction = editor2.state.tr.setMeta("blur", { event }).setMeta("addToHistory", false);
+              editor.isFocused = false;
+              const transaction = editor.state.tr.setMeta("blur", { event }).setMeta("addToHistory", false);
               view.dispatch(transaction);
               return false;
             }
@@ -15893,12 +15893,12 @@ var TextDirection = Extension.create({
   }
 });
 var NodePos = class _NodePos {
-  constructor(pos, editor2, isBlock = false, node = null) {
+  constructor(pos, editor, isBlock = false, node = null) {
     this.currentNode = null;
     this.actualDepth = null;
     this.isBlock = isBlock;
     this.resolvedPos = pos;
-    this.editor = editor2;
+    this.editor = editor;
     this.currentNode = node;
   }
   get name() {
@@ -17328,8 +17328,8 @@ ${indentedChild}`;
   }
   return output;
 }
-function updateMarkViewAttributes(checkMark, editor2, attrs = {}) {
-  const { state } = editor2;
+function updateMarkViewAttributes(checkMark, editor, attrs = {}) {
+  const { state } = editor;
   const { doc: doc3, tr: tr2 } = state;
   const thisMark = checkMark;
   doc3.descendants((node, pos) => {
@@ -17361,7 +17361,7 @@ function updateMarkViewAttributes(checkMark, editor2, attrs = {}) {
     }
   });
   if (tr2.docChanged) {
-    editor2.view.dispatch(tr2);
+    editor.view.dispatch(tr2);
   }
 }
 var Node3 = class _Node extends Extendable {
@@ -17778,13 +17778,13 @@ var CodeBlock = Node3.create({
         return false;
       },
       // handle tab indentation
-      Tab: ({ editor: editor2 }) => {
+      Tab: ({ editor }) => {
         var _a;
         if (!this.options.enableTabIndentation) {
           return false;
         }
         const tabSize = (_a = this.options.tabSize) != null ? _a : DEFAULT_TAB_SIZE;
-        const { state } = editor2;
+        const { state } = editor;
         const { selection } = state;
         const { $from, empty: empty2 } = selection;
         if ($from.parent.type !== this.type) {
@@ -17792,9 +17792,9 @@ var CodeBlock = Node3.create({
         }
         const indent = " ".repeat(tabSize);
         if (empty2) {
-          return editor2.commands.insertContent(indent);
+          return editor.commands.insertContent(indent);
         }
-        return editor2.commands.command(({ tr: tr2 }) => {
+        return editor.commands.command(({ tr: tr2 }) => {
           const { from: from2, to } = selection;
           const text = state.doc.textBetween(from2, to, "\n", "\n");
           const lines = text.split("\n");
@@ -17804,20 +17804,20 @@ var CodeBlock = Node3.create({
         });
       },
       // handle shift+tab reverse indentation
-      "Shift-Tab": ({ editor: editor2 }) => {
+      "Shift-Tab": ({ editor }) => {
         var _a;
         if (!this.options.enableTabIndentation) {
           return false;
         }
         const tabSize = (_a = this.options.tabSize) != null ? _a : DEFAULT_TAB_SIZE;
-        const { state } = editor2;
+        const { state } = editor;
         const { selection } = state;
         const { $from, empty: empty2 } = selection;
         if ($from.parent.type !== this.type) {
           return false;
         }
         if (empty2) {
-          return editor2.commands.command(({ tr: tr2 }) => {
+          return editor.commands.command(({ tr: tr2 }) => {
             var _a2;
             const { pos } = $from;
             const codeBlockStart = $from.start();
@@ -17852,7 +17852,7 @@ var CodeBlock = Node3.create({
             return true;
           });
         }
-        return editor2.commands.command(({ tr: tr2 }) => {
+        return editor.commands.command(({ tr: tr2 }) => {
           const { from: from2, to } = selection;
           const text = state.doc.textBetween(from2, to, "\n", "\n");
           const lines = text.split("\n");
@@ -17867,11 +17867,11 @@ var CodeBlock = Node3.create({
         });
       },
       // exit node on triple enter
-      Enter: ({ editor: editor2 }) => {
+      Enter: ({ editor }) => {
         if (!this.options.exitOnTripleEnter) {
           return false;
         }
-        const { state } = editor2;
+        const { state } = editor;
         const { selection } = state;
         const { $from, empty: empty2 } = selection;
         if (!empty2 || $from.parent.type !== this.type) {
@@ -17882,17 +17882,17 @@ var CodeBlock = Node3.create({
         if (!isAtEnd || !endsWithDoubleNewline) {
           return false;
         }
-        return editor2.chain().command(({ tr: tr2 }) => {
+        return editor.chain().command(({ tr: tr2 }) => {
           tr2.delete($from.pos - 2, $from.pos);
           return true;
         }).exitCode().run();
       },
       // exit node on arrow down
-      ArrowDown: ({ editor: editor2 }) => {
+      ArrowDown: ({ editor }) => {
         if (!this.options.exitOnArrowDown) {
           return false;
         }
-        const { state } = editor2;
+        const { state } = editor;
         const { selection, doc: doc3 } = state;
         const { $from, empty: empty2 } = selection;
         if (!empty2 || $from.parent.type !== this.type) {
@@ -17908,12 +17908,12 @@ var CodeBlock = Node3.create({
         }
         const nodeAfter = doc3.nodeAt(after);
         if (nodeAfter) {
-          return editor2.commands.command(({ tr: tr2 }) => {
+          return editor.commands.command(({ tr: tr2 }) => {
             tr2.setSelection(Selection.near(doc3.resolve(after)));
             return true;
           });
         }
-        return editor2.commands.exitCode();
+        return editor.commands.exitCode();
       }
     };
   },
@@ -18017,7 +18017,7 @@ var HardBreak = Node3.create({
   },
   addCommands() {
     return {
-      setHardBreak: () => ({ commands, chain, state, editor: editor2 }) => {
+      setHardBreak: () => ({ commands, chain, state, editor }) => {
         return commands.first([
           () => commands.exitCode(),
           () => commands.command(() => {
@@ -18026,7 +18026,7 @@ var HardBreak = Node3.create({
               return false;
             }
             const { keepMarks } = this.options;
-            const { splittableMarks } = editor2.extensionManager;
+            const { splittableMarks } = editor.extensionManager;
             const marks = storedMarks || selection.$to.parentOffset && selection.$from.marks();
             return chain().insertContent({ type: this.name }).command(({ tr: tr2, dispatch }) => {
               if (dispatch && marks && keepMarks) {
@@ -20103,16 +20103,16 @@ var listItemHasSubList = (typeOrName, state, node) => {
   });
   return hasSubList;
 };
-var handleBackspace = (editor2, name, parentListTypes) => {
-  if (editor2.commands.undoInputRule()) {
+var handleBackspace = (editor, name, parentListTypes) => {
+  if (editor.commands.undoInputRule()) {
     return true;
   }
-  if (editor2.state.selection.from !== editor2.state.selection.to) {
+  if (editor.state.selection.from !== editor.state.selection.to) {
     return false;
   }
-  if (!isNodeActive(editor2.state, name) && hasListBefore(editor2.state, name, parentListTypes)) {
-    const { $anchor } = editor2.state.selection;
-    const $listPos = editor2.state.doc.resolve($anchor.before() - 1);
+  if (!isNodeActive(editor.state, name) && hasListBefore(editor.state, name, parentListTypes)) {
+    const { $anchor } = editor.state.selection;
+    const $listPos = editor.state.doc.resolve($anchor.before() - 1);
     const listDescendants = [];
     $listPos.node().descendants((node, pos) => {
       if (node.type.name === name) {
@@ -20123,26 +20123,26 @@ var handleBackspace = (editor2, name, parentListTypes) => {
     if (!lastItem) {
       return false;
     }
-    const $lastItemPos = editor2.state.doc.resolve($listPos.start() + lastItem.pos + 1);
-    return editor2.chain().cut({ from: $anchor.start() - 1, to: $anchor.end() + 1 }, $lastItemPos.end()).joinForward().run();
+    const $lastItemPos = editor.state.doc.resolve($listPos.start() + lastItem.pos + 1);
+    return editor.chain().cut({ from: $anchor.start() - 1, to: $anchor.end() + 1 }, $lastItemPos.end()).joinForward().run();
   }
-  if (!isNodeActive(editor2.state, name)) {
+  if (!isNodeActive(editor.state, name)) {
     return false;
   }
-  if (!isAtStartOfNode(editor2.state)) {
+  if (!isAtStartOfNode(editor.state)) {
     return false;
   }
-  const listItemPos = findListItemPos(name, editor2.state);
+  const listItemPos = findListItemPos(name, editor.state);
   if (!listItemPos) {
     return false;
   }
-  const $prev = editor2.state.doc.resolve(listItemPos.$pos.pos - 2);
+  const $prev = editor.state.doc.resolve(listItemPos.$pos.pos - 2);
   const prevNode = $prev.node(listItemPos.depth);
-  const previousListItemHasSubList = listItemHasSubList(name, editor2.state, prevNode);
-  if (hasListItemBefore(name, editor2.state) && !previousListItemHasSubList) {
-    return editor2.commands.joinItemBackward();
+  const previousListItemHasSubList = listItemHasSubList(name, editor.state, prevNode);
+  if (hasListItemBefore(name, editor.state) && !previousListItemHasSubList) {
+    return editor.commands.joinItemBackward();
   }
-  return editor2.chain().liftListItem(name).run();
+  return editor.chain().liftListItem(name).run();
 };
 var nextListIsDeeper = (typeOrName, state) => {
   const listDepth = getNextListDepth(typeOrName, state);
@@ -20166,25 +20166,25 @@ var nextListIsHigher = (typeOrName, state) => {
   }
   return false;
 };
-var handleDelete = (editor2, name) => {
-  if (!isNodeActive(editor2.state, name)) {
+var handleDelete = (editor, name) => {
+  if (!isNodeActive(editor.state, name)) {
     return false;
   }
-  if (!isAtEndOfNode(editor2.state, name)) {
+  if (!isAtEndOfNode(editor.state, name)) {
     return false;
   }
-  const { selection } = editor2.state;
+  const { selection } = editor.state;
   const { $from, $to } = selection;
   if (!selection.empty && $from.sameParent($to)) {
     return false;
   }
-  if (nextListIsDeeper(name, editor2.state)) {
-    return editor2.chain().focus(editor2.state.selection.from + 4).lift(name).joinBackward().run();
+  if (nextListIsDeeper(name, editor.state)) {
+    return editor.chain().focus(editor.state.selection.from + 4).lift(name).joinBackward().run();
   }
-  if (nextListIsHigher(name, editor2.state)) {
-    return editor2.chain().joinForward().joinBackward().run();
+  if (nextListIsHigher(name, editor.state)) {
+    return editor.chain().joinForward().joinBackward().run();
   }
-  return editor2.commands.joinItemForward();
+  return editor.commands.joinItemForward();
 };
 var hasListItemAfter = (typeOrName, state) => {
   var _a;
@@ -20216,49 +20216,49 @@ var ListKeymap = Extension.create({
   },
   addKeyboardShortcuts() {
     return {
-      Delete: ({ editor: editor2 }) => {
+      Delete: ({ editor }) => {
         let handled = false;
         this.options.listTypes.forEach(({ itemName }) => {
-          if (editor2.state.schema.nodes[itemName] === void 0) {
+          if (editor.state.schema.nodes[itemName] === void 0) {
             return;
           }
-          if (handleDelete(editor2, itemName)) {
+          if (handleDelete(editor, itemName)) {
             handled = true;
           }
         });
         return handled;
       },
-      "Mod-Delete": ({ editor: editor2 }) => {
+      "Mod-Delete": ({ editor }) => {
         let handled = false;
         this.options.listTypes.forEach(({ itemName }) => {
-          if (editor2.state.schema.nodes[itemName] === void 0) {
+          if (editor.state.schema.nodes[itemName] === void 0) {
             return;
           }
-          if (handleDelete(editor2, itemName)) {
+          if (handleDelete(editor, itemName)) {
             handled = true;
           }
         });
         return handled;
       },
-      Backspace: ({ editor: editor2 }) => {
+      Backspace: ({ editor }) => {
         let handled = false;
         this.options.listTypes.forEach(({ itemName, wrapperNames }) => {
-          if (editor2.state.schema.nodes[itemName] === void 0) {
+          if (editor.state.schema.nodes[itemName] === void 0) {
             return;
           }
-          if (handleBackspace(editor2, itemName, wrapperNames)) {
+          if (handleBackspace(editor, itemName, wrapperNames)) {
             handled = true;
           }
         });
         return handled;
       },
-      "Mod-Backspace": ({ editor: editor2 }) => {
+      "Mod-Backspace": ({ editor }) => {
         let handled = false;
         this.options.listTypes.forEach(({ itemName, wrapperNames }) => {
-          if (editor2.state.schema.nodes[itemName] === void 0) {
+          if (editor.state.schema.nodes[itemName] === void 0) {
             return;
           }
-          if (handleBackspace(editor2, itemName, wrapperNames)) {
+          if (handleBackspace(editor, itemName, wrapperNames)) {
             handled = true;
           }
         });
@@ -20623,7 +20623,7 @@ var TaskItem = Node3.create({
     };
   },
   addNodeView() {
-    return ({ node, HTMLAttributes, getPos, editor: editor2 }) => {
+    return ({ node, HTMLAttributes, getPos, editor }) => {
       const listItem = document.createElement("li");
       const checkboxWrapper = document.createElement("label");
       const checkboxStyler = document.createElement("span");
@@ -20638,13 +20638,13 @@ var TaskItem = Node3.create({
       checkbox.type = "checkbox";
       checkbox.addEventListener("mousedown", (event) => event.preventDefault());
       checkbox.addEventListener("change", (event) => {
-        if (!editor2.isEditable && !this.options.onReadOnlyChecked) {
+        if (!editor.isEditable && !this.options.onReadOnlyChecked) {
           checkbox.checked = !checkbox.checked;
           return;
         }
         const { checked } = event.target;
-        if (editor2.isEditable && typeof getPos === "function") {
-          editor2.chain().focus(void 0, { scrollIntoView: false }).command(({ tr: tr2 }) => {
+        if (editor.isEditable && typeof getPos === "function") {
+          editor.chain().focus(void 0, { scrollIntoView: false }).command(({ tr: tr2 }) => {
             const position = getPos();
             if (typeof position !== "number") {
               return false;
@@ -20657,7 +20657,7 @@ var TaskItem = Node3.create({
             return true;
           }).run();
         }
-        if (!editor2.isEditable && this.options.onReadOnlyChecked) {
+        if (!editor.isEditable && this.options.onReadOnlyChecked) {
           if (!this.options.onReadOnlyChecked(node, checked)) {
             checkbox.checked = !checkbox.checked;
           }
@@ -22190,13 +22190,13 @@ var Selection2 = Extension.create({
     };
   },
   addProseMirrorPlugins() {
-    const { editor: editor2, options } = this;
+    const { editor, options } = this;
     return [
       new Plugin({
         key: new PluginKey("selection"),
         props: {
           decorations(state) {
-            if (state.selection.empty || editor2.isFocused || !editor2.isEditable || isNodeSelection(state.selection) || editor2.view.dragging) {
+            if (state.selection.empty || editor.isFocused || !editor.isEditable || isNodeSelection(state.selection) || editor.view.dragging) {
               return null;
             }
             return DecorationSet.create(state.doc, [
@@ -22369,145 +22369,207 @@ var StarterKit = Extension.create({
 });
 var index_default = StarterKit;
 
-// common.ts
-var QuerySelector = (sel, root = document) => root.querySelector(sel);
-var MustQuerySelector = (sel, root = document) => {
-  const v = QuerySelector(sel, root);
-  if (!v) {
-    throw new Error(`${sel} not found on ${root.nodeName}`);
+// journal-editor.ts
+var FLAG_BOLD = 1;
+var FLAG_ITALIC = 2;
+var FLAG_UNDERLINE = 4;
+var FLAG_STRIKETHROUGH = 8;
+var FLAG_LINK = 16;
+function imageStyles(width, height, crop) {
+  const [top, right, bottom, left] = crop;
+  let xFraction = 1 - left - right;
+  let yFraction = 1 - top - bottom;
+  if (xFraction <= 0) xFraction = 1;
+  if (yFraction <= 0) yFraction = 1;
+  const scaleX = 100 / xFraction;
+  const scaleY = 100 / yFraction;
+  const leftPct = -left * scaleX;
+  const topPct = -top * scaleY;
+  return {
+    container: `width: ${Math.round(width)}px; height: ${Math.round(height)}px; overflow: hidden; position: relative`,
+    img: `position: absolute; width: ${scaleX}%; height: ${scaleY}%; left: ${leftPct}%; top: ${topPct}%; max-width: none`
+  };
+}
+var JournalImage = Node3.create({
+  name: "image",
+  inline: true,
+  group: "inline",
+  atom: true,
+  addAttributes() {
+    return {
+      src: { default: null },
+      alt: { default: null },
+      width: { default: 0 },
+      height: { default: 0 },
+      crop: { default: [0, 0, 0, 0] }
+    };
+  },
+  parseHTML() {
+    return [{ tag: "a.journal-image-frame" }];
+  },
+  renderHTML({ HTMLAttributes }) {
+    const { src, alt, width, height, crop } = HTMLAttributes;
+    const styles = imageStyles(width ?? 0, height ?? 0, crop ?? [0, 0, 0, 0]);
+    return [
+      "a",
+      {
+        href: src,
+        "data-lightbox": "user-files",
+        class: "user-image-link journal-image-frame d-block",
+        style: styles.container
+      },
+      [
+        "img",
+        {
+          src: src ? `${src}?variant=Medium` : src,
+          class: "user-image dark-on-hover",
+          style: styles.img,
+          alt: alt ?? ""
+        }
+      ]
+    ];
   }
-  return v;
-};
-var QuerySelectorAll = (sel, root = document) => Array.from(root.querySelectorAll(sel));
-var languageSelect = QuerySelector("#language-select");
-if (languageSelect) {
-  languageSelect.addEventListener("change", () => {
-    languageSelect.form?.submit();
+});
+function textToTiptap(text) {
+  const marks = [];
+  if (text.Flags & FLAG_BOLD) marks.push({ type: "bold" });
+  if (text.Flags & FLAG_ITALIC) marks.push({ type: "italic" });
+  if (text.Flags & FLAG_UNDERLINE) marks.push({ type: "underline" });
+  if (text.Flags & FLAG_STRIKETHROUGH) marks.push({ type: "strike" });
+  if (text.Flags & FLAG_LINK)
+    marks.push({ type: "link", attrs: { href: text.LinkURL } });
+  const node = { type: "text", text: text.Content };
+  if (marks.length > 0) node.marks = marks;
+  return node;
+}
+function paraElementsToTiptap(elements) {
+  return (elements ?? []).flatMap((elem) => {
+    if (elem.Type === "text") return [textToTiptap(elem.Value)];
+    if (elem.Type === "image") {
+      const img = elem.Value;
+      return [
+        {
+          type: "image",
+          attrs: {
+            src: img.URL,
+            alt: img.Description || img.Title || "",
+            width: img.Width,
+            height: img.Height,
+            crop: img.Crop ?? [0, 0, 0, 0]
+          }
+        }
+      ];
+    }
+    return [];
   });
 }
-QuerySelectorAll(".closer").forEach(
-  (el) => el.addEventListener("click", () => {
-    el.parentElement?.style.setProperty("display", "none");
-  })
-);
-
-// editor2.ts
-var host = MustQuerySelector("#editorjs");
-var raw = host.dataset.content ?? "";
-var pageID = host.dataset.pageId;
-if (!pageID) throw new Error("pageId missing");
-var initial = "";
-try {
-  const parsed = JSON.parse(raw);
-  initial = parsed.content ?? "";
-} catch {
+function paragraphToTiptap(para) {
+  const content = paraElementsToTiptap(para.Elements);
+  if (para.HeadingLevel > 0) {
+    return { type: "heading", attrs: { level: para.HeadingLevel }, content };
+  }
+  return { type: "paragraph", content };
 }
-var editor = new Editor({
-  element: host,
-  extensions: [index_default],
-  autofocus: true,
-  content: initial,
-  editorProps: {
-    attributes: {
-      spellcheck: "false"
+function listToTiptap(list) {
+  const items = [];
+  for (const item of list.Items) {
+    if (item.Type === "paragraph") {
+      items.push({
+        type: "listItem",
+        content: [paragraphToTiptap(item.Value)]
+      });
+    } else if (item.Type === "list") {
+      const nested = listToTiptap(item.Value);
+      if (items.length > 0) {
+        items[items.length - 1].content.push(nested);
+      } else {
+        items.push({ type: "listItem", content: [nested] });
+      }
     }
   }
-});
-var buttonContainer = MustQuerySelector(
-  ".editor-toolbar-buttons"
-);
-var addButton = (iconClass, isActive2, action) => {
-  const button = document.createElement("button");
-  const icon = document.createElement("i");
-  icon.className = iconClass;
-  button.appendChild(icon);
-  button.addEventListener("click", action);
-  editor.on("selectionUpdate", () => {
-    button.classList.toggle("active", isActive2());
+  return { type: list.Ordered ? "orderedList" : "bulletList", content: items };
+}
+function documentToTiptap(content) {
+  const nodes = content.flatMap((elem) => {
+    if (elem.Type === "paragraph")
+      return [paragraphToTiptap(elem.Value)];
+    if (elem.Type === "list") return [listToTiptap(elem.Value)];
+    return [];
   });
-  buttonContainer.appendChild(button);
-};
-var printDocument = () => {
-  const html = editor.getHTML();
-  const win = window.open("", "_blank");
-  if (!win) return;
-  win.document.write(`
-    <html>
-      <head>
-        <title>Document</title>
-        <style>
-          @page { margin: 1.5cm; }
-          body {
-            font-family: "Helvetica Neue", Arial, sans-serif;
-            font-size: 12.5px;
-            line-height: 1.45;
-            color: #222;
-            margin: 0;
-          }
-          h1,h2,h3,h4 { font-weight: 600; margin: 0 0 10px; }
-          h1 { font-size: 22px }
-          h2 { font-size: 17px }
-          h3 { font-size: 15px }
-          h4 { font-size: 13px }
-          p { margin: 0 0 8px }
-          ul,ol { margin: 0 0 8px 18px }
-          hr { border: none; border-top: 1px solid #ccc; margin: 14px 0 }
-        </style>
-      </head>
-      <body>${html}</body>
-    </html>
-  `);
-  win.document.close();
-  win.focus();
-  win.print();
-};
-addButton(
-  "fa-solid fa-bold",
-  () => editor.isActive("bold"),
-  () => editor.chain().focus().toggleBold().run()
-);
-addButton(
-  "fa-solid fa-italic",
-  () => editor.isActive("italic"),
-  () => editor.chain().focus().toggleItalic().run()
-);
-addButton(
-  "fa-solid fa-heading",
-  () => editor.isActive("heading", { level: 1 }),
-  () => editor.chain().focus().toggleHeading({ level: 1 }).run()
-);
-addButton(
-  "fa-solid fa-list-ul",
-  () => editor.isActive("bulletList"),
-  () => editor.chain().focus().toggleBulletList().run()
-);
-addButton(
-  "fa-solid fa-list-ol",
-  () => editor.isActive("orderedList"),
-  () => editor.chain().focus().toggleOrderedList().run()
-);
-addButton("fa-solid fa-file-pdf", () => false, printDocument);
-var statusEl = MustQuerySelector("#editor-status");
-var saveTimer = null;
-var showEllipsis = () => {
-  statusEl.className = "editor-status editor-status-ellipsis";
-  statusEl.innerHTML = "";
-};
-var showCheckmark = () => {
-  statusEl.className = "editor-status";
-  statusEl.innerHTML = '<i class="fa-solid fa-check"></i>';
-};
-var saveContent = async () => {
-  showEllipsis();
-  await fetch(`/wiki/save/${pageID}`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ content: editor.getJSON() })
+  return { type: "doc", content: nodes };
+}
+var host = document.querySelector("#journal-editor");
+if (host) {
+  const url = host.dataset.url;
+  if (!url) throw new Error("data-url missing on #journal-editor");
+  fetch(url).then((r) => r.json()).then((doc3) => {
+    const editor = new Editor({
+      element: host,
+      extensions: [
+        index_default.configure({
+          paragraph: { HTMLAttributes: { class: "journal-paragraph" } },
+          heading: { HTMLAttributes: { class: "journal-paragraph" } },
+          bold: { HTMLAttributes: { class: "journal-bold" } },
+          italic: { HTMLAttributes: { class: "journal-italic" } },
+          strike: { HTMLAttributes: { class: "journal-strikethrough" } },
+          listItem: { HTMLAttributes: { class: "journal-list-item" } }
+        }),
+        JournalImage
+      ],
+      content: documentToTiptap(doc3.Content),
+      editorProps: { attributes: { spellcheck: "false" } }
+    });
+    const toolbar = document.querySelector(
+      "#journal-editor-toolbar"
+    );
+    if (!toolbar) return;
+    const addButton = (iconClass, isActive2, action) => {
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.appendChild(
+        Object.assign(document.createElement("i"), { className: iconClass })
+      );
+      btn.addEventListener("click", action);
+      editor.on(
+        "selectionUpdate",
+        () => btn.classList.toggle("active", isActive2())
+      );
+      toolbar.appendChild(btn);
+    };
+    addButton(
+      "fa-solid fa-bold",
+      () => editor.isActive("bold"),
+      () => editor.chain().focus().toggleBold().run()
+    );
+    addButton(
+      "fa-solid fa-italic",
+      () => editor.isActive("italic"),
+      () => editor.chain().focus().toggleItalic().run()
+    );
+    addButton(
+      "fa-solid fa-underline",
+      () => editor.isActive("underline"),
+      () => editor.chain().focus().toggleUnderline().run()
+    );
+    addButton(
+      "fa-solid fa-strikethrough",
+      () => editor.isActive("strike"),
+      () => editor.chain().focus().toggleStrike().run()
+    );
+    addButton(
+      "fa-solid fa-heading",
+      () => editor.isActive("heading", { level: 2 }),
+      () => editor.chain().focus().toggleHeading({ level: 2 }).run()
+    );
+    addButton(
+      "fa-solid fa-list-ul",
+      () => editor.isActive("bulletList"),
+      () => editor.chain().focus().toggleBulletList().run()
+    );
+    addButton(
+      "fa-solid fa-list-ol",
+      () => editor.isActive("orderedList"),
+      () => editor.chain().focus().toggleOrderedList().run()
+    );
   });
-  showCheckmark();
-};
-editor.on("update", () => {
-  showEllipsis();
-  if (saveTimer !== null) clearTimeout(saveTimer);
-  saveTimer = window.setTimeout(saveContent, 750);
-});
+}

@@ -98,6 +98,8 @@ func (h *page) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		if doc, err := document.ParseRawJSON(row.RawJson, row.ImageUrls); err == nil {
 			journal = *doc
 		}
+	}
+	if row, err := h.DB.Q.GetJournalMetadata(ctx, patientData.GoogleID.String); err == nil {
 		journalMeta.Updated = row.Updated.Time
 		journalMeta.FolderID = row.ParentGoogleID.String
 		journalMeta.FolderName = row.ParentGoogleName.String

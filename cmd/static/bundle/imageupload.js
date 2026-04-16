@@ -22276,28 +22276,6 @@ var require_filepond_plugin_image_preview = __commonJS({
   }
 });
 
-// common.ts
-var QuerySelector = (sel, root = document) => root.querySelector(sel);
-var MustQuerySelector = (sel, root = document) => {
-  const v = QuerySelector(sel, root);
-  if (!v) {
-    throw new Error(`${sel} not found on ${root.nodeName}`);
-  }
-  return v;
-};
-var QuerySelectorAll = (sel, root = document) => Array.from(root.querySelectorAll(sel));
-var languageSelect = QuerySelector("#language-select");
-if (languageSelect) {
-  languageSelect.addEventListener("change", () => {
-    languageSelect.form?.submit();
-  });
-}
-QuerySelectorAll(".closer").forEach(
-  (el) => el.addEventListener("click", () => {
-    el.parentElement?.style.setProperty("display", "none");
-  })
-);
-
 // imageupload.ts
 var import_lightbox2 = __toESM(require_lightbox(), 1);
 var FilePond = __toESM(require_filepond(), 1);
@@ -22317,21 +22295,25 @@ FilePond.registerPlugin(
   import_filepond_plugin_image_transform.default,
   import_filepond_plugin_image_preview2.default
 );
-var fileInput = MustQuerySelector("#general-file-uploader");
-var fileSubmit = MustQuerySelector("#general-file-submit");
-FilePond.create(fileInput, {
-  server: "/file/filepond",
-  instantUpload: true,
-  maxFileSize: "50MB",
-  onaddfilestart: (_) => {
-    fileSubmit.disabled = true;
-    fileSubmit.textContent = LN.FilesPleaseWait;
-  },
-  onprocessfiles: () => {
-    fileSubmit.disabled = false;
-    fileSubmit.textContent = LN.GenericSave;
-  }
-});
+var fileInput = document.querySelector("#general-file-uploader");
+var fileSubmit = document.querySelector(
+  "#general-file-submit"
+);
+if (fileInput && fileSubmit) {
+  FilePond.create(fileInput, {
+    server: "/file/filepond",
+    instantUpload: true,
+    maxFileSize: "50MB",
+    onaddfilestart: (_) => {
+      fileSubmit.disabled = true;
+      fileSubmit.textContent = LN.FilesPleaseWait;
+    },
+    onprocessfiles: () => {
+      fileSubmit.disabled = false;
+      fileSubmit.textContent = LN.GenericSave;
+    }
+  });
+}
 import_lightbox2.default.option({
   alwaysShowNavOnTouchDevices: true,
   disableScrolling: true,

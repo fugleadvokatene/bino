@@ -71,5 +71,10 @@ func Routes(
 			Handler: &fetchJournal{DB: db, GDriveWorker: gdriveWorker, Config: config},
 			Cap:     model.CapManageOwnPatients,
 		},
+		{
+			Path:    "GET /patient/{patient}/journal-json",
+			Handler: &journalAPI{DB: db},
+			Cap:     model.CapViewAllActivePatients,
+		},
 	}
 }

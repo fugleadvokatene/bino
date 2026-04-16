@@ -50,9 +50,11 @@ WHERE google_id = @google_id
 ;
 
 -- name: GetJournalMetadata :one
-SELECT updated, parent_google_id, version
-FROM journal
-WHERE google_id = @google_id
+SELECT j.updated, j.parent_google_id, gf.name AS parent_google_name, j.version
+FROM journal AS j
+LEFT JOIN google_folder AS gf
+    ON gf.google_id = j.parent_google_id
+WHERE j.google_id = @google_id
 ;
 
 -- name: GetJournalImageURLs :one

@@ -10,6 +10,7 @@ build({
     'dashboard.ts',
     'sharedscript.ts',
     'editor2.ts',
+    'journal-editor.ts',
     'ff.ts',
     'formerpatients.ts',
     'home.ts',

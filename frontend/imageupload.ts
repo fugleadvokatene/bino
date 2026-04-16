@@ -1,5 +1,3 @@
-import { MustQuerySelector } from './common'
-
 import 'filepond/dist/filepond.css'
 import 'filepond-plugin-image-preview/dist/filepond-plugin-image-preview.css'
 import 'filepond-plugin-image-edit/dist/filepond-plugin-image-edit.css'
@@ -26,22 +24,26 @@ FilePond.registerPlugin(
   FilePondPluginImagePreview
 )
 
-const fileInput = MustQuerySelector<HTMLElement>('#general-file-uploader')
-const fileSubmit = MustQuerySelector<HTMLButtonElement>('#general-file-submit')
+const fileInput = document.querySelector<HTMLElement>('#general-file-uploader')
+const fileSubmit = document.querySelector<HTMLButtonElement>(
+  '#general-file-submit'
+)
 
-FilePond.create(fileInput, {
-  server: '/file/filepond',
-  instantUpload: true,
-  maxFileSize: '50MB',
-  onaddfilestart: (_) => {
-    fileSubmit.disabled = true
-    fileSubmit.textContent = LN.FilesPleaseWait
-  },
-  onprocessfiles: () => {
-    fileSubmit.disabled = false
-    fileSubmit.textContent = LN.GenericSave
-  }
-})
+if (fileInput && fileSubmit) {
+  FilePond.create(fileInput, {
+    server: '/file/filepond',
+    instantUpload: true,
+    maxFileSize: '50MB',
+    onaddfilestart: (_) => {
+      fileSubmit.disabled = true
+      fileSubmit.textContent = LN.FilesPleaseWait
+    },
+    onprocessfiles: () => {
+      fileSubmit.disabled = false
+      fileSubmit.textContent = LN.GenericSave
+    }
+  })
+}
 
 lightbox.option({
   alwaysShowNavOnTouchDevices: true,

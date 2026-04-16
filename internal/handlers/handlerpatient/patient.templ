@@ -8,8 +8,8 @@ import (
 	"github.com/fugleadvokatene/bino/internal/templbase"
 	"github.com/fugleadvokatene/bino/internal/handlers/handlercalendar"
 	"github.com/fugleadvokatene/bino/internal/handlers/handlerevent"
-	"github.com/fugleadvokatene/bino/internal/gdrive/document"
 	"github.com/fugleadvokatene/bino/internal/gdrive/url"
+	"github.com/fugleadvokatene/bino/internal/gdrive/document"
 )
 
 templ PatientPage(
@@ -87,7 +87,15 @@ templ PatientPage(
                     if journalMeta.FolderID != "" {
                         <p>I <a href={templ.URL(url.IDToFolderURL(journalMeta.FolderID))}>{journalMeta.FolderName}</a></p>
                     }
-                    @journal.Templ()
+                    if data.FeatureFlag("Editor") {
+                        <article class="card">
+                            <div class="editor-toolbar-buttons" id="journal-editor-toolbar"></div>
+                            <div class="p-1" id="journal-editor" data-url={patient.URLSuffix("journal-json")}></div>
+                            @templbase.JSModule(data, "journal-editor")
+                        </article>
+                    } else {
+                        @journal.Templ()
+                    }
                 }
             }
 

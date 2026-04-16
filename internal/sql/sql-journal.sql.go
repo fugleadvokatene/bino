@@ -78,21 +78,29 @@ func (q *Queries) GetJournalJSON(ctx context.Context, googleID string) (GetJourn
 }
 
 const getJournalMetadata = `-- name: GetJournalMetadata :one
-SELECT updated, parent_google_id, version
-FROM journal
-WHERE google_id = $1
+SELECT j.updated, j.parent_google_id, gf.name AS parent_google_name, j.version
+FROM journal AS j
+LEFT JOIN google_folder AS gf
+    ON gf.google_id = j.parent_google_id
+WHERE j.google_id = $1
 `
 
 type GetJournalMetadataRow struct {
-	Updated        pgtype.Timestamptz
-	ParentGoogleID pgtype.Text
-	Version        int16
+	Updated          pgtype.Timestamptz
+	ParentGoogleID   pgtype.Text
+	ParentGoogleName pgtype.Text
+	Version          int16
 }
 
 func (q *Queries) GetJournalMetadata(ctx context.Context, googleID string) (GetJournalMetadataRow, error) {
 	row := q.db.QueryRow(ctx, getJournalMetadata, googleID)
 	var i GetJournalMetadataRow
-	err := row.Scan(&i.Updated, &i.ParentGoogleID, &i.Version)
+	err := row.Scan(
+		&i.Updated,
+		&i.ParentGoogleID,
+		&i.ParentGoogleName,
+		&i.Version,
+	)
 	return i, err
 }
 

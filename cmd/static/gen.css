@@ -12326,7 +12326,7 @@ h6 {
 }
 
 .journal-paragraph {
-  margin: 0 0 0 0.3em;
+  margin: 0 0 0 0.3rem;
 }
 
 .journal-paragraph:empty {
@@ -12339,6 +12339,14 @@ h6 {
 
 article p:empty {
   display: none;
+}
+
+br.ProseMirror-trailingBreak {
+  display: none;
+}
+
+.tiptap {
+  padding: 0;
 }
 
 .main {
@@ -12847,8 +12855,9 @@ th.sort-desc .sort-icon {
   line-height: 1.35;
 }
 
-.tiptap {
-  padding: 1em;
+.editor-toolbar-buttons {
+  padding: 0.5em;
+  background: rgb(238, 239, 245);
 }
 
 /*# sourceMappingURL=gen.css.map */
