@@ -23,7 +23,8 @@
         "JournalFolder": "<ID>",
         "TemplateFile": "<ID>",
         "ExtraJournalFolders": [
-        ]
+        ],
+        "JournalEditDebugDir": ""
     },
     "SystemLanguage": 1,
     "SystemBaseURL": "bino.<your-domain>",

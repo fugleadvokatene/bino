@@ -1,71 +1,102 @@
 package document
 
 import (
-	"context"
-	"encoding/json"
-	"log/slog"
-	"os"
-	"path/filepath"
-	"runtime"
-	"strings"
 	"testing"
+
+	"google.golang.org/api/docs/v1"
 )
 
-func TestDocument(t *testing.T) {
-	ctx := context.Background()
-	_ = ctx
-	slog.SetLogLoggerLevel(slog.LevelDebug)
+func makeTextRun(content string) *docs.ParagraphElement {
+	return &docs.ParagraphElement{
+		TextRun: &docs.TextRun{
+			Content:   content,
+			TextStyle: &docs.TextStyle{},
+		},
+	}
+}
 
-	_, file, _, ok := runtime.Caller(0)
-	if !ok {
-		t.Fatal("cannot resolve test file path")
+func makeStructuralElement(content string, style string) *docs.StructuralElement {
+	return &docs.StructuralElement{
+		Paragraph: &docs.Paragraph{
+			ParagraphStyle: &docs.ParagraphStyle{NamedStyleType: style},
+			Elements:       []*docs.ParagraphElement{makeTextRun(content)},
+		},
 	}
+}
 
-	base := filepath.Join(filepath.Dir(file), "test")
-	dir, err := os.OpenRoot(base)
-	if err != nil {
-		t.Fatalf("opening root: %v", err)
+func makeBulletElement(content string, nesting int64) *docs.StructuralElement {
+	return &docs.StructuralElement{
+		Paragraph: &docs.Paragraph{
+			ParagraphStyle: &docs.ParagraphStyle{NamedStyleType: "NORMAL_TEXT"},
+			Bullet:         &docs.Bullet{NestingLevel: nesting},
+			Elements:       []*docs.ParagraphElement{makeTextRun(content)},
+		},
 	}
-	jsonText, err := dir.ReadFile("test.json")
-	if err != nil {
-		t.Fatalf("reading test.json: %v", err)
-	}
-	txtText, err := dir.ReadFile("test.txt")
-	if err != nil {
-		t.Fatalf("reading test.txt: %v", err)
-	}
-	mdText, err := dir.ReadFile("test.md")
-	if err != nil {
-		t.Fatalf("reading test.md: %v", err)
-	}
-	htmlText, err := dir.ReadFile("test.html")
-	if err != nil {
-		t.Fatalf("reading test.html: %v", err)
-	}
+}
 
-	var doc Document
-	if err := json.Unmarshal(jsonText, &doc); err != nil {
-		t.Fatalf("unmarshalling test doc: %v", err)
+func makeTestDoc() *docs.Document {
+	return &docs.Document{
+		DocumentId: "test-id",
+		Title:      "Test",
+		Tabs: []*docs.Tab{
+			{
+				DocumentTab: &docs.DocumentTab{
+					Body: &docs.Body{
+						Content: []*docs.StructuralElement{
+							makeStructuralElement("Hello world\n", "NORMAL_TEXT"),
+							makeStructuralElement("A heading\n", "HEADING_1"),
+							makeBulletElement("List item\n", 0),
+						},
+					},
+				},
+			},
+		},
 	}
+}
 
-	var txtBuffer strings.Builder
-	doc.IndexableText(&txtBuffer)
-	dir.WriteFile("actual.txt", []byte(txtBuffer.String()), 0600)
-	if s := strings.TrimSpace(txtBuffer.String()); s != strings.TrimSpace(string(txtText)) {
-		t.Fatal("incorrect IndexableText, if the expected output has changed please copy actual.txt to test.txt", string(txtText), s)
+func TestFromRawDoc(t *testing.T) {
+	raw := makeTestDoc()
+	doc := FromRawDoc(raw, nil)
+	if len(doc.Paragraphs) != 3 {
+		t.Fatalf("expected 3 paragraphs, got %d", len(doc.Paragraphs))
 	}
+	p0 := doc.Paragraphs[0]
+	if p0.ParaID != 0 || p0.Heading != 0 || p0.List {
+		t.Errorf("paragraph 0 unexpected: %+v", p0)
+	}
+	p1 := doc.Paragraphs[1]
+	if p1.ParaID != 1 || p1.Heading != 2 {
+		t.Errorf("paragraph 1 unexpected: %+v", p1)
+	}
+	p2 := doc.Paragraphs[2]
+	if p2.ParaID != 2 || !p2.List {
+		t.Errorf("paragraph 2 unexpected: %+v", p2)
+	}
+}
 
-	var mdBuffer strings.Builder
-	doc.Markdown(&mdBuffer)
-	dir.WriteFile("actual.md", []byte(mdBuffer.String()), 0600)
-	if s := strings.TrimSpace(mdBuffer.String()); s != strings.TrimSpace(string(mdText)) {
-		t.Fatal("incorrect Markdown, if the expected output has changed please copy actual.md to test.md", string(mdText), s)
+func TestExtractIndexableText(t *testing.T) {
+	raw := makeTestDoc()
+	text := ExtractIndexableText(raw)
+	if text == "" {
+		t.Fatal("expected non-empty indexable text")
 	}
+	if !contains(text, "Hello world") {
+		t.Errorf("expected 'Hello world' in text, got: %s", text)
+	}
+	if !contains(text, "A heading") {
+		t.Errorf("expected 'A heading' in text, got: %s", text)
+	}
+}
 
-	var htmlBuffer strings.Builder
-	doc.Templ().Render(ctx, &htmlBuffer)
-	dir.WriteFile("actual.html", []byte(htmlBuffer.String()), 0600)
-	if s := strings.TrimSpace(htmlBuffer.String()); s != strings.TrimSpace(string(htmlText)) {
-		t.Fatal("incorrect HTML, if the expected output has changed please copy actual.html to test.html", string(htmlText), s)
+func contains(s, sub string) bool {
+	return len(s) >= len(sub) && (s == sub || len(s) > 0 && containsStr(s, sub))
+}
+
+func containsStr(s, sub string) bool {
+	for i := 0; i <= len(s)-len(sub); i++ {
+		if s[i:i+len(sub)] == sub {
+			return true
+		}
 	}
+	return false
 }

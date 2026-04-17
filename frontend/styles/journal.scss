@@ -28,8 +28,13 @@ article {
     display: none;
   }
 }
+// Hide trailing break in read-only view; keep it in edit mode so empty
+// paragraphs have height and the cursor is visible there.
 br.ProseMirror-trailingBreak {
   display: none;
+}
+.tiptap[contenteditable='true'] br.ProseMirror-trailingBreak {
+  display: unset;
 }
 .tiptap {
   padding: 0;

@@ -2,8 +2,12 @@ package gdrive
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
+	"log/slog"
+	"os"
+	"path/filepath"
 	"strings"
 	"time"
 
@@ -20,10 +24,11 @@ const (
 )
 
 type Client struct {
-	Drive     *drive.Service
-	Docs      *docs.Service
-	DB        *db.Database
-	DriveBase string
+	Drive        *drive.Service
+	Docs         *docs.Service
+	DB           *db.Database
+	DriveBase    string
+	debugDir     string // JournalEditDebugDir from config; empty = disabled
 }
 
 func NewClient(ctx context.Context, config Config, db *db.Database) (*Client, error) {
@@ -42,6 +47,7 @@ func NewClient(ctx context.Context, config Config, db *db.Database) (*Client, er
 		Docs:      docs,
 		DB:        db,
 		DriveBase: config.DriveBase,
+		debugDir:  config.JournalEditDebugDir,
 	}, nil
 }
 
@@ -114,17 +120,12 @@ func (g *Client) GetFile(id string) (Item, error) {
 	return g.fileToItem(f)
 }
 
-func (g *Client) GetDocument(id string) (document.Document, error) {
+func (g *Client) GetDocument(id string) (*docs.Document, error) {
 	call := g.Docs.Documents.Get(id).
 		SuggestionsViewMode("PREVIEW_WITHOUT_SUGGESTIONS").
 		IncludeTabsContent(true)
 
-	doc, err := call.Do()
-	if err != nil {
-		return document.Document{}, err
-	}
-
-	return document.New(doc)
+	return call.Do()
 }
 
 func (g *Client) CreateDocument(conf DivisionConfig, vars TemplateVars) (Item, error) {
@@ -258,6 +259,72 @@ func (g *Client) GetRawDocument(id string) (*docs.Document, error) {
 		IncludeTabsContent(true)
 
 	return call.Do()
+}
+
+func (g *Client) EditJournal(id string, edited *document.GDocsDocument) error {
+	live, fetchErr := g.GetRawDocument(id)
+	if fetchErr != nil {
+		if g.debugDir != "" {
+			g.dumpEditAttempt(id, nil, edited, nil, fetchErr)
+		}
+		return fmt.Errorf("fetching live doc: %w", fetchErr)
+	}
+
+	reqs := document.DocumentPatchRequests(live, edited)
+
+	if len(reqs) == 0 {
+		if g.debugDir != "" {
+			g.dumpEditAttempt(id, live, edited, reqs, nil)
+		}
+		return nil
+	}
+
+	_, batchErr := g.Docs.Documents.BatchUpdate(id, &docs.BatchUpdateDocumentRequest{
+		Requests: reqs,
+	}).Do()
+
+	if g.debugDir != "" {
+		g.dumpEditAttempt(id, live, edited, reqs, batchErr)
+	}
+
+	return batchErr
+}
+
+// dumpEditAttempt writes debugging artifacts for a single EditJournal attempt
+// into a timestamped subdirectory of g.debugDir.
+func (g *Client) dumpEditAttempt(id string, live *docs.Document, edited *document.GDocsDocument, reqs []*docs.Request, attemptErr error) {
+	ts := time.Now().Format("20060102-150405.000")
+	dir := filepath.Join(g.debugDir, fmt.Sprintf("%s-%s", ts, id))
+	if err := os.MkdirAll(dir, 0o755); err != nil {
+		slog.Warn("EditJournal debug: cannot create dir", "dir", dir, "err", err)
+		return
+	}
+
+	writeJSON := func(name string, v any) {
+		data, err := json.MarshalIndent(v, "", "  ")
+		if err != nil {
+			slog.Warn("EditJournal debug: marshal failed", "file", name, "err", err)
+			return
+		}
+		if err := os.WriteFile(filepath.Join(dir, name), data, 0o644); err != nil {
+			slog.Warn("EditJournal debug: write failed", "file", name, "err", err)
+		}
+	}
+
+	if live != nil {
+		writeJSON("live.json", live)
+	}
+	if edited != nil {
+		writeJSON("edited.json", edited)
+	}
+	if reqs != nil {
+		writeJSON("requests.json", reqs)
+	}
+	if attemptErr != nil {
+		_ = os.WriteFile(filepath.Join(dir, "error.txt"), []byte(attemptErr.Error()), 0o644)
+	}
+
+	slog.Info("EditJournal debug dump written", "dir", dir, "requests", len(reqs))
 }
 
 func (g *Client) InsertTextAt(id string, index int64, text string) error {

@@ -109,6 +109,7 @@ func (fbt FB) CSSClass() string {
 //	ListChanges,
 //	GetRawDocument,
 //	InsertTextAt,
+//	EditJournal,
 //
 // )
 type GDriveTaskRequestID int

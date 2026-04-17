@@ -17425,6 +17425,138 @@ function markPasteRule(config) {
   });
 }
 
+// node_modules/@tiptap/extension-paragraph/dist/index.js
+var Paragraph = Node3.create({
+  name: "paragraph",
+  priority: 1e3,
+  addOptions() {
+    return {
+      HTMLAttributes: {}
+    };
+  },
+  group: "block",
+  content: "inline*",
+  parseHTML() {
+    return [{ tag: "p" }];
+  },
+  renderHTML({ HTMLAttributes }) {
+    return ["p", mergeAttributes(this.options.HTMLAttributes, HTMLAttributes), 0];
+  },
+  parseMarkdown: (token, helpers) => {
+    const tokens = token.tokens || [];
+    if (tokens.length === 1 && tokens[0].type === "image") {
+      return helpers.parseChildren([tokens[0]]);
+    }
+    return helpers.createNode(
+      "paragraph",
+      void 0,
+      // no attributes for paragraph
+      helpers.parseInline(tokens)
+    );
+  },
+  renderMarkdown: (node, h2) => {
+    if (!node || !Array.isArray(node.content)) {
+      return "";
+    }
+    return h2.renderChildren(node.content);
+  },
+  addCommands() {
+    return {
+      setParagraph: () => ({ commands }) => {
+        return commands.setNode(this.name);
+      }
+    };
+  },
+  addKeyboardShortcuts() {
+    return {
+      "Mod-Alt-0": () => this.editor.commands.setParagraph()
+    };
+  }
+});
+
+// node_modules/@tiptap/extension-heading/dist/index.js
+var Heading = Node3.create({
+  name: "heading",
+  addOptions() {
+    return {
+      levels: [1, 2, 3, 4, 5, 6],
+      HTMLAttributes: {}
+    };
+  },
+  content: "inline*",
+  group: "block",
+  defining: true,
+  addAttributes() {
+    return {
+      level: {
+        default: 1,
+        rendered: false
+      }
+    };
+  },
+  parseHTML() {
+    return this.options.levels.map((level) => ({
+      tag: `h${level}`,
+      attrs: { level }
+    }));
+  },
+  renderHTML({ node, HTMLAttributes }) {
+    const hasLevel = this.options.levels.includes(node.attrs.level);
+    const level = hasLevel ? node.attrs.level : this.options.levels[0];
+    return [`h${level}`, mergeAttributes(this.options.HTMLAttributes, HTMLAttributes), 0];
+  },
+  parseMarkdown: (token, helpers) => {
+    return helpers.createNode("heading", { level: token.depth || 1 }, helpers.parseInline(token.tokens || []));
+  },
+  renderMarkdown: (node, h2) => {
+    var _a;
+    const level = ((_a = node.attrs) == null ? void 0 : _a.level) ? parseInt(node.attrs.level, 10) : 1;
+    const headingChars = "#".repeat(level);
+    if (!node.content) {
+      return "";
+    }
+    return `${headingChars} ${h2.renderChildren(node.content)}`;
+  },
+  addCommands() {
+    return {
+      setHeading: (attributes) => ({ commands }) => {
+        if (!this.options.levels.includes(attributes.level)) {
+          return false;
+        }
+        return commands.setNode(this.name, attributes);
+      },
+      toggleHeading: (attributes) => ({ commands }) => {
+        if (!this.options.levels.includes(attributes.level)) {
+          return false;
+        }
+        return commands.toggleNode(this.name, "paragraph", attributes);
+      }
+    };
+  },
+  addKeyboardShortcuts() {
+    return this.options.levels.reduce(
+      (items, level) => ({
+        ...items,
+        ...{
+          [`Mod-Alt-${level}`]: () => this.editor.commands.toggleHeading({ level })
+        }
+      }),
+      {}
+    );
+  },
+  addInputRules() {
+    return this.options.levels.map((level) => {
+      return textblockTypeInputRule({
+        find: new RegExp(`^(#{${Math.min(...this.options.levels)},${level}})\\s$`),
+        type: this.type,
+        getAttributes: {
+          level
+        }
+      });
+    });
+  }
+});
+
 // node_modules/@tiptap/core/dist/jsx-runtime/jsx-runtime.js
 var h = (tag, attributes) => {
   if (tag === "slot") {
@@ -18045,89 +18177,6 @@ var HardBreak = Node3.create({
       "Mod-Enter": () => this.editor.commands.setHardBreak(),
       "Shift-Enter": () => this.editor.commands.setHardBreak()
     };
-  }
-});
-
-// node_modules/@tiptap/extension-heading/dist/index.js
-var Heading = Node3.create({
-  name: "heading",
-  addOptions() {
-    return {
-      levels: [1, 2, 3, 4, 5, 6],
-      HTMLAttributes: {}
-    };
-  },
-  content: "inline*",
-  group: "block",
-  defining: true,
-  addAttributes() {
-    return {
-      level: {
-        default: 1,
-        rendered: false
-      }
-    };
-  },
-  parseHTML() {
-    return this.options.levels.map((level) => ({
-      tag: `h${level}`,
-      attrs: { level }
-    }));
-  },
-  renderHTML({ node, HTMLAttributes }) {
-    const hasLevel = this.options.levels.includes(node.attrs.level);
-    const level = hasLevel ? node.attrs.level : this.options.levels[0];
-    return [`h${level}`, mergeAttributes(this.options.HTMLAttributes, HTMLAttributes), 0];
-  },
-  parseMarkdown: (token, helpers) => {
-    return helpers.createNode("heading", { level: token.depth || 1 }, helpers.parseInline(token.tokens || []));
-  },
-  renderMarkdown: (node, h2) => {
-    var _a;
-    const level = ((_a = node.attrs) == null ? void 0 : _a.level) ? parseInt(node.attrs.level, 10) : 1;
-    const headingChars = "#".repeat(level);
-    if (!node.content) {
-      return "";
-    }
-    return `${headingChars} ${h2.renderChildren(node.content)}`;
-  },
-  addCommands() {
-    return {
-      setHeading: (attributes) => ({ commands }) => {
-        if (!this.options.levels.includes(attributes.level)) {
-          return false;
-        }
-        return commands.setNode(this.name, attributes);
-      },
-      toggleHeading: (attributes) => ({ commands }) => {
-        if (!this.options.levels.includes(attributes.level)) {
-          return false;
-        }
-        return commands.toggleNode(this.name, "paragraph", attributes);
-      }
-    };
-  },
-  addKeyboardShortcuts() {
-    return this.options.levels.reduce(
-      (items, level) => ({
-        ...items,
-        ...{
-          [`Mod-Alt-${level}`]: () => this.editor.commands.toggleHeading({ level })
-        }
-      }),
-      {}
-    );
-  },
-  addInputRules() {
-    return this.options.levels.map((level) => {
-      return textblockTypeInputRule({
-        find: new RegExp(`^(#{${Math.min(...this.options.levels)},${level}})\\s$`),
-        type: this.type,
-        getAttributes: {
-          level
-        }
-      });
-    });
   }
 });
 
@@ -20853,55 +20902,6 @@ var ListKit = Extension.create({
   }
 });
 
-// node_modules/@tiptap/extension-paragraph/dist/index.js
-var Paragraph = Node3.create({
-  name: "paragraph",
-  priority: 1e3,
-  addOptions() {
-    return {
-      HTMLAttributes: {}
-    };
-  },
-  group: "block",
-  content: "inline*",
-  parseHTML() {
-    return [{ tag: "p" }];
-  },
-  renderHTML({ HTMLAttributes }) {
-    return ["p", mergeAttributes(this.options.HTMLAttributes, HTMLAttributes), 0];
-  },
-  parseMarkdown: (token, helpers) => {
-    const tokens = token.tokens || [];
-    if (tokens.length === 1 && tokens[0].type === "image") {
-      return helpers.parseChildren([tokens[0]]);
-    }
-    return helpers.createNode(
-      "paragraph",
-      void 0,
-      // no attributes for paragraph
-      helpers.parseInline(tokens)
-    );
-  },
-  renderMarkdown: (node, h2) => {
-    if (!node || !Array.isArray(node.content)) {
-      return "";
-    }
-    return h2.renderChildren(node.content);
-  },
-  addCommands() {
-    return {
-      setParagraph: () => ({ commands }) => {
-        return commands.setNode(this.name);
-      }
-    };
-  },
-  addKeyboardShortcuts() {
-    return {
-      "Mod-Alt-0": () => this.editor.commands.setParagraph()
-    };
-  }
-});
-
 // node_modules/@tiptap/extension-strike/dist/index.js
 var inputRegex4 = /(?:^|\s)(~~(?!\s+~~)((?:[^~]+))~~(?!\s+~~))$/;
 var pasteRegex2 = /(?:^|\s)(~~(?!\s+~~)((?:[^~]+))~~(?!\s+~~))/g;
@@ -22370,160 +22370,141 @@ var StarterKit = Extension.create({
 var index_default = StarterKit;
 
 // journal-converter.ts
-var FLAG_BOLD = 1;
-var FLAG_ITALIC = 2;
-var FLAG_UNDERLINE = 4;
-var FLAG_STRIKETHROUGH = 8;
-var FLAG_LINK = 16;
-function textToTiptap(text) {
-  const marks = [];
-  if (text.Flags & FLAG_BOLD) marks.push({ type: "bold" });
-  if (text.Flags & FLAG_ITALIC) marks.push({ type: "italic" });
-  if (text.Flags & FLAG_UNDERLINE) marks.push({ type: "underline" });
-  if (text.Flags & FLAG_STRIKETHROUGH) marks.push({ type: "strike" });
-  if (text.Flags & FLAG_LINK)
-    marks.push({ type: "link", attrs: { href: text.LinkURL } });
-  const node = { type: "text", text: text.Content };
-  if (marks.length > 0) node.marks = marks;
-  return node;
-}
-function paraElementsToTiptap(elements) {
-  return (elements ?? []).flatMap((elem) => {
-    if (elem.Type === "text") return [textToTiptap(elem.Value)];
-    if (elem.Type === "image") {
-      const img = elem.Value;
+function runsToTiptap(runs) {
+  return (runs ?? []).flatMap((run4) => {
+    if (run4.imageId) {
       return [
         {
           type: "image",
           attrs: {
-            src: img.URL,
-            alt: img.Description || img.Title || "",
-            width: img.Width,
-            height: img.Height,
-            crop: img.Crop ?? [0, 0, 0, 0]
+            src: run4.url ?? "",
+            alt: "",
+            width: run4.width ?? 0,
+            height: run4.height ?? 0,
+            crop: run4.crop ?? [0, 0, 0, 0],
+            imageId: run4.imageId
           }
         }
       ];
     }
-    return [];
+    const text = run4.text ?? "";
+    if (!text) return [];
+    const marks = [];
+    if (run4.bold) marks.push({ type: "bold" });
+    if (run4.italic) marks.push({ type: "italic" });
+    if (run4.underline) marks.push({ type: "underline" });
+    if (run4.strikethrough) marks.push({ type: "strike" });
+    if (run4.link) marks.push({ type: "link", attrs: { href: run4.link } });
+    const node = { type: "text", text };
+    if (marks.length > 0) node.marks = marks;
+    return [node];
   });
 }
-function paragraphHasContent(para) {
-  return (para.Elements ?? []).some(
-    (e) => e.Type === "image" || e.Type === "text" && e.Value.Content.trim() !== ""
-  );
-}
-function paragraphToTiptap(para) {
-  const content = paraElementsToTiptap(para.Elements);
-  if (para.HeadingLevel > 0) {
-    return { type: "heading", attrs: { level: para.HeadingLevel }, content };
+function paraToTiptap(para) {
+  const content = runsToTiptap(para.runs);
+  if (para.list) {
+    return {
+      type: "paragraph",
+      attrs: { paraId: para.paraId },
+      content
+    };
   }
-  return { type: "paragraph", content };
+  if (para.heading > 0) {
+    return {
+      type: "heading",
+      attrs: { level: para.heading, paraId: para.paraId },
+      content
+    };
+  }
+  return { type: "paragraph", attrs: { paraId: para.paraId }, content };
 }
-function listToTiptap(list) {
-  const items = [];
-  for (const item of list.Items) {
-    if (item.Type === "paragraph") {
-      items.push({
-        type: "listItem",
-        content: [paragraphToTiptap(item.Value)]
-      });
-    } else if (item.Type === "list") {
-      const nested = listToTiptap(item.Value);
-      if (items.length > 0) {
-        items[items.length - 1].content.push(nested);
-      } else {
-        items.push({ type: "listItem", content: [nested] });
+function gdocsToTiptap(doc3) {
+  const nodes = [];
+  let listGroup = [];
+  function flushList() {
+    if (listGroup.length === 0) return;
+    const items = listGroup.map((item) => ({
+      type: "listItem",
+      content: [paraToTiptap(item.para)]
+    }));
+    const listType = listGroup[0].ordered ? "orderedList" : "bulletList";
+    nodes.push({ type: listType, content: items });
+    listGroup = [];
+  }
+  for (const para of doc3.paragraphs) {
+    if (para.list) {
+      listGroup.push({ ordered: para.ordered, nesting: para.nesting, para });
+    } else {
+      flushList();
+      nodes.push(paraToTiptap(para));
+    }
+  }
+  flushList();
+  return { type: "doc", content: nodes };
+}
+function tiptapMarksToRunProps(marks = []) {
+  const props = {};
+  for (const mark of marks) {
+    if (mark.type === "bold") props.bold = true;
+    if (mark.type === "italic") props.italic = true;
+    if (mark.type === "underline") props.underline = true;
+    if (mark.type === "strike") props.strikethrough = true;
+    if (mark.type === "link") props.link = mark.attrs?.href ?? "";
+  }
+  return props;
+}
+function tiptapNodeToRuns(node) {
+  if (node.type === "text") {
+    return [{ text: node.text ?? "", ...tiptapMarksToRunProps(node.marks) }];
+  }
+  if (node.type === "image") {
+    const { src, alt, width, height, crop, imageId } = node.attrs ?? {};
+    return [
+      {
+        imageId: imageId ?? "",
+        url: src ?? "",
+        width: width ?? 0,
+        height: height ?? 0,
+        crop: crop ?? [0, 0, 0, 0]
+      }
+    ];
+  }
+  return (node.content ?? []).flatMap(tiptapNodeToRuns);
+}
+function tiptapParaToGDocs(node, heading, list, ordered, nesting) {
+  const paraId = node.attrs?.paraId ?? -1;
+  const runs = (node.content ?? []).flatMap(tiptapNodeToRuns);
+  return { paraId, heading, list, ordered, nesting, runs };
+}
+function tiptapToGdocs(doc3) {
+  const paragraphs = [];
+  function processListNode(node, ordered, nesting) {
+    for (const item of node.content ?? []) {
+      if (item.type !== "listItem") continue;
+      for (const child of item.content ?? []) {
+        if (child.type === "paragraph") {
+          paragraphs.push(tiptapParaToGDocs(child, 0, true, ordered, nesting));
+        } else if (child.type === "bulletList") {
+          processListNode(child, false, nesting + 1);
+        } else if (child.type === "orderedList") {
+          processListNode(child, true, nesting + 1);
+        }
       }
     }
   }
-  return { type: list.Ordered ? "orderedList" : "bulletList", content: items };
-}
-function documentToTiptap(content) {
-  const nodes = content.flatMap((elem) => {
-    if (elem.Type === "paragraph") {
-      const para = elem.Value;
-      if (para.HeadingLevel > 0 || paragraphHasContent(para))
-        return [paragraphToTiptap(para)];
-    }
-    if (elem.Type === "list") return [listToTiptap(elem.Value)];
-    return [];
-  });
-  return { type: "doc", content: nodes };
-}
-function tiptapParaToDoc(node, headingLevel) {
-  const elements = (node.content ?? []).flatMap((child) => {
-    if (child.type === "text") return [tiptapTextToDoc(child)];
-    if (child.type === "image") return [tiptapImageToDoc(child)];
-    return [];
-  });
-  return {
-    Type: "paragraph",
-    Value: { Elements: elements, HeadingLevel: headingLevel }
-  };
-}
-function tiptapTextToDoc(node) {
-  let flags = 0;
-  let linkURL = "";
-  for (const mark of node.marks ?? []) {
-    if (mark.type === "bold") flags |= FLAG_BOLD;
-    if (mark.type === "italic") flags |= FLAG_ITALIC;
-    if (mark.type === "underline") flags |= FLAG_UNDERLINE;
-    if (mark.type === "strike") flags |= FLAG_STRIKETHROUGH;
-    if (mark.type === "link") {
-      flags |= FLAG_LINK;
-      linkURL = mark.attrs?.href ?? "";
+  for (const node of doc3.content ?? []) {
+    if (node.type === "paragraph") {
+      paragraphs.push(tiptapParaToGDocs(node, 0, false, false, 0));
+    } else if (node.type === "heading") {
+      const level = node.attrs?.level ?? 1;
+      paragraphs.push(tiptapParaToGDocs(node, level, false, false, 0));
+    } else if (node.type === "bulletList") {
+      processListNode(node, false, 0);
+    } else if (node.type === "orderedList") {
+      processListNode(node, true, 0);
     }
   }
-  return {
-    Type: "text",
-    Value: {
-      Content: node.text ?? "",
-      Flags: flags,
-      FontSize: 0,
-      LinkURL: linkURL
-    }
-  };
-}
-function tiptapImageToDoc(node) {
-  const { src, alt, width, height, crop } = node.attrs ?? {};
-  return {
-    Type: "image",
-    Value: {
-      Title: "",
-      Description: alt ?? "",
-      Width: width ?? 0,
-      Height: height ?? 0,
-      Crop: crop ?? [0, 0, 0, 0],
-      URL: src ?? "",
-      InlineObjectID: ""
-    }
-  };
-}
-function tiptapListToDoc(node, nesting) {
-  const ordered = node.type === "orderedList";
-  const items = (node.content ?? []).flatMap(
-    (listItem) => (listItem.content ?? []).flatMap((child) => {
-      if (child.type === "paragraph") return [tiptapParaToDoc(child, 0)];
-      if (child.type === "bulletList" || child.type === "orderedList")
-        return [tiptapListToDoc(child, nesting + 1)];
-      return [];
-    })
-  );
-  return {
-    Type: "list",
-    Value: { Items: items, Ordered: ordered, Nesting: nesting }
-  };
-}
-function tiptapToDocument(doc3) {
-  return (doc3.content ?? []).flatMap((node) => {
-    if (node.type === "paragraph") return [tiptapParaToDoc(node, 0)];
-    if (node.type === "heading")
-      return [tiptapParaToDoc(node, node.attrs?.level ?? 1)];
-    if (node.type === "bulletList" || node.type === "orderedList")
-      return [tiptapListToDoc(node, 0)];
-    return [];
-  });
+  return { paragraphs };
 }
 
 // journal-editor.ts
@@ -22542,6 +22523,27 @@ function imageStyles(width, height, crop) {
     img: `position: absolute; width: ${scaleX}%; height: ${scaleY}%; left: ${leftPct}%; top: ${topPct}%; max-width: none`
   };
 }
+var paraIdAttr = {
+  default: -1,
+  keepOnSplit: false,
+  renderHTML(attrs) {
+    return { "data-para-id": attrs["paraId"] };
+  },
+  parseHTML(element) {
+    const v = element.getAttribute("data-para-id");
+    return v !== null ? parseInt(v, 10) : -1;
+  }
+};
+var ParagraphWithParaId = Paragraph.extend({
+  addAttributes() {
+    return { ...this.parent?.(), paraId: paraIdAttr };
+  }
+});
+var HeadingWithParaId = Heading.extend({
+  addAttributes() {
+    return { ...this.parent?.(), paraId: paraIdAttr };
+  }
+});
 var JournalImage = Node3.create({
   name: "image",
   inline: true,
@@ -22553,7 +22555,8 @@ var JournalImage = Node3.create({
       alt: { default: null },
       width: { default: 0 },
       height: { default: 0 },
-      crop: { default: [0, 0, 0, 0] }
+      crop: { default: [0, 0, 0, 0] },
+      imageId: { default: "" }
     };
   },
   parseHTML() {
@@ -22586,39 +22589,67 @@ var host = document.querySelector("#journal-editor");
 if (host) {
   const url = host.dataset.url;
   if (!url) throw new Error("data-url missing on #journal-editor");
-  fetch(url).then((r) => r.json()).then((doc3) => {
+  const readonly = host.dataset.readonly === "true";
+  fetch(url).then((r) => r.json()).then((gdocsDoc) => {
+    const statusEl = document.querySelector(
+      "#journal-editor-status"
+    );
+    const showEllipsis = () => {
+      if (statusEl) {
+        statusEl.className = "editor-status editor-status-ellipsis";
+        statusEl.innerHTML = "";
+      }
+    };
+    const showCheckmark = () => {
+      if (statusEl) {
+        statusEl.className = "editor-status";
+        statusEl.innerHTML = '<i class="fa-solid fa-check"></i>';
+      }
+    };
     let saveTimer = null;
     const scheduleSave = () => {
+      showEllipsis();
       if (saveTimer !== null) clearTimeout(saveTimer);
       saveTimer = setTimeout(() => {
         saveTimer = null;
-        const content = tiptapToDocument(editor.getJSON());
+        const gdocs = tiptapToGdocs(editor.getJSON());
         fetch(url, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ Content: content })
-        });
+          body: JSON.stringify(gdocs)
+        }).then(showCheckmark);
       }, 1e3);
     };
     const editor = new Editor({
       element: host,
       extensions: [
         index_default.configure({
-          paragraph: { HTMLAttributes: { class: "journal-paragraph" } },
-          heading: { HTMLAttributes: { class: "journal-paragraph" } },
+          // Replace built-in Paragraph and Heading with our extended versions.
+          paragraph: false,
+          heading: false,
           bold: { HTMLAttributes: { class: "journal-bold" } },
           italic: { HTMLAttributes: { class: "journal-italic" } },
           strike: { HTMLAttributes: { class: "journal-strikethrough" } },
           listItem: { HTMLAttributes: { class: "journal-list-item" } }
         }),
+        ParagraphWithParaId.configure({
+          HTMLAttributes: { class: "journal-paragraph" }
+        }),
+        HeadingWithParaId.configure({
+          HTMLAttributes: { class: "journal-paragraph" }
+        }),
         JournalImage
       ],
-      content: documentToTiptap(doc3.Content),
+      content: gdocsToTiptap(gdocsDoc),
+      editable: !readonly,
       editorProps: { attributes: { spellcheck: "false" } },
-      onUpdate: () => scheduleSave()
+      onUpdate: () => {
+        if (!readonly) scheduleSave();
+      }
     });
+    if (readonly) return;
     const toolbar = document.querySelector(
-      "#journal-editor-toolbar"
+      "#journal-editor-toolbar .editor-toolbar-buttons"
     );
     if (!toolbar) return;
     const addButton = (iconClass, isActive2, action) => {

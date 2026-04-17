@@ -52,11 +52,6 @@ func (w *Worker) FetchJournal(
 	}
 	slog.InfoContext(ctx, "Found doc", "title", rawDoc.Title)
 
-	doc, err := document.New(rawDoc)
-	if err != nil {
-		return err
-	}
-
 	// Load existing image URL overrides so we don't re-upload unchanged images.
 	imageURLs := make(map[string]string)
 	if existing, err := w.g.DB.Q.GetJournalImageURLs(ctx, googleID); err == nil {
@@ -64,7 +59,10 @@ func (w *Worker) FetchJournal(
 	}
 
 	nUploaded := 0
-	for _, img := range doc.Images() {
+	for _, img := range document.ExtractImages(rawDoc) {
+		if img.URL == "" {
+			continue
+		}
 		if _, exists := imageURLs[img.InlineObjectID]; exists {
 			continue
 		}
@@ -96,7 +94,7 @@ func (w *Worker) FetchJournal(
 		return fmt.Errorf("marshalling raw document: %w", err)
 	}
 
-	txt := document.GetIndexableText(&doc)
+	txt := document.ExtractIndexableText(rawDoc)
 
 	return w.g.DB.Q.UpsertJournal(ctx, sql.UpsertJournalParams{
 		GoogleID:       googleID,

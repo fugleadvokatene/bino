@@ -1,58 +1,26 @@
 package document
 
 import (
-	"fmt"
 	"regexp"
 	"strconv"
-	"strings"
 
 	"google.golang.org/api/docs/v1"
 )
 
 var fileIDRegex = regexp.MustCompile("/file/(\\d+)/")
 
+// DocImage holds the metadata for a Google Docs inline image, with the URL
+// rewritten to Bino's file storage once the image has been uploaded.
 type DocImage struct {
 	Title          string
 	Description    string
 	Width          float64
 	Height         float64
-	Margin         [4]float64 // top right down left, like in css
-	Crop           [4]float64 // top right down left, like in css
+	Margin         [4]float64 // top right bottom left, pixels
+	Crop           [4]float64 // top right bottom left, fractions
 	URL            string
 	Angle          float64
 	InlineObjectID string
-}
-
-func (img *DocImage) ContainerStyle() string {
-	return fmt.Sprintf("width: min(%dpx, 100%%); aspect-ratio: %d/%d; overflow: hidden; position: relative", int(img.Width), int(img.Width), int(img.Height))
-}
-
-func (img *DocImage) ImgStyle() string {
-	top := img.Crop[0]
-	right := img.Crop[1]
-	bottom := img.Crop[2]
-	left := img.Crop[3]
-	xFraction := 1 - left - right
-	yFraction := 1 - top - bottom
-	if xFraction <= 0 {
-		xFraction = 1
-	}
-	if yFraction <= 0 {
-		yFraction = 1
-	}
-	scaleX := 100 / xFraction
-	scaleY := 100 / yFraction
-	leftPct := -left * scaleX
-	topPct := -top * scaleY
-	return fmt.Sprintf("position: absolute; width: %.4g%%; height: %.4g%%; left: %.4g%%; top: %.4g%%; max-width: none",
-		scaleX, scaleY, leftPct, topPct)
-}
-
-func (di *DocImage) Markdown(w *strings.Builder) {
-	if di == nil {
-		return
-	}
-	fmt.Fprintf(w, "![%s %s](%s)\n", di.Title, di.Description, di.URL)
 }
 
 func (di *DocImage) FileID() (int32, bool) {
@@ -64,14 +32,9 @@ func (di *DocImage) FileID() (int32, bool) {
 	return int32(i), err == nil
 }
 
-func (*DocImage) IndexableText(*strings.Builder) {
-}
-
-func (di *DocImage) Images() []*DocImage {
-	return []*DocImage{di}
-}
-
-func parseInlineObjectElement(elem *docs.InlineObjectElement, inlineObjects map[string]docs.InlineObject) *Element {
+// parseInlineObjectElement extracts a DocImage from a paragraph element.
+// Returns nil if the element is not a supported image.
+func parseInlineObjectElement(elem *docs.InlineObjectElement, inlineObjects map[string]docs.InlineObject) *DocImage {
 	obj, ok := inlineObjects[elem.InlineObjectId]
 	if !ok {
 		return nil
@@ -117,13 +80,12 @@ func parseInlineObjectElement(elem *docs.InlineObjectElement, inlineObjects map[
 	out.InlineObjectID = elem.InlineObjectId
 	out.URL = imageProperties.ContentUri
 	out.Angle = imageProperties.Angle
-	out.Crop[0] = imageProperties.CropProperties.OffsetTop
-	out.Crop[1] = imageProperties.CropProperties.OffsetRight
-	out.Crop[2] = imageProperties.CropProperties.OffsetBottom
-	out.Crop[3] = imageProperties.CropProperties.OffsetLeft
-
-	return &Element{
-		Type:  "image",
-		Value: &out,
+	if cp := imageProperties.CropProperties; cp != nil {
+		out.Crop[0] = cp.OffsetTop
+		out.Crop[1] = cp.OffsetRight
+		out.Crop[2] = cp.OffsetBottom
+		out.Crop[3] = cp.OffsetLeft
 	}
+
+	return &out
 }

@@ -9,7 +9,6 @@ import (
 	"github.com/fugleadvokatene/bino/internal/handlers/handlercalendar"
 	"github.com/fugleadvokatene/bino/internal/handlers/handlerevent"
 	"github.com/fugleadvokatene/bino/internal/gdrive/url"
-	"github.com/fugleadvokatene/bino/internal/gdrive/document"
 )
 
 templ PatientPage(
@@ -19,7 +18,6 @@ templ PatientPage(
 	homes []model.Home,
 	events []model.Event,
     speciesList []templbase.Option,
-    journal *document.Document,
     journalMeta JournalMetadata,
 ) {
 	@templbase.Layout(data, "patient-page") {
@@ -87,15 +85,20 @@ templ PatientPage(
                     if journalMeta.FolderID != "" {
                         <p>I <a href={templ.URL(url.IDToFolderURL(journalMeta.FolderID))}>{journalMeta.FolderName}</a></p>
                     }
-                    if data.FeatureFlag("Editor") {
-                        <article class="card">
-                            <div class="editor-toolbar-buttons" id="journal-editor-toolbar"></div>
+                    <article class="card">
+                        if data.FeatureFlag("Editor") {
+                            <div class="editor-toolbar" id="journal-editor-toolbar">
+                                <div class="editor-toolbar-buttons"></div>
+                                <div id="journal-editor-status" class="editor-status"></div>
+                            </div>
+                        }
+                        if data.FeatureFlag("Editor") {
                             <div class="p-1" id="journal-editor" data-url={patient.URLSuffix("journal-json")}></div>
-                            @templbase.JSModule(data, "journal-editor")
-                        </article>
-                    } else {
-                        @journal.Templ()
-                    }
+                        } else {
+                            <div class="p-1" id="journal-editor" data-url={patient.URLSuffix("journal-json")} data-readonly="true"></div>
+                        }
+                        @templbase.JSModule(data, "journal-editor")
+                    </article>
                 }
             }
 

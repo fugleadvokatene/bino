@@ -173,6 +173,26 @@ func newGDriveTaskRequestGetRawDocument(id string) TaskRequest {
 	return req
 }
 
+type payloadEditJournal struct {
+	ID     string
+	Edited *document.GDocsDocument
+}
+
+func newGDriveTaskRequestEditJournal(id string, edited *document.GDocsDocument) TaskRequest {
+	req := newGDriveTaskRequest()
+	req.Type = model.GDriveTaskRequestIDEditJournal
+	req.Payload = payloadEditJournal{ID: id, Edited: edited}
+	return req
+}
+
+func (req TaskRequest) decodeEditJournal() (payloadEditJournal, error) {
+	return decodeReq[payloadEditJournal](req)
+}
+
+func (resp TaskResponse) decodeEditJournal() error {
+	return decodeEmptyResp(model.GDriveTaskRequestIDEditJournal, resp)
+}
+
 type payloadInsertTextAt struct {
 	ID    string
 	Index int64
@@ -274,8 +294,8 @@ func (resp TaskResponse) decodeGetFile() (Item, error) {
 	return decodeResp[Item](model.GDriveTaskRequestIDGetFile, resp)
 }
 
-func (resp TaskResponse) decodeGetDocument() (document.Document, error) {
-	return decodeResp[document.Document](model.GDriveTaskRequestIDGetDocument, resp)
+func (resp TaskResponse) decodeGetDocument() (*docs.Document, error) {
+	return decodeResp[*docs.Document](model.GDriveTaskRequestIDGetDocument, resp)
 }
 
 func (resp TaskResponse) decodeInviteUser() error {
@@ -353,8 +373,8 @@ func NewWorker(ctx context.Context, cfg Config, g *Client, bg *background.Jobs) 
 	return w
 }
 
-func validateTemplate(tpl *document.Document) error {
-	s := document.GetIndexableText(tpl)
+func validateTemplate(tpl *docs.Document) error {
+	s := document.ExtractIndexableText(tpl)
 	errs := []error{}
 	for _, k := range model.TemplateValues() {
 		if !strings.Contains(s, k.String()) {
@@ -415,7 +435,7 @@ func (w *Worker) GetGDriveConfigInfo(ctx context.Context) ConfigInfo {
 			}
 			divisionConfig.TemplateDoc = doc
 
-			if err := validateTemplate(&doc); err != nil {
+			if err := validateTemplate(doc); err != nil {
 				panic(err)
 			}
 
@@ -448,7 +468,7 @@ func (w *Worker) GetFile(id string) (Item, error) {
 	return w.Exec(newGDriveTaskRequestGetFile(id)).decodeGetFile()
 }
 
-func (w *Worker) GetDocument(id string) (document.Document, error) {
+func (w *Worker) GetDocument(id string) (*docs.Document, error) {
 	return w.Exec(newGDriveTaskRequestGetDocument(id)).decodeGetDocument()
 }
 
@@ -486,6 +506,10 @@ func (w *Worker) GetRawDocument(id string) (*docs.Document, error) {
 
 func (w *Worker) InsertTextAt(id string, index int64, text string) error {
 	return w.Exec(newGDriveTaskRequestInsertTextAt(id, index, text)).decodeInsertTextAt()
+}
+
+func (w *Worker) EditJournal(id string, edited *document.GDocsDocument) error {
+	return w.Exec(newGDriveTaskRequestEditJournal(id, edited)).decodeEditJournal()
 }
 func (w *Worker) worker(ctx context.Context, workerID int) {
 	for {
@@ -526,6 +550,8 @@ func (w *Worker) handleRequest(ctx context.Context, req TaskRequest) (resp TaskR
 		return w.handleRequestGetRawDocument(ctx, req)
 	case model.GDriveTaskRequestIDInsertTextAt:
 		return w.handleRequestInsertTextAt(ctx, req)
+	case model.GDriveTaskRequestIDEditJournal:
+		return w.handleRequestEditJournal(ctx, req)
 	}
 	return w.errorResponse(ctx, req, fmt.Errorf("unknown request type"))
 }
@@ -721,6 +747,17 @@ func (w *Worker) handleRequestGetRawDocument(ctx context.Context, req TaskReques
 	}
 
 	return w.successResponse(ctx, req, doc)
+}
+
+func (w *Worker) handleRequestEditJournal(ctx context.Context, req TaskRequest) TaskResponse {
+	payload, err := req.decodeEditJournal()
+	if err != nil {
+		return w.errorResponse(ctx, req, err)
+	}
+	if err := w.g.EditJournal(payload.ID, payload.Edited); err != nil {
+		return w.errorResponse(ctx, req, err)
+	}
+	return w.successResponse(ctx, req, nil)
 }
 
 func (w *Worker) handleRequestInsertTextAt(ctx context.Context, req TaskRequest) TaskResponse {

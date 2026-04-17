@@ -670,11 +670,13 @@ const (
 	GDriveTaskRequestIDGetRawDocument GDriveTaskRequestID = 9
 	// GDriveTaskRequestIDInsertTextAt is a GDriveTaskRequestID of type InsertTextAt.
 	GDriveTaskRequestIDInsertTextAt GDriveTaskRequestID = 10
+	// GDriveTaskRequestIDEditJournal is a GDriveTaskRequestID of type EditJournal.
+	GDriveTaskRequestIDEditJournal GDriveTaskRequestID = 11
 )
 
 var ErrInvalidGDriveTaskRequestID = errors.New("not a valid GDriveTaskRequestID")
 
-const _GDriveTaskRequestIDName = "GetFileInviteUserCreateJournalListFilesUpdateJournalGetDocumentGetIndexerStateSetIndexerStateListChangesGetRawDocumentInsertTextAt"
+const _GDriveTaskRequestIDName = "GetFileInviteUserCreateJournalListFilesUpdateJournalGetDocumentGetIndexerStateSetIndexerStateListChangesGetRawDocumentInsertTextAtEditJournal"
 
 // GDriveTaskRequestIDValues returns a list of the values for GDriveTaskRequestID
 func GDriveTaskRequestIDValues() []GDriveTaskRequestID {
@@ -690,6 +692,7 @@ func GDriveTaskRequestIDValues() []GDriveTaskRequestID {
 		GDriveTaskRequestIDListChanges,
 		GDriveTaskRequestIDGetRawDocument,
 		GDriveTaskRequestIDInsertTextAt,
+		GDriveTaskRequestIDEditJournal,
 	}
 }
 
@@ -705,6 +708,7 @@ var _GDriveTaskRequestIDMap = map[GDriveTaskRequestID]string{
 	GDriveTaskRequestIDListChanges:     _GDriveTaskRequestIDName[93:104],
 	GDriveTaskRequestIDGetRawDocument:  _GDriveTaskRequestIDName[104:118],
 	GDriveTaskRequestIDInsertTextAt:    _GDriveTaskRequestIDName[118:130],
+	GDriveTaskRequestIDEditJournal:     _GDriveTaskRequestIDName[130:141],
 }
 
 // String implements the Stringer interface.
@@ -734,6 +738,7 @@ var _GDriveTaskRequestIDValue = map[string]GDriveTaskRequestID{
 	_GDriveTaskRequestIDName[93:104]:  GDriveTaskRequestIDListChanges,
 	_GDriveTaskRequestIDName[104:118]: GDriveTaskRequestIDGetRawDocument,
 	_GDriveTaskRequestIDName[118:130]: GDriveTaskRequestIDInsertTextAt,
+	_GDriveTaskRequestIDName[130:141]: GDriveTaskRequestIDEditJournal,
 }
 
 // ParseGDriveTaskRequestID attempts to convert a string to a GDriveTaskRequestID.

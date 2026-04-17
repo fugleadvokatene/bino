@@ -78,7 +78,7 @@ func Routes(
 		},
 		{
 			Path:    "POST /patient/{patient}/journal-json",
-			Handler: &journalAPIPost{DB: db},
+			Handler: &journalAPIPost{DB: db, GDriveWorker: gdriveWorker, debounce: newPushDebouncer()},
 			Cap:     model.CapManageOwnPatients,
 		},
 	}

@@ -1,12 +1,17 @@
 package handlerpatient
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"io"
+	"log/slog"
 	"net/http"
+	"sync"
+	"time"
 
 	dblib "github.com/fugleadvokatene/bino/internal/db"
+	"github.com/fugleadvokatene/bino/internal/gdrive"
 	"github.com/fugleadvokatene/bino/internal/gdrive/document"
 	"github.com/fugleadvokatene/bino/internal/request"
 	sqlc "github.com/fugleadvokatene/bino/internal/sql"
@@ -44,22 +49,54 @@ func (h *journalAPIGet) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 
+	// Serve edited_json directly if present (already GDocsDocument format).
 	if len(row.EditedJson) > 0 {
-		w.Write(row.EditedJson)
+		slog.InfoContext(ctx, "journal GET: serving edited_json", "googleID", patientData.GoogleID.String)
+		w.Write(row.EditedJson) //nolint:errcheck
 		return
 	}
 
-	doc, err := document.ParseRawJSON(row.RawJson, row.ImageUrls)
+	// Parse raw Google Docs JSON and convert to GDocsDocument.
+	slog.InfoContext(ctx, "journal GET: serving parsed raw_json", "googleID", patientData.GoogleID.String)
+
+	var imageURLs map[string]string
+	if len(row.ImageUrls) > 0 {
+		json.Unmarshal(row.ImageUrls, &imageURLs) //nolint:errcheck
+	}
+
+	gdocsDoc, err := document.ParseRawGDocs(row.RawJson, imageURLs)
 	if err != nil {
 		request.AjaxError(w, r, err, http.StatusInternalServerError)
 		return
 	}
 
-	json.NewEncoder(w).Encode(doc)
+	json.NewEncoder(w).Encode(gdocsDoc) //nolint:errcheck
+}
+
+// pushDebouncer coalesces rapid saves: only the last save within the window
+// triggers a push to Google Docs.
+type pushDebouncer struct {
+	mu     sync.Mutex
+	timers map[string]*time.Timer
+}
+
+func newPushDebouncer() *pushDebouncer {
+	return &pushDebouncer{timers: make(map[string]*time.Timer)}
+}
+
+func (d *pushDebouncer) schedule(googleID string, delay time.Duration, fn func()) {
+	d.mu.Lock()
+	defer d.mu.Unlock()
+	if t, ok := d.timers[googleID]; ok {
+		t.Stop()
+	}
+	d.timers[googleID] = time.AfterFunc(delay, fn)
 }
 
 type journalAPIPost struct {
-	DB *dblib.Database
+	DB           *dblib.Database
+	GDriveWorker *gdrive.Worker
+	debounce     *pushDebouncer
 }
 
 func (h *journalAPIPost) ServeHTTP(w http.ResponseWriter, r *http.Request) {
@@ -101,5 +138,39 @@ func (h *journalAPIPost) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	googleID := patientData.GoogleID.String
+	slog.InfoContext(ctx, "journal POST: saved to DB, scheduling push in 10s", "googleID", googleID)
+	h.debounce.schedule(googleID, 10*time.Second, func() {
+		h.pushToGoogleDocs(googleID)
+	})
+
 	w.WriteHeader(http.StatusNoContent)
+}
+
+func (h *journalAPIPost) pushToGoogleDocs(googleID string) {
+	ctx := context.Background()
+	slog.InfoContext(ctx, "EditJournal: debounce fired, pushing to Google Docs", "googleID", googleID)
+
+	row, err := h.DB.Q.GetJournalJSON(ctx, googleID)
+	if err != nil {
+		slog.ErrorContext(ctx, "EditJournal: loading edited_json", "googleID", googleID, "err", err)
+		return
+	}
+	if len(row.EditedJson) == 0 {
+		slog.InfoContext(ctx, "EditJournal: no edited_json, skipping", "googleID", googleID)
+		return
+	}
+
+	var gdocsDoc document.GDocsDocument
+	if err := json.Unmarshal(row.EditedJson, &gdocsDoc); err != nil {
+		slog.ErrorContext(ctx, "EditJournal: parsing edited_json", "googleID", googleID, "err", err)
+		return
+	}
+
+	slog.InfoContext(ctx, "EditJournal: calling BatchUpdate", "googleID", googleID, "paragraphs", len(gdocsDoc.Paragraphs))
+	if err := h.GDriveWorker.EditJournal(googleID, &gdocsDoc); err != nil {
+		slog.ErrorContext(ctx, "EditJournal: pushing to Google Docs", "googleID", googleID, "err", err)
+		return
+	}
+	slog.InfoContext(ctx, "EditJournal: done", "googleID", googleID)
 }

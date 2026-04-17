@@ -1,10 +1,12 @@
 import { Editor, Node } from '@tiptap/core'
+import { Paragraph } from '@tiptap/extension-paragraph'
+import { Heading } from '@tiptap/extension-heading'
 import StarterKit from '@tiptap/starter-kit'
 import {
-  type DocElement,
+  type GDocsDoc,
   type TiptapNode,
-  documentToTiptap,
-  tiptapToDocument
+  gdocsToTiptap,
+  tiptapToGdocs
 } from './journal-converter'
 
 // Replicates ContainerStyle() and ImgStyle() from image.go
@@ -28,7 +30,35 @@ function imageStyles(
   }
 }
 
-// Replicates DocImage.Templ() from document.templ
+const paraIdAttr = {
+  default: -1,
+  keepOnSplit: false,
+  renderHTML(attrs: Record<string, unknown>) {
+    return { 'data-para-id': attrs['paraId'] }
+  },
+  parseHTML(element: HTMLElement) {
+    const v = element.getAttribute('data-para-id')
+    return v !== null ? parseInt(v, 10) : -1
+  }
+}
+
+// Extend Paragraph to carry paraId as a preserved attribute.
+// keepOnSplit: false prevents new paragraphs (created by pressing Enter)
+// from inheriting the predecessor's paraId — they should default to -1.
+const ParagraphWithParaId = Paragraph.extend({
+  addAttributes() {
+    return { ...this.parent?.(), paraId: paraIdAttr }
+  }
+})
+
+// Extend Heading to carry paraId as a preserved attribute.
+const HeadingWithParaId = Heading.extend({
+  addAttributes() {
+    return { ...this.parent?.(), paraId: paraIdAttr }
+  }
+})
+
+// Replicates DocImage.Templ() rendering
 const JournalImage = Node.create({
   name: 'image',
   inline: true,
@@ -41,7 +71,8 @@ const JournalImage = Node.create({
       alt: { default: null },
       width: { default: 0 },
       height: { default: 0 },
-      crop: { default: [0, 0, 0, 0] }
+      crop: { default: [0, 0, 0, 0] },
+      imageId: { default: '' }
     }
   },
 
@@ -78,20 +109,39 @@ if (host) {
   const url = host.dataset.url
   if (!url) throw new Error('data-url missing on #journal-editor')
 
+  const readonly = host.dataset.readonly === 'true'
+
   fetch(url)
     .then((r) => r.json())
-    .then((doc: { Content: DocElement[] }) => {
+    .then((gdocsDoc: GDocsDoc) => {
+      const statusEl = document.querySelector<HTMLElement>(
+        '#journal-editor-status'
+      )
+      const showEllipsis = () => {
+        if (statusEl) {
+          statusEl.className = 'editor-status editor-status-ellipsis'
+          statusEl.innerHTML = ''
+        }
+      }
+      const showCheckmark = () => {
+        if (statusEl) {
+          statusEl.className = 'editor-status'
+          statusEl.innerHTML = '<i class="fa-solid fa-check"></i>'
+        }
+      }
+
       let saveTimer: ReturnType<typeof setTimeout> | null = null
       const scheduleSave = () => {
+        showEllipsis()
         if (saveTimer !== null) clearTimeout(saveTimer)
         saveTimer = setTimeout(() => {
           saveTimer = null
-          const content = tiptapToDocument(editor.getJSON() as TiptapNode)
+          const gdocs = tiptapToGdocs(editor.getJSON() as TiptapNode)
           fetch(url, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ Content: content })
-          })
+            body: JSON.stringify(gdocs)
+          }).then(showCheckmark)
         }, 1000)
       }
 
@@ -99,22 +149,34 @@ if (host) {
         element: host,
         extensions: [
           StarterKit.configure({
-            paragraph: { HTMLAttributes: { class: 'journal-paragraph' } },
-            heading: { HTMLAttributes: { class: 'journal-paragraph' } },
+            // Replace built-in Paragraph and Heading with our extended versions.
+            paragraph: false,
+            heading: false,
             bold: { HTMLAttributes: { class: 'journal-bold' } },
             italic: { HTMLAttributes: { class: 'journal-italic' } },
             strike: { HTMLAttributes: { class: 'journal-strikethrough' } },
             listItem: { HTMLAttributes: { class: 'journal-list-item' } }
           }),
+          ParagraphWithParaId.configure({
+            HTMLAttributes: { class: 'journal-paragraph' }
+          }),
+          HeadingWithParaId.configure({
+            HTMLAttributes: { class: 'journal-paragraph' }
+          }),
           JournalImage
         ],
-        content: documentToTiptap(doc.Content),
+        content: gdocsToTiptap(gdocsDoc),
+        editable: !readonly,
         editorProps: { attributes: { spellcheck: 'false' } },
-        onUpdate: () => scheduleSave()
+        onUpdate: () => {
+          if (!readonly) scheduleSave()
+        }
       })
 
+      if (readonly) return
+
       const toolbar = document.querySelector<HTMLElement>(
-        '#journal-editor-toolbar'
+        '#journal-editor-toolbar .editor-toolbar-buttons'
       )
       if (!toolbar) return
 

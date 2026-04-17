@@ -12345,6 +12345,10 @@ br.ProseMirror-trailingBreak {
   display: none;
 }
 
+.tiptap[contenteditable=true] br.ProseMirror-trailingBreak {
+  display: unset;
+}
+
 .tiptap {
   padding: 0;
 }

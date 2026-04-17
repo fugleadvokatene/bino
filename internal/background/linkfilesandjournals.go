@@ -2,6 +2,7 @@ package background
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"log/slog"
 	"time"
@@ -10,6 +11,7 @@ import (
 	"github.com/fugleadvokatene/bino/internal/gdrive/document"
 	"github.com/fugleadvokatene/bino/internal/sql"
 	"github.com/jackc/pgx/v5/pgtype"
+	googledocs "google.golang.org/api/docs/v1"
 )
 
 func LinkFilesAndJournals(ctx context.Context, db *dblib.Database, lastSuccess time.Time) (int64, error) {
@@ -20,12 +22,14 @@ func LinkFilesAndJournals(ctx context.Context, db *dblib.Database, lastSuccess t
 	nUpdated := 0
 	nFailed := 0
 	for _, journal := range journals {
-		doc, err := document.ParseRawJSON(journal.RawJson, journal.ImageUrls)
-		if err != nil {
-			slog.ErrorContext(ctx, "Corrupted document", "ID", journal.GoogleID, "er", err)
+		var rawDoc googledocs.Document
+		if err := json.Unmarshal(journal.RawJson, &rawDoc); err != nil {
+			slog.ErrorContext(ctx, "Corrupted document", "ID", journal.GoogleID, "err", err)
+			nFailed++
+			continue
 		}
 		var fileIDs []int32
-		for _, img := range doc.Images() {
+		for _, img := range document.ExtractImages(&rawDoc) {
 			if fileID, ok := img.FileID(); ok {
 				fileIDs = append(fileIDs, fileID)
 			}

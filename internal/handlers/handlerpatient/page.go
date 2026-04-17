@@ -6,7 +6,6 @@ import (
 	"time"
 
 	"github.com/fugleadvokatene/bino/internal/db"
-	"github.com/fugleadvokatene/bino/internal/gdrive/document"
 	"github.com/fugleadvokatene/bino/internal/generic"
 	"github.com/fugleadvokatene/bino/internal/handlers/handlererror"
 	"github.com/fugleadvokatene/bino/internal/model"
@@ -92,13 +91,7 @@ func (h *page) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		}
 	})
 
-	var journal document.Document
 	var journalMeta JournalMetadata
-	if row, err := h.DB.Q.GetJournalJSON(ctx, patientData.GoogleID.String); err == nil {
-		if doc, err := document.ParseRawJSON(row.RawJson, row.ImageUrls); err == nil {
-			journal = *doc
-		}
-	}
 	if row, err := h.DB.Q.GetJournalMetadata(ctx, patientData.GoogleID.String); err == nil {
 		journalMeta.Updated = row.Updated.Time
 		journalMeta.FolderID = row.ParentGoogleID.String
@@ -112,7 +105,6 @@ func (h *page) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		model.SliceToModel(homes),
 		events,
 		speciesList,
-		&journal,
 		journalMeta,
 	).Render(ctx, w)
 }

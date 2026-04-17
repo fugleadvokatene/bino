@@ -1,42 +1,33 @@
-export const FLAG_BOLD = 1
-export const FLAG_ITALIC = 2
-export const FLAG_UNDERLINE = 4
-export const FLAG_STRIKETHROUGH = 8
-export const FLAG_LINK = 16
+// GDocsDoc is the simplified Google Docs wire format exchanged with the backend.
+// Mirrors the Go GDocsDocument / GDocsParagraph / GDocsRun structs.
 
-export interface DocText {
-  Content: string
-  Flags: number
-  FontSize: number
-  LinkURL: string
+export interface GDocsRun {
+  // text run (imageId absent)
+  text?: string
+  bold?: boolean
+  italic?: boolean
+  underline?: boolean
+  strikethrough?: boolean
+  link?: string
+  // image run (text absent)
+  imageId?: string
+  url?: string
+  width?: number
+  height?: number
+  crop?: [number, number, number, number] // top right bottom left
 }
 
-export interface DocImage {
-  Title: string
-  Description: string
-  Width: number
-  Height: number
-  Crop: [number, number, number, number]
-  URL: string
-  InlineObjectID: string
+export interface GDocsPara {
+  paraId: number // -1 for new paragraphs
+  heading: number // 0=normal, 1=title, 2..6=headings
+  list: boolean
+  ordered: boolean
+  nesting: number
+  runs: GDocsRun[]
 }
 
-export interface Paragraph {
-  Elements: DocElement[]
-  HeadingLevel: number
-}
-
-export interface DocList {
-  Items: DocElement[]
-  Nesting: number
-  Ordered: boolean
-}
-
-export type DocElementValue = DocText | DocImage | Paragraph | DocList
-
-export interface DocElement {
-  Type: 'text' | 'image' | 'paragraph' | 'list'
-  Value: DocElementValue
+export interface GDocsDoc {
+  paragraphs: GDocsPara[]
 }
 
 export interface TiptapMark {
@@ -52,169 +43,170 @@ export interface TiptapNode {
   text?: string
 }
 
-// --- DocElement[] → TipTap ---
+// --- GDocsDoc → TipTap ---
 
-function textToTiptap(text: DocText): TiptapNode {
-  const marks: TiptapMark[] = []
-  if (text.Flags & FLAG_BOLD) marks.push({ type: 'bold' })
-  if (text.Flags & FLAG_ITALIC) marks.push({ type: 'italic' })
-  if (text.Flags & FLAG_UNDERLINE) marks.push({ type: 'underline' })
-  if (text.Flags & FLAG_STRIKETHROUGH) marks.push({ type: 'strike' })
-  if (text.Flags & FLAG_LINK)
-    marks.push({ type: 'link', attrs: { href: text.LinkURL } })
-  const node: TiptapNode = { type: 'text', text: text.Content }
-  if (marks.length > 0) node.marks = marks
-  return node
-}
-
-function paraElementsToTiptap(elements: DocElement[] | null): TiptapNode[] {
-  return (elements ?? []).flatMap((elem) => {
-    if (elem.Type === 'text') return [textToTiptap(elem.Value as DocText)]
-    if (elem.Type === 'image') {
-      const img = elem.Value as DocImage
+function runsToTiptap(runs: GDocsRun[] | null | undefined): TiptapNode[] {
+  return (runs ?? []).flatMap((run) => {
+    if (run.imageId) {
       return [
         {
           type: 'image',
           attrs: {
-            src: img.URL,
-            alt: img.Description || img.Title || '',
-            width: img.Width,
-            height: img.Height,
-            crop: img.Crop ?? [0, 0, 0, 0]
+            src: run.url ?? '',
+            alt: '',
+            width: run.width ?? 0,
+            height: run.height ?? 0,
+            crop: run.crop ?? [0, 0, 0, 0],
+            imageId: run.imageId
           }
         }
       ]
     }
-    return []
+    const text = run.text ?? ''
+    if (!text) return []
+    const marks: TiptapMark[] = []
+    if (run.bold) marks.push({ type: 'bold' })
+    if (run.italic) marks.push({ type: 'italic' })
+    if (run.underline) marks.push({ type: 'underline' })
+    if (run.strikethrough) marks.push({ type: 'strike' })
+    if (run.link) marks.push({ type: 'link', attrs: { href: run.link } })
+    const node: TiptapNode = { type: 'text', text }
+    if (marks.length > 0) node.marks = marks
+    return [node]
   })
 }
 
-function paragraphHasContent(para: Paragraph): boolean {
-  return (para.Elements ?? []).some(
-    (e) =>
-      e.Type === 'image' ||
-      (e.Type === 'text' && (e.Value as DocText).Content.trim() !== '')
-  )
-}
-
-function paragraphToTiptap(para: Paragraph): TiptapNode {
-  const content = paraElementsToTiptap(para.Elements)
-  if (para.HeadingLevel > 0) {
-    return { type: 'heading', attrs: { level: para.HeadingLevel }, content }
-  }
-  return { type: 'paragraph', content }
-}
-
-function listToTiptap(list: DocList): TiptapNode {
-  const items: TiptapNode[] = []
-  for (const item of list.Items) {
-    if (item.Type === 'paragraph') {
-      items.push({
-        type: 'listItem',
-        content: [paragraphToTiptap(item.Value as Paragraph)]
-      })
-    } else if (item.Type === 'list') {
-      const nested = listToTiptap(item.Value as DocList)
-      if (items.length > 0) {
-        items[items.length - 1].content!.push(nested)
-      } else {
-        items.push({ type: 'listItem', content: [nested] })
-      }
+function paraToTiptap(para: GDocsPara): TiptapNode {
+  const content = runsToTiptap(para.runs)
+  if (para.list) {
+    // list items are wrapped by listToTiptap; here we emit the inner paragraph
+    return {
+      type: 'paragraph',
+      attrs: { paraId: para.paraId },
+      content
     }
   }
-  return { type: list.Ordered ? 'orderedList' : 'bulletList', content: items }
+  if (para.heading > 0) {
+    return {
+      type: 'heading',
+      attrs: { level: para.heading, paraId: para.paraId },
+      content
+    }
+  }
+  return { type: 'paragraph', attrs: { paraId: para.paraId }, content }
 }
 
-export function documentToTiptap(content: DocElement[]): TiptapNode {
-  const nodes: TiptapNode[] = content.flatMap((elem) => {
-    if (elem.Type === 'paragraph') {
-      const para = elem.Value as Paragraph
-      if (para.HeadingLevel > 0 || paragraphHasContent(para))
-        return [paragraphToTiptap(para)]
+export function gdocsToTiptap(doc: GDocsDoc): TiptapNode {
+  // Group consecutive list items into bullet/ordered lists.
+  const nodes: TiptapNode[] = []
+
+  type ListGroup = { ordered: boolean; nesting: number; para: GDocsPara }[]
+  let listGroup: ListGroup = []
+
+  function flushList() {
+    if (listGroup.length === 0) return
+    // Build a flat list node (nesting handled via nested listItem content).
+    const items: TiptapNode[] = listGroup.map((item) => ({
+      type: 'listItem',
+      content: [paraToTiptap(item.para)]
+    }))
+    const listType = listGroup[0].ordered ? 'orderedList' : 'bulletList'
+    nodes.push({ type: listType, content: items })
+    listGroup = []
+  }
+
+  for (const para of doc.paragraphs) {
+    if (para.list) {
+      listGroup.push({ ordered: para.ordered, nesting: para.nesting, para })
+    } else {
+      flushList()
+      nodes.push(paraToTiptap(para))
     }
-    if (elem.Type === 'list') return [listToTiptap(elem.Value as DocList)]
-    return []
-  })
+  }
+  flushList()
+
   return { type: 'doc', content: nodes }
 }
 
-// --- TipTap → DocElement[] ---
+// --- TipTap → GDocsDoc ---
 
-function tiptapParaToDoc(node: TiptapNode, headingLevel: number): DocElement {
-  const elements: DocElement[] = (node.content ?? []).flatMap((child) => {
-    if (child.type === 'text') return [tiptapTextToDoc(child)]
-    if (child.type === 'image') return [tiptapImageToDoc(child)]
-    return []
-  })
-  return {
-    Type: 'paragraph',
-    Value: { Elements: elements, HeadingLevel: headingLevel }
+function tiptapMarksToRunProps(marks: TiptapMark[] = []): Partial<GDocsRun> {
+  const props: Partial<GDocsRun> = {}
+  for (const mark of marks) {
+    if (mark.type === 'bold') props.bold = true
+    if (mark.type === 'italic') props.italic = true
+    if (mark.type === 'underline') props.underline = true
+    if (mark.type === 'strike') props.strikethrough = true
+    if (mark.type === 'link') props.link = (mark.attrs?.href as string) ?? ''
   }
+  return props
 }
 
-function tiptapTextToDoc(node: TiptapNode): DocElement {
-  let flags = 0
-  let linkURL = ''
-  for (const mark of node.marks ?? []) {
-    if (mark.type === 'bold') flags |= FLAG_BOLD
-    if (mark.type === 'italic') flags |= FLAG_ITALIC
-    if (mark.type === 'underline') flags |= FLAG_UNDERLINE
-    if (mark.type === 'strike') flags |= FLAG_STRIKETHROUGH
-    if (mark.type === 'link') {
-      flags |= FLAG_LINK
-      linkURL = (mark.attrs?.href as string) ?? ''
+function tiptapNodeToRuns(node: TiptapNode): GDocsRun[] {
+  if (node.type === 'text') {
+    return [{ text: node.text ?? '', ...tiptapMarksToRunProps(node.marks) }]
+  }
+  if (node.type === 'image') {
+    const { src, alt, width, height, crop, imageId } = node.attrs ?? {}
+    return [
+      {
+        imageId: (imageId as string) ?? '',
+        url: (src as string) ?? '',
+        width: (width as number) ?? 0,
+        height: (height as number) ?? 0,
+        crop: (crop as [number, number, number, number]) ?? [0, 0, 0, 0]
+      }
+    ]
+  }
+  return (node.content ?? []).flatMap(tiptapNodeToRuns)
+}
+
+function tiptapParaToGDocs(
+  node: TiptapNode,
+  heading: number,
+  list: boolean,
+  ordered: boolean,
+  nesting: number
+): GDocsPara {
+  const paraId = (node.attrs?.paraId as number) ?? -1
+  const runs = (node.content ?? []).flatMap(tiptapNodeToRuns)
+  return { paraId, heading, list, ordered, nesting, runs }
+}
+
+export function tiptapToGdocs(doc: TiptapNode): GDocsDoc {
+  const paragraphs: GDocsPara[] = []
+
+  function processListNode(
+    node: TiptapNode,
+    ordered: boolean,
+    nesting: number
+  ) {
+    for (const item of node.content ?? []) {
+      if (item.type !== 'listItem') continue
+      for (const child of item.content ?? []) {
+        if (child.type === 'paragraph') {
+          paragraphs.push(tiptapParaToGDocs(child, 0, true, ordered, nesting))
+        } else if (child.type === 'bulletList') {
+          processListNode(child, false, nesting + 1)
+        } else if (child.type === 'orderedList') {
+          processListNode(child, true, nesting + 1)
+        }
+      }
     }
   }
-  return {
-    Type: 'text',
-    Value: {
-      Content: node.text ?? '',
-      Flags: flags,
-      FontSize: 0,
-      LinkURL: linkURL
+
+  for (const node of doc.content ?? []) {
+    if (node.type === 'paragraph') {
+      paragraphs.push(tiptapParaToGDocs(node, 0, false, false, 0))
+    } else if (node.type === 'heading') {
+      const level = (node.attrs?.level as number) ?? 1
+      paragraphs.push(tiptapParaToGDocs(node, level, false, false, 0))
+    } else if (node.type === 'bulletList') {
+      processListNode(node, false, 0)
+    } else if (node.type === 'orderedList') {
+      processListNode(node, true, 0)
     }
   }
-}
 
-function tiptapImageToDoc(node: TiptapNode): DocElement {
-  const { src, alt, width, height, crop } = node.attrs ?? {}
-  return {
-    Type: 'image',
-    Value: {
-      Title: '',
-      Description: (alt as string) ?? '',
-      Width: (width as number) ?? 0,
-      Height: (height as number) ?? 0,
-      Crop: (crop as [number, number, number, number]) ?? [0, 0, 0, 0],
-      URL: (src as string) ?? '',
-      InlineObjectID: ''
-    }
-  }
-}
-
-function tiptapListToDoc(node: TiptapNode, nesting: number): DocElement {
-  const ordered = node.type === 'orderedList'
-  const items: DocElement[] = (node.content ?? []).flatMap((listItem) =>
-    (listItem.content ?? []).flatMap((child) => {
-      if (child.type === 'paragraph') return [tiptapParaToDoc(child, 0)]
-      if (child.type === 'bulletList' || child.type === 'orderedList')
-        return [tiptapListToDoc(child, nesting + 1)]
-      return []
-    })
-  )
-  return {
-    Type: 'list',
-    Value: { Items: items, Ordered: ordered, Nesting: nesting }
-  }
-}
-
-export function tiptapToDocument(doc: TiptapNode): DocElement[] {
-  return (doc.content ?? []).flatMap((node) => {
-    if (node.type === 'paragraph') return [tiptapParaToDoc(node, 0)]
-    if (node.type === 'heading')
-      return [tiptapParaToDoc(node, (node.attrs?.level as number) ?? 1)]
-    if (node.type === 'bulletList' || node.type === 'orderedList')
-      return [tiptapListToDoc(node, 0)]
-    return []
-  })
+  return { paragraphs }
 }

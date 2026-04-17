@@ -222,7 +222,8 @@ ON CONFLICT (google_id) DO UPDATE
         lang=EXCLUDED.lang,
         header=EXCLUDED.header,
         body=EXCLUDED.body,
-        version=EXCLUDED.version
+        version=EXCLUDED.version,
+        edited_json=NULL
 `
 
 type UpsertJournalParams struct {
