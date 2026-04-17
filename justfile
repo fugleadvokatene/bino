@@ -28,6 +28,14 @@ build: build-backend build-e2e
 run: build-backend
 	./backend
 
+gotest:
+	go test ./... -v
+
+tstest:
+	cd frontend && npm run test
+
+test: gotest tstest
+
 e2e: build-e2e
 	./e2e/e2e
 

@@ -36,11 +36,17 @@ ON CONFLICT (google_id) DO UPDATE
 ;
 
 -- name: GetJournalJSON :one
-SELECT updated, parent_google_id, gf.name AS parent_google_name, raw_json, image_urls
+SELECT updated, parent_google_id, gf.name AS parent_google_name, raw_json, image_urls, edited_json
 FROM journal
 LEFT JOIN google_folder AS gf
     ON gf.google_id = journal.parent_google_id
 WHERE journal.google_id = $1
+;
+
+-- name: UpdateJournalEdited :exec
+UPDATE journal
+SET edited_json = $2
+WHERE google_id = $1
 ;
 
 -- name: DeleteJournal :exec

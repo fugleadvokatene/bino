@@ -5,7 +5,8 @@
   "main": "index.js",
   "scripts": {
     "build": "node esbuild.config.ts",
-    "format": "prettier . --write"
+    "format": "prettier . --write",
+    "test": "vitest run"
   },
   "type": "module",
   "keywords": [],
@@ -41,6 +42,7 @@
   "devDependencies": {
     "@types/node": "^25.0.1",
     "esbuild": "^0.27.1",
-    "prettier": "^3.7.4"
+    "prettier": "^3.7.4",
+    "vitest": "^4.1.4"
   }
 }

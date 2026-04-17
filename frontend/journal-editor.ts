@@ -1,59 +1,11 @@
 import { Editor, Node } from '@tiptap/core'
 import StarterKit from '@tiptap/starter-kit'
-
-const FLAG_BOLD = 1
-const FLAG_ITALIC = 2
-const FLAG_UNDERLINE = 4
-const FLAG_STRIKETHROUGH = 8
-const FLAG_LINK = 16
-
-interface DocText {
-  Content: string
-  Flags: number
-  FontSize: number
-  LinkURL: string
-}
-
-interface DocImage {
-  Title: string
-  Description: string
-  Width: number
-  Height: number
-  Crop: [number, number, number, number] // top right bottom left
-  URL: string
-  InlineObjectID: string
-}
-
-interface Paragraph {
-  Elements: DocElement[]
-  HeadingLevel: number
-}
-
-interface DocList {
-  Items: DocElement[]
-  Nesting: number
-  Ordered: boolean
-}
-
-type DocElementValue = DocText | DocImage | Paragraph | DocList
-
-interface DocElement {
-  Type: 'text' | 'image' | 'paragraph' | 'list'
-  Value: DocElementValue
-}
-
-interface TiptapMark {
-  type: string
-  attrs?: Record<string, unknown>
-}
-
-interface TiptapNode {
-  type: string
-  attrs?: Record<string, unknown>
-  content?: TiptapNode[]
-  marks?: TiptapMark[]
-  text?: string
-}
+import {
+  type DocElement,
+  type TiptapNode,
+  documentToTiptap,
+  tiptapToDocument
+} from './journal-converter'
 
 // Replicates ContainerStyle() and ImgStyle() from image.go
 function imageStyles(
@@ -121,79 +73,6 @@ const JournalImage = Node.create({
   }
 })
 
-function textToTiptap(text: DocText): TiptapNode {
-  const marks: TiptapMark[] = []
-  if (text.Flags & FLAG_BOLD) marks.push({ type: 'bold' })
-  if (text.Flags & FLAG_ITALIC) marks.push({ type: 'italic' })
-  if (text.Flags & FLAG_UNDERLINE) marks.push({ type: 'underline' })
-  if (text.Flags & FLAG_STRIKETHROUGH) marks.push({ type: 'strike' })
-  if (text.Flags & FLAG_LINK)
-    marks.push({ type: 'link', attrs: { href: text.LinkURL } })
-  const node: TiptapNode = { type: 'text', text: text.Content }
-  if (marks.length > 0) node.marks = marks
-  return node
-}
-
-function paraElementsToTiptap(elements: DocElement[] | null): TiptapNode[] {
-  return (elements ?? []).flatMap((elem) => {
-    if (elem.Type === 'text') return [textToTiptap(elem.Value as DocText)]
-    if (elem.Type === 'image') {
-      const img = elem.Value as DocImage
-      return [
-        {
-          type: 'image',
-          attrs: {
-            src: img.URL,
-            alt: img.Description || img.Title || '',
-            width: img.Width,
-            height: img.Height,
-            crop: img.Crop ?? [0, 0, 0, 0]
-          }
-        }
-      ]
-    }
-    return []
-  })
-}
-
-function paragraphToTiptap(para: Paragraph): TiptapNode {
-  const content = paraElementsToTiptap(para.Elements)
-  if (para.HeadingLevel > 0) {
-    return { type: 'heading', attrs: { level: para.HeadingLevel }, content }
-  }
-  return { type: 'paragraph', content }
-}
-
-function listToTiptap(list: DocList): TiptapNode {
-  const items: TiptapNode[] = []
-  for (const item of list.Items) {
-    if (item.Type === 'paragraph') {
-      items.push({
-        type: 'listItem',
-        content: [paragraphToTiptap(item.Value as Paragraph)]
-      })
-    } else if (item.Type === 'list') {
-      const nested = listToTiptap(item.Value as DocList)
-      if (items.length > 0) {
-        items[items.length - 1].content!.push(nested)
-      } else {
-        items.push({ type: 'listItem', content: [nested] })
-      }
-    }
-  }
-  return { type: list.Ordered ? 'orderedList' : 'bulletList', content: items }
-}
-
-function documentToTiptap(content: DocElement[]): TiptapNode {
-  const nodes: TiptapNode[] = content.flatMap((elem) => {
-    if (elem.Type === 'paragraph')
-      return [paragraphToTiptap(elem.Value as Paragraph)]
-    if (elem.Type === 'list') return [listToTiptap(elem.Value as DocList)]
-    return []
-  })
-  return { type: 'doc', content: nodes }
-}
-
 const host = document.querySelector<HTMLElement>('#journal-editor')
 if (host) {
   const url = host.dataset.url
@@ -202,6 +81,20 @@ if (host) {
   fetch(url)
     .then((r) => r.json())
     .then((doc: { Content: DocElement[] }) => {
+      let saveTimer: ReturnType<typeof setTimeout> | null = null
+      const scheduleSave = () => {
+        if (saveTimer !== null) clearTimeout(saveTimer)
+        saveTimer = setTimeout(() => {
+          saveTimer = null
+          const content = tiptapToDocument(editor.getJSON() as TiptapNode)
+          fetch(url, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ Content: content })
+          })
+        }, 1000)
+      }
+
       const editor = new Editor({
         element: host,
         extensions: [
@@ -216,7 +109,8 @@ if (host) {
           JournalImage
         ],
         content: documentToTiptap(doc.Content),
-        editorProps: { attributes: { spellcheck: 'false' } }
+        editorProps: { attributes: { spellcheck: 'false' } },
+        onUpdate: () => scheduleSave()
       })
 
       const toolbar = document.querySelector<HTMLElement>(

@@ -125,6 +125,7 @@ type Journal struct {
 	ParentGoogleID pgtype.Text
 	ImageUrls      []byte
 	Version        int16
+	EditedJson     []byte
 }
 
 // Each row represents a patient

@@ -22369,12 +22369,164 @@ var StarterKit = Extension.create({
 });
 var index_default = StarterKit;
 
-// journal-editor.ts
+// journal-converter.ts
 var FLAG_BOLD = 1;
 var FLAG_ITALIC = 2;
 var FLAG_UNDERLINE = 4;
 var FLAG_STRIKETHROUGH = 8;
 var FLAG_LINK = 16;
+function textToTiptap(text) {
+  const marks = [];
+  if (text.Flags & FLAG_BOLD) marks.push({ type: "bold" });
+  if (text.Flags & FLAG_ITALIC) marks.push({ type: "italic" });
+  if (text.Flags & FLAG_UNDERLINE) marks.push({ type: "underline" });
+  if (text.Flags & FLAG_STRIKETHROUGH) marks.push({ type: "strike" });
+  if (text.Flags & FLAG_LINK)
+    marks.push({ type: "link", attrs: { href: text.LinkURL } });
+  const node = { type: "text", text: text.Content };
+  if (marks.length > 0) node.marks = marks;
+  return node;
+}
+function paraElementsToTiptap(elements) {
+  return (elements ?? []).flatMap((elem) => {
+    if (elem.Type === "text") return [textToTiptap(elem.Value)];
+    if (elem.Type === "image") {
+      const img = elem.Value;
+      return [
+        {
+          type: "image",
+          attrs: {
+            src: img.URL,
+            alt: img.Description || img.Title || "",
+            width: img.Width,
+            height: img.Height,
+            crop: img.Crop ?? [0, 0, 0, 0]
+          }
+        }
+      ];
+    }
+    return [];
+  });
+}
+function paragraphHasContent(para) {
+  return (para.Elements ?? []).some(
+    (e) => e.Type === "image" || e.Type === "text" && e.Value.Content.trim() !== ""
+  );
+}
+function paragraphToTiptap(para) {
+  const content = paraElementsToTiptap(para.Elements);
+  if (para.HeadingLevel > 0) {
+    return { type: "heading", attrs: { level: para.HeadingLevel }, content };
+  }
+  return { type: "paragraph", content };
+}
+function listToTiptap(list) {
+  const items = [];
+  for (const item of list.Items) {
+    if (item.Type === "paragraph") {
+      items.push({
+        type: "listItem",
+        content: [paragraphToTiptap(item.Value)]
+      });
+    } else if (item.Type === "list") {
+      const nested = listToTiptap(item.Value);
+      if (items.length > 0) {
+        items[items.length - 1].content.push(nested);
+      } else {
+        items.push({ type: "listItem", content: [nested] });
+      }
+    }
+  }
+  return { type: list.Ordered ? "orderedList" : "bulletList", content: items };
+}
+function documentToTiptap(content) {
+  const nodes = content.flatMap((elem) => {
+    if (elem.Type === "paragraph") {
+      const para = elem.Value;
+      if (para.HeadingLevel > 0 || paragraphHasContent(para))
+        return [paragraphToTiptap(para)];
+    }
+    if (elem.Type === "list") return [listToTiptap(elem.Value)];
+    return [];
+  });
+  return { type: "doc", content: nodes };
+}
+function tiptapParaToDoc(node, headingLevel) {
+  const elements = (node.content ?? []).flatMap((child) => {
+    if (child.type === "text") return [tiptapTextToDoc(child)];
+    if (child.type === "image") return [tiptapImageToDoc(child)];
+    return [];
+  });
+  return {
+    Type: "paragraph",
+    Value: { Elements: elements, HeadingLevel: headingLevel }
+  };
+}
+function tiptapTextToDoc(node) {
+  let flags = 0;
+  let linkURL = "";
+  for (const mark of node.marks ?? []) {
+    if (mark.type === "bold") flags |= FLAG_BOLD;
+    if (mark.type === "italic") flags |= FLAG_ITALIC;
+    if (mark.type === "underline") flags |= FLAG_UNDERLINE;
+    if (mark.type === "strike") flags |= FLAG_STRIKETHROUGH;
+    if (mark.type === "link") {
+      flags |= FLAG_LINK;
+      linkURL = mark.attrs?.href ?? "";
+    }
+  }
+  return {
+    Type: "text",
+    Value: {
+      Content: node.text ?? "",
+      Flags: flags,
+      FontSize: 0,
+      LinkURL: linkURL
+    }
+  };
+}
+function tiptapImageToDoc(node) {
+  const { src, alt, width, height, crop } = node.attrs ?? {};
+  return {
+    Type: "image",
+    Value: {
+      Title: "",
+      Description: alt ?? "",
+      Width: width ?? 0,
+      Height: height ?? 0,
+      Crop: crop ?? [0, 0, 0, 0],
+      URL: src ?? "",
+      InlineObjectID: ""
+    }
+  };
+}
+function tiptapListToDoc(node, nesting) {
+  const ordered = node.type === "orderedList";
+  const items = (node.content ?? []).flatMap(
+    (listItem) => (listItem.content ?? []).flatMap((child) => {
+      if (child.type === "paragraph") return [tiptapParaToDoc(child, 0)];
+      if (child.type === "bulletList" || child.type === "orderedList")
+        return [tiptapListToDoc(child, nesting + 1)];
+      return [];
+    })
+  );
+  return {
+    Type: "list",
+    Value: { Items: items, Ordered: ordered, Nesting: nesting }
+  };
+}
+function tiptapToDocument(doc3) {
+  return (doc3.content ?? []).flatMap((node) => {
+    if (node.type === "paragraph") return [tiptapParaToDoc(node, 0)];
+    if (node.type === "heading")
+      return [tiptapParaToDoc(node, node.attrs?.level ?? 1)];
+    if (node.type === "bulletList" || node.type === "orderedList")
+      return [tiptapListToDoc(node, 0)];
+    return [];
+  });
+}
+
+// journal-editor.ts
 function imageStyles(width, height, crop) {
   const [top, right, bottom, left] = crop;
   let xFraction = 1 - left - right;
@@ -22430,79 +22582,24 @@ var JournalImage = Node3.create({
     ];
   }
 });
-function textToTiptap(text) {
-  const marks = [];
-  if (text.Flags & FLAG_BOLD) marks.push({ type: "bold" });
-  if (text.Flags & FLAG_ITALIC) marks.push({ type: "italic" });
-  if (text.Flags & FLAG_UNDERLINE) marks.push({ type: "underline" });
-  if (text.Flags & FLAG_STRIKETHROUGH) marks.push({ type: "strike" });
-  if (text.Flags & FLAG_LINK)
-    marks.push({ type: "link", attrs: { href: text.LinkURL } });
-  const node = { type: "text", text: text.Content };
-  if (marks.length > 0) node.marks = marks;
-  return node;
-}
-function paraElementsToTiptap(elements) {
-  return (elements ?? []).flatMap((elem) => {
-    if (elem.Type === "text") return [textToTiptap(elem.Value)];
-    if (elem.Type === "image") {
-      const img = elem.Value;
-      return [
-        {
-          type: "image",
-          attrs: {
-            src: img.URL,
-            alt: img.Description || img.Title || "",
-            width: img.Width,
-            height: img.Height,
-            crop: img.Crop ?? [0, 0, 0, 0]
-          }
-        }
-      ];
-    }
-    return [];
-  });
-}
-function paragraphToTiptap(para) {
-  const content = paraElementsToTiptap(para.Elements);
-  if (para.HeadingLevel > 0) {
-    return { type: "heading", attrs: { level: para.HeadingLevel }, content };
-  }
-  return { type: "paragraph", content };
-}
-function listToTiptap(list) {
-  const items = [];
-  for (const item of list.Items) {
-    if (item.Type === "paragraph") {
-      items.push({
-        type: "listItem",
-        content: [paragraphToTiptap(item.Value)]
-      });
-    } else if (item.Type === "list") {
-      const nested = listToTiptap(item.Value);
-      if (items.length > 0) {
-        items[items.length - 1].content.push(nested);
-      } else {
-        items.push({ type: "listItem", content: [nested] });
-      }
-    }
-  }
-  return { type: list.Ordered ? "orderedList" : "bulletList", content: items };
-}
-function documentToTiptap(content) {
-  const nodes = content.flatMap((elem) => {
-    if (elem.Type === "paragraph")
-      return [paragraphToTiptap(elem.Value)];
-    if (elem.Type === "list") return [listToTiptap(elem.Value)];
-    return [];
-  });
-  return { type: "doc", content: nodes };
-}
 var host = document.querySelector("#journal-editor");
 if (host) {
   const url = host.dataset.url;
   if (!url) throw new Error("data-url missing on #journal-editor");
   fetch(url).then((r) => r.json()).then((doc3) => {
+    let saveTimer = null;
+    const scheduleSave = () => {
+      if (saveTimer !== null) clearTimeout(saveTimer);
+      saveTimer = setTimeout(() => {
+        saveTimer = null;
+        const content = tiptapToDocument(editor.getJSON());
+        fetch(url, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ Content: content })
+        });
+      }, 1e3);
+    };
     const editor = new Editor({
       element: host,
       extensions: [
@@ -22517,7 +22614,8 @@ if (host) {
         JournalImage
       ],
       content: documentToTiptap(doc3.Content),
-      editorProps: { attributes: { spellcheck: "false" } }
+      editorProps: { attributes: { spellcheck: "false" } },
+      onUpdate: () => scheduleSave()
     });
     const toolbar = document.querySelector(
       "#journal-editor-toolbar"

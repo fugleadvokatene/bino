@@ -73,8 +73,13 @@ func Routes(
 		},
 		{
 			Path:    "GET /patient/{patient}/journal-json",
-			Handler: &journalAPI{DB: db},
+			Handler: &journalAPIGet{DB: db},
 			Cap:     model.CapViewAllActivePatients,
+		},
+		{
+			Path:    "POST /patient/{patient}/journal-json",
+			Handler: &journalAPIPost{DB: db},
+			Cap:     model.CapManageOwnPatients,
 		},
 	}
 }

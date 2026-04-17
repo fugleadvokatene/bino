@@ -49,7 +49,7 @@ func (q *Queries) GetJournalImageURLs(ctx context.Context, googleID string) ([]b
 }
 
 const getJournalJSON = `-- name: GetJournalJSON :one
-SELECT updated, parent_google_id, gf.name AS parent_google_name, raw_json, image_urls
+SELECT updated, parent_google_id, gf.name AS parent_google_name, raw_json, image_urls, edited_json
 FROM journal
 LEFT JOIN google_folder AS gf
     ON gf.google_id = journal.parent_google_id
@@ -62,6 +62,7 @@ type GetJournalJSONRow struct {
 	ParentGoogleName pgtype.Text
 	RawJson          []byte
 	ImageUrls        []byte
+	EditedJson       []byte
 }
 
 func (q *Queries) GetJournalJSON(ctx context.Context, googleID string) (GetJournalJSONRow, error) {
@@ -73,6 +74,7 @@ func (q *Queries) GetJournalJSON(ctx context.Context, googleID string) (GetJourn
 		&i.ParentGoogleName,
 		&i.RawJson,
 		&i.ImageUrls,
+		&i.EditedJson,
 	)
 	return i, err
 }
@@ -167,6 +169,22 @@ type SetGoogleParentFolderParams struct {
 
 func (q *Queries) SetGoogleParentFolder(ctx context.Context, arg SetGoogleParentFolderParams) error {
 	_, err := q.db.Exec(ctx, setGoogleParentFolder, arg.GoogleID, arg.ParentGoogleID)
+	return err
+}
+
+const updateJournalEdited = `-- name: UpdateJournalEdited :exec
+UPDATE journal
+SET edited_json = $2
+WHERE google_id = $1
+`
+
+type UpdateJournalEditedParams struct {
+	GoogleID   string
+	EditedJson []byte
+}
+
+func (q *Queries) UpdateJournalEdited(ctx context.Context, arg UpdateJournalEditedParams) error {
+	_, err := q.db.Exec(ctx, updateJournalEdited, arg.GoogleID, arg.EditedJson)
 	return err
 }
 
