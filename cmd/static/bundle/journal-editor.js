@@ -22386,7 +22386,7 @@ function imageStyles(width, height, crop) {
   const leftPct = -left * scaleX;
   const topPct = -top * scaleY;
   return {
-    container: `width: ${Math.round(width)}px; height: ${Math.round(height)}px; overflow: hidden; position: relative`,
+    container: `width: min(${Math.round(width)}px, 100%); aspect-ratio: ${Math.round(width)}/${Math.round(height)}; overflow: hidden; position: relative`,
     img: `position: absolute; width: ${scaleX}%; height: ${scaleY}%; left: ${leftPct}%; top: ${topPct}%; max-width: none`
   };
 }

@@ -24,7 +24,7 @@ type DocImage struct {
 }
 
 func (img *DocImage) ContainerStyle() string {
-	return fmt.Sprintf("width: %dpx; height: %dpx; overflow: hidden; position: relative", int(img.Width), int(img.Height))
+	return fmt.Sprintf("width: min(%dpx, 100%%); aspect-ratio: %d/%d; overflow: hidden; position: relative", int(img.Width), int(img.Width), int(img.Height))
 }
 
 func (img *DocImage) ImgStyle() string {
