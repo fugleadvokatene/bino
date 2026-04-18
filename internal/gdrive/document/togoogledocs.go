@@ -184,12 +184,10 @@ func patchParagraphGDocs(lp *livePara, ep *GDocsParagraph) []*docs.Request {
 				},
 			})
 			end := pos + utf16Len(run.Text)
-			// Only emit a style request when the run carries explicit marks.
-			// After delete+insert the text already has the paragraph default
-			// (no formatting), so an empty UpdateTextStyle is unnecessary.
-			if run.Bold || run.Italic || run.Underline || run.Strikethrough || run.Link != "" {
-				reqs = append(reqs, fullRunStyleReq(pos, end, &run))
-			}
+			// Always emit UpdateTextStyle, even for plain runs. Google Docs
+			// inherits the formatting of the preceding character on insert, so
+			// an explicit clear is needed when inserting plain text after bold.
+			reqs = append(reqs, fullRunStyleReq(pos, end, &run))
 			pos = end
 		}
 	}
