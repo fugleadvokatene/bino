@@ -1,0 +1,79 @@
+package handlerfile
+
+import (
+    "fmt"
+    "github.com/fugleadvokatene/bino/internal/model"
+    "github.com/fugleadvokatene/bino/internal/request"
+    "github.com/fugleadvokatene/bino/internal/templbase"
+)
+
+templ LargestFilesPage(data *request.CommonData, files []model.File) {
+    @templbase.Layout(data) {
+        <div class="card p-2">
+            <h1>Largest files</h1>
+            <table class="table table-sm">
+                <thead>
+                    <tr>
+                        <th>File</th>
+                        <th>Original size</th>
+                        <th>Large variant size</th>
+                        <th>Savings</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    for _, file := range files {
+                        @largestFileRow(data, &file)
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+}
+
+templ largestFileRow(data *request.CommonData, file *model.File) {
+    <tr>
+        <td><a href={templ.URL(file.URL())}>{file.PresentationFilename}</a></td>
+        <td>
+            if file.OriginalDeleted {
+                <span class="text-muted">(deleted)</span>
+            } else {
+                {file.FileSizeText()}
+            }
+        </td>
+        <td>
+            if lv := largeVariant(file); lv != nil {
+                {model.FileSizeText(int64(lv.Size))}
+            } else {
+                <span class="text-muted">-</span>
+            }
+        </td>
+        <td>
+            if lv := largeVariant(file); lv != nil && !file.OriginalDeleted {
+                {model.FileSizeText(file.Size - int64(lv.Size))}
+            } else {
+                <span class="text-muted">-</span>
+            }
+        </td>
+        <td>
+            if file.HasLargeVariant() && !file.OriginalDeleted {
+                @templbase.SingleButtonForm(
+                    data,
+                    fmt.Sprintf("/file/%d/delete-original", file.ID),
+                    "Delete original",
+                    "POST",
+                    "btn-outline-warning btn-sm",
+                )
+            }
+        </td>
+    </tr>
+}
+
+func largeVariant(file *model.File) *model.ImageVariant {
+    for i := range file.ImageVariants {
+        if file.ImageVariants[i].VariantID == model.FileVariantIDLarge {
+            return &file.ImageVariants[i]
+        }
+    }
+    return nil
+}

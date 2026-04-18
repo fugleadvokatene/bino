@@ -59,6 +59,20 @@ func (h *Read) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
+	// If the original has been deleted, fall back to the Large variant
+	if fileView.OriginalDeleted {
+		variant, err := h.DB.Q.GetVariant(ctx, sql.GetVariantParams{
+			FileID:  file.ID,
+			Variant: model.FileVariantIDLarge.String(),
+		})
+		if err != nil {
+			request.AjaxError(w, r, err, http.StatusNotFound)
+			return
+		}
+		h.serveFile(w, r, fileView.UUID, variant.Filename, variant.Mimetype, int(variant.Size))
+		return
+	}
+
 	// Serve original
 	h.serveFile(w, r, fileView.UUID, fileView.OriginalFilename, fileView.MIMEType, int(fileView.Size))
 }

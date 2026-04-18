@@ -243,3 +243,13 @@ func (db *Database) OpenFile(ctx context.Context, id string, filename string) (i
 func (db *Database) DeleteFile(ctx context.Context, id string) error {
 	return db.deleteFile(ctx, db.MainRoot, id)
 }
+
+func (db *Database) DeleteOriginalFile(ctx context.Context, id string, filename string) error {
+	if err := uuid.Validate(id); err != nil {
+		return newFileError(http.StatusBadRequest, "'%s' is not a valid UUID: %w", id, err)
+	}
+	if err := db.MainRoot.Remove(id + "/" + filename); err != nil {
+		return newFileError(http.StatusInternalServerError, "%w", err)
+	}
+	return nil
+}

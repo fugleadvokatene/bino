@@ -47,6 +47,7 @@ type File struct {
 	PresentationFilename string
 	MiniaturesCreated    bool
 	Sha256               []byte
+	OriginalDeleted      bool
 }
 
 type FileJournal struct {

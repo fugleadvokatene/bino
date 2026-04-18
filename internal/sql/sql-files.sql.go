@@ -47,7 +47,7 @@ func (q *Queries) GetAllFileWikiAssociations(ctx context.Context) ([]FileWiki, e
 }
 
 const getFileByID = `-- name: GetFileByID :one
-SELECT id, uuid, created, filename, mimetype, size, presentation_filename, miniatures_created, sha256
+SELECT id, uuid, created, filename, mimetype, size, presentation_filename, miniatures_created, sha256, original_deleted
 FROM file
 WHERE id = $1
 `
@@ -65,12 +65,13 @@ func (q *Queries) GetFileByID(ctx context.Context, id int32) (File, error) {
 		&i.PresentationFilename,
 		&i.MiniaturesCreated,
 		&i.Sha256,
+		&i.OriginalDeleted,
 	)
 	return i, err
 }
 
 const getFileBySizeAndHash = `-- name: GetFileBySizeAndHash :one
-SELECT id, uuid, created, filename, mimetype, size, presentation_filename, miniatures_created, sha256
+SELECT id, uuid, created, filename, mimetype, size, presentation_filename, miniatures_created, sha256, original_deleted
 FROM file
 WHERE size = $1 AND sha256 = $2 AND sha256 IS NOT NULL
 LIMIT 1
@@ -94,6 +95,7 @@ func (q *Queries) GetFileBySizeAndHash(ctx context.Context, arg GetFileBySizeAnd
 		&i.PresentationFilename,
 		&i.MiniaturesCreated,
 		&i.Sha256,
+		&i.OriginalDeleted,
 	)
 	return i, err
 }
@@ -134,7 +136,7 @@ func (q *Queries) GetFileWikiAssociations(ctx context.Context, dollar_1 []int32)
 }
 
 const getFiles = `-- name: GetFiles :many
-SELECT id, uuid, created, filename, mimetype, size, presentation_filename, miniatures_created, sha256
+SELECT id, uuid, created, filename, mimetype, size, presentation_filename, miniatures_created, sha256, original_deleted
 FROM file
 ORDER BY created DESC
 LIMIT $1 OFFSET $2
@@ -164,6 +166,7 @@ func (q *Queries) GetFiles(ctx context.Context, arg GetFilesParams) ([]File, err
 			&i.PresentationFilename,
 			&i.MiniaturesCreated,
 			&i.Sha256,
+			&i.OriginalDeleted,
 		); err != nil {
 			return nil, err
 		}
@@ -210,7 +213,7 @@ func (q *Queries) GetFilesMatchingJournals(ctx context.Context, googleID []strin
 }
 
 const getFilesMissingHash = `-- name: GetFilesMissingHash :many
-SELECT id, uuid, created, filename, mimetype, size, presentation_filename, miniatures_created, sha256
+SELECT id, uuid, created, filename, mimetype, size, presentation_filename, miniatures_created, sha256, original_deleted
 FROM file
 WHERE sha256 IS NULL
 `
@@ -234,6 +237,7 @@ func (q *Queries) GetFilesMissingHash(ctx context.Context) ([]File, error) {
 			&i.PresentationFilename,
 			&i.MiniaturesCreated,
 			&i.Sha256,
+			&i.OriginalDeleted,
 		); err != nil {
 			return nil, err
 		}
@@ -246,7 +250,7 @@ func (q *Queries) GetFilesMissingHash(ctx context.Context) ([]File, error) {
 }
 
 const getFilesMissingMiniatures = `-- name: GetFilesMissingMiniatures :many
-SELECT f.id, f.uuid, f.created, f.filename, f.mimetype, f.size, f.presentation_filename, f.miniatures_created, f.sha256
+SELECT f.id, f.uuid, f.created, f.filename, f.mimetype, f.size, f.presentation_filename, f.miniatures_created, f.sha256, f.original_deleted
 FROM file AS f
 WHERE NOT f.miniatures_created
 `
@@ -270,6 +274,7 @@ func (q *Queries) GetFilesMissingMiniatures(ctx context.Context) ([]File, error)
 			&i.PresentationFilename,
 			&i.MiniaturesCreated,
 			&i.Sha256,
+			&i.OriginalDeleted,
 		); err != nil {
 			return nil, err
 		}
@@ -282,7 +287,7 @@ func (q *Queries) GetFilesMissingMiniatures(ctx context.Context) ([]File, error)
 }
 
 const getFilesMissingOriginalVariant = `-- name: GetFilesMissingOriginalVariant :many
-SELECT f.id, f.uuid, f.created, f.filename, f.mimetype, f.size, f.presentation_filename, f.miniatures_created, f.sha256
+SELECT f.id, f.uuid, f.created, f.filename, f.mimetype, f.size, f.presentation_filename, f.miniatures_created, f.sha256, f.original_deleted
 FROM file AS f
 LEFT JOIN image_variant AS iv
   ON f.id = iv.file_id
@@ -308,6 +313,7 @@ func (q *Queries) GetFilesMissingOriginalVariant(ctx context.Context) ([]File, e
 			&i.PresentationFilename,
 			&i.MiniaturesCreated,
 			&i.Sha256,
+			&i.OriginalDeleted,
 		); err != nil {
 			return nil, err
 		}
@@ -394,6 +400,44 @@ func (q *Queries) GetImageVariantsMissingHash(ctx context.Context) ([]GetImageVa
 			&i.Height,
 			&i.Sha256,
 			&i.Uuid,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getLargestFiles = `-- name: GetLargestFiles :many
+SELECT id, uuid, created, filename, mimetype, size, presentation_filename, miniatures_created, sha256, original_deleted
+FROM file
+ORDER BY size DESC
+LIMIT $1
+`
+
+func (q *Queries) GetLargestFiles(ctx context.Context, limit int32) ([]File, error) {
+	rows, err := q.db.Query(ctx, getLargestFiles, limit)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []File
+	for rows.Next() {
+		var i File
+		if err := rows.Scan(
+			&i.ID,
+			&i.Uuid,
+			&i.Created,
+			&i.Filename,
+			&i.Mimetype,
+			&i.Size,
+			&i.PresentationFilename,
+			&i.MiniaturesCreated,
+			&i.Sha256,
+			&i.OriginalDeleted,
 		); err != nil {
 			return nil, err
 		}
@@ -584,6 +628,17 @@ WHERE id = $1
 
 func (q *Queries) SetMiniaturesCreated(ctx context.Context, id int32) error {
 	_, err := q.db.Exec(ctx, setMiniaturesCreated, id)
+	return err
+}
+
+const setOriginalDeleted = `-- name: SetOriginalDeleted :exec
+UPDATE file
+SET original_deleted = TRUE
+WHERE id = $1
+`
+
+func (q *Queries) SetOriginalDeleted(ctx context.Context, id int32) error {
+	_, err := q.db.Exec(ctx, setOriginalDeleted, id)
 	return err
 }
 

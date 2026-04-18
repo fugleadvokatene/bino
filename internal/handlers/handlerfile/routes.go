@@ -50,9 +50,19 @@ func Routes(
 			Cap:     model.CapUploadFile,
 		},
 		{
+			Path:    "POST /file/{id}/delete-original",
+			Handler: &deleteOriginal{DB: db},
+			Cap:     model.CapUploadFile,
+		},
+		{
 			Path:    "POST /file/{id}/set-filename",
 			Handler: &setFilename{DB: db},
 			Cap:     model.CapEditWiki,
+		},
+		{
+			Path:    "GET /file/largest",
+			Handler: &largestFiles{DB: db},
+			Cap:     model.CapUploadFile,
 		},
 	}
 }

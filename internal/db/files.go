@@ -56,6 +56,33 @@ func (db *Database) GetFiles(ctx context.Context, limit, offset int32) ([]model.
 	return files, int32(n), nil
 }
 
+func (db *Database) GetLargestFiles(ctx context.Context, limit int32) ([]model.File, error) {
+	filesSQL, err := db.Q.GetLargestFiles(ctx, int32(limit))
+	if err != nil {
+		return nil, fmt.Errorf("fetching largest files: %w", err)
+	}
+	files := generic.SliceToSlice(filesSQL, func(in sql.File) model.File { return in.ToModel() })
+
+	if len(files) > 0 {
+		fileIDs := generic.SliceToSlice(files, func(f model.File) int32 { return f.ID })
+		imageVariants, err := db.Q.GetImageVariants(ctx, fileIDs)
+		if err != nil {
+			return nil, fmt.Errorf("getting image variants: %w", err)
+		}
+		generic.GroupByID(
+			files,
+			imageVariants,
+			getFileID,
+			func(iv *sql.ImageVariant) int32 { return iv.FileID },
+			func(f *model.File, iv *sql.ImageVariant) {
+				f.ImageVariants = append(f.ImageVariants, iv.ToModel())
+			},
+		)
+	}
+
+	return files, nil
+}
+
 func getFileID(f *model.File) int32 {
 	return f.ID
 }

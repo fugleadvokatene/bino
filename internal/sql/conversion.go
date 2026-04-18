@@ -263,6 +263,7 @@ func (in *File) ToModel() model.File {
 		MIMEType:             in.Mimetype,
 		Size:                 in.Size,
 		SHA256:               in.Sha256,
+		OriginalDeleted:      in.OriginalDeleted,
 	}
 }
 

@@ -18,6 +18,7 @@ type File struct {
 	MIMEType             string
 	Size                 int64
 	SHA256               []byte
+	OriginalDeleted      bool
 	WikiAssociations     []FileWikiAssociation
 	PatientAssociations  []FilePatientAssociation
 	ImageVariants        []ImageVariant
@@ -77,6 +78,19 @@ func (in *File) ImgSizes() string {
 
 func (in *File) EditPresentationFilenameURL() string {
 	return fmt.Sprintf("/file/%d/set-filename", in.ID)
+}
+
+func (in *File) DeleteOriginalURL() string {
+	return fmt.Sprintf("/file/%d/delete-original", in.ID)
+}
+
+func (in *File) HasLargeVariant() bool {
+	for _, v := range in.ImageVariants {
+		if v.VariantID == FileVariantIDLarge {
+			return true
+		}
+	}
+	return false
 }
 
 func (in *File) FileSizeText() string {

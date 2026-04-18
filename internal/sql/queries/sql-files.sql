@@ -118,6 +118,19 @@ FROM file
 WHERE id = @id
 ;
 
+-- name: SetOriginalDeleted :exec
+UPDATE file
+SET original_deleted = TRUE
+WHERE id = @id
+;
+
+-- name: GetLargestFiles :many
+SELECT *
+FROM file
+ORDER BY size DESC
+LIMIT $1
+;
+
 -- name: UpdatePresentationFilename :exec
 UPDATE file
 SET presentation_filename = @filename
