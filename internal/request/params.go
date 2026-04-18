@@ -154,7 +154,7 @@ func GetPathValue(r *http.Request, field string) (string, error) {
 
 func GetCheckboxValue(r *http.Request, field string) bool {
 	v, err := GetFormValue(r, field)
-	return err == nil && v == "on"
+	return err == nil && (v == "on" || v == "1")
 }
 
 func stringsToIDs(in map[string]string) (map[string]int32, error) {

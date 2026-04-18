@@ -24,7 +24,7 @@ func (h *add) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	fields, err := request.GetFormValues(r, "name", "description", "interval_type", "interval_amount", "interval_unit", "end_type", "end_count", "standard")
+	fields, err := request.GetFormValues(r, "name", "description", "interval_type", "interval_amount", "interval_unit", "end_type", "end_count")
 	if err != nil {
 		handlererror.Error(w, r, err)
 		return
@@ -44,7 +44,7 @@ func (h *add) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		IntervalHours:  intervalHours,
 		MorningEvening: morningEvening,
 		RemainingCount: remainingCount,
-		Standard:       fields["standard"] == "1",
+		Standard:       request.GetCheckboxValue(r, "standard"),
 	}); err != nil {
 		handlererror.Error(w, r, err)
 		return
