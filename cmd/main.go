@@ -34,6 +34,8 @@ import (
 	"github.com/fugleadvokatene/bino/internal/handlers/handlerlogging"
 	"github.com/fugleadvokatene/bino/internal/handlers/handlerlogin"
 	"github.com/fugleadvokatene/bino/internal/handlers/handlerpatient"
+	"github.com/fugleadvokatene/bino/internal/handlers/handlerschedule"
+	"github.com/fugleadvokatene/bino/internal/handlers/handlertasktemplate"
 	"github.com/fugleadvokatene/bino/internal/handlers/handlerprivacy"
 	"github.com/fugleadvokatene/bino/internal/handlers/handlerrecover"
 	"github.com/fugleadvokatene/bino/internal/handlers/handlersearch"
@@ -160,6 +162,8 @@ func realMain() error {
 		handlerhomeadmin.Routes(db, gdriveWorker),
 		handlerlanguage.Routes(db),
 		handlerpatient.Routes(db, gdriveWorker, bespoke, config),
+		handlerschedule.Routes(db),
+		handlertasktemplate.Routes(db),
 		handlerprivacy.Routes(db, config.Privacy),
 		handlersearch.Routes(db),
 		handlerspeciesadmin.Routes(db),

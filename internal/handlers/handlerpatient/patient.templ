@@ -5,9 +5,11 @@ import (
 
 	"github.com/fugleadvokatene/bino/internal/model"
 	"github.com/fugleadvokatene/bino/internal/request"
+	"github.com/fugleadvokatene/bino/internal/sql"
 	"github.com/fugleadvokatene/bino/internal/templbase"
 	"github.com/fugleadvokatene/bino/internal/handlers/handlercalendar"
 	"github.com/fugleadvokatene/bino/internal/handlers/handlerevent"
+	"github.com/fugleadvokatene/bino/internal/handlers/handlerschedule"
 	"github.com/fugleadvokatene/bino/internal/gdrive/url"
 )
 
@@ -19,6 +21,8 @@ templ PatientPage(
 	events []model.Event,
     speciesList []templbase.Option,
     journalMeta JournalMetadata,
+    schedules []sql.Schedule,
+    templates []sql.ScheduleTemplate,
 ) {
 	@templbase.Layout(data, "patient-page") {
         <h1 class="editable" data-action={patient.URLSuffix("set-name")}>{patient.Name}</h1>
@@ -57,6 +61,8 @@ templ PatientPage(
                 }
             </tbody>
             </table>
+
+            @handlerschedule.PatientScheduleWidget(data, patient.ID, schedules, templates)
 
             <h2>Oppdater</h2>
             <table class="patient-table table table-bordered mb-2">

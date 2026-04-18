@@ -16,8 +16,8 @@ func Routes(
 			Cap:     model.CapViewAllHomes,
 		},
 		{
-			Path:    "POST /home/{home}/set-capacity",
-			Handler: &setCapacity{DB: db},
+			Path:    "POST /home/{home}/set-setting",
+			Handler: &setSetting{DB: db},
 			Cap:     model.CapManageOwnHomes,
 		},
 		{

@@ -28,6 +28,8 @@ type CommonData struct {
 	Feedback Feedback
 
 	Cookies UserCookies
+
+	OutstandingTaskCount int
 }
 
 func (cd *CommonData) Error(msg string, err error) {
@@ -108,6 +110,7 @@ type UserData struct {
 	FeatureFlags    generic.Set[string]
 	CSRFToken       string
 	CSRFCheckPassed bool
+	TaskManagement  bool
 }
 
 func (u *UserData) HasHomeOrAccess(homeID int32, al model.AccessLevel) bool {

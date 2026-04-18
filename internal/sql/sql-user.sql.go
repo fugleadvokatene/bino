@@ -201,7 +201,7 @@ func (q *Queries) GetAppusersInDivision(ctx context.Context, division int32) ([]
 }
 
 const getHomeForUser = `-- name: GetHomeForUser :one
-SELECT h.id, h.name, h.capacity, h.note, h.division 
+SELECT h.id, h.name, h.note, h.division 
 FROM appuser AS a
 INNER JOIN home AS h
   ON h.id = a.home_id
@@ -214,7 +214,6 @@ func (q *Queries) GetHomeForUser(ctx context.Context, id int32) (Home, error) {
 	err := row.Scan(
 		&i.ID,
 		&i.Name,
-		&i.Capacity,
 		&i.Note,
 		&i.Division,
 	)
@@ -222,7 +221,7 @@ func (q *Queries) GetHomeForUser(ctx context.Context, id int32) (Home, error) {
 }
 
 const getHomeWithDataForUser = `-- name: GetHomeWithDataForUser :one
-SELECT h.id, h.name, h.capacity, h.note, h.division
+SELECT h.id, h.name, h.note, h.division
 FROM appuser AS a
 INNER JOIN home AS h
   ON h.id = a.id
@@ -235,7 +234,6 @@ func (q *Queries) GetHomeWithDataForUser(ctx context.Context, id int32) (Home, e
 	err := row.Scan(
 		&i.ID,
 		&i.Name,
-		&i.Capacity,
 		&i.Note,
 		&i.Division,
 	)

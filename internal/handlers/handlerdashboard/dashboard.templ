@@ -242,7 +242,7 @@ templ DashboardHomes(data *request.CommonData, homes []model.Home) {
 
 templ DashboardHomeCard(data *request.CommonData, homes []model.Home, home *model.Home) {
     <div class="card-header d-flex justify-content-between">
-        <a href={home.URL()} class="filter-content">{home.Name} — <span class={"occupancy", home.OccupancyClass()}>{len(home.Patients)} / {home.Capacity}</span></a>
+        <a href={home.URL()} class="filter-content">{home.Name} — <span class={"occupancy", home.OccupancyClass()}>{len(home.Patients)} / {home.Config.Capacity}</span></a>
         <div>
             for _, u := range home.Users {
                 @templbase.Avatar(u)

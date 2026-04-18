@@ -165,6 +165,8 @@ type Language struct {
 	GenericEdit         string
 	GenericUser         string
 	GenericEnabled      string
+	GenericDisabled     string
+	GenericToggle       string
 
 	HomeAdmin                       string
 	HomesArchiveHome                string
@@ -186,6 +188,8 @@ type Language struct {
 	HomesUsers                      string
 	HomeCapacity                    string
 	HomeCapacityInstruction         string
+	HomeTaskManagement              string
+	HomeTaskManagementDescription   string
 	HomePreferredSpecies            string
 	HomePreferredSpeciesInstruction string
 	HomeAvailability                string
@@ -246,6 +250,37 @@ type Language struct {
 
 	UnavailablePeriods              string
 	AddUnavailablePeriodInstruction string
+
+	TasksHeader            string
+	TasksNone              string
+	TasksAdd               string
+	TasksDescriptionLabel  string
+	TasksNextTimeLabel     string
+	TasksNextLabel         string
+	TasksFrequencyLabel    string
+	TasksOnce              string
+	TasksRepeat            string
+	TasksHours             string
+	TasksDays              string
+	TasksMorningEvening    string
+	TasksEndLabel          string
+	TasksNoEnd             string
+	TasksEndAfterCountPre  string
+	TasksEndAfterCountPost string
+	TasksEndAfterDate      string
+	TasksOverdue           string
+	TasksUpcoming          string
+	TasksDeleteModalTitle  string
+	TasksDeleteModalBody   string
+	TasksSnooze            string
+
+	TasksTemplates      string
+	TasksSelectTemplate string
+	TasksTemplateName   string
+	TasksAddTemplate    string
+	TasksDeleteTemplate string
+	TasksStandard       string
+	TasksCreateStandard string
 }
 
 func (l *Language) HomeMultipleUsers(n int) string {
@@ -541,6 +576,8 @@ var NO = &Language{
 	GenericEdit:         "Rediger",
 	GenericUser:         "Bruker",
 	GenericEnabled:      "Slått på",
+	GenericDisabled:     "Slått av",
+	GenericToggle:       "Endre",
 
 	HomeAdmin:                       "Administrer avdelinger og rehabhjem",
 	HomesAddToHome:                  "Legg til",
@@ -562,6 +599,8 @@ var NO = &Language{
 	HomesUsers:                      "Brukere",
 	HomeCapacity:                    "Kapasitet",
 	HomeCapacityInstruction:         "Skriv inn hvor mange pasienter du har kapasitet til å ta, slik at andre vet om du har plass til flere eller trenger avlasting.",
+	HomeTaskManagement:              "Slå på oppgavestyring",
+	HomeTaskManagementDescription:   "Legg til standard oppgaver automatisk ved innregistrering, og vis oppgave-seksjon i navigasjonslinjen.",
 	HomePreferredSpecies:            "Favoritt-arter",
 	HomePreferredSpeciesInstruction: "Velg hvilke arter som kommer øverst på lista når du skal sjekke inn en pasient. Den aller øverste er den som blir forhåndsvalgt. Dra og slipp for å sortere.",
 	HomeAvailability:                "Tilgjengelighet",
@@ -669,6 +708,36 @@ var NO = &Language{
 
 	UnavailablePeriods:              "Utilgjengelig i følgende perioder:",
 	AddUnavailablePeriodInstruction: "Fyll inn skjemaet for å fortelle andre at du blir utilgjengelig i en periode:",
+
+	TasksHeader:            "Oppgaver",
+	TasksNone:              "Ingen planlagte oppgaver.",
+	TasksAdd:               "+ Legg til oppgave",
+	TasksDescriptionLabel:  "Beskrivelse",
+	TasksNextTimeLabel:     "Neste gang",
+	TasksNextLabel:         "neste:",
+	TasksFrequencyLabel:    "Frekvens",
+	TasksOnce:              "Engangs",
+	TasksRepeat:            "Gjenta hver",
+	TasksHours:             "time",
+	TasksDays:              "dag",
+	TasksMorningEvening:    "Morgen og kveld (9:00 og 21:00)",
+	TasksEndLabel:          "Slutt",
+	TasksNoEnd:             "Ingen slutt",
+	TasksEndAfterCountPre:  "Etter",
+	TasksEndAfterCountPost: "ganger",
+	TasksEndAfterDate:      "Etter dato",
+	TasksOverdue:           "Forfalt",
+	TasksUpcoming:          "Kommende",
+	TasksDeleteModalTitle:  "Slett oppgave",
+	TasksDeleteModalBody:   "Er du sikker på at du vil slette denne oppgaven?",
+	TasksSnooze:            "Utsett 1 dag",
+	TasksTemplates:         "Oppgavemaler",
+	TasksSelectTemplate:    "Bruk mal...",
+	TasksTemplateName:      "Malnavn",
+	TasksAddTemplate:       "+ Legg til mal",
+	TasksDeleteTemplate:    "Slett mal",
+	TasksStandard:          "Standard for nye pasienter",
+	TasksCreateStandard:    "Opprett standard oppgaver",
 }
 
 var EN = &Language{
@@ -862,6 +931,8 @@ var EN = &Language{
 	GenericEdit:         "Edit",
 	GenericUser:         "User",
 	GenericEnabled:      "Enabled",
+	GenericDisabled:     "Disabled",
+	GenericToggle:       "Toggle",
 
 	HomeAdmin:                       "Manage homes and divisions",
 	HomesAddToHome:                  "Add",
@@ -883,6 +954,8 @@ var EN = &Language{
 	HomesUsers:                      "Users",
 	HomeCapacity:                    "Capacity",
 	HomeCapacityInstruction:         "Set the number of patients you can take, so that others can see if you have room for another or if you have too many.",
+	HomeTaskManagement:              "Use task management",
+	HomeTaskManagementDescription:   "Automatically add standard tasks on check-in, and add link to tasks in navbar.",
 	HomePreferredSpecies:            "Favorite species",
 	HomePreferredSpeciesInstruction: "Choose which species appear first in the list when you check in a new patient. The one at the very top will be selected by default. Drag and drop to reorder.",
 	HomeAvailability:                "Availability",
@@ -987,6 +1060,86 @@ var EN = &Language{
 
 	UnavailablePeriods:              "Unavailable during the following periods:",
 	AddUnavailablePeriodInstruction: "Fill in the form to let others know that you will be unavailable for a period:",
+
+	TasksHeader:            "Tasks",
+	TasksNone:              "No scheduled tasks.",
+	TasksAdd:               "+ Add task",
+	TasksDescriptionLabel:  "Description",
+	TasksNextTimeLabel:     "Next time",
+	TasksNextLabel:         "next:",
+	TasksFrequencyLabel:    "Frequency",
+	TasksOnce:              "One-time",
+	TasksRepeat:            "Repeat every",
+	TasksHours:             "hours",
+	TasksDays:              "days",
+	TasksMorningEvening:    "Morning and evening (9AM and 9PM)",
+	TasksEndLabel:          "End",
+	TasksNoEnd:             "No end",
+	TasksEndAfterCountPre:  "After",
+	TasksEndAfterCountPost: "times",
+	TasksEndAfterDate:      "After date",
+	TasksOverdue:           "Overdue",
+	TasksUpcoming:          "Upcoming",
+	TasksDeleteModalTitle:  "Delete task",
+	TasksDeleteModalBody:   "Are you sure you want to delete this task?",
+	TasksSnooze:            "Snooze 1 day",
+	TasksTemplates:         "Task templates",
+	TasksSelectTemplate:    "Use template...",
+	TasksTemplateName:      "Template name",
+	TasksAddTemplate:       "+ Add template",
+	TasksDeleteTemplate:    "Delete template",
+	TasksStandard:          "Standard for new patients",
+	TasksCreateStandard:    "Create standard tasks",
+}
+
+func (l *Language) FormatDeleteRemainingHint(count pgtype.Int4) string {
+	if !count.Valid || count.Int32 <= 0 {
+		return ""
+	}
+	switch l.ID {
+	case model.LanguageIDNO:
+		return fmt.Sprintf("Det gjenstår %d runder med denne oppgaven.", count.Int32)
+	default:
+		return fmt.Sprintf("This task is supposed to be done %d more times.", count.Int32)
+	}
+}
+
+func (l *Language) FormatTaskInterval(hours int32, recurring bool, morningEvening bool) string {
+	if morningEvening {
+		return l.TasksMorningEvening
+	}
+	if !recurring {
+		switch l.ID {
+		case model.LanguageIDNO:
+			return "engangs"
+		default:
+			return "one-time"
+		}
+	}
+	switch l.ID {
+	case model.LanguageIDNO:
+		switch hours {
+		case 1:
+			return "hver time"
+		case 24:
+			return "hver dag"
+		case 168:
+			return "hver uke"
+		default:
+			return fmt.Sprintf("hver %dt", hours)
+		}
+	default:
+		switch hours {
+		case 1:
+			return "every hour"
+		case 24:
+			return "every day"
+		case 168:
+			return "every week"
+		default:
+			return fmt.Sprintf("every %dh", hours)
+		}
+	}
 }
 
 func (l *Language) AccessLevelBlocked(al model.AccessLevel) string {

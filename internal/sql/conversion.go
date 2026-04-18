@@ -14,7 +14,6 @@ import (
 func (h Home) ToModel() model.Home {
 	return model.Home{
 		ID:       h.ID,
-		Capacity: h.Capacity,
 		Name:     h.Name,
 		Note:     h.Note,
 		Division: h.Division,

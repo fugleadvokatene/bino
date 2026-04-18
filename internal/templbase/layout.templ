@@ -104,6 +104,16 @@ templ Navbar(data *request.CommonData) {
                     if data.FeatureFlag("Wiki") {
                         @NavbarPageLink(data.Language.WikiHeader, "/wiki")
                     }
+                    if data.User.TaskManagement {
+                        <div class="b-navbar-item b-navbar-item-text">
+                            <a href="/schedule">
+                                { data.Language.TasksHeader }
+                                if data.OutstandingTaskCount > 0 {
+                                    <span class="badge rounded-pill text-danger bg-danger ms-1" style="font-size:0.55em;vertical-align:middle">●</span>
+                                }
+                            </a>
+                        </div>
+                    }
                     @NavbarPageLink(data.Language.FormerPatients, "/former-patients")
                     @NavbarPageLink(data.Language.AdminRoot, "/admin")
                     @FullTextSearch(data)

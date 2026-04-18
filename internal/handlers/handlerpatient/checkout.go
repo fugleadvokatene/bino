@@ -98,6 +98,10 @@ func (h *checkout) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			return err
 		}
 
+		if err := db.Q.DeleteSchedulesForPatient(ctx, patient); err != nil {
+			return err
+		}
+
 		if h.bespoke != nil {
 			h.bespoke.EditJournalOnEvent(ctx, patient, event, note, now.Time)
 		}

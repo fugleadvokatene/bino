@@ -12,6 +12,7 @@ import (
 	"github.com/fugleadvokatene/bino/internal/gdrive"
 	"github.com/fugleadvokatene/bino/internal/handlers/handleraccess"
 	"github.com/fugleadvokatene/bino/internal/handlers/handlererror"
+	"github.com/fugleadvokatene/bino/internal/handlers/handlerschedule"
 	"github.com/fugleadvokatene/bino/internal/language"
 	"github.com/fugleadvokatene/bino/internal/model"
 	"github.com/fugleadvokatene/bino/internal/request"
@@ -98,6 +99,12 @@ func (h *checkin) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}); err != nil {
 		handlererror.Error(w, r, err)
 		return
+	}
+
+	if cfg, err := h.DB.GetHomeConfig(ctx, fields["home"]); err == nil && cfg.TaskManagement {
+		if err := handlerschedule.CreateStandardTasksForPatient(ctx, h.DB, patientID); err != nil {
+			slog.Warn("creating standard tasks on checkin", "error", err)
+		}
 	}
 
 	// Create or suggest journal off-request

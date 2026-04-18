@@ -98,6 +98,18 @@ func (h *page) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		journalMeta.FolderName = row.ParentGoogleName.String
 	}
 
+	schedules, err := h.DB.Q.GetSchedulesForPatient(ctx, patientData.ID)
+	if err != nil {
+		handlererror.Error(w, r, err)
+		return
+	}
+
+	templates, err := h.DB.Q.GetScheduleTemplates(ctx)
+	if err != nil {
+		handlererror.Error(w, r, err)
+		return
+	}
+
 	PatientPage(
 		ctx,
 		commonData,
@@ -106,6 +118,8 @@ func (h *page) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		events,
 		speciesList,
 		journalMeta,
+		schedules,
+		templates,
 	).Render(ctx, w)
 }
 

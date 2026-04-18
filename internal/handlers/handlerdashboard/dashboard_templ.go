@@ -1224,9 +1224,9 @@ func DashboardHomeCard(data *request.CommonData, homes []model.Home, home *model
 			return templ_7745c5c3_Err
 		}
 		var templ_7745c5c3_Var59 string
-		templ_7745c5c3_Var59, templ_7745c5c3_Err = templ.JoinStringErrs(home.Capacity)
+		templ_7745c5c3_Var59, templ_7745c5c3_Err = templ.JoinStringErrs(home.Config.Capacity)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handlers/handlerdashboard/dashboard.templ`, Line: 245, Col: 154}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handlers/handlerdashboard/dashboard.templ`, Line: 245, Col: 161}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var59))
 		if templ_7745c5c3_Err != nil {

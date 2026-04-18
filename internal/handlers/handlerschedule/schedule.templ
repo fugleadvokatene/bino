@@ -1,0 +1,438 @@
+package handlerschedule
+
+import (
+	"context"
+	"fmt"
+	"time"
+
+	"github.com/fugleadvokatene/bino/internal/request"
+	"github.com/fugleadvokatene/bino/internal/sql"
+	"github.com/fugleadvokatene/bino/internal/templbase"
+	"github.com/jackc/pgx/v5/pgtype"
+)
+
+templ SchedulePage(ctx context.Context, data *request.CommonData, overdue []sql.GetAllActiveSchedulesRow, upcoming []sql.GetAllActiveSchedulesRow) {
+	@templbase.Layout(data, "schedule-page") {
+		<h1>{ data.Language.TasksHeader }</h1>
+		if len(overdue) == 0 && len(upcoming) == 0 {
+			@templbase.Card() {
+				<p class="text-muted mb-0">{ data.Language.TasksNone }</p>
+			}
+		}
+		if len(overdue) > 0 {
+			<h2 class="h5 text-danger mt-2">{ data.Language.TasksOverdue }</h2>
+			for _, s := range overdue {
+				@scheduleRow(data, s, false)
+			}
+		}
+		if len(upcoming) > 0 {
+			<h2 class="h5 mt-3">{ data.Language.TasksUpcoming }</h2>
+			for _, s := range upcoming {
+				@scheduleRow(data, s, s.NextDueAt.Time.After(time.Now().Add(12*time.Hour)))
+			}
+		}
+		@ConfirmDeleteModal(data)
+	}
+}
+
+templ scheduleRow(data *request.CommonData, s sql.GetAllActiveSchedulesRow, dimmed bool) {
+	<div class={ "card p-3 rounded-4 mb-2 shadow-sm bg-primary-subtle", templ.KV("opacity-50", dimmed) }>
+		<div class="d-flex justify-content-between align-items-start gap-3">
+			<div class="min-width-0">
+				<div>
+					<a href={ templ.URL(s.OwnerUrl) }>
+						<strong>{ s.OwnerName }</strong>
+					</a>
+					<span class="ms-1">· { s.Description }</span>
+				</div>
+				<div class="small">{ data.Language.FormatTimeRelWithAbsFallback(s.NextDueAt.Time) }</div>
+			</div>
+			@templbase.Form(data, fmt.Sprintf("/schedule/%d/complete", s.ID), "POST", "flex-shrink-0") {
+				<button type="submit" class="btn btn-success btn-lg rounded-circle">&#10003;</button>
+			}
+		</div>
+		<div class="d-flex gap-2 mt-2 align-items-start flex-wrap">
+			<details>
+				<summary class="btn btn-sm btn-outline-primary">{ data.Language.GenericEdit }</summary>
+				@ScheduleForm(data, fmt.Sprintf("/schedule/%d/edit", s.ID), s.Description, s.IntervalHours, s.NextDueAt, s.MorningEvening, s.RemainingCount, s.EndDate, nil)
+			</details>
+			if !dimmed && canSnooze(s.IntervalHours, s.MorningEvening) {
+				@snoozeButton(data, fmt.Sprintf("/schedule/%d/snooze", s.ID))
+			}
+			@deleteButton(fmt.Sprintf("/schedule/%d/delete", s.ID), data.Language.GenericDelete, data.Language.FormatDeleteRemainingHint(s.RemainingCount))
+		</div>
+	</div>
+}
+
+templ PatientScheduleWidget(data *request.CommonData, patientID int32, schedules []sql.Schedule, templates []sql.ScheduleTemplate) {
+	<h2>{ data.Language.TasksHeader }</h2>
+	<div class="card p-3">
+		if len(schedules) == 0 {
+			<p class="text-muted">{ data.Language.TasksNone }</p>
+			if hasStandardTemplates(templates) {
+				@templbase.Form(data, fmt.Sprintf("/patient/%d/create-standard-tasks", patientID), "POST", "") {
+					<button type="submit" class="btn btn-sm btn-outline-primary mb-2">{ data.Language.TasksCreateStandard }</button>
+				}
+			}
+		}
+		for _, s := range schedules {
+			<div class="card p-3 rounded-4 mb-2 shadow-sm bg-primary-subtle">
+				<div class="d-flex justify-content-between align-items-start gap-3">
+					<div class="min-width-0">
+						if s.Description != "" {
+							<div><strong>{ s.Description }</strong></div>
+						}
+						<div class="text-muted small">
+							{ data.Language.FormatTaskInterval(s.IntervalHours.Int32, s.IntervalHours.Valid, s.MorningEvening) }
+							&#183; { data.Language.FormatTimeRelWithAbsFallback(s.NextDueAt.Time) }
+						</div>
+					</div>
+					<div class="d-flex gap-1 flex-shrink-0 flex-column align-items-end">
+						@deleteButton(fmt.Sprintf("/schedule/%d/delete", s.ID), data.Language.GenericDelete, data.Language.FormatDeleteRemainingHint(s.RemainingCount))
+					</div>
+				</div>
+				<details class="mt-2">
+					<summary class="btn btn-sm btn-outline-secondary">{ data.Language.GenericEdit }</summary>
+					@ScheduleForm(data, fmt.Sprintf("/schedule/%d/edit", s.ID), s.Description, s.IntervalHours, s.NextDueAt, s.MorningEvening, s.RemainingCount, s.EndDate, nil)
+				</details>
+			</div>
+		}
+		<details class="mt-2">
+			<summary class="btn btn-sm btn-outline-primary">{ data.Language.TasksAdd }</summary>
+			<div class="card p-3">
+				@ScheduleForm(data, fmt.Sprintf("/patient/%d/schedule", patientID), "", pgtype.Int4{}, pgtype.Timestamptz{}, false, pgtype.Int4{}, pgtype.Timestamptz{}, templates)
+			</div>
+		</details>
+		@ConfirmDeleteModal(data)
+	</div>
+}
+
+templ HomeScheduleWidget(data *request.CommonData, homeID int32, schedules []sql.Schedule, taskManagement bool) {
+	<h2>{ data.Language.TasksHeader }</h2>
+	@templbase.Form(data, fmt.Sprintf("/home/%d/set-setting", homeID), "POST", "") {
+		<input type="hidden" name="key" value="task_management"/>
+		<input type="hidden" name="value" value={ taskManagementToggleValue(taskManagement) }/>
+		<div class="form-check form-switch mb-2">
+			<input class="form-check-input" type="checkbox" role="switch"
+				   id="task-management-toggle"
+				   checked?={ taskManagement }
+				   onchange="this.form.requestSubmit()">
+			<label class="form-check-label" for="task-management-toggle">{ data.Language.HomeTaskManagement }</label>
+			<div class="text-muted small">{data.Language.HomeTaskManagementDescription}</div>
+		</div>
+	}
+	if taskManagement {
+		if len(schedules) == 0 {
+			<p class="text-muted">{ data.Language.TasksNone }</p>
+		}
+		for _, s := range schedules {
+			@templbase.Card() {
+				<div class="d-flex justify-content-between align-items-start gap-3">
+					<div class="min-width-0">
+						if s.Description != "" {
+							<div><strong>{ s.Description }</strong></div>
+						}
+						<div class="text-muted small">
+							{ data.Language.FormatTaskInterval(s.IntervalHours.Int32, s.IntervalHours.Valid, s.MorningEvening) }
+							&#183; { data.Language.FormatTimeRelWithAbsFallback(s.NextDueAt.Time) }
+						</div>
+					</div>
+					@deleteButton(fmt.Sprintf("/schedule/%d/delete", s.ID), data.Language.GenericDelete, data.Language.FormatDeleteRemainingHint(s.RemainingCount))
+				</div>
+				<details class="mt-2">
+					<summary class="btn btn-sm btn-outline-secondary">{ data.Language.GenericEdit }</summary>
+					@ScheduleForm(data, fmt.Sprintf("/schedule/%d/edit", s.ID), s.Description, s.IntervalHours, s.NextDueAt, s.MorningEvening, s.RemainingCount, s.EndDate, nil)
+				</details>
+			}
+		}
+		<details class="mt-2">
+			<summary class="btn btn-sm btn-outline-primary">{ data.Language.TasksAdd }</summary>
+			@templbase.Card() {
+				@ScheduleForm(data, fmt.Sprintf("/home/%d/schedule", homeID), "", pgtype.Int4{}, pgtype.Timestamptz{}, false, pgtype.Int4{}, pgtype.Timestamptz{}, nil)
+			}
+		</details>
+		@ConfirmDeleteModal(data)
+	}
+}
+
+templ snoozeButton(data *request.CommonData, snoozeURL string) {
+	@templbase.Form(data, snoozeURL, "POST", "") {
+		<button type="submit" class="btn btn-sm btn-outline-warning flex-shrink-0">{ data.Language.TasksSnooze }</button>
+	}
+}
+
+templ deleteButton(deleteURL string, label string, hint string) {
+	<button
+		type="button"
+		class="btn btn-sm btn-outline-danger flex-shrink-0"
+		onclick={ templ.JSFuncCall("binoShowDeleteModal", deleteURL, hint) }
+	>{ label }</button>
+}
+
+templ ConfirmDeleteModal(data *request.CommonData) {
+	<dialog id="confirmDeleteModal">
+		<div class="card b-card">
+			<h5>{ data.Language.TasksDeleteModalTitle }</h5>
+			<p>{ data.Language.TasksDeleteModalBody }</p>
+			<p id="deleteRemainingHint" class="text-warning small" style="display:none"></p>
+			<div class="d-flex gap-2 justify-content-end">
+				<button type="button" class="btn btn-secondary" onclick="document.getElementById('confirmDeleteModal').close()">{ data.Language.GenericCancel }</button>
+				<form id="confirmDeleteForm" method="POST">
+					<input type="hidden" name="csrf" value={ data.User.CSRFToken }/>
+					<button type="submit" class="btn btn-danger">{ data.Language.GenericDelete }</button>
+				</form>
+			</div>
+		</div>
+	</dialog>
+	<script>
+		function binoShowDeleteModal(url, hint) {
+			document.getElementById('confirmDeleteForm').setAttribute('action', url);
+			var hintEl = document.getElementById('deleteRemainingHint');
+			if (hint) { hintEl.textContent = hint; hintEl.style.display = ''; }
+			else { hintEl.style.display = 'none'; }
+			document.getElementById('confirmDeleteModal').showModal();
+		}
+		function binoFillFromTemplate(sel) {
+			var v = sel.value;
+			if (!v) return;
+			var t = JSON.parse(v);
+			var form = sel.closest('form');
+			var desc = form.querySelector('[name="description"]');
+			if (desc) desc.value = t.description;
+			form.querySelectorAll('[name="interval_type"]').forEach(function(r) { r.checked = r.value === t.intervalType; });
+			var amt = form.querySelector('[name="interval_amount"]');
+			if (amt) amt.value = t.intervalAmount;
+			var unit = form.querySelector('[name="interval_unit"]');
+			if (unit) unit.value = t.intervalUnit;
+			form.querySelectorAll('[name="end_type"]').forEach(function(r) { r.checked = r.value === t.endType; });
+			var cnt = form.querySelector('[name="end_count"]');
+			if (cnt && t.endCount) cnt.value = t.endCount;
+			if (t.intervalType === 'morning_evening') binoUpdateNextForMorningEvening(form.querySelector('[name="interval_type"][value="morning_evening"]'));
+			sel.value = '';
+		}
+		function binoUpdateNextForMorningEvening(el) {
+			var now = new Date();
+			var y = now.getFullYear(), mo = now.getMonth(), d = now.getDate();
+			var morning = new Date(y, mo, d, 9, 0);
+			var evening = new Date(y, mo, d, 21, 0);
+			var next = now < morning ? morning : now < evening ? evening : new Date(y, mo, d+1, 9, 0);
+			var pad = function(n) { return String(n).padStart(2,'0'); };
+			var v = next.getFullYear()+'-'+pad(next.getMonth()+1)+'-'+pad(next.getDate())+'T'+pad(next.getHours())+':00';
+			el.closest('form').querySelector('[name="next_due_at"]').value = v;
+		}
+	</script>
+}
+
+templ ScheduleForm(data *request.CommonData, action string, description string, intervalHours pgtype.Int4, nextDueAt pgtype.Timestamptz, morningEvening bool, remainingCount pgtype.Int4, endDate pgtype.Timestamptz, templates []sql.ScheduleTemplate) {
+	@templbase.Form(data, action, "POST", "mt-2") {
+		<div class="d-flex flex-column gap-2">
+			if len(templates) > 0 {
+				<div>
+					<select class="form-select form-select-sm" onchange="binoFillFromTemplate(this)">
+						<option value="">{ data.Language.TasksSelectTemplate }</option>
+						for _, t := range templates {
+							<option value={ templateJSON(t) }>{ t.Name }</option>
+						}
+					</select>
+				</div>
+			}
+			<div>
+				<label class="form-label fw-bold">{ data.Language.TasksDescriptionLabel }</label>
+				<input type="text" name="description" class="form-control form-control-sm" value={ description } required/>
+			</div>
+			<div>
+				<label class="form-label fw-bold">{ data.Language.TasksNextTimeLabel }</label>
+				<input
+					type="datetime-local"
+					name="next_due_at"
+					class="form-control form-control-sm"
+					value={ formatNextDueForInput(nextDueAt) }
+					required
+				/>
+			</div>
+			<div class="d-flex flex-column gap-1">
+				<label class="form-label fw-bold mb-1">{ data.Language.TasksFrequencyLabel }</label>
+				<div class="form-check">
+					<input
+						class="form-check-input"
+						type="radio"
+						name="interval_type"
+						value="once"
+						checked?={ !intervalHours.Valid && !morningEvening }
+					/>
+					<label class="form-check-label">{ data.Language.TasksOnce }</label>
+				</div>
+				<div class="d-flex align-items-center gap-2 flex-wrap">
+					<div class="form-check mb-0">
+						<input
+							class="form-check-input"
+							type="radio"
+							name="interval_type"
+							value="repeat"
+							checked?={ intervalHours.Valid }
+						/>
+						<label class="form-check-label">{ data.Language.TasksRepeat }</label>
+					</div>
+					<input
+						type="number"
+						name="interval_amount"
+						min="1"
+						class="form-control form-control-sm"
+						style="width:5rem"
+						value={ intervalAmount(intervalHours) }
+					/>
+					<select name="interval_unit" class="form-select form-select-sm" style="width:auto">
+						<option value="hours" selected?={ intervalUnit(intervalHours) == "hours" }>{ data.Language.TasksHours }</option>
+						<option value="days" selected?={ intervalUnit(intervalHours) == "days" }>{ data.Language.TasksDays }</option>
+					</select>
+				</div>
+				<div class="form-check">
+					<input
+						class="form-check-input"
+						type="radio"
+						name="interval_type"
+						value="morning_evening"
+						checked?={ morningEvening }
+						onchange="binoUpdateNextForMorningEvening(this)"
+					/>
+					<label class="form-check-label">{ data.Language.TasksMorningEvening }</label>
+				</div>
+			</div>
+			<div class="d-flex flex-column gap-1">
+				<label class="form-label fw-bold mb-1">{ data.Language.TasksEndLabel }</label>
+				<div class="form-check">
+					<input
+						class="form-check-input"
+						type="radio"
+						name="end_type"
+						value="none"
+						checked?={ !remainingCount.Valid && !endDate.Valid }
+					/>
+					<label class="form-check-label">{ data.Language.TasksNoEnd }</label>
+				</div>
+				<div class="d-flex align-items-center gap-2 flex-wrap">
+					<div class="form-check mb-0">
+						<input
+							class="form-check-input"
+							type="radio"
+							name="end_type"
+							value="count"
+							checked?={ remainingCount.Valid }
+						/>
+						<label class="form-check-label">{ data.Language.TasksEndAfterCountPre }</label>
+					</div>
+					<input
+						type="number"
+						name="end_count"
+						min="1"
+						class="form-control form-control-sm"
+						style="width:5rem"
+						value={ endCountValue(remainingCount) }
+					/>
+					<span class="form-check-label">{ data.Language.TasksEndAfterCountPost }</span>
+				</div>
+				<div class="d-flex align-items-center gap-2 flex-wrap">
+					<div class="form-check mb-0">
+						<input
+							class="form-check-input"
+							type="radio"
+							name="end_type"
+							value="date"
+							checked?={ endDate.Valid }
+						/>
+						<label class="form-check-label">{ data.Language.TasksEndAfterDate }</label>
+					</div>
+					<input
+						type="datetime-local"
+						name="end_date"
+						class="form-control form-control-sm"
+						style="width:auto"
+						value={ formatEndDateForInput(endDate) }
+					/>
+				</div>
+			</div>
+			<div>
+				<button type="submit" class="btn btn-sm btn-primary">{ data.Language.GenericSave }</button>
+			</div>
+		</div>
+	}
+}
+
+func formatNextDueForInput(t pgtype.Timestamptz) string {
+	if !t.Valid || t.Time.IsZero() {
+		return time.Now().Format("2006-01-02T15:04")
+	}
+	return t.Time.Format("2006-01-02T15:04")
+}
+
+func intervalAmount(h pgtype.Int4) string {
+	if !h.Valid {
+		return "1"
+	}
+	if h.Int32 >= 24 && h.Int32%24 == 0 {
+		return fmt.Sprintf("%d", h.Int32/24)
+	}
+	return fmt.Sprintf("%d", h.Int32)
+}
+
+func intervalUnit(h pgtype.Int4) string {
+	if !h.Valid {
+		return "days"
+	}
+	if h.Int32 >= 24 && h.Int32%24 == 0 {
+		return "days"
+	}
+	return "hours"
+}
+
+func templateJSON(t sql.ScheduleTemplate) string {
+	intervalType := "once"
+	intervalAmount := "1"
+	intervalUnit_ := "days"
+	if t.MorningEvening {
+		intervalType = "morning_evening"
+	} else if t.IntervalHours.Valid {
+		intervalType = "repeat"
+		h := t.IntervalHours.Int32
+		if h >= 24 && h%24 == 0 {
+			intervalAmount = fmt.Sprintf("%d", h/24)
+		} else {
+			intervalAmount = fmt.Sprintf("%d", h)
+			intervalUnit_ = "hours"
+		}
+	}
+	endType := "none"
+	endCount := ""
+	if t.RemainingCount.Valid {
+		endType = "count"
+		endCount = fmt.Sprintf("%d", t.RemainingCount.Int32)
+	}
+	return fmt.Sprintf(`{"description":%q,"intervalType":%q,"intervalAmount":%q,"intervalUnit":%q,"endType":%q,"endCount":%q}`,
+		t.Description, intervalType, intervalAmount, intervalUnit_, endType, endCount)
+}
+
+func taskManagementToggleValue(on bool) string {
+	if on {
+		return "false"
+	}
+	return "true"
+}
+
+func canSnooze(intervalHours pgtype.Int4, morningEvening bool) bool {
+	if morningEvening {
+		return false
+	}
+	if !intervalHours.Valid {
+		return true
+	}
+	return intervalHours.Int32 >= 24
+}
+
+func hasStandardTemplates(templates []sql.ScheduleTemplate) bool {
+	for _, t := range templates {
+		if t.Standard {
+			return true
+		}
+	}
+	return false
+}

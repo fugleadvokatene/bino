@@ -5,24 +5,28 @@ import (
     "context"
 	"github.com/fugleadvokatene/bino/internal/model"
 	"github.com/fugleadvokatene/bino/internal/request"
+	"github.com/fugleadvokatene/bino/internal/sql"
 	"github.com/fugleadvokatene/bino/internal/templbase"
 	"github.com/fugleadvokatene/bino/internal/handlers/handlerpatient"
+	"github.com/fugleadvokatene/bino/internal/handlers/handlerschedule"
 )
 
-templ HomePage(ctx context.Context, data *request.CommonData, homes []model.Home, self *model.Home) {
+templ HomePage(ctx context.Context, data *request.CommonData, homes []model.Home, self *model.Home, schedules []sql.Schedule) {
     @templbase.Layout(data, "home-page") {
         <h1>{self.Name}</h1>
         @templbase.Card() {
+            @handlerschedule.HomeScheduleWidget(data, self.ID, schedules, self.Config.TaskManagement)
             <h2>{data.Language.GenericSettings}</h2>
             <h3>{data.Language.GenericDivision}</h3>
             <p>{self.DivisionName}</p>
-
             if len(self.Users) > 1 {
                 <p>{data.Language.HomeMultipleUsers(len(self.Users))}</p>
             }
+
             <h3>{data.Language.HomeCapacity}</h3>
             <p>{data.Language.HomeCapacityInstruction}</p>
             @CapacityForm(data, self)
+
             @UnavailableEditor(data, self)
             @PreferredSpecies(data, self)
 
@@ -134,14 +138,11 @@ templ UnavailableEditor(data *request.CommonData, view *model.Home) {
 templ CapacityForm(data *request.CommonData, view *model.Home) {
     @templbase.Form(
         data,
-        view.URLSuffix("set-capacity"),
+        view.URLSuffix("set-setting"),
         "POST",
     ) {
-        <form-group class="d-flex justify-content-between form-control-sm form-control-plaintext">
-            <label for={FormID("#", "set-capacity", view.ID)} class="input-group-text">{data.Language.HomeCapacity}</label>
-            <input autocomplete="off" type="number" class="form-control" id={FormID("", "set-capacity", view.ID)} name="capacity" value={view.Capacity}></input>
-            <button type="submit" class="btn btn-primary btn-sm w-50">{data.Language.GenericUpdate}</button>
-        </form-group>
+        <input type="hidden" name="key" value="capacity"/>
+        <input autocomplete="off" type="number" class="form-control" id={FormID("", "set-capacity", view.ID)} name="value" value={ fmt.Sprintf("%d", view.Config.Capacity) } onchange="this.form.requestSubmit()"></input>
     }
 }
 
@@ -198,3 +199,5 @@ templ PreferredSpecies(data *request.CommonData, view *model.Home) {
 func FormID(prefix, field string, id int32) string {
 	return fmt.Sprintf("%s%s-%d", prefix, field, id)
 }
+
+

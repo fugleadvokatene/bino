@@ -12270,7 +12270,7 @@ h5,
 h6 {
   margin-bottom: 0.5rem;
   margin-left: 0.5rem;
-  color: rgb(60, 60, 80);
+  color: rgb(60, 60, 80) !important;
 }
 
 #species-list {

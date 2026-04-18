@@ -68,7 +68,6 @@ type GoogleFolder struct {
 type Home struct {
 	ID       int32
 	Name     string
-	Capacity int32
 	Note     string
 	Division int32
 }
@@ -77,6 +76,17 @@ type HomePreferredSpecy struct {
 	HomeID    int32
 	SpeciesID int32
 	SortOrder pgtype.Int4
+}
+
+type HomeSchedule struct {
+	ScheduleID int32
+	HomeID     int32
+}
+
+type HomeSetting struct {
+	HomeID int32
+	Key    string
+	Value  string
 }
 
 type HomeUnavailable struct {
@@ -154,6 +164,33 @@ type PatientEvent struct {
 	Time      pgtype.Timestamptz
 	Status    pgtype.Int4
 	AppuserID int32
+}
+
+type PatientSchedule struct {
+	ScheduleID int32
+	PatientID  int32
+}
+
+type Schedule struct {
+	ID             int32
+	Description    string
+	IntervalHours  pgtype.Int4
+	NextDueAt      pgtype.Timestamptz
+	RemainingCount pgtype.Int4
+	EndDate        pgtype.Timestamptz
+	MorningEvening bool
+	Active         bool
+	CreatedAt      pgtype.Timestamptz
+}
+
+type ScheduleTemplate struct {
+	ID             int32
+	Name           string
+	Description    string
+	IntervalHours  pgtype.Int4
+	MorningEvening bool
+	RemainingCount pgtype.Int4
+	Standard       bool
 }
 
 type Session struct {

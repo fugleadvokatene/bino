@@ -25,11 +25,16 @@ SELECT * FROM home
 WHERE id = $1
 ;
 
--- name: SetHomeCapacity :exec
-UPDATE home
-SET capacity = $2
-WHERE id = $1
-;
+-- name: GetHomeSettings :many
+SELECT key, value FROM home_setting WHERE home_id = $1;
+
+-- name: GetAllHomeSettings :many
+SELECT home_id, key, value FROM home_setting;
+
+-- name: SetHomeSetting :exec
+INSERT INTO home_setting (home_id, key, value)
+VALUES ($1, $2, $3)
+ON CONFLICT (home_id, key) DO UPDATE SET value = EXCLUDED.value;
 
 -- name: SetHomeNote :exec
 UPDATE home

@@ -83,6 +83,30 @@ func (q *Queries) DeletePreferredSpecies(ctx context.Context, arg DeletePreferre
 	return err
 }
 
+const getAllHomeSettings = `-- name: GetAllHomeSettings :many
+SELECT home_id, key, value FROM home_setting
+`
+
+func (q *Queries) GetAllHomeSettings(ctx context.Context) ([]HomeSetting, error) {
+	rows, err := q.db.Query(ctx, getAllHomeSettings)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []HomeSetting
+	for rows.Next() {
+		var i HomeSetting
+		if err := rows.Scan(&i.HomeID, &i.Key, &i.Value); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getAllUnavailablePeriods = `-- name: GetAllUnavailablePeriods :many
 SELECT id, home_id, from_date, to_date, note
 FROM home_unavailable
@@ -117,7 +141,7 @@ func (q *Queries) GetAllUnavailablePeriods(ctx context.Context) ([]HomeUnavailab
 }
 
 const getHome = `-- name: GetHome :one
-SELECT id, name, capacity, note, division FROM home
+SELECT id, name, note, division FROM home
 WHERE id = $1
 `
 
@@ -127,7 +151,6 @@ func (q *Queries) GetHome(ctx context.Context, id int32) (Home, error) {
 	err := row.Scan(
 		&i.ID,
 		&i.Name,
-		&i.Capacity,
 		&i.Note,
 		&i.Division,
 	)
@@ -135,7 +158,7 @@ func (q *Queries) GetHome(ctx context.Context, id int32) (Home, error) {
 }
 
 const getHomeByName = `-- name: GetHomeByName :many
-SELECT id, name, capacity, note, division
+SELECT id, name, note, division
 FROM home
 WHERE name = $1
 `
@@ -152,7 +175,6 @@ func (q *Queries) GetHomeByName(ctx context.Context, name string) ([]Home, error
 		if err := rows.Scan(
 			&i.ID,
 			&i.Name,
-			&i.Capacity,
 			&i.Note,
 			&i.Division,
 		); err != nil {
@@ -184,6 +206,35 @@ func (q *Queries) GetHomeDivision(ctx context.Context, id int32) (GetHomeDivisio
 	var i GetHomeDivisionRow
 	err := row.Scan(&i.Division, &i.Name)
 	return i, err
+}
+
+const getHomeSettings = `-- name: GetHomeSettings :many
+SELECT key, value FROM home_setting WHERE home_id = $1
+`
+
+type GetHomeSettingsRow struct {
+	Key   string
+	Value string
+}
+
+func (q *Queries) GetHomeSettings(ctx context.Context, homeID int32) ([]GetHomeSettingsRow, error) {
+	rows, err := q.db.Query(ctx, getHomeSettings, homeID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetHomeSettingsRow
+	for rows.Next() {
+		var i GetHomeSettingsRow
+		if err := rows.Scan(&i.Key, &i.Value); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
 }
 
 const getHomeUnavailablePeriods = `-- name: GetHomeUnavailablePeriods :many
@@ -221,7 +272,7 @@ func (q *Queries) GetHomeUnavailablePeriods(ctx context.Context, homeID int32) (
 }
 
 const getHomes = `-- name: GetHomes :many
-SELECT id, name, capacity, note, division FROM home
+SELECT id, name, note, division FROM home
 ORDER BY name
 `
 
@@ -237,7 +288,6 @@ func (q *Queries) GetHomes(ctx context.Context) ([]Home, error) {
 		if err := rows.Scan(
 			&i.ID,
 			&i.Name,
-			&i.Capacity,
 			&i.Note,
 			&i.Division,
 		); err != nil {
@@ -252,7 +302,7 @@ func (q *Queries) GetHomes(ctx context.Context) ([]Home, error) {
 }
 
 const getHomesInDivision = `-- name: GetHomesInDivision :many
-SELECT id, name, capacity, note, division FROM home
+SELECT id, name, note, division FROM home
 WHERE division = $1
 ORDER BY name
 `
@@ -269,7 +319,6 @@ func (q *Queries) GetHomesInDivision(ctx context.Context, division int32) ([]Hom
 		if err := rows.Scan(
 			&i.ID,
 			&i.Name,
-			&i.Capacity,
 			&i.Note,
 			&i.Division,
 		); err != nil {
@@ -434,22 +483,6 @@ func (q *Queries) MoveHome(ctx context.Context, arg MoveHomeParams) error {
 	return err
 }
 
-const setHomeCapacity = `-- name: SetHomeCapacity :exec
-UPDATE home
-SET capacity = $2
-WHERE id = $1
-`
-
-type SetHomeCapacityParams struct {
-	ID       int32
-	Capacity int32
-}
-
-func (q *Queries) SetHomeCapacity(ctx context.Context, arg SetHomeCapacityParams) error {
-	_, err := q.db.Exec(ctx, setHomeCapacity, arg.ID, arg.Capacity)
-	return err
-}
-
 const setHomeNote = `-- name: SetHomeNote :exec
 UPDATE home
 SET note = $2
@@ -463,6 +496,23 @@ type SetHomeNoteParams struct {
 
 func (q *Queries) SetHomeNote(ctx context.Context, arg SetHomeNoteParams) error {
 	_, err := q.db.Exec(ctx, setHomeNote, arg.ID, arg.Note)
+	return err
+}
+
+const setHomeSetting = `-- name: SetHomeSetting :exec
+INSERT INTO home_setting (home_id, key, value)
+VALUES ($1, $2, $3)
+ON CONFLICT (home_id, key) DO UPDATE SET value = EXCLUDED.value
+`
+
+type SetHomeSettingParams struct {
+	HomeID int32
+	Key    string
+	Value  string
+}
+
+func (q *Queries) SetHomeSetting(ctx context.Context, arg SetHomeSettingParams) error {
+	_, err := q.db.Exec(ctx, setHomeSetting, arg.HomeID, arg.Key, arg.Value)
 	return err
 }
 

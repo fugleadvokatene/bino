@@ -68,28 +68,37 @@ func GetFormID(r *http.Request, field string) (int32, error) {
 	return int32(v), nil
 }
 
-func GetFormMultiValue(r *http.Request, field string) ([]string, error) {
+func ValidateCSRF(r *http.Request) error {
 	if err := r.ParseForm(); err != nil {
-		return nil, fmt.Errorf("parsing form: %w", err)
+		return fmt.Errorf("parsing form: %w", err)
 	}
+	data, err := LoadCommonData(r.Context())
+	if err != nil {
+		return err
+	}
+	if data.User == nil {
+		return fmt.Errorf("form submitted by user that wasn't logged in")
+	}
+	if data.User.CSRFCheckPassed {
+		return nil
+	}
+	csrf, ok := r.Form["csrf"]
+	if !ok {
+		return fmt.Errorf("missing CSRF token in request")
+	}
+	if len(csrf) > 1 {
+		return fmt.Errorf("%d CSRF tokens in request", len(csrf))
+	}
+	if csrf[0] != data.User.CSRFToken {
+		return fmt.Errorf("CSRF check failed")
+	}
+	data.User.CSRFCheckPassed = true
+	return nil
+}
 
-	if data, err := LoadCommonData(r.Context()); err == nil {
-		if data.User == nil {
-			return nil, fmt.Errorf("form submitted by user that wasn't logged in")
-		}
-		if !data.User.CSRFCheckPassed {
-			csrf, ok := r.Form["csrf"]
-			if !ok {
-				return nil, fmt.Errorf("missing CSRF token in request")
-			}
-			if len(csrf) > 1 {
-				return nil, fmt.Errorf("%d CSRF tokens in request", len(csrf))
-			}
-			if csrf[0] != data.User.CSRFToken {
-				return nil, fmt.Errorf("CSRF check failed")
-			}
-			data.User.CSRFCheckPassed = true
-		}
+func GetFormMultiValue(r *http.Request, field string) ([]string, error) {
+	if err := ValidateCSRF(r); err != nil {
+		return nil, err
 	}
 
 	values, ok := r.Form[field]

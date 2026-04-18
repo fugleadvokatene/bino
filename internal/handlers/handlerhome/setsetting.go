@@ -9,13 +9,17 @@ import (
 	"github.com/fugleadvokatene/bino/internal/sql"
 )
 
-type setCapacity struct {
+type setSetting struct {
 	DB *db.Database
 }
 
-func (h *setCapacity) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+func (h *setSetting) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-	commonData := request.MustLoadCommonData(ctx)
+
+	if err := request.ValidateCSRF(r); err != nil {
+		handlererror.Error(w, r, err)
+		return
+	}
 
 	id, err := request.GetPathID(r, "home")
 	if err != nil {
@@ -23,17 +27,19 @@ func (h *setCapacity) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	capacity, err := request.GetFormID(r, "capacity")
+	fields, err := request.GetFormValues(r, "key", "value")
 	if err != nil {
 		handlererror.Error(w, r, err)
 		return
 	}
 
-	if err := h.DB.Q.SetHomeCapacity(ctx, sql.SetHomeCapacityParams{
-		ID:       id,
-		Capacity: capacity,
+	if err := h.DB.Q.SetHomeSetting(ctx, sql.SetHomeSettingParams{
+		HomeID: id,
+		Key:    fields["key"],
+		Value:  fields["value"],
 	}); err != nil {
-		commonData.Error(commonData.Language.GenericFailed, err)
+		handlererror.Error(w, r, err)
+		return
 	}
 
 	request.RedirectToReferer(w, r)

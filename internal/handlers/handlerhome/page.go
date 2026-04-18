@@ -71,5 +71,11 @@ func (h *page) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 	home.UnavailablePeriods = model.SliceToModel(unavailablePeriods)
 
-	HomePage(ctx, commonData, model.SliceToModel(homes), &home).Render(r.Context(), w)
+	schedules, err := h.DB.Q.GetSchedulesForHome(ctx, id)
+	if err != nil {
+		handlererror.Error(w, r, err)
+		return
+	}
+
+	HomePage(ctx, commonData, model.SliceToModel(homes), &home, schedules).Render(r.Context(), w)
 }

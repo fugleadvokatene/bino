@@ -1,0 +1,175 @@
+package handlertasktemplate
+
+import (
+	"fmt"
+
+	"github.com/fugleadvokatene/bino/internal/request"
+	"github.com/fugleadvokatene/bino/internal/sql"
+	"github.com/fugleadvokatene/bino/internal/templbase"
+)
+
+templ TemplatesPage(data *request.CommonData, templates []sql.ScheduleTemplate) {
+	@templbase.Layout(data, "task-templates-page") {
+		<h1>{ data.Language.TasksTemplates }</h1>
+		if len(templates) == 0 {
+			@templbase.Card() {
+				<p class="text-muted mb-0">{ data.Language.TasksNone }</p>
+			}
+		}
+		for _, t := range templates {
+			@templbase.Card() {
+				<div class="d-flex justify-content-between align-items-start gap-3">
+					<div class="min-width-0">
+						<div>
+							<strong>{ t.Name }</strong>
+							if t.Standard {
+								<span class="badge text-bg-primary ms-1" style="font-size:0.7em">{ data.Language.TasksStandard }</span>
+							}
+						</div>
+						if t.Description != "" {
+							<div class="text-muted small">{ t.Description }</div>
+						}
+						<div class="text-muted small">
+							{ tplIntervalLabel(t) }
+							if t.RemainingCount.Valid {
+								&#183; { tplEndLabel(data, t) }
+							}
+						</div>
+					</div>
+					<div class="d-flex flex-column gap-1 flex-shrink-0">
+						@templbase.Form(data, fmt.Sprintf("/task-template/%d/delete", t.ID), "POST", "") {
+							<button type="submit" class="btn btn-sm btn-outline-danger">{ data.Language.TasksDeleteTemplate }</button>
+						}
+					</div>
+				</div>
+				<details class="mt-2">
+					<summary class="btn btn-sm btn-outline-secondary">{ data.Language.GenericEdit }</summary>
+					@TemplateEditForm(data, t)
+				</details>
+			}
+		}
+		<h2 class="mt-3">{ data.Language.TasksAddTemplate }</h2>
+		@templbase.Card() {
+			@TemplateForm(data, sql.ScheduleTemplate{})
+		}
+	}
+}
+
+templ TemplateEditForm(data *request.CommonData, t sql.ScheduleTemplate) {
+	@TemplateForm(data, t)
+}
+
+templ TemplateForm(data *request.CommonData, t sql.ScheduleTemplate) {
+	@templbase.Form(data, tplAction(t), "POST", "mt-2") {
+		<div class="d-flex flex-column gap-2">
+			<div>
+				<label class="form-label fw-bold">{ data.Language.TasksTemplateName }</label>
+				<input type="text" name="name" class="form-control form-control-sm" value={ t.Name } required/>
+			</div>
+			<div>
+				<label class="form-label fw-bold">{ data.Language.TasksDescriptionLabel }</label>
+				<input type="text" name="description" class="form-control form-control-sm" value={ t.Description }/>
+			</div>
+			<div class="d-flex flex-column gap-1">
+				<label class="form-label fw-bold mb-1">{ data.Language.TasksFrequencyLabel }</label>
+				<div class="form-check">
+					<input class="form-check-input" type="radio" name="interval_type" value="once" checked?={ !t.IntervalHours.Valid && !t.MorningEvening }/>
+					<label class="form-check-label">{ data.Language.TasksOnce }</label>
+				</div>
+				<div class="d-flex align-items-center gap-2 flex-wrap">
+					<div class="form-check mb-0">
+						<input class="form-check-input" type="radio" name="interval_type" value="repeat" checked?={ t.IntervalHours.Valid }/>
+						<label class="form-check-label">{ data.Language.TasksRepeat }</label>
+					</div>
+					<input type="number" name="interval_amount" min="1" class="form-control form-control-sm" style="width:5rem" value={ tplIntervalAmount(t) }/>
+					<select name="interval_unit" class="form-select form-select-sm" style="width:auto">
+						<option value="days" selected?={ tplIntervalUnit(t) == "days" }>{ data.Language.TasksDays }</option>
+						<option value="hours" selected?={ tplIntervalUnit(t) == "hours" }>{ data.Language.TasksHours }</option>
+					</select>
+				</div>
+				<div class="form-check">
+					<input class="form-check-input" type="radio" name="interval_type" value="morning_evening" checked?={ t.MorningEvening }/>
+					<label class="form-check-label">{ data.Language.TasksMorningEvening }</label>
+				</div>
+			</div>
+			<div class="d-flex flex-column gap-1">
+				<label class="form-label fw-bold mb-1">{ data.Language.TasksEndLabel }</label>
+				<div class="form-check">
+					<input class="form-check-input" type="radio" name="end_type" value="none" checked?={ !t.RemainingCount.Valid }/>
+					<label class="form-check-label">{ data.Language.TasksNoEnd }</label>
+				</div>
+				<div class="d-flex align-items-center gap-2 flex-wrap">
+					<div class="form-check mb-0">
+						<input class="form-check-input" type="radio" name="end_type" value="count" checked?={ t.RemainingCount.Valid }/>
+						<label class="form-check-label">{ data.Language.TasksEndAfterCountPre }</label>
+					</div>
+					<input type="number" name="end_count" min="1" class="form-control form-control-sm" style="width:5rem" value={ tplEndCount(t) }/>
+					<span class="form-check-label">{ data.Language.TasksEndAfterCountPost }</span>
+				</div>
+			</div>
+			<div class="form-check">
+				<input class="form-check-input" type="checkbox" name="standard" value="1" checked?={ t.Standard }/>
+				<label class="form-check-label">{ data.Language.TasksStandard }</label>
+			</div>
+			<div>
+				<button type="submit" class="btn btn-sm btn-primary">{ data.Language.GenericSave }</button>
+			</div>
+		</div>
+	}
+}
+
+func tplAction(t sql.ScheduleTemplate) string {
+	if t.ID == 0 {
+		return "/task-templates/add"
+	}
+	return fmt.Sprintf("/task-template/%d/edit", t.ID)
+}
+
+func tplIntervalLabel(t sql.ScheduleTemplate) string {
+	if t.MorningEvening {
+		return "Morning and evening"
+	}
+	if t.IntervalHours.Valid {
+		h := t.IntervalHours.Int32
+		if h >= 24 && h%24 == 0 {
+			return fmt.Sprintf("Every %d days", h/24)
+		}
+		return fmt.Sprintf("Every %d hours", h)
+	}
+	return "Once"
+}
+
+func tplEndLabel(data *request.CommonData, t sql.ScheduleTemplate) string {
+	if !t.RemainingCount.Valid {
+		return ""
+	}
+	return fmt.Sprintf("%s %d %s", data.Language.TasksEndAfterCountPre, t.RemainingCount.Int32, data.Language.TasksEndAfterCountPost)
+}
+
+func tplIntervalAmount(t sql.ScheduleTemplate) string {
+	if !t.IntervalHours.Valid {
+		return "1"
+	}
+	h := t.IntervalHours.Int32
+	if h >= 24 && h%24 == 0 {
+		return fmt.Sprintf("%d", h/24)
+	}
+	return fmt.Sprintf("%d", h)
+}
+
+func tplIntervalUnit(t sql.ScheduleTemplate) string {
+	if !t.IntervalHours.Valid {
+		return "days"
+	}
+	if t.IntervalHours.Int32 >= 24 && t.IntervalHours.Int32%24 == 0 {
+		return "days"
+	}
+	return "hours"
+}
+
+func tplEndCount(t sql.ScheduleTemplate) string {
+	if !t.RemainingCount.Valid {
+		return "3"
+	}
+	return fmt.Sprintf("%d", t.RemainingCount.Int32)
+}
