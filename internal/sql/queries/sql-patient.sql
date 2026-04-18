@@ -95,12 +95,19 @@ LEFT JOIN species_language AS sl
   ON sl.species_id = p.species_id
 WHERE curr_home_id IS NULL
   AND sl.language_id = $1
+  AND ($2 = '' OR p.name ILIKE '%' || $2 || '%' OR sl.name ILIKE '%' || $2 || '%')
 ORDER BY p.time_checkout DESC
-LIMIT $2 OFFSET $3
+LIMIT $3 OFFSET $4
 ;
 
 -- name: NumFormerPatients :one
-SELECT COUNT(*) FROM patient WHERE curr_home_id IS NULL
+SELECT COUNT(*)
+FROM patient AS p
+LEFT JOIN species_language AS sl
+  ON sl.species_id = p.species_id
+WHERE curr_home_id IS NULL
+  AND sl.language_id = $1
+  AND ($2 = '' OR p.name ILIKE '%' || $2 || '%' OR sl.name ILIKE '%' || $2 || '%')
 ;
 
 -- name: AddPatient :one

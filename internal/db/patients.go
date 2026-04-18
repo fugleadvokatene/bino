@@ -22,13 +22,17 @@ func (db *Database) DeletePatient(ctx context.Context, id int32) error {
 	})
 }
 
-func (db *Database) GetFormerPatients(ctx context.Context, lang *language.Language, limit, offset int32) ([]model.Patient, int32, error) {
-	n, err := db.Q.NumFormerPatients(ctx)
+func (db *Database) GetFormerPatients(ctx context.Context, lang *language.Language, q string, limit, offset int32) ([]model.Patient, int32, error) {
+	n, err := db.Q.NumFormerPatients(ctx, sql.NumFormerPatientsParams{
+		LanguageID: int32(lang.ID),
+		Column2:    q,
+	})
 	if err != nil {
 		return nil, 0, err
 	}
 	rows, err := db.Q.GetFormerPatients(ctx, sql.GetFormerPatientsParams{
 		LanguageID: int32(lang.ID),
+		Column2:    q,
 		Limit:      limit,
 		Offset:     offset,
 	})

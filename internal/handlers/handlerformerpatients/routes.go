@@ -15,5 +15,10 @@ func Routes(
 			Handler: &page{DB: db},
 			Cap:     model.CapViewAllFormerPatients,
 		},
+		{
+			Path:    "GET /former-patients/live",
+			Handler: &live{DB: db},
+			Cap:     model.CapViewAllFormerPatients,
+		},
 	}
 }

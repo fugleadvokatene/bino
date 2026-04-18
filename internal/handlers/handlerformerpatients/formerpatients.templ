@@ -7,7 +7,7 @@ import "github.com/fugleadvokatene/bino/internal/handlers/handlercalendar"
 import "github.com/fugleadvokatene/bino/internal/handlers/handlerpatient"
 import "github.com/fugleadvokatene/bino/internal/pagination"
 
-templ FormerPatientsPage(data *request.CommonData, patients []model.Patient, ps pagination.PageState) {
+templ FormerPatientsPage(data *request.CommonData, patients []model.Patient, ps pagination.PageState, q string) {
 	@templbase.Layout(data) {
         <h1>{data.Language.FormerPatients}</h1>
         @templbase.Card("dashboard-search", "shadow-sm", "mb-2") {
@@ -15,7 +15,17 @@ templ FormerPatientsPage(data *request.CommonData, patients []model.Patient, ps 
                 <legend for="dashboard-search">{data.Language.DashboardSearch}</legend>
                 <label class="small">{data.Language.DashboardSearchExplanation}</label>
                 <form-group class="form-group">
-                    <input autocomplete="off" class="form-control search" id="former-search"></input>
+                    <input
+                        autocomplete="off"
+                        class="form-control"
+                        id="former-search"
+                        name="q"
+                        value={q}
+                        hx-get="/former-patients/live"
+                        hx-trigger="input changed delay:300ms"
+                        hx-target="#former-patients-results"
+                        hx-swap="outerHTML"
+                    ></input>
                 </form-group>
                 <label class="small suggestion">
                     {data.Language.YouCanAlso}
@@ -23,16 +33,25 @@ templ FormerPatientsPage(data *request.CommonData, patients []model.Patient, ps 
                 </label>
             </fieldset>
         }
-         <div class="card">
-            <p class="p-1 m-auto">
-                if prev, ok := ps.Prev(); ok {
-                    <a href={prev}>←</a>
-                }
-                {data.Language.ShowingFirstToLastOfN(ps.First, ps.Last, ps.N)}
-                if next, ok := ps.Next(); ok {
-                    <a href={next}>→</a>
-                }
-            </p>
+        @FormerPatientsResults(data, patients, ps, q)
+    }
+    @templbase.JSModule(data, "formerpatients")
+}
+
+templ FormerPatientsResults(data *request.CommonData, patients []model.Patient, ps pagination.PageState, q string) {
+    <div id="former-patients-results">
+        <div class="card">
+            if q == "" {
+                <p class="p-1 m-auto">
+                    if prev, ok := ps.Prev(); ok {
+                        <a href={prev}>←</a>
+                    }
+                    {data.Language.ShowingFirstToLastOfN(ps.First, ps.Last, ps.N)}
+                    if next, ok := ps.Next(); ok {
+                        <a href={next}>→</a>
+                    }
+                </p>
+            }
             <table class="table table-striped table-bordered m-0 search-container">
                 <thead>
                     <tr>
@@ -40,30 +59,31 @@ templ FormerPatientsPage(data *request.CommonData, patients []model.Patient, ps 
                         <th data-sort="1" class="sortable">{data.Language.GenericSpecies}<span class="sort-icon"></span></th>
                         <th data-sort="2" class="sortable">{data.Language.GenericStatus}<span class="sort-icon"></span></th>
                         <th data-sort="3" class="sortable">{data.Language.PatientRegisteredTime}<span class="sort-icon"></span></th>
-                        <th data-sort="4" class="sortable sort-desc">{data.Language.PatientCheckedOutTime}<span class="sort-icon"></span></th>                
+                        <th data-sort="4" class="sortable sort-desc">{data.Language.PatientCheckedOutTime}<span class="sort-icon"></span></th>
                     </tr>
                 </thead>
                 <tbody>
                     for _, p := range patients {
-                        <tr class="filter-box">
-                            <td><a href={templ.URL(p.URL())} class="filter-content">{p.Name}</a></td>
-                            <td class="filter-content">{p.Species.Name}</td>
-                            <td class="filter-content">
+                        <tr>
+                            <td><a href={templ.URL(p.URL())}>{p.Name}</a></td>
+                            <td>{p.Species.Name}</td>
+                            <td>
                                 {data.Language.Status[model.Status(p.Status)]}
                                 if model.Status(p.Status) == model.StatusDeleted {
                                     @handlerpatient.PatientHardDeleteButton(data, p)
                                 }
                             </td>
-                            <td class="filter-content" data-sort-key={p.TimeCheckin.Unix()}>@handlercalendar.CalendarLinkAbs(data.Language, p.TimeCheckin, "listDay")</td>
-                            <td class="filter-content" data-sort-key={p.TimeCheckout.Unix()}>@handlercalendar.CalendarLinkAbs(data.Language, p.TimeCheckout, "listDay")</td>
+                            <td data-sort-key={p.TimeCheckin.Unix()}>@handlercalendar.CalendarLinkAbs(data.Language, p.TimeCheckin, "listDay")</td>
+                            <td data-sort-key={p.TimeCheckout.Unix()}>@handlercalendar.CalendarLinkAbs(data.Language, p.TimeCheckout, "listDay")</td>
                         </tr>
                     }
-                    <tr id="filter-none" hidden>
-                        <td class="center" colspan="5">{data.Language.GenericNotFound}</td>
-                    </tr>
+                    if len(patients) == 0 {
+                        <tr>
+                            <td class="center" colspan="5">{data.Language.GenericNotFound}</td>
+                        </tr>
+                    }
                 </tbody>
             </table>
         </div>
-    }
-    @templbase.JSModule(data, "formerpatients")
+    </div>
 }
