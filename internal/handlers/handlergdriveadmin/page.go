@@ -4,6 +4,7 @@ import (
 	"context"
 	"maps"
 	"net/http"
+	"strconv"
 	"strings"
 
 	"github.com/agnivade/levenshtein"
@@ -38,7 +39,9 @@ func (h *page) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	indexerState, _ := h.Worker.GetIndexerState()
 
-	GDrivePage(ctx, commonData, info, divisions, homes, h.DB, indexerState).Render(ctx, w)
+	openDivision, _ := strconv.ParseInt(r.URL.Query().Get("open"), 10, 32)
+
+	GDrivePage(ctx, commonData, info, divisions, homes, h.DB, indexerState, int32(openDivision)).Render(ctx, w)
 }
 
 func closest(email string, names []string) string {
@@ -62,6 +65,15 @@ func closest(email string, names []string) string {
 		}
 	}
 	return best
+}
+
+func findDivisionConfig(configs []gdrive.DivisionConfig, id int32) (gdrive.DivisionConfig, bool) {
+	for _, c := range configs {
+		if c.DivisionID == id {
+			return c, true
+		}
+	}
+	return gdrive.DivisionConfig{}, false
 }
 
 func getExtraBinoUsers(ctx context.Context, selectedDir gdrive.Item, db *db.Database) map[string]model.User {

@@ -12158,6 +12158,25 @@ label {
   background-color: rgb(202.3, 224.15, 222.5);
 }
 
+.b-division {
+  margin-bottom: 0.5em;
+}
+
+.b-division-summary {
+  cursor: pointer;
+  font-size: 1.25rem;
+  font-weight: 600;
+  padding: 0.4em 0;
+  user-select: none;
+}
+
+.b-field {
+  margin-bottom: 0.75em;
+}
+.b-field label {
+  display: block;
+}
+
 .gsi-material-button {
   -moz-user-select: none;
   -webkit-user-select: none;

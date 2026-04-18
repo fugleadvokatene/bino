@@ -7,3 +7,23 @@
 .gdrive-doc-select[selected] {
   background-color: vars.$lightaccent;
 }
+
+.b-division {
+  margin-bottom: 0.5em;
+}
+
+.b-division-summary {
+  cursor: pointer;
+  font-size: 1.25rem;
+  font-weight: 600;
+  padding: 0.4em 0;
+  user-select: none;
+}
+
+.b-field {
+  margin-bottom: 0.75em;
+
+  label {
+    display: block;
+  }
+}

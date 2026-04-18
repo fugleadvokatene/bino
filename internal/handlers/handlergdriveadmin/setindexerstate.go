@@ -17,7 +17,12 @@ func (h *setIndexerState) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	commonData := request.MustLoadCommonData(ctx)
 
-	defer request.Redirect(w, r, "/gdrive")
+	openDivision := r.FormValue("open-division")
+	redirectURL := "/gdrive"
+	if openDivision != "" {
+		redirectURL = "/gdrive?open=" + openDivision
+	}
+	defer request.Redirect(w, r, redirectURL)
 
 	enabled := request.GetCheckboxValue(r, "enabled")
 
