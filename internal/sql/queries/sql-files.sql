@@ -127,6 +127,7 @@ WHERE id = @id
 -- name: GetLargestFiles :many
 SELECT *
 FROM file
+WHERE NOT original_deleted
 ORDER BY size DESC
 LIMIT $1
 ;

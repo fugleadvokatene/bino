@@ -15,9 +15,9 @@ templ LargestFilesPage(data *request.CommonData, files []model.File) {
                 <thead>
                     <tr>
                         <th>File</th>
+                        <th>Age</th>
                         <th>Original size</th>
                         <th>Large variant size</th>
-                        <th>Savings</th>
                         <th></th>
                     </tr>
                 </thead>
@@ -28,19 +28,15 @@ templ LargestFilesPage(data *request.CommonData, files []model.File) {
                 </tbody>
             </table>
         </div>
+        @templbase.JSModule(data, "largestfiles")
     }
 }
 
 templ largestFileRow(data *request.CommonData, file *model.File) {
     <tr>
-        <td><a href={templ.URL(file.URL())}>{file.PresentationFilename}</a></td>
-        <td>
-            if file.OriginalDeleted {
-                <span class="text-muted">(deleted)</span>
-            } else {
-                {file.FileSizeText()}
-            }
-        </td>
+        <td><a href={templ.URL(file.URL())} title={file.PresentationFilename}><span class="filename-truncate">{file.PresentationFilename}</span></a></td>
+        <td>{data.Language.FormatTimeRelWithAbsFallback(file.Created)}</td>
+        <td>{file.FileSizeText()}</td>
         <td>
             if lv := largeVariant(file); lv != nil {
                 {model.FileSizeText(int64(lv.Size))}
@@ -49,21 +45,11 @@ templ largestFileRow(data *request.CommonData, file *model.File) {
             }
         </td>
         <td>
-            if lv := largeVariant(file); lv != nil && !file.OriginalDeleted {
-                {model.FileSizeText(file.Size - int64(lv.Size))}
-            } else {
-                <span class="text-muted">-</span>
-            }
-        </td>
-        <td>
-            if file.HasLargeVariant() && !file.OriginalDeleted {
-                @templbase.SingleButtonForm(
-                    data,
-                    fmt.Sprintf("/file/%d/delete-original", file.ID),
-                    "Delete original",
-                    "POST",
-                    "btn-outline-warning btn-sm",
-                )
+            if file.HasLargeVariant() {
+                <button
+                    class="btn btn-outline-warning btn-sm"
+                    data-delete-original={fmt.Sprintf("/file/%d/delete-original", file.ID)}
+                >Delete original</button>
             }
         </td>
     </tr>

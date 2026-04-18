@@ -35,3 +35,12 @@
 .file-container {
   margin: auto;
 }
+
+.filename-truncate {
+  max-width: 300px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: inline-block;
+  vertical-align: bottom;
+}

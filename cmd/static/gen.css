@@ -12091,6 +12091,15 @@ textarea.form-control-lg {
   margin: auto;
 }
 
+.filename-truncate {
+  max-width: 300px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: inline-block;
+  vertical-align: bottom;
+}
+
 .footer {
   bottom: 0;
   width: 100%;

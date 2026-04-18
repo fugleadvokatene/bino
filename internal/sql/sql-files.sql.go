@@ -414,6 +414,7 @@ func (q *Queries) GetImageVariantsMissingHash(ctx context.Context) ([]GetImageVa
 const getLargestFiles = `-- name: GetLargestFiles :many
 SELECT id, uuid, created, filename, mimetype, size, presentation_filename, miniatures_created, sha256, original_deleted
 FROM file
+WHERE NOT original_deleted
 ORDER BY size DESC
 LIMIT $1
 `

@@ -18,7 +18,8 @@ build({
     'reorder-patients.ts',
     'patientchart.ts',
     'search.ts',
-    'speciesadmin.ts'
+    'speciesadmin.ts',
+    'largestfiles.ts'
   ],
   outdir: '../cmd/static/bundle',
   bundle: true,

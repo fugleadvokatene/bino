@@ -15,27 +15,23 @@ type deleteOriginal struct {
 
 func (h deleteOriginal) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-	data := request.MustLoadCommonData(ctx)
 
 	id, err := request.GetPathID(r, "id")
 	if err != nil {
-		data.Error(data.Language.GenericFailed, err)
-		request.RedirectToReferer(w, r)
+		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
 	file, err := h.DB.Q.GetFileByID(ctx, id)
 	if err != nil {
-		data.Error(data.Language.GenericNotFound, err)
-		request.RedirectToReferer(w, r)
+		http.Error(w, err.Error(), http.StatusNotFound)
 		return
 	}
 
 	fileModel := file.ToModel()
 
 	if fileModel.OriginalDeleted {
-		data.Error(data.Language.GenericFailed, nil)
-		request.RedirectToReferer(w, r)
+		http.Error(w, "original already deleted", http.StatusConflict)
 		return
 	}
 
@@ -43,23 +39,19 @@ func (h deleteOriginal) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		FileID:  id,
 		Variant: model.FileVariantIDLarge.String(),
 	}); err != nil {
-		data.Error(data.Language.GenericFailed, err)
-		request.RedirectToReferer(w, r)
+		http.Error(w, "no Large variant exists", http.StatusPreconditionFailed)
 		return
 	}
 
 	if err := h.DB.DeleteOriginalFile(ctx, fileModel.UUID, fileModel.OriginalFilename); err != nil {
-		data.Error(data.Language.GenericFailed, err)
-		request.RedirectToReferer(w, r)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
 	if err := h.DB.Q.SetOriginalDeleted(ctx, id); err != nil {
-		data.Error(data.Language.GenericFailed, err)
-		request.RedirectToReferer(w, r)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	data.Success(data.Language.GenericSuccess)
-	request.RedirectToReferer(w, r)
+	w.WriteHeader(http.StatusNoContent)
 }

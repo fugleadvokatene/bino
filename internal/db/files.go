@@ -1,8 +1,10 @@
 package db
 
 import (
+	"cmp"
 	"context"
 	"fmt"
+	"slices"
 
 	"github.com/fugleadvokatene/bino/internal/generic"
 	"github.com/fugleadvokatene/bino/internal/model"
@@ -78,6 +80,10 @@ func (db *Database) GetLargestFiles(ctx context.Context, limit int32) ([]model.F
 				f.ImageVariants = append(f.ImageVariants, iv.ToModel())
 			},
 		)
+		// GroupByID sorts by ID in place; restore size-descending order
+		slices.SortStableFunc(files, func(a, b model.File) int {
+			return cmp.Compare(b.Size, a.Size)
+		})
 	}
 
 	return files, nil
