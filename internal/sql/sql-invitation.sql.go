@@ -63,7 +63,7 @@ func (q *Queries) GetInvitation(ctx context.Context, email pgtype.Text) (Invitat
 }
 
 const getInvitations = `-- name: GetInvitations :many
-SELECT invitation.id, email, expires, created, access_level, home, home.id, name, note, division, home.name AS home_name
+SELECT invitation.id, email, expires, created, access_level, home, home.id, name, note, division, archived, home.name AS home_name
 FROM invitation
 LEFT JOIN home
   ON home.id = invitation.home
@@ -82,6 +82,7 @@ type GetInvitationsRow struct {
 	Name        pgtype.Text
 	Note        pgtype.Text
 	Division    pgtype.Int4
+	Archived    pgtype.Bool
 	HomeName    pgtype.Text
 }
 
@@ -105,6 +106,7 @@ func (q *Queries) GetInvitations(ctx context.Context) ([]GetInvitationsRow, erro
 			&i.Name,
 			&i.Note,
 			&i.Division,
+			&i.Archived,
 			&i.HomeName,
 		); err != nil {
 			return nil, err

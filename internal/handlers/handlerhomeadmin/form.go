@@ -32,6 +32,8 @@ func (h *form) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		h.postHomeCreateDivision(w, r)
 	case "add-user":
 		h.postHomeAddUser(w, r)
+	case "archive-home":
+		h.postHomeArchiveHome(w, r)
 	default:
 		handlererror.Error(w, r, fmt.Errorf("unknown form ID: '%s'", formID))
 	}
@@ -95,6 +97,23 @@ func (h *form) postHomeCreateDivision(w http.ResponseWriter, r *http.Request) {
 
 	err = h.DB.Q.InsertDivision(ctx, name)
 	if err != nil {
+		handlererror.Error(w, r, err)
+		return
+	}
+
+	request.RedirectToReferer(w, r)
+}
+
+func (h *form) postHomeArchiveHome(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
+	homeID, err := request.GetFormID(r, "home")
+	if err != nil {
+		handlererror.Error(w, r, err)
+		return
+	}
+
+	if err := h.DB.Q.ArchiveHome(ctx, homeID); err != nil {
 		handlererror.Error(w, r, err)
 		return
 	}

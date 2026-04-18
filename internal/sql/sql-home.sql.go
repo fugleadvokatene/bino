@@ -56,6 +56,17 @@ func (q *Queries) AddPreferredSpecies(ctx context.Context, arg AddPreferredSpeci
 	return err
 }
 
+const archiveHome = `-- name: ArchiveHome :exec
+UPDATE home
+SET archived = TRUE
+WHERE id = $1
+`
+
+func (q *Queries) ArchiveHome(ctx context.Context, id int32) error {
+	_, err := q.db.Exec(ctx, archiveHome, id)
+	return err
+}
+
 const deleteHomeUnavailablePeriod = `-- name: DeleteHomeUnavailablePeriod :exec
 DELETE
 FROM home_unavailable
@@ -141,7 +152,7 @@ func (q *Queries) GetAllUnavailablePeriods(ctx context.Context) ([]HomeUnavailab
 }
 
 const getHome = `-- name: GetHome :one
-SELECT id, name, note, division FROM home
+SELECT id, name, note, division, archived FROM home
 WHERE id = $1
 `
 
@@ -153,12 +164,13 @@ func (q *Queries) GetHome(ctx context.Context, id int32) (Home, error) {
 		&i.Name,
 		&i.Note,
 		&i.Division,
+		&i.Archived,
 	)
 	return i, err
 }
 
 const getHomeByName = `-- name: GetHomeByName :many
-SELECT id, name, note, division
+SELECT id, name, note, division, archived
 FROM home
 WHERE name = $1
 `
@@ -177,6 +189,7 @@ func (q *Queries) GetHomeByName(ctx context.Context, name string) ([]Home, error
 			&i.Name,
 			&i.Note,
 			&i.Division,
+			&i.Archived,
 		); err != nil {
 			return nil, err
 		}
@@ -272,7 +285,8 @@ func (q *Queries) GetHomeUnavailablePeriods(ctx context.Context, homeID int32) (
 }
 
 const getHomes = `-- name: GetHomes :many
-SELECT id, name, note, division FROM home
+SELECT id, name, note, division, archived FROM home
+WHERE archived = FALSE
 ORDER BY name
 `
 
@@ -290,6 +304,7 @@ func (q *Queries) GetHomes(ctx context.Context) ([]Home, error) {
 			&i.Name,
 			&i.Note,
 			&i.Division,
+			&i.Archived,
 		); err != nil {
 			return nil, err
 		}
@@ -302,8 +317,9 @@ func (q *Queries) GetHomes(ctx context.Context) ([]Home, error) {
 }
 
 const getHomesInDivision = `-- name: GetHomesInDivision :many
-SELECT id, name, note, division FROM home
+SELECT id, name, note, division, archived FROM home
 WHERE division = $1
+  AND archived = FALSE
 ORDER BY name
 `
 
@@ -321,6 +337,7 @@ func (q *Queries) GetHomesInDivision(ctx context.Context, division int32) ([]Hom
 			&i.Name,
 			&i.Note,
 			&i.Division,
+			&i.Archived,
 		); err != nil {
 			return nil, err
 		}

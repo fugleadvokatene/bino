@@ -1,12 +1,20 @@
 -- name: GetHomes :many
 SELECT * FROM home
+WHERE archived = FALSE
 ORDER BY name
 ;
 
 -- name: GetHomesInDivision :many
 SELECT * FROM home
 WHERE division = $1
+  AND archived = FALSE
 ORDER BY name
+;
+
+-- name: ArchiveHome :exec
+UPDATE home
+SET archived = TRUE
+WHERE id = $1
 ;
 
 -- name: InsertHome :exec

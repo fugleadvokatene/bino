@@ -70,6 +70,7 @@ type Home struct {
 	Name     string
 	Note     string
 	Division int32
+	Archived bool
 }
 
 type HomePreferredSpecy struct {

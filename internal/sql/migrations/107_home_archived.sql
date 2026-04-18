@@ -1,0 +1,2 @@
+-- +migrate Up
+ALTER TABLE home ADD COLUMN archived BOOLEAN NOT NULL DEFAULT FALSE;

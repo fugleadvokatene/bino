@@ -107,7 +107,7 @@ templ HomesPage(
                     // Archive rehab home
                     @templbase.Form(data, "/homes", "POST", "form-inline") {
                         <input type="hidden" name="form-id" value="archive-home">
-                        <button disabled type="submit" class="btn btn-warning mb-2 btn-sm" name="home" value={home.ID}>{data.Language.HomesArchiveHome}</button>
+                        <button type="submit" class="btn btn-warning mb-2 btn-sm" name="home" value={home.ID}>{data.Language.HomesArchiveHome}</button>
                     }
 
                     for _, user := range home.Users {
