@@ -100,11 +100,10 @@ func (q *Queries) GetFileBySizeAndHash(ctx context.Context, arg GetFileBySizeAnd
 
 const getFileWikiAssociations = `-- name: GetFileWikiAssociations :many
 SELECT fw.file_id, fw.wiki_id, wp.title
-FROM file
-INNER JOIN file_wiki AS fw
-  ON file.id = fw.file_id
+FROM file_wiki AS fw
 INNER JOIN wiki_page AS wp
   ON wp.id = fw.wiki_id
+WHERE fw.file_id = ANY($1::INT[])
 ORDER BY fw.wiki_id
 `
 
@@ -114,8 +113,8 @@ type GetFileWikiAssociationsRow struct {
 	Title  string
 }
 
-func (q *Queries) GetFileWikiAssociations(ctx context.Context) ([]GetFileWikiAssociationsRow, error) {
-	rows, err := q.db.Query(ctx, getFileWikiAssociations)
+func (q *Queries) GetFileWikiAssociations(ctx context.Context, dollar_1 []int32) ([]GetFileWikiAssociationsRow, error) {
+	rows, err := q.db.Query(ctx, getFileWikiAssociations, dollar_1)
 	if err != nil {
 		return nil, err
 	}
@@ -137,10 +136,17 @@ func (q *Queries) GetFileWikiAssociations(ctx context.Context) ([]GetFileWikiAss
 const getFiles = `-- name: GetFiles :many
 SELECT id, uuid, created, filename, mimetype, size, presentation_filename, miniatures_created, sha256
 FROM file
+ORDER BY created DESC
+LIMIT $1 OFFSET $2
 `
 
-func (q *Queries) GetFiles(ctx context.Context) ([]File, error) {
-	rows, err := q.db.Query(ctx, getFiles)
+type GetFilesParams struct {
+	Limit  int32
+	Offset int32
+}
+
+func (q *Queries) GetFiles(ctx context.Context, arg GetFilesParams) ([]File, error) {
+	rows, err := q.db.Query(ctx, getFiles, arg.Limit, arg.Offset)
 	if err != nil {
 		return nil, err
 	}
@@ -315,14 +321,13 @@ func (q *Queries) GetFilesMissingOriginalVariant(ctx context.Context) ([]File, e
 
 const getImageVariants = `-- name: GetImageVariants :many
 SELECT iv.file_id, iv.variant, iv.filename, iv.mimetype, iv.size, iv.width, iv.height, iv.sha256
-FROM file
-INNER JOIN image_variant AS iv
-  ON file.id = iv.file_id
+FROM image_variant AS iv
+WHERE iv.file_id = ANY($1::INT[])
 ORDER BY iv.variant DESC
 `
 
-func (q *Queries) GetImageVariants(ctx context.Context) ([]ImageVariant, error) {
-	rows, err := q.db.Query(ctx, getImageVariants)
+func (q *Queries) GetImageVariants(ctx context.Context, dollar_1 []int32) ([]ImageVariant, error) {
+	rows, err := q.db.Query(ctx, getImageVariants, dollar_1)
 	if err != nil {
 		return nil, err
 	}
@@ -439,6 +444,17 @@ type InsertFileJournalAssociationsParams struct {
 func (q *Queries) InsertFileJournalAssociations(ctx context.Context, arg InsertFileJournalAssociationsParams) error {
 	_, err := q.db.Exec(ctx, insertFileJournalAssociations, arg.GoogleID, arg.FileID)
 	return err
+}
+
+const numFiles = `-- name: NumFiles :one
+SELECT COUNT(*) FROM file
+`
+
+func (q *Queries) NumFiles(ctx context.Context) (int64, error) {
+	row := q.db.QueryRow(ctx, numFiles)
+	var count int64
+	err := row.Scan(&count)
+	return count, err
 }
 
 const publishFile = `-- name: PublishFile :one

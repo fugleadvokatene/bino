@@ -30,6 +30,12 @@ WHERE file_id=$1 AND variant=$2
 -- name: GetFiles :many
 SELECT *
 FROM file
+ORDER BY created DESC
+LIMIT $1 OFFSET $2
+;
+
+-- name: NumFiles :one
+SELECT COUNT(*) FROM file
 ;
 
 -- name: GetAllFileWikiAssociations :many
@@ -39,19 +45,17 @@ SELECT * from file_wiki
 
 -- name: GetFileWikiAssociations :many
 SELECT fw.file_id, fw.wiki_id, wp.title
-FROM file
-INNER JOIN file_wiki AS fw
-  ON file.id = fw.file_id
+FROM file_wiki AS fw
 INNER JOIN wiki_page AS wp
   ON wp.id = fw.wiki_id
+WHERE fw.file_id = ANY($1::INT[])
 ORDER BY fw.wiki_id
 ;
 
 -- name: GetImageVariants :many
 SELECT iv.*
-FROM file
-INNER JOIN image_variant AS iv
-  ON file.id = iv.file_id
+FROM image_variant AS iv
+WHERE iv.file_id = ANY($1::INT[])
 ORDER BY iv.variant DESC
 ;
 

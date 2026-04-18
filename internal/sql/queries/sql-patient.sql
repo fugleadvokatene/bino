@@ -96,6 +96,11 @@ LEFT JOIN species_language AS sl
 WHERE curr_home_id IS NULL
   AND sl.language_id = $1
 ORDER BY p.time_checkout DESC
+LIMIT $2 OFFSET $3
+;
+
+-- name: NumFormerPatients :one
+SELECT COUNT(*) FROM patient WHERE curr_home_id IS NULL
 ;
 
 -- name: AddPatient :one

@@ -1,5 +1,6 @@
 package handlersearch
 
+import "fmt"
 import "github.com/fugleadvokatene/bino/internal/db"
 import "github.com/fugleadvokatene/bino/internal/model"
 import "github.com/fugleadvokatene/bino/internal/request"
@@ -56,12 +57,34 @@ templ SearchPage(data *request.CommonData, result db.SearchResult, fallbackMsg s
 
 templ SearchMatches(data *request.CommonData, result db.SearchResult, fallbackMsg string) {
     <div class="card p-2 matches mt-2" id="live-matches">
-        <div class="search-header p-0 m-0">
+        <div class="search-header p-0 m-auto mb-2 d-flex gap-3">
             <p class="p-0 m-0">
-            Fant <strong>{result.TotalMatches}</strong> resultater på {result.Milliseconds} ms.
-            if int32(len(result.PageMatches)) < result.TotalMatches {
-                Viser <strong>{result.Offset}</strong> til <strong>{result.Offset+int32(len(result.PageMatches))}</strong>
-            }
+                if result.Query.Page > 0 {
+                    <button
+                        class="btn btn-sm btn-outline-secondary"
+                        hx-get="/search/live"
+                        hx-include="#search-form"
+                        hx-vals={fmt.Sprintf(`{"page": "%d"}`, result.Query.Page-1)}
+                        hx-target="#live-matches"
+                        hx-swap="outerHTML"
+                    >←</button>
+                }
+                <div class="search-info m-auto">
+                    Fant <strong>{result.TotalMatches}</strong> resultater. 
+                    if int32(len(result.PageMatches)) < result.TotalMatches {
+                        Viser <strong>{result.Offset}</strong> til <strong>{result.Offset+int32(len(result.PageMatches))}</strong>
+                    }
+                </div>
+                if result.Offset+int32(len(result.PageMatches)) < result.TotalMatches {
+                    <button
+                        class="btn btn-sm btn-outline-secondary"
+                        hx-get="/search/live"
+                        hx-include="#search-form"
+                        hx-vals={fmt.Sprintf(`{"page": "%d"}`, result.Query.Page+1)}
+                        hx-target="#live-matches"
+                        hx-swap="outerHTML"
+                    >→</button>
+                }
             </p>
         </div>
         if len(result.PageMatches) > 0 {

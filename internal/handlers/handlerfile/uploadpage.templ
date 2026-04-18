@@ -3,12 +3,13 @@ package handlerfile
 import (
     "fmt"
 	"github.com/fugleadvokatene/bino/internal/model"
+	"github.com/fugleadvokatene/bino/internal/pagination"
 	"github.com/fugleadvokatene/bino/internal/request"
 	"github.com/fugleadvokatene/bino/internal/templbase"
 	"encoding/hex"
 )
 
-templ FileUploadPage(data *request.CommonData, files []model.File) {
+templ FileUploadPage(data *request.CommonData, files []model.File, ps pagination.PageState) {
     <!doctype html>
     <html lang="en">
     <head>
@@ -21,7 +22,16 @@ templ FileUploadPage(data *request.CommonData, files []model.File) {
                 <div class="card p-2">
                     @FileUploader(data, "/file/submit")
                 </div>
-                <h1>{data.Language.FilesThatYouHaveUploaded}</h1>
+                <h1>{data.Language.FilesUploaded}</h1>
+                <p>
+                    if prev, ok := ps.Prev(); ok {
+                        <a href={prev}>←</a>
+                    }
+                    {data.Language.ShowingFirstToLastOfN(ps.First, ps.Last, ps.N)}
+                    if next, ok := ps.Next(); ok {
+                        <a href={next}>→</a>
+                    }
+                </p>
                 <div class="file-list">
                     for _, file := range files {
                         @FileViewComponent(data, &file)

@@ -4,8 +4,9 @@ import "github.com/fugleadvokatene/bino/internal/model"
 import "github.com/fugleadvokatene/bino/internal/request"
 import "github.com/fugleadvokatene/bino/internal/templbase"
 import "github.com/fugleadvokatene/bino/internal/handlers/handlercalendar"
+import "github.com/fugleadvokatene/bino/internal/pagination"
 
-templ EventListPage(data *request.CommonData, events []model.Event, ls listState) {
+templ EventListPage(data *request.CommonData, events []model.Event, ls pagination.PageState) {
 	@templbase.Layout(data) {
         <h1>{data.Language.EventList}</h1>
         <div class="card">

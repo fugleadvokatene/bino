@@ -385,7 +385,14 @@ LEFT JOIN species_language AS sl
 WHERE curr_home_id IS NULL
   AND sl.language_id = $1
 ORDER BY p.time_checkout DESC
+LIMIT $2 OFFSET $3
 `
+
+type GetFormerPatientsParams struct {
+	LanguageID int32
+	Limit      int32
+	Offset     int32
+}
 
 type GetFormerPatientsRow struct {
 	ID                    int32
@@ -401,8 +408,8 @@ type GetFormerPatientsRow struct {
 	JournalPending        bool
 }
 
-func (q *Queries) GetFormerPatients(ctx context.Context, languageID int32) ([]GetFormerPatientsRow, error) {
-	rows, err := q.db.Query(ctx, getFormerPatients, languageID)
+func (q *Queries) GetFormerPatients(ctx context.Context, arg GetFormerPatientsParams) ([]GetFormerPatientsRow, error) {
+	rows, err := q.db.Query(ctx, getFormerPatients, arg.LanguageID, arg.Limit, arg.Offset)
 	if err != nil {
 		return nil, err
 	}
@@ -549,6 +556,17 @@ type MovePatientParams struct {
 func (q *Queries) MovePatient(ctx context.Context, arg MovePatientParams) error {
 	_, err := q.db.Exec(ctx, movePatient, arg.ID, arg.CurrHomeID)
 	return err
+}
+
+const numFormerPatients = `-- name: NumFormerPatients :one
+SELECT COUNT(*) FROM patient WHERE curr_home_id IS NULL
+`
+
+func (q *Queries) NumFormerPatients(ctx context.Context) (int64, error) {
+	row := q.db.QueryRow(ctx, numFormerPatients)
+	var count int64
+	err := row.Scan(&count)
+	return count, err
 }
 
 const setPatientJournal = `-- name: SetPatientJournal :execresult

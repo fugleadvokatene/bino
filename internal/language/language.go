@@ -86,9 +86,9 @@ type Language struct {
 	FFAdmin  string
 	FFCreate string
 
-	FilesUploadHeader        string
-	FilesPleaseWait          string
-	FilesThatYouHaveUploaded string
+	FilesUploadHeader string
+	FilesPleaseWait   string
+	FilesUploaded     string
 
 	FooterPrivacy    string
 	FooterTOS        string
@@ -499,9 +499,9 @@ var NO = &Language{
 	FFAdmin:  "Konfigurer feature flags",
 	FFCreate: "Lag nytt feature flag",
 
-	FilesUploadHeader:        "Last opp filer",
-	FilesPleaseWait:          "Laster opp filer...",
-	FilesThatYouHaveUploaded: "Filer du har lastet opp",
+	FilesUploadHeader: "Last opp filer",
+	FilesPleaseWait:   "Laster opp filer...",
+	FilesUploaded:     "Opplastede filer",
 
 	FooterPrivacy:    "Personvern",
 	FooterTOS:        "Bruksvilkår",
@@ -852,9 +852,9 @@ var EN = &Language{
 	FFAdmin:  "Configure feature flags",
 	FFCreate: "Create feature flag",
 
-	FilesUploadHeader:        "Upload files",
-	FilesPleaseWait:          "Uploading...",
-	FilesThatYouHaveUploaded: "Files you have uploaded",
+	FilesUploadHeader: "Upload files",
+	FilesPleaseWait:   "Uploading...",
+	FilesUploaded:     "Uploaded files",
 
 	FooterPrivacy:    "Privacy",
 	FooterTOS:        "Terms of Service",

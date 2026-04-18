@@ -4,12 +4,12 @@ import (
 	"net/http"
 
 	"github.com/fugleadvokatene/bino/internal/db"
-	"github.com/fugleadvokatene/bino/internal/generic"
 	"github.com/fugleadvokatene/bino/internal/handlers/handlererror"
-	"github.com/fugleadvokatene/bino/internal/model"
+	"github.com/fugleadvokatene/bino/internal/pagination"
 	"github.com/fugleadvokatene/bino/internal/request"
-	"github.com/fugleadvokatene/bino/internal/sql"
 )
+
+const NFormerPatientsPerPage = int32(50)
 
 type page struct {
 	DB *db.Database
@@ -19,7 +19,12 @@ func (h *page) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	commonData := request.MustLoadCommonData(ctx)
 
-	patients, err := h.DB.Q.GetFormerPatients(ctx, commonData.Lang32())
+	offset, err := request.GetQueryID(r, "offset")
+	if err != nil {
+		offset = 0
+	}
+
+	patients, n, err := h.DB.GetFormerPatients(ctx, commonData.Language, NFormerPatientsPerPage, offset)
 	if err != nil {
 		handlererror.Error(w, r, err)
 		return
@@ -27,7 +32,6 @@ func (h *page) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	commonData.Subtitle = commonData.Language.FormerPatients
 
-	FormerPatientsPage(commonData, generic.SliceToSlice(patients, func(in sql.GetFormerPatientsRow) model.Patient {
-		return in.ToModel()
-	})).Render(ctx, w)
+	ps := pagination.New(offset, n, NFormerPatientsPerPage, "/former-patients")
+	FormerPatientsPage(commonData, patients, ps).Render(ctx, w)
 }
