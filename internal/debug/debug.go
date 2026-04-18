@@ -49,7 +49,7 @@ type DebugInfo struct {
 	Children []DebugInfo
 }
 
-func GetDebugInfo(ctx context.Context, runtimeInfo ConstantInfo) []DebugInfo {
+func GetDebugInfo(ctx context.Context, runtimeInfo ConstantInfo, diskFullEstimate string) []DebugInfo {
 	data := request.MustLoadCommonData(ctx)
 
 	// Process info
@@ -98,7 +98,9 @@ func GetDebugInfo(ctx context.Context, runtimeInfo ConstantInfo) []DebugInfo {
 				{Name: "System total load avg (up to 100% * n cores)", Value: fmt.Sprintf("%.1f", avg.Load1*100)},
 				{Name: "Disk total (GB)", Value: toGB(u.Total)},
 				{Name: "Disk available (GB)", Value: toGB(u.Free)},
-				{Name: "Disk used (GB)", Value: toGB(u.Used)},
+				{Name: "Disk used (GB)", Value: toGB(u.Used), Children: []DebugInfo{
+					{Name: "Full estimate", Value: diskFullEstimate},
+				}},
 				{Name: "Hostname", Value: h.Hostname},
 				{Name: "Uptime", Value: data.Language.FormatTimeAbsWithRelParen(time.Unix(int64(h.BootTime), 0))},
 				{Name: "Public IP", Value: runtimeInfo.PublicIP},
