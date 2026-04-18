@@ -27,7 +27,7 @@ templ PatientPage(
 	@templbase.Layout(data, "patient-page") {
         <h1 class="editable" data-action={patient.URLSuffix("set-name")}>{patient.Name}</h1>
         @templbase.Card() {
-            <h2>Personalia</h2>
+            <h2>{data.Language.PatientPersonalia}</h2>
             <table class="table table-bordered mb-2">
             <tbody>
                 <tr>
@@ -64,7 +64,7 @@ templ PatientPage(
 
             @handlerschedule.PatientScheduleWidget(data, patient.ID, schedules, templates)
 
-            <h2>Oppdater</h2>
+            <h2>{data.Language.GenericUpdate}</h2>
             <table class="patient-table table table-bordered mb-2">
                 <tbody>
                     @PatientJournalUpdate(data, patient)
@@ -81,13 +81,13 @@ templ PatientPage(
             </table>
 
             if patient.GoogleID != "" {
-                <h2>Journal</h2>
+                <h2>{data.Language.GenericJournal}</h2>
                 <a href={templ.URL(url.IDToDocumentURL(patient.GoogleID))}>
                     {data.Language.DashboardGoToJournal}
                 </a>
-                @templbase.SingleButtonForm(data, patient.URLSuffix("fetch-journal"), "Hent siste fra Google Drive", "POST", "btn-success")
+                @templbase.SingleButtonForm(data, patient.URLSuffix("fetch-journal"), data.Language.PatientFetchJournal, "POST", "btn-success")
                 if !journalMeta.Updated.IsZero() {
-                    <p>Sist oppdatert <span>{data.Language.FormatTimeAbs(journalMeta.Updated)}</span></p>
+                    <p>{data.Language.PatientLastUpdated} <span>{data.Language.FormatTimeAbs(journalMeta.Updated)}</span></p>
                     if journalMeta.FolderID != "" {
                         <p>I <a href={templ.URL(url.IDToFolderURL(journalMeta.FolderID))}>{journalMeta.FolderName}</a></p>
                     }
@@ -108,7 +108,7 @@ templ PatientPage(
                 }
             }
 
-            <h2>Historikk</h2>
+            <h2>{data.Language.EventList}</h2>
             @handlerevent.EventList(data, events, false)
         }
     }

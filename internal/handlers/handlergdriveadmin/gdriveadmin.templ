@@ -23,11 +23,11 @@ templ GDrivePage(
         <h1>{data.Language.AdminManageGoogleDrive}</h1>
         @templbase.Card() {
             @templbase.Form(data, "/gdrive/indexer", "POST") {
-                <label class="small" for="enabled">Indexer enabled</label>
+                <label class="small" for="enabled">{data.Language.GDriveIndexerEnabled}</label>
                 <input type="checkbox" checked?={indexerState.Enabled} name="enabled">
-                <label class="small" for="max-per-round">Max documents created per round</label>
+                <label class="small" for="max-per-round">{data.Language.GDriveIndexerMaxPerRound}</label>
                 <input type="number" value={indexerState.MaxDocumentsCreatedPerRound} name="max-per-round">
-                <label class="small" for="minutes-between-rounds">Minutes between rounds</label>
+                <label class="small" for="minutes-between-rounds">{data.Language.GDriveIndexerInterval}</label>
                 <input type="number" value={indexerState.Interval.Minutes()} name="minutes-between-rounds">
                 <button type="submit" class={"btn btn-sm", "btn-primary"}>{data.Language.GenericUpdate}</button>
             }
@@ -37,11 +37,11 @@ templ GDrivePage(
             <table class="table table-xs">
             <thead>
                 <tr>
-                    <td>Avdeling</td>
-                    <td>Journalmappe-ID</td>
-                    <td>Journalmappe-navn</td>
-                    <td>Mal-ID</td>
-                    <td>Mal-navn</td>
+                    <td>{data.Language.GenericDivision}</td>
+                    <td>{data.Language.GDriveJournalFolderID}</td>
+                    <td>{data.Language.GDriveJournalFolderName}</td>
+                    <td>{data.Language.GDriveTemplateID}</td>
+                    <td>{data.Language.GDriveTemplateName}</td>
                 </tr>
             </thead>
             <tbody>

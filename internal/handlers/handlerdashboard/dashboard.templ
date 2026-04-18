@@ -44,7 +44,7 @@ templ DashboardChangeDivision(data *request.CommonData, divisions []model.Divisi
     <div class="card b-card shadown-sm mb-2 dashboard-select-division">
         <form action="/" method="get">
             <fieldset>
-                <legend for="select-division">Velg avdeling</legend>
+                <legend for="select-division">{data.Language.DashboardSelectDivision}</legend>
                 <select autocomplete="off" class="form-control form-select" id="select-division" name="division">
                     for _, div := range divisions {
                         <option selected?={selectedDivision==div.ID} value={div.ID}>
@@ -59,9 +59,9 @@ templ DashboardChangeDivision(data *request.CommonData, divisions []model.Divisi
 
 templ DashboardTotalPatients(data *request.CommonData, speciesDistribution []model.SpeciesCountRow, historicalSpeciesDistribution []model.SpeciesDistributionSeries) {
     <div class="hide-on-mobile m-auto w-100 center">
-        <p class="micro total-patients m-auto center">Totalt {nPatients(speciesDistribution)} pasienter inne nå.
+        <p class="micro total-patients m-auto center">{data.Language.TotalPatientsNow(nPatients(speciesDistribution))}
         if len(speciesDistribution) > 0 {
-            <a href="#" class="expander" data-target="#patient-distribution-chart">Vis mer</a>
+            <a href="#" class="expander" data-target="#patient-distribution-chart">{data.Language.DashboardShowMore}</a>
         }
         </p>
         if len(speciesDistribution) > 0 {
@@ -234,7 +234,7 @@ templ DashboardHomes(data *request.CommonData, homes []model.Home) {
                 @DashboardHomeCard(data, homes, &home)
             </div>
         }
-        <div id="filter-none" hidden>No results found</div>
+        <div id="filter-none" hidden>{data.Language.DashboardNoResults}</div>
     </div>
     <div class="dashboard-indicator invisible" id="dashboard-indicator-right"></div>
 }

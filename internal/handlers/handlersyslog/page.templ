@@ -11,19 +11,19 @@ import (
 
 templ SyslogPage(data *request.CommonData, entries []model.SysLogEntry, havePrev, haveNext bool, prevOffset, nextOffset int32) {
 	@templbase.Layout(data) {
-        <h1>System log</h1>
+        <h1>{data.Language.SystemLog}</h1>
         <div class="card p-2">
             if havePrev {
-                <a href={fmt.Sprintf("/syslog/%d", prevOffset)}>Later</a>
+                <a href={fmt.Sprintf("/syslog/%d", prevOffset)}>{data.Language.SyslogLater}</a>
             }
             if haveNext {
-                <a href={fmt.Sprintf("/syslog/%d", nextOffset)}>Earlier</a>
+                <a href={fmt.Sprintf("/syslog/%d", nextOffset)}>{data.Language.SyslogEarlier}</a>
             }
             <table class="table table-bordered table-sm table-striped">
             <thead>
-                <th>Time</th>
-                <th>Severity</th>
-                <th>Message</th>
+                <th>{data.Language.PatientEventTime}</th>
+                <th>{data.Language.SyslogSeverity}</th>
+                <th>{data.Language.GenericMessage}</th>
             </thead>
             <tbody>
                 for _, event := range entries {

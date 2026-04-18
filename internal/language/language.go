@@ -71,6 +71,9 @@ type Language struct {
 	DashboardSelectSpecies         string
 	DashboardNonPreferredSpecies   string
 	DashboardOtherHome             string
+	DashboardSelectDivision        string
+	DashboardShowMore              string
+	DashboardNoResults             string
 
 	YouCanAlso         string
 	ViewFormerPatients string
@@ -127,6 +130,13 @@ type Language struct {
 	GDriveAcceptSuggestedJournal           string
 	GDriveDeclineSuggestedJournal          string
 	GDriveParentFolder                     string
+	GDriveIndexerEnabled                   string
+	GDriveIndexerMaxPerRound               string
+	GDriveIndexerInterval                  string
+	GDriveJournalFolderID                  string
+	GDriveJournalFolderName                string
+	GDriveTemplateID                       string
+	GDriveTemplateName                     string
 
 	GenericAdd          string
 	GenericAge          string
@@ -217,6 +227,9 @@ type Language struct {
 	PatientEventHome      string
 	PatientWasDeleted     string
 	PatientEdit           string
+	PatientPersonalia     string
+	PatientFetchJournal   string
+	PatientLastUpdated    string
 
 	UserHomes      string
 	UserIsHomeless string
@@ -232,7 +245,15 @@ type Language struct {
 
 	SpeciesOther string
 
-	SystemLog string
+	SystemLog      string
+	SyslogLater    string
+	SyslogEarlier  string
+	SyslogSeverity string
+
+	LoginDescription       string
+	LoginThisIsTheBoardFor string
+	LoginInstructions      string
+	LoginSignInWithGoogle  string
 
 	NavbarCalendar  string
 	NavbarDashboard string
@@ -484,6 +505,9 @@ var NO = &Language{
 	DashboardSelectSpecies:         "Velg art",
 	DashboardNonPreferredSpecies:   "Andre arter",
 	DashboardOtherHome:             "Andre rehabhjem",
+	DashboardSelectDivision:        "Velg avdeling",
+	DashboardShowMore:              "Vis mer",
+	DashboardNoResults:             "Ingen resultater",
 
 	YouCanAlso:         "Du kan også",
 	ViewFormerPatients: "se tidligere pasienter",
@@ -538,6 +562,13 @@ var NO = &Language{
 	GDriveAcceptSuggestedJournal:           "Bruk foreslått",
 	GDriveDeclineSuggestedJournal:          "Ikke bruk",
 	GDriveParentFolder:                     "I mappe",
+	GDriveIndexerEnabled:                   "Indeksering",
+	GDriveIndexerMaxPerRound:               "Maks dokumenter opprettet per runde",
+	GDriveIndexerInterval:                  "Minutter mellom runder",
+	GDriveJournalFolderID:                  "Journalmappe-ID",
+	GDriveJournalFolderName:                "Journalmappe-navn",
+	GDriveTemplateID:                       "Mal-ID",
+	GDriveTemplateName:                     "Mal-navn",
 
 	GenericAdd:          "Legg til",
 	GenericAge:          "Alder",
@@ -619,7 +650,15 @@ var NO = &Language{
 	NotFoundPageHead:         "Ikke funnet",
 	NotFoundPageInstructions: "Siden ble ikke funnet. Se feilmelding:",
 
-	SystemLog: "Systemlogg",
+	SystemLog:      "Systemlogg",
+	SyslogLater:    "Nyere",
+	SyslogEarlier:  "Eldre",
+	SyslogSeverity: "Alvorlighetsgrad",
+
+	LoginDescription:       "Bino er et pasientbehandlingssystem for distribuerte dyreredningsorganisasjoner.",
+	LoginThisIsTheBoardFor: "Dette er Bino-siden for",
+	LoginInstructions:      "Du kan logge inn med Google-kontoen din. Klikk knappen nedenfor for å logge inn.",
+	LoginSignInWithGoogle:  "Logg inn med Google",
 
 	NavbarCalendar:  "Kalender",
 	NavbarDashboard: "Hovedside",
@@ -635,6 +674,9 @@ var NO = &Language{
 	PatientEventHome:      "Rehabhjem",
 	PatientWasDeleted:     "Pasienten ble slettet.",
 	PatientEdit:           "Endre",
+	PatientPersonalia:     "Personalia",
+	PatientFetchJournal:   "Hent siste fra Google Drive",
+	PatientLastUpdated:    "Sist oppdatert",
 
 	UserHomes:      "Tilkoblede rehabhjem",
 	UserIsHomeless: "Ingen tilkoblede rehabhjem",
@@ -814,7 +856,7 @@ var EN = &Language{
 
 	AuthLogOut: "Log out",
 
-	Calendar: "Kalender",
+	Calendar: "Calendar",
 
 	CheckinCheckInPatient:  "Check in",
 	CheckinIHaveThePatient: "The patient is here",
@@ -837,6 +879,9 @@ var EN = &Language{
 	DashboardSelectSpecies:         "Select species",
 	DashboardNonPreferredSpecies:   "Other species",
 	DashboardOtherHome:             "Other homes",
+	DashboardSelectDivision:        "Select division",
+	DashboardShowMore:              "Show more",
+	DashboardNoResults:             "No results found",
 
 	YouCanAlso:         "You can also",
 	ViewFormerPatients: "view former patients",
@@ -893,6 +938,13 @@ var EN = &Language{
 	GDriveDeclineSuggestedJournal:          "Decline",
 	GDriveExtraDirs:                        "In addition, these folders are included in the document search:",
 	GDriveParentFolder:                     "In folder",
+	GDriveIndexerEnabled:                   "Indexer enabled",
+	GDriveIndexerMaxPerRound:               "Max documents created per round",
+	GDriveIndexerInterval:                  "Minutes between rounds",
+	GDriveJournalFolderID:                  "Journal folder ID",
+	GDriveJournalFolderName:                "Journal folder name",
+	GDriveTemplateID:                       "Template ID",
+	GDriveTemplateName:                     "Template name",
 
 	GenericAdd:          "Add",
 	GenericAge:          "Age",
@@ -966,27 +1018,38 @@ var EN = &Language{
 	HomeUnavailableToInstruction:    "The last date when you are unavailable. Leave empty if you're unavailable indefinitely.",
 	HomeNameWasUpdated:              "Rehab home name was updated.",
 
-	ImportHeader:   "Importer",
-	ImportPatients: "Importe patients",
+	ImportHeader:   "Import tool",
+	ImportPatients: "Import patients",
 
 	LanguageUpdateFailed: "Failed to update language",
 
-	SystemLog: "System log",
+	SystemLog:      "System log",
+	SyslogLater:    "Later",
+	SyslogEarlier:  "Earlier",
+	SyslogSeverity: "Severity",
+
+	LoginDescription:       "Bino is a patient management system for distributed wildlife rescues.",
+	LoginThisIsTheBoardFor: "This is the Bino board for",
+	LoginInstructions:      "You can log in using your Google account. Click the button below to sign in.",
+	LoginSignInWithGoogle:  "Sign in with Google",
 
 	NavbarCalendar:  "Calendar",
 	NavbarDashboard: "Dashboard",
 
 	WikiHeader: "Wiki",
 
-	PatientRegisteredTime: "Registrert",
+	PatientRegisteredTime: "Registered",
 	PatientCheckedOutTime: "Checked out",
 	PatientEventTime:      "Time",
 	PatientEventEvent:     "Event",
 	PatientEventNote:      "Note",
 	PatientEventUser:      "User",
 	PatientEventHome:      "Home",
-	PatientWasDeleted:     "Pasienten ble slettet.",
+	PatientWasDeleted:     "The patient was deleted.",
 	PatientEdit:           "Edit",
+	PatientPersonalia:     "Personal details",
+	PatientFetchJournal:   "Fetch latest from Google Drive",
+	PatientLastUpdated:    "Last updated",
 
 	UserHomes:      "Associated rehab homes",
 	UserIsHomeless: "No associated rehab homes",
@@ -1420,6 +1483,17 @@ func (l *Language) AdminDefaultInviteMessage(inviter string) string {
 		fallthrough
 	default:
 		return fmt.Sprintf("%s has invited you to create a user in Bino.", inviter)
+	}
+}
+
+func (l *Language) TotalPatientsNow(n int) string {
+	switch l.ID {
+	case model.LanguageIDNO:
+		return fmt.Sprintf("Totalt %d pasienter inne nå.", n)
+	case model.LanguageIDEN:
+		fallthrough
+	default:
+		return fmt.Sprintf("Total %d patients currently in rehab.", n)
 	}
 }
 

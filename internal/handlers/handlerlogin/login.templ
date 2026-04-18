@@ -6,11 +6,11 @@ import "github.com/fugleadvokatene/bino/internal/templbase"
 templ LoginPage(data *request.CommonData, organization string, mascotURL string) {
     @templbase.Layout(data) {
         @templbase.Card() {
-            <p>Bino is a patient management system for distributed wildlife rescues.</p>
+            <p>{data.Language.LoginDescription}</p>
             if organization != "" {
-                <p>This is the Bino board for <strong>{organization}</strong>.</p>
+                <p>{data.Language.LoginThisIsTheBoardFor} <strong>{organization}</strong>.</p>
             }
-            <p>You can log in using your Google account. Click the button below to sign in.</p>
+            <p>{data.Language.LoginInstructions}</p>
             <button class="gsi-material-button m-auto">
                 <div class="gsi-material-button-state"></div>
                 <div class="gsi-material-button-content-wrapper">
@@ -23,7 +23,7 @@ templ LoginPage(data *request.CommonData, organization string, mascotURL string)
                         <path fill="none" d="M0 0h48v48H0z"></path>
                     </svg>
                     </div>
-                    <a href="/login" style="color: black" id="loginlink">{SignInWithGoogle}</a>
+                    <a href="/login" style="color: black" id="loginlink">{data.Language.LoginSignInWithGoogle}</a>
                 </div>
             </button>
         }
