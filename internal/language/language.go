@@ -505,7 +505,7 @@ var NO = &Language{
 	DashboardSelectSpecies:         "Velg art",
 	DashboardNonPreferredSpecies:   "Andre arter",
 	DashboardOtherHome:             "Andre rehabhjem",
-	DashboardSelectDivision:        "Velg avdeling",
+	DashboardSelectDivision:        "Gå til en annen avdeling",
 	DashboardShowMore:              "Vis mer",
 	DashboardNoResults:             "Ingen resultater",
 
@@ -879,7 +879,7 @@ var EN = &Language{
 	DashboardSelectSpecies:         "Select species",
 	DashboardNonPreferredSpecies:   "Other species",
 	DashboardOtherHome:             "Other homes",
-	DashboardSelectDivision:        "Select division",
+	DashboardSelectDivision:        "Go to other division",
 	DashboardShowMore:              "Show more",
 	DashboardNoResults:             "No results found",
 

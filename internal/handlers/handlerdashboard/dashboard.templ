@@ -1,6 +1,7 @@
 package handlerdashboard
 
 import (
+    "fmt"
     "strings"
 	"github.com/fugleadvokatene/bino/internal/model"
 	"github.com/fugleadvokatene/bino/internal/request"
@@ -42,18 +43,18 @@ templ DashboardPage(
 
 templ DashboardChangeDivision(data *request.CommonData, divisions []model.Division, selectedDivision int32) {
     <div class="card b-card shadown-sm mb-2 dashboard-select-division">
-        <form action="/" method="get">
-            <fieldset>
-                <legend for="select-division">{data.Language.DashboardSelectDivision}</legend>
-                <select autocomplete="off" class="form-control form-select" id="select-division" name="division">
-                    for _, div := range divisions {
-                        <option selected?={selectedDivision==div.ID} value={div.ID}>
+        <legend>{data.Language.DashboardSelectDivision}</legend>
+        <ul class="mb-0">
+            for _, div := range divisions {
+                if selectedDivision != div.ID {
+                    <li>
+                        <a class="division-link" href={ templ.SafeURL("/?division=" + fmt.Sprint(div.ID)) }>
                             {div.Name}
-                        </option>
-                    }
-                </select>
-            </fieldset>
-        </form>
+                        </a>
+                    </li>
+                }
+            }
+        </ul>
     </div>
 }
 
