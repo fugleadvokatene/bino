@@ -51,7 +51,15 @@ templ Body(data *request.CommonData) {
                         <li class={"feedback-item", item.Type.CSSClass()}>{item.Message}</li>
                     }
                 </ul>
-                <button class="btn btn-sm btn-success closer">OK</button>
+                <div class="feedback-buttons d-flex gap-2">
+                    for _, btn := range data.Feedback.Buttons() {
+                        if btn.URL != "" {
+                            <a href={templ.URL(btn.URL)} class={"btn", "btn-sm", btn.Class}>{btn.Label}</a>
+                        } else {
+                            <button class={"btn", "btn-sm", btn.Class}>{btn.Label}</button>
+                        }
+                    }
+                </div>
             }
         </div>
     }

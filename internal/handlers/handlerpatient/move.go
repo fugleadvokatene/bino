@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/fugleadvokatene/bino/internal/db"
+	"github.com/fugleadvokatene/bino/internal/gdrive/url"
 	"github.com/fugleadvokatene/bino/internal/handlers/handlererror"
 	"github.com/fugleadvokatene/bino/internal/model"
 	"github.com/fugleadvokatene/bino/internal/request"
@@ -28,6 +29,12 @@ func (h *move) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 
 	newHomeID, err := request.GetFormID(r, "home")
+	if err != nil {
+		handlererror.Error(w, r, err)
+		return
+	}
+
+	patientData, err := h.DB.Q.GetPatient(ctx, patient)
 	if err != nil {
 		handlererror.Error(w, r, err)
 		return
@@ -56,6 +63,24 @@ func (h *move) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}); err != nil {
 		handlererror.Error(w, r, err)
 		return
+	}
+
+	fromHomeName := ""
+	if patientData.CurrHomeID.Valid {
+		if home, err := h.DB.Q.GetHome(ctx, patientData.CurrHomeID.Int32); err == nil {
+			fromHomeName = home.Name
+		}
+	}
+	toHomeName := ""
+	if home, err := h.DB.Q.GetHome(ctx, newHomeID); err == nil {
+		toHomeName = home.Name
+	}
+
+	if updatedPatient, err := h.DB.Q.GetPatient(ctx, patient); err == nil {
+		commonData.Info(
+			commonData.Language.MoveSuccessful(patientData.Name, fromHomeName, toHomeName),
+			PatientButtons(commonData, patient, url.IDToDocumentURL(updatedPatient.GoogleID.String))...,
+		)
 	}
 
 	request.RedirectToReferer(w, r)

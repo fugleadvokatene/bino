@@ -12,6 +12,7 @@ import (
 	"github.com/fugleadvokatene/bino/internal/gdrive"
 	"github.com/fugleadvokatene/bino/internal/handlers/handleraccess"
 	"github.com/fugleadvokatene/bino/internal/handlers/handlererror"
+	"github.com/fugleadvokatene/bino/internal/handlers/handlerpatient"
 	"github.com/fugleadvokatene/bino/internal/handlers/handlerschedule"
 	"github.com/fugleadvokatene/bino/internal/language"
 	"github.com/fugleadvokatene/bino/internal/model"
@@ -108,7 +109,7 @@ func (h *checkin) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Create or suggest journal off-request
-	h.createOrSuggestJournal(
+	url := h.createOrSuggestJournal(
 		commonData.Language,
 		name,
 		systemSpeciesName,
@@ -117,7 +118,7 @@ func (h *checkin) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		createJournal,
 	)
 
-	commonData.Info(commonData.Language.CheckinSuccessful(name))
+	commonData.Info(commonData.Language.CheckinSuccessful(name), handlerpatient.PatientButtons(commonData, patientID, url)...)
 
 	request.RedirectToReferer(w, r)
 }
@@ -129,7 +130,7 @@ func (h *checkin) createOrSuggestJournal(
 	patientID int32,
 	homeID int32,
 	tryCreate bool,
-) {
+) string {
 	ctx := h.BackgroundCtx
 	if tryCreate {
 		if item, err := h.GDriveWorker.CreateJournal(
@@ -149,8 +150,9 @@ func (h *checkin) createOrSuggestJournal(
 			}); err != nil || tag.RowsAffected() == 0 {
 				slog.Warn(language.GDriveCreateJournalFailed, "error", err)
 			} else {
-				h.Broker.JournalCreated(ctx, patientID, item.DocumentURL())
-				return
+				url := item.DocumentURL()
+				h.Broker.JournalCreated(ctx, patientID, url)
+				return url
 			}
 		}
 	}
@@ -169,4 +171,5 @@ func (h *checkin) createOrSuggestJournal(
 	}); err != nil {
 		slog.Warn("suggesting journal", "error", err)
 	}
+	return ""
 }

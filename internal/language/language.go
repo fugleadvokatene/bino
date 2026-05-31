@@ -243,6 +243,8 @@ type Language struct {
 	SearchTimePreferenceNewer string
 	SearchTimePreferenceOlder string
 
+	ReminderUpdateJournal string
+
 	SpeciesOther string
 
 	SystemLog      string
@@ -690,6 +692,8 @@ var NO = &Language{
 	SearchTimePreferenceOlder: "Eldre",
 	SearchTimePreferenceNewer: "Nyere",
 
+	ReminderUpdateJournal: "Husk å oppdatere journalen.",
+
 	SpeciesOther: "Andre",
 
 	Status: map[model.Status]string{
@@ -1062,6 +1066,8 @@ var EN = &Language{
 	SearchTimePreferenceNone:  "None",
 	SearchTimePreferenceOlder: "Older",
 	SearchTimePreferenceNewer: "Newer",
+
+	ReminderUpdateJournal: "Remember to update the journal.",
 
 	SpeciesOther: "Other",
 
@@ -1473,6 +1479,28 @@ func (l *Language) FormatTimeRel(t time.Time) string {
 		}
 	}
 	return ""
+}
+
+func (l *Language) CheckoutSuccessful(name string, event model.EventID) string {
+	switch l.ID {
+	case model.LanguageIDNO:
+		return fmt.Sprintf("%s ble sjekket ut: %s. %s", name, l.Event[event], l.ReminderUpdateJournal)
+	case model.LanguageIDEN:
+		fallthrough
+	default:
+		return fmt.Sprintf("%s was checked out: %s. %s", name, l.Event[event], l.ReminderUpdateJournal)
+	}
+}
+
+func (l *Language) MoveSuccessful(name, fromHome, toHome string) string {
+	switch l.ID {
+	case model.LanguageIDNO:
+		return fmt.Sprintf("%s ble flyttet fra %s til %s. %s", name, fromHome, toHome, l.ReminderUpdateJournal)
+	case model.LanguageIDEN:
+		fallthrough
+	default:
+		return fmt.Sprintf("%s was moved from %s to %s. %s", name, fromHome, toHome, l.ReminderUpdateJournal)
+	}
 }
 
 func (l *Language) AdminDefaultInviteMessage(inviter string) string {

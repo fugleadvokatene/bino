@@ -7,6 +7,7 @@ import (
 
 	"github.com/fugleadvokatene/bino/internal/bespoke"
 	"github.com/fugleadvokatene/bino/internal/db"
+	"github.com/fugleadvokatene/bino/internal/gdrive/url"
 	"github.com/fugleadvokatene/bino/internal/handlers/handlererror"
 	"github.com/fugleadvokatene/bino/internal/model"
 	"github.com/fugleadvokatene/bino/internal/request"
@@ -43,6 +44,7 @@ func (h *checkout) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	var event model.EventID
 	if err := h.DB.Transaction(ctx, func(ctx context.Context, db *db.Database) error {
 		now := pgtype.Timestamptz{Time: time.Now(), Valid: true}
 
@@ -67,7 +69,6 @@ func (h *checkout) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			return err
 		}
 
-		var event model.EventID
 		var statusField pgtype.Int4
 		switch status {
 		case int32(model.StatusDead):
@@ -110,6 +111,13 @@ func (h *checkout) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}); err != nil {
 		handlererror.Error(w, r, err)
 		return
+	}
+
+	if patientData, err := h.DB.Q.GetPatient(ctx, patient); err == nil {
+		commonData.Info(
+			commonData.Language.CheckoutSuccessful(patientData.Name, event),
+			PatientButtons(commonData, patient, url.IDToDocumentURL(patientData.GoogleID.String))...,
+		)
 	}
 
 	request.RedirectToReferer(w, r)

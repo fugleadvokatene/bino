@@ -32,25 +32,25 @@ type CommonData struct {
 	OutstandingTaskCount int
 }
 
-func (cd *CommonData) Error(msg string, err error) {
+func (cd *CommonData) Error(msg string, err error, buttons ...FeedbackButton) {
 	cd.Log(slog.LevelWarn, "User saw an error", "error", err, "usermessage", msg)
-	cd.SetFeedback(model.FBError, msg)
+	cd.SetFeedback(model.FBError, msg, buttons...)
 }
 
-func (cd *CommonData) Warning(msg string, err error) {
+func (cd *CommonData) Warning(msg string, err error, buttons ...FeedbackButton) {
 	cd.Log(slog.LevelWarn, "User saw a warning", "error", err, "usermessage", msg)
-	cd.SetFeedback(model.FBWarning, msg)
+	cd.SetFeedback(model.FBWarning, msg, buttons...)
 }
 
-func (cd *CommonData) Success(msg string) {
-	cd.SetFeedback(model.FBSuccess, msg)
+func (cd *CommonData) Success(msg string, buttons ...FeedbackButton) {
+	cd.SetFeedback(model.FBSuccess, msg, buttons...)
 }
 
-func (cd *CommonData) Info(msg string) {
-	cd.SetFeedback(model.FBInfo, msg)
+func (cd *CommonData) Info(msg string, buttons ...FeedbackButton) {
+	cd.SetFeedback(model.FBInfo, msg, buttons...)
 }
 
-func (cd *CommonData) SetFeedback(fbt model.FB, msg string) {
+func (cd *CommonData) SetFeedback(fbt model.FB, msg string, buttons ...FeedbackButton) {
 	if n := len(cd.Feedback.Items); n < 10 {
 		// Filter dupes
 		for i := range n {
@@ -63,6 +63,7 @@ func (cd *CommonData) SetFeedback(fbt model.FB, msg string) {
 		cd.Feedback.Items = append(cd.Feedback.Items, FeedbackItem{
 			Message: msg,
 			Type:    fbt,
+			Buttons: buttons,
 		})
 	} else {
 		cd.Feedback.NSkipped++

@@ -25,8 +25,8 @@ func (q *Queries) AcceptSuggestedJournal(ctx context.Context, id int32) error {
 }
 
 const addPatient = `-- name: AddPatient :one
-INSERT INTO patient (species_id, name, curr_home_id, status, time_checkin, journal_pending)
-VALUES ($1, $2, $3, $4, NOW(), $5)
+INSERT INTO patient (species_id, name, curr_home_id, status, time_checkin, journal_pending, sort_order)
+VALUES ($1, $2, $3, $4, NOW(), $5, 0)
 RETURNING id
 `
 
@@ -151,7 +151,7 @@ LEFT JOIN species_language AS sl
     ON sl.species_id = p.species_id
 WHERE curr_home_id IS NOT NULL
   AND language_id = $1
-ORDER BY p.curr_home_id, p.sort_order, p.id
+ORDER BY p.curr_home_id, p.sort_order, p.id DESC
 `
 
 type GetActivePatientsRow struct {
