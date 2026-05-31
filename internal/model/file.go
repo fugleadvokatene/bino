@@ -19,7 +19,6 @@ type File struct {
 	Size                 int64
 	SHA256               []byte
 	OriginalDeleted      bool
-	WikiAssociations     []FileWikiAssociation
 	PatientAssociations  []FilePatientAssociation
 	ImageVariants        []ImageVariant
 }
@@ -109,18 +108,6 @@ func FileSizeText(s int64) string {
 	}
 	s /= 1000
 	return fmt.Sprintf("%d GB", s)
-}
-
-// ---- File/Wiki association
-
-type FileWikiAssociation struct {
-	FileID    int32
-	WikiID    int32
-	WikiTitle string
-}
-
-func (fwa *FileWikiAssociation) WikiURL() templ.SafeURL {
-	return templ.URL(fmt.Sprintf("/wiki/view/%d", fwa.WikiID))
 }
 
 // ---- File/Patient association

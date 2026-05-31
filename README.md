@@ -41,7 +41,7 @@ Files are published by creating an entry in the database. This gives the file an
 
 This is a backend-heavy application; keeping data in sync between the server and client is usually
 solved by having the page reload, either by a form or with `location.reload()`.
-There are a few exceptions where the frontend is more interactive: searching and filtering, calendar, and wiki. Off the shelf libraries are used for this (TipTap, calendar.js, htmx).
+There are a few exceptions where the frontend is more interactive: searching and filtering, and calendar. Off the shelf libraries are used for this (TipTap, calendar.js, htmx).
 
 The backend starts up a webserver and runs a few periodic background jobs
 that keep the search index in sync and delete stale data (expired sessions and invitations).

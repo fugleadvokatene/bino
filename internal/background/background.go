@@ -53,15 +53,6 @@ func StartJobs(
 	job.Run(
 		ctx,
 		db,
-		"Delete false Wiki links",
-		time.Hour,
-		func(ctx context.Context, _ time.Time) (any, error) {
-			return db.RemoveFalseFileWikiLinks(ctx)
-		},
-	)
-	job.Run(
-		ctx,
-		db,
 		"Suggest journal URLs",
 		time.Hour,
 		func(ctx context.Context, _ time.Time) (any, error) {

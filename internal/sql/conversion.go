@@ -267,31 +267,6 @@ func (in *File) ToModel() model.File {
 	}
 }
 
-// ---- Wiki
-
-func (in *WikiPage) ToModel() model.WikiLink {
-	return model.WikiLink{
-		WikiID: in.ID,
-		Title:  in.Title,
-	}
-}
-
-func (in *GetWikiMainPageRow) ToModel() model.WikiPage {
-	return model.WikiPage{
-		ID:      in.ID,
-		Title:   in.Title,
-		Content: string(in.Content),
-	}
-}
-
-func (in *GetLastWikiRevisionRow) ToModel() model.WikiPage {
-	return model.WikiPage{
-		ID:      in.ID,
-		Title:   in.Title,
-		Content: string(in.Content),
-	}
-}
-
 func (gupirr GetUnavailablePeriodsInRangeRow) ToModel(language *language.Language) calendar.Event {
 	return calendar.Event{
 		ID:      fmt.Sprintf("unavailable/%d", gupirr.ID),
@@ -314,16 +289,6 @@ func (gefcr GetEventsForCalendarRow) ToModel(language *language.Language) calend
 		Title:   fmt.Sprintf("%s: %s", gefcr.PatientName, language.FormatEvent(gefcr.EventID, gefcr.Status)),
 		URL:     model.PatientURL(gefcr.PatientID),
 		Display: "list-item",
-	}
-}
-
-// ---- File Wiki association
-
-func (in *GetFileWikiAssociationsRow) ToModel() model.FileWikiAssociation {
-	return model.FileWikiAssociation{
-		FileID:    in.FileID,
-		WikiID:    in.WikiID,
-		WikiTitle: in.Title,
 	}
 }
 

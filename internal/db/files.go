@@ -26,20 +26,6 @@ func (db *Database) GetFiles(ctx context.Context, limit, offset int32) ([]model.
 	if len(files) > 0 {
 		fileIDs := generic.SliceToSlice(files, func(f model.File) int32 { return f.ID })
 
-		fileWikiAssociations, err := db.Q.GetFileWikiAssociations(ctx, fileIDs)
-		if err != nil {
-			return nil, 0, fmt.Errorf("getting file wiki associations: %w", err)
-		}
-		generic.GroupByID(
-			files,
-			fileWikiAssociations,
-			getFileID,
-			func(fwa *sql.GetFileWikiAssociationsRow) int32 { return fwa.FileID },
-			func(f *model.File, fwa *sql.GetFileWikiAssociationsRow) {
-				f.WikiAssociations = append(f.WikiAssociations, fwa.ToModel())
-			},
-		)
-
 		imageVariants, err := db.Q.GetImageVariants(ctx, fileIDs)
 		if err != nil {
 			return nil, 0, fmt.Errorf("getting image variants: %w", err)

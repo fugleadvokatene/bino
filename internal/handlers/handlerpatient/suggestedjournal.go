@@ -1,6 +1,7 @@
 package handlerpatient
 
 import (
+	"context"
 	"net/http"
 
 	"github.com/fugleadvokatene/bino/internal/db"
@@ -8,11 +9,13 @@ import (
 	"github.com/fugleadvokatene/bino/internal/request"
 )
 
-type acceptSuggestedJournal struct {
-	DB *db.Database
+type suggestedJournalAction struct {
+	DB     *db.Database
+	action func(context.Context, int32) error
+	errMsg string
 }
 
-func (h *acceptSuggestedJournal) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+func (h *suggestedJournalAction) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	commonData := request.MustLoadCommonData(ctx)
 
@@ -21,8 +24,8 @@ func (h *acceptSuggestedJournal) ServeHTTP(w http.ResponseWriter, r *http.Reques
 		handlererror.Error(w, r, err)
 		return
 	}
-	if err := h.DB.Q.AcceptSuggestedJournal(ctx, patient); err != nil {
-		commonData.Warning(commonData.Language.TODO("failed to accept suggested journal"), err)
+	if err := h.action(ctx, patient); err != nil {
+		commonData.Warning(commonData.Language.TODO(h.errMsg), err)
 	} else {
 		commonData.Info(commonData.Language.GenericSuccess)
 	}

@@ -38,20 +38,6 @@ LIMIT $1 OFFSET $2
 SELECT COUNT(*) FROM file
 ;
 
--- name: GetAllFileWikiAssociations :many
-SELECT * from file_wiki
-;
-
-
--- name: GetFileWikiAssociations :many
-SELECT fw.file_id, fw.wiki_id, wp.title
-FROM file_wiki AS fw
-INNER JOIN wiki_page AS wp
-  ON wp.id = fw.wiki_id
-WHERE fw.file_id = ANY($1::INT[])
-ORDER BY fw.wiki_id
-;
-
 -- name: GetImageVariants :many
 SELECT iv.*
 FROM image_variant AS iv
@@ -136,23 +122,6 @@ LIMIT $1
 UPDATE file
 SET presentation_filename = @filename
 WHERE id = @id
-;
-
--- name: RemoveFalseFileWikiLinks :execresult
-with unused as (
-    select fw.file_id, fw.wiki_id
-    from file_wiki fw
-    left join wiki_revision wr
-      on wr.page_id = fw.wiki_id
-         and wr.content @? (
-               ('$.blocks[*].data.file.url ? (@ like_regex "^/file/' || fw.file_id || '")')::jsonpath
-           )
-    where wr.page_id is null
-)
-delete from file_wiki fw
-using unused u
-where fw.file_id = u.file_id
-  and fw.wiki_id = u.wiki_id
 ;
 
 -- name: DeleteFileJournalAssociations :exec

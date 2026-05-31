@@ -109,9 +109,6 @@ templ Navbar(data *request.CommonData) {
                             @NavbarPageLink(data.Language.Calendar, "/calendar", "hide-on-mobile")
                         }
                     }
-                    if data.FeatureFlag("Wiki") {
-                        @NavbarPageLink(data.Language.WikiHeader, "/wiki")
-                    }
                     if data.User.TaskManagement {
                         <div class="b-navbar-item b-navbar-item-text">
                             <a href="/schedule">

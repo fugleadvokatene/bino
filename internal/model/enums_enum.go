@@ -183,23 +183,21 @@ const (
 	CapDebug Cap = 22
 	// CapUploadFile is a Cap of type UploadFile.
 	CapUploadFile Cap = 23
-	// CapEditWiki is a Cap of type EditWiki.
-	CapEditWiki Cap = 24
 	// CapManageFeatureFlags is a Cap of type ManageFeatureFlags.
-	CapManageFeatureFlags Cap = 25
+	CapManageFeatureFlags Cap = 24
 	// CapHardDeletePatient is a Cap of type HardDeletePatient.
-	CapHardDeletePatient Cap = 26
+	CapHardDeletePatient Cap = 25
 	// CapLive is a Cap of type Live.
-	CapLive Cap = 27
+	CapLive Cap = 26
 	// CapSetIndexerState is a Cap of type SetIndexerState.
-	CapSetIndexerState Cap = 28
+	CapSetIndexerState Cap = 27
 	// CapViewSysLog is a Cap of type ViewSysLog.
-	CapViewSysLog Cap = 29
+	CapViewSysLog Cap = 28
 )
 
 var ErrInvalidCap = errors.New("not a valid Cap")
 
-const _CapName = "LoggedInViewAllActivePatientsViewAllFormerPatientsViewAllHomesViewAllUsersViewCalendarSearchSetOwnPreferencesCheckInPatientManageOwnPatientsManageAllPatientsManageOwnHomesManageAllHomesCreatePatientJournalManageSpeciesManageUsersDeleteUsersViewAdminToolsViewGDriveSettingsInviteToGDriveInviteToBinoUseImportToolDebugUploadFileEditWikiManageFeatureFlagsHardDeletePatientLiveSetIndexerStateViewSysLog"
+const _CapName = "LoggedInViewAllActivePatientsViewAllFormerPatientsViewAllHomesViewAllUsersViewCalendarSearchSetOwnPreferencesCheckInPatientManageOwnPatientsManageAllPatientsManageOwnHomesManageAllHomesCreatePatientJournalManageSpeciesManageUsersDeleteUsersViewAdminToolsViewGDriveSettingsInviteToGDriveInviteToBinoUseImportToolDebugUploadFileManageFeatureFlagsHardDeletePatientLiveSetIndexerStateViewSysLog"
 
 // CapValues returns a list of the values for Cap
 func CapValues() []Cap {
@@ -228,7 +226,6 @@ func CapValues() []Cap {
 		CapUseImportTool,
 		CapDebug,
 		CapUploadFile,
-		CapEditWiki,
 		CapManageFeatureFlags,
 		CapHardDeletePatient,
 		CapLive,
@@ -262,12 +259,11 @@ var _CapMap = map[Cap]string{
 	CapUseImportTool:         _CapName[298:311],
 	CapDebug:                 _CapName[311:316],
 	CapUploadFile:            _CapName[316:326],
-	CapEditWiki:              _CapName[326:334],
-	CapManageFeatureFlags:    _CapName[334:352],
-	CapHardDeletePatient:     _CapName[352:369],
-	CapLive:                  _CapName[369:373],
-	CapSetIndexerState:       _CapName[373:388],
-	CapViewSysLog:            _CapName[388:398],
+	CapManageFeatureFlags:    _CapName[326:344],
+	CapHardDeletePatient:     _CapName[344:361],
+	CapLive:                  _CapName[361:365],
+	CapSetIndexerState:       _CapName[365:380],
+	CapViewSysLog:            _CapName[380:390],
 }
 
 // String implements the Stringer interface.
@@ -310,12 +306,11 @@ var _CapValue = map[string]Cap{
 	_CapName[298:311]: CapUseImportTool,
 	_CapName[311:316]: CapDebug,
 	_CapName[316:326]: CapUploadFile,
-	_CapName[326:334]: CapEditWiki,
-	_CapName[334:352]: CapManageFeatureFlags,
-	_CapName[352:369]: CapHardDeletePatient,
-	_CapName[369:373]: CapLive,
-	_CapName[373:388]: CapSetIndexerState,
-	_CapName[388:398]: CapViewSysLog,
+	_CapName[326:344]: CapManageFeatureFlags,
+	_CapName[344:361]: CapHardDeletePatient,
+	_CapName[361:365]: CapLive,
+	_CapName[365:380]: CapSetIndexerState,
+	_CapName[380:390]: CapViewSysLog,
 }
 
 // ParseCap attempts to convert a string to a Cap.

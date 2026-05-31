@@ -52,7 +52,6 @@ type Availability int
 // UseImportTool,
 // Debug,
 // UploadFile,
-// EditWiki,
 // ManageFeatureFlags,
 // HardDeletePatient,
 // Live,

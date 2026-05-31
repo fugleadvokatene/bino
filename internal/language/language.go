@@ -260,8 +260,6 @@ type Language struct {
 	NavbarCalendar  string
 	NavbarDashboard string
 
-	WikiHeader string
-
 	Status map[model.Status]string
 	Event  map[model.EventID]string
 
@@ -665,8 +663,6 @@ var NO = &Language{
 	NavbarCalendar:  "Kalender",
 	NavbarDashboard: "Hovedside",
 
-	WikiHeader: "Wiki",
-
 	PatientRegisteredTime: "Registrert",
 	PatientCheckedOutTime: "Sjekket ut",
 	PatientEventTime:      "Tidspunkt",
@@ -1039,8 +1035,6 @@ var EN = &Language{
 
 	NavbarCalendar:  "Calendar",
 	NavbarDashboard: "Dashboard",
-
-	WikiHeader: "Wiki",
 
 	PatientRegisteredTime: "Registered",
 	PatientCheckedOutTime: "Checked out",

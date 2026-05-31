@@ -58,12 +58,12 @@ func Routes(
 		},
 		{
 			Path:    "POST /patient/{patient}/accept-suggested-journal",
-			Handler: &acceptSuggestedJournal{DB: db},
+			Handler: &suggestedJournalAction{DB: db, action: db.Q.AcceptSuggestedJournal, errMsg: "failed to accept suggested journal"},
 			Cap:     model.CapManageOwnPatients,
 		},
 		{
 			Path:    "POST /patient/{patient}/decline-suggested-journal",
-			Handler: &declineSuggestedJournal{DB: db},
+			Handler: &suggestedJournalAction{DB: db, action: db.Q.DeclineSuggestedJournal, errMsg: "failed to decline suggested journal"},
 			Cap:     model.CapManageOwnPatients,
 		},
 		{

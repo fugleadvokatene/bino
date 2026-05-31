@@ -29,8 +29,6 @@ var RequiredAccessLevel = map[model.Cap]model.AccessLevel{
 	model.CapManageAllHomes: model.AccessLevelCoordinator,
 	model.CapManageSpecies:  model.AccessLevelCoordinator,
 	model.CapUseImportTool:  model.AccessLevelCoordinator,
-	model.CapEditWiki:       model.AccessLevelCoordinator,
-
 	model.CapManageUsers:        model.AccessLevelAdmin,
 	model.CapDeleteUsers:        model.AccessLevelAdmin,
 	model.CapInviteToGDrive:     model.AccessLevelAdmin,

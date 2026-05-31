@@ -57,7 +57,7 @@ func Routes(
 		{
 			Path:    "POST /file/{id}/set-filename",
 			Handler: &setFilename{DB: db},
-			Cap:     model.CapEditWiki,
+			Cap:     model.CapUploadFile,
 		},
 		{
 			Path:    "GET /file/largest",

@@ -45,7 +45,6 @@ import (
 	"github.com/fugleadvokatene/bino/internal/handlers/handlertos"
 	"github.com/fugleadvokatene/bino/internal/handlers/handleruser"
 	"github.com/fugleadvokatene/bino/internal/handlers/handleruseradmin"
-	"github.com/fugleadvokatene/bino/internal/handlers/handlerwiki"
 	"github.com/fugleadvokatene/bino/internal/route"
 	"github.com/fugleadvokatene/bino/internal/sql"
 	"github.com/fugleadvokatene/bino/internal/sse"
@@ -174,7 +173,6 @@ func realMain() error {
 		handlerlive.Routes(broker),
 		handlersyslog.Routes(db),
 		handleruseradmin.Routes(db),
-		handlerwiki.Routes(db, &config.Security),
 	} {
 		for _, route := range routes {
 			handler := route.Handler

@@ -55,11 +55,6 @@ type FileJournal struct {
 	FileID   int32
 }
 
-type FileWiki struct {
-	FileID int32
-	WikiID int32
-}
-
 type GoogleFolder struct {
 	GoogleID string
 	Name     string
@@ -236,20 +231,4 @@ type Syslog struct {
 	Message  string
 	Severity int32
 	Time     pgtype.Timestamptz
-}
-
-type WikiPage struct {
-	ID        int32
-	SortOrder pgtype.Int4
-	Title     string
-	Created   pgtype.Timestamptz
-	Creator   int32
-}
-
-type WikiRevision struct {
-	ID      int32
-	PageID  int32
-	Content []byte
-	Edited  pgtype.Timestamptz
-	Editor  int32
 }

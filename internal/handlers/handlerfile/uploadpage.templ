@@ -80,11 +80,6 @@ templ FileViewComponent(data *request.CommonData, file *model.File) {
                     @Trivia("user-file-created") {
                         {data.Language.FormatTimeAbs(file.Created)}
                     }
-                    for _, wl := range file.WikiAssociations {
-                        @Trivia() {
-                            Wiki: <a href={wl.WikiURL()}>{wl.WikiTitle}</a>
-                        }
-                    }
                     for _, pa := range file.PatientAssociations {
                         @Trivia() {
                             Patient: <a href={pa.PatientURL()}>{pa.PatientName}</a>
@@ -97,7 +92,7 @@ templ FileViewComponent(data *request.CommonData, file *model.File) {
                     }
                 </div>
             </div>
-            if len(file.WikiAssociations) == 0 && len(file.PatientAssociations) == 0 {
+            if len(file.PatientAssociations) == 0 {
                 @templbase.SingleButtonForm(
                     data,
                     fmt.Sprintf("/file/%d/delete", file.ID),

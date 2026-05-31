@@ -8,7 +8,6 @@ package sql
 import (
 	"context"
 
-	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
@@ -20,30 +19,6 @@ WHERE google_id = $1
 func (q *Queries) DeleteFileJournalAssociations(ctx context.Context, googleID string) error {
 	_, err := q.db.Exec(ctx, deleteFileJournalAssociations, googleID)
 	return err
-}
-
-const getAllFileWikiAssociations = `-- name: GetAllFileWikiAssociations :many
-SELECT file_id, wiki_id from file_wiki
-`
-
-func (q *Queries) GetAllFileWikiAssociations(ctx context.Context) ([]FileWiki, error) {
-	rows, err := q.db.Query(ctx, getAllFileWikiAssociations)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	var items []FileWiki
-	for rows.Next() {
-		var i FileWiki
-		if err := rows.Scan(&i.FileID, &i.WikiID); err != nil {
-			return nil, err
-		}
-		items = append(items, i)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	return items, nil
 }
 
 const getFileByID = `-- name: GetFileByID :one
@@ -98,41 +73,6 @@ func (q *Queries) GetFileBySizeAndHash(ctx context.Context, arg GetFileBySizeAnd
 		&i.OriginalDeleted,
 	)
 	return i, err
-}
-
-const getFileWikiAssociations = `-- name: GetFileWikiAssociations :many
-SELECT fw.file_id, fw.wiki_id, wp.title
-FROM file_wiki AS fw
-INNER JOIN wiki_page AS wp
-  ON wp.id = fw.wiki_id
-WHERE fw.file_id = ANY($1::INT[])
-ORDER BY fw.wiki_id
-`
-
-type GetFileWikiAssociationsRow struct {
-	FileID int32
-	WikiID int32
-	Title  string
-}
-
-func (q *Queries) GetFileWikiAssociations(ctx context.Context, dollar_1 []int32) ([]GetFileWikiAssociationsRow, error) {
-	rows, err := q.db.Query(ctx, getFileWikiAssociations, dollar_1)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	var items []GetFileWikiAssociationsRow
-	for rows.Next() {
-		var i GetFileWikiAssociationsRow
-		if err := rows.Scan(&i.FileID, &i.WikiID, &i.Title); err != nil {
-			return nil, err
-		}
-		items = append(items, i)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	return items, nil
 }
 
 const getFiles = `-- name: GetFiles :many
@@ -565,27 +505,6 @@ func (q *Queries) PublishVariant(ctx context.Context, arg PublishVariantParams) 
 		arg.Sha256,
 	)
 	return err
-}
-
-const removeFalseFileWikiLinks = `-- name: RemoveFalseFileWikiLinks :execresult
-with unused as (
-    select fw.file_id, fw.wiki_id
-    from file_wiki fw
-    left join wiki_revision wr
-      on wr.page_id = fw.wiki_id
-         and wr.content @? (
-               ('$.blocks[*].data.file.url ? (@ like_regex "^/file/' || fw.file_id || '")')::jsonpath
-           )
-    where wr.page_id is null
-)
-delete from file_wiki fw
-using unused u
-where fw.file_id = u.file_id
-  and fw.wiki_id = u.wiki_id
-`
-
-func (q *Queries) RemoveFalseFileWikiLinks(ctx context.Context) (pgconn.CommandTag, error) {
-	return q.db.Exec(ctx, removeFalseFileWikiLinks)
 }
 
 const setFileHash = `-- name: SetFileHash :exec
