@@ -1,12 +1,5 @@
 // common.ts
 var QuerySelector = (sel, root = document) => root.querySelector(sel);
-var MustQuerySelector = (sel, root = document) => {
-  const v = QuerySelector(sel, root);
-  if (!v) {
-    throw new Error(`${sel} not found on ${root.nodeName}`);
-  }
-  return v;
-};
 var QuerySelectorAll = (sel, root = document) => Array.from(root.querySelectorAll(sel));
 var languageSelect = QuerySelector("#language-select");
 if (languageSelect) {
@@ -19,6 +12,9 @@ QuerySelectorAll(".closer").forEach(
     el.parentElement?.style.setProperty("display", "none");
   })
 );
+var reportError = (message) => {
+  navigator.sendBeacon("/ajax/client-error", message);
+};
 
 // dashboard.ts
 var restoreScrollState = (elem) => {
@@ -90,12 +86,20 @@ var setupBoard = (elem) => {
   }
 };
 if (matchMedia("(width >= 1000px)").matches) {
-  setupBoard(QuerySelector(".dashboard-other"));
+  const board = QuerySelector(".dashboard-other");
+  if (board) setupBoard(board);
+  else reportError("setupBoard: .dashboard-other not found");
 }
 var filterDashboard = () => {
-  const input = MustQuerySelector("#dashboard-search");
-  const container = MustQuerySelector(".search-container");
-  const noneMsg = MustQuerySelector("#filter-none");
+  const input = QuerySelector("#dashboard-search");
+  const container = QuerySelector(".search-container");
+  const noneMsg = QuerySelector("#filter-none");
+  if (!input || !container || !noneMsg) {
+    reportError(
+      `filterDashboard: missing elements (input=${!!input}, container=${!!container}, noneMsg=${!!noneMsg})`
+    );
+    return;
+  }
   const q = input.value.trim().toLowerCase();
   const boxes = QuerySelectorAll(".filter-box");
   const active = q.length > 0;
@@ -161,16 +165,21 @@ source.addEventListener("Hello", (event) => {
 });
 source.addEventListener("JournalCreated", (event) => {
   console.log(event);
-  let parsed = JSON.parse(event.data);
-  QuerySelector(
-    `a.journal-link-icon[data-patient-id="${parsed.PatientID}"]`
-  ).href = parsed.JournalURL;
-  QuerySelector(
-    `.link-icon-pending[data-patient-id="${parsed.PatientID}"]`
-  ).classList.add("d-none");
-  QuerySelector(
-    `.link-icon-exists[data-patient-id="${parsed.PatientID}"]`
-  ).classList.remove("d-none");
+  try {
+    const parsed = JSON.parse(event.data);
+    const link = QuerySelector(
+      `a.journal-link-icon[data-patient-id="${parsed.PatientID}"]`
+    );
+    if (link) link.href = parsed.JournalURL;
+    QuerySelector(
+      `.link-icon-pending[data-patient-id="${parsed.PatientID}"]`
+    )?.classList.add("d-none");
+    QuerySelector(
+      `.link-icon-exists[data-patient-id="${parsed.PatientID}"]`
+    )?.classList.remove("d-none");
+  } catch (e) {
+    reportError(`JournalCreated: ${e}`);
+  }
 });
 source.onerror = () => {
   source.close();

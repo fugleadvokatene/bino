@@ -85,6 +85,8 @@ const makeHistoricalDistributionChart = (dataID, canvasID) => {
 
   const rows: HistDistSeries[] = JSON.parse(el.textContent || '{}')
 
+  if (!rows.length || !rows[0].Data?.length) return
+
   const labels = rows[0].Data.map((r) => r.Date)
   const totals = rows[0].Data.map((_, i) =>
     rows.reduce((sum, p) => sum + (p.Data[i]?.Count || 0), 0)

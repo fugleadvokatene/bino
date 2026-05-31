@@ -1,4 +1,4 @@
-import { MustQuerySelector, QuerySelector, QuerySelectorAll } from './common'
+import { QuerySelector, QuerySelectorAll, reportError } from './common'
 
 const restoreScrollState = (elem: HTMLElement) => {
   const v = Number(sessionStorage.getItem('board-scroll-left'))
@@ -86,13 +86,21 @@ const setupBoard = (elem: HTMLElement) => {
 }
 
 if (matchMedia('(width >= 1000px)').matches) {
-  setupBoard(QuerySelector<HTMLElement>('.dashboard-other'))
+  const board = QuerySelector<HTMLElement>('.dashboard-other')
+  if (board) setupBoard(board)
+  else reportError('setupBoard: .dashboard-other not found')
 }
 
 const filterDashboard = () => {
-  const input = MustQuerySelector<HTMLInputElement>('#dashboard-search')
-  const container = MustQuerySelector<HTMLElement>('.search-container')
-  const noneMsg = MustQuerySelector<HTMLElement>('#filter-none')
+  const input = QuerySelector<HTMLInputElement>('#dashboard-search')
+  const container = QuerySelector<HTMLElement>('.search-container')
+  const noneMsg = QuerySelector<HTMLElement>('#filter-none')
+  if (!input || !container || !noneMsg) {
+    reportError(
+      `filterDashboard: missing elements (input=${!!input}, container=${!!container}, noneMsg=${!!noneMsg})`
+    )
+    return
+  }
 
   const q = input.value.trim().toLowerCase()
   const boxes = QuerySelectorAll<HTMLElement>('.filter-box')
@@ -184,16 +192,21 @@ source.addEventListener('Hello', (event: string) => {
 
 source.addEventListener('JournalCreated', (event: string) => {
   console.log(event)
-  let parsed = JSON.parse(event.data)
-  QuerySelector<HTMLAnchorElement>(
-    `a.journal-link-icon[data-patient-id="${parsed.PatientID}"]`
-  ).href = parsed.JournalURL
-  QuerySelector(
-    `.link-icon-pending[data-patient-id="${parsed.PatientID}"]`
-  ).classList.add('d-none')
-  QuerySelector(
-    `.link-icon-exists[data-patient-id="${parsed.PatientID}"]`
-  ).classList.remove('d-none')
+  try {
+    const parsed = JSON.parse(event.data)
+    const link = QuerySelector<HTMLAnchorElement>(
+      `a.journal-link-icon[data-patient-id="${parsed.PatientID}"]`
+    )
+    if (link) link.href = parsed.JournalURL
+    QuerySelector(
+      `.link-icon-pending[data-patient-id="${parsed.PatientID}"]`
+    )?.classList.add('d-none')
+    QuerySelector(
+      `.link-icon-exists[data-patient-id="${parsed.PatientID}"]`
+    )?.classList.remove('d-none')
+  } catch (e) {
+    reportError(`JournalCreated: ${e}`)
+  }
 })
 
 source.onerror = () => {

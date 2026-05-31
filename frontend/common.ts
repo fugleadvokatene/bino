@@ -43,3 +43,7 @@ export const MustDataNumber = (el: HTMLElement, key: string) => {
   if (v === null) throw new Error(`Invalid data-${key}`)
   return v
 }
+
+export const reportError = (message: string) => {
+  navigator.sendBeacon('/ajax/client-error', message)
+}

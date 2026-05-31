@@ -1,6 +1,7 @@
 package handlerprivacy
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/fugleadvokatene/bino/internal/db"
@@ -30,9 +31,9 @@ func (h *form) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	commonData := request.MustLoadCommonData(ctx)
 
 	consent := request.GetCheckboxValue(r, "logging-consent")
+	fmt.Printf("consent=%v\n", consent)
 
 	err := h.DB.SetLoggingConsent(ctx, commonData.User.AppuserID, consent, h.Config.RevokeConsentPolicy)
-
 	if err != nil {
 		handlererror.Error(w, r, err)
 		return

@@ -137,7 +137,25 @@ func Privacy(data *request.CommonData, config privacy.Config) templ.Component {
 							return templ_7745c5c3_Err
 						}
 					} else {
-						templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 9, "<form action=\"/privacy\" method=\"POST\" class=\"form-control w-50\"><div class=\"form-group\"><label for=\"logging-consent\">Enable logging</label> <input id=\"logging-consent\" name=\"logging-consent\" type=\"checkbox\" disabled> <input type=\"submit\" class=\"btn btn-warning\" value=\"You must log in to consent to logging.\" disabled></div></form>")
+						templ_7745c5c3_Var7 := templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
+							templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
+							templ_7745c5c3_Buffer, templ_7745c5c3_IsBuffer := templruntime.GetBuffer(templ_7745c5c3_W)
+							if !templ_7745c5c3_IsBuffer {
+								defer func() {
+									templ_7745c5c3_BufErr := templruntime.ReleaseBuffer(templ_7745c5c3_Buffer)
+									if templ_7745c5c3_Err == nil {
+										templ_7745c5c3_Err = templ_7745c5c3_BufErr
+									}
+								}()
+							}
+							ctx = templ.InitializeContext(ctx)
+							templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 9, "<div class=\"form-group\"><label for=\"logging-consent\">Enable logging</label> <input id=\"logging-consent\" name=\"logging-consent\" type=\"checkbox\" disabled> <input type=\"submit\" class=\"btn btn-warning\" value=\"You must log in to consent to logging.\" disabled></div>")
+							if templ_7745c5c3_Err != nil {
+								return templ_7745c5c3_Err
+							}
+							return nil
+						})
+						templ_7745c5c3_Err = templbase.Form(data, "/privacy", "POST", "form-control", "w-50").Render(templ.WithChildren(ctx, templ_7745c5c3_Var7), templ_7745c5c3_Buffer)
 						if templ_7745c5c3_Err != nil {
 							return templ_7745c5c3_Err
 						}
@@ -151,47 +169,59 @@ func Privacy(data *request.CommonData, config privacy.Config) templ.Component {
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err
 					}
-					var templ_7745c5c3_Var7 string
-					templ_7745c5c3_Var7, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("%d", config.RevokeConsentPolicy))
+					var templ_7745c5c3_Var8 string
+					templ_7745c5c3_Var8, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("%d", config.RevokeConsentPolicy))
 					if templ_7745c5c3_Err != nil {
 						return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handlers/handlerprivacy/privacy.templ`, Line: 104, Col: 172}
 					}
-					_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var7))
+					_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var8))
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err
 					}
-					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 12, " dager.</p><form action=\"/privacy\" method=\"POST\" class=\"form-control w-50\"><div class=\"form-group\"><label for=\"logging-consent\">Tillat logging</label> <input id=\"logging-consent\" name=\"logging-consent\" type=\"checkbox\"")
-					if templ_7745c5c3_Err != nil {
-						return templ_7745c5c3_Err
-					}
-					if data.User != nil && data.User.LoggingConsent {
-						templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 13, " checked")
-						if templ_7745c5c3_Err != nil {
-							return templ_7745c5c3_Err
-						}
-					}
-					if data.User == nil {
-						templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 14, " disabled")
-						if templ_7745c5c3_Err != nil {
-							return templ_7745c5c3_Err
-						}
-					}
-					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 15, "> ")
+					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 12, " dager.</p>")
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err
 					}
 					if data.User != nil {
-						templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 16, "<input type=\"submit\" class=\"btn btn-warning\" value=\"Oppdater\">")
+						templ_7745c5c3_Var9 := templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
+							templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
+							templ_7745c5c3_Buffer, templ_7745c5c3_IsBuffer := templruntime.GetBuffer(templ_7745c5c3_W)
+							if !templ_7745c5c3_IsBuffer {
+								defer func() {
+									templ_7745c5c3_BufErr := templruntime.ReleaseBuffer(templ_7745c5c3_Buffer)
+									if templ_7745c5c3_Err == nil {
+										templ_7745c5c3_Err = templ_7745c5c3_BufErr
+									}
+								}()
+							}
+							ctx = templ.InitializeContext(ctx)
+							templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 13, "<div class=\"form-group\"><label for=\"logging-consent\">Tillat logging</label> <input id=\"logging-consent\" name=\"logging-consent\" type=\"checkbox\"")
+							if templ_7745c5c3_Err != nil {
+								return templ_7745c5c3_Err
+							}
+							if data.User.LoggingConsent {
+								templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 14, " checked")
+								if templ_7745c5c3_Err != nil {
+									return templ_7745c5c3_Err
+								}
+							}
+							templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 15, "> <input type=\"submit\" class=\"btn btn-warning\" value=\"Oppdater\"></div>")
+							if templ_7745c5c3_Err != nil {
+								return templ_7745c5c3_Err
+							}
+							return nil
+						})
+						templ_7745c5c3_Err = templbase.Form(data, "/privacy", "POST", "form-control", "w-50").Render(templ.WithChildren(ctx, templ_7745c5c3_Var9), templ_7745c5c3_Buffer)
 						if templ_7745c5c3_Err != nil {
 							return templ_7745c5c3_Err
 						}
 					} else {
-						templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 17, "<input type=\"submit\" class=\"btn btn-warning\" value=\"Du må logge inn for å tillate logging.\" disabled>")
+						templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 16, "<form action=\"/privacy\" method=\"POST\" class=\"form-control w-50\"><div class=\"form-group\"><label for=\"logging-consent\">Tillat logging</label> <input id=\"logging-consent\" name=\"logging-consent\" type=\"checkbox\" disabled> <input type=\"submit\" class=\"btn btn-warning\" value=\"Du må logge inn for å tillate logging.\" disabled></div></form>")
 						if templ_7745c5c3_Err != nil {
 							return templ_7745c5c3_Err
 						}
 					}
-					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 18, "</div></form><h2>4. Sletting</h2><p>Når du forlater organisasjonen, kan du kreve at administrator innen rimelig tid sletter opplysninger om deg i henhold til <a href=\"https://www.datatilsynet.no/rettigheter-og-plikter/den-registrertes-rettigheter/rett-til-sletting/\">Personvernforordningen (GDPR) §17</a>. Bino har en slette-knapp som lar administrator slette så mye informasjon som mulig uten å forstyrre organisasjonens drift. Pasienter vil fortsatt være knyttet til en anonym ID, men visningsnavnet blir erstattet med \"Slettet bruker\".</p><p>Det er administrators plikt å sørge for at data generert av Bino (for eksempel loggene nevnt i seksjon 3.b) slettes.</p>")
+					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 17, " <h2>4. Sletting</h2><p>Når du forlater organisasjonen, kan du kreve at administrator innen rimelig tid sletter opplysninger om deg i henhold til <a href=\"https://www.datatilsynet.no/rettigheter-og-plikter/den-registrertes-rettigheter/rett-til-sletting/\">Personvernforordningen (GDPR) §17</a>. Bino har en slette-knapp som lar administrator slette så mye informasjon som mulig uten å forstyrre organisasjonens drift. Pasienter vil fortsatt være knyttet til en anonym ID, men visningsnavnet blir erstattet med \"Slettet bruker\".</p><p>Det er administrators plikt å sørge for at data generert av Bino (for eksempel loggene nevnt i seksjon 3.b) slettes.</p>")
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err
 					}

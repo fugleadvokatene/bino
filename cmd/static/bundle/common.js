@@ -28,10 +28,14 @@ var MustDataNumber = (el, key) => {
   if (v === null) throw new Error(`Invalid data-${key}`);
   return v;
 };
+var reportError = (message) => {
+  navigator.sendBeacon("/ajax/client-error", message);
+};
 export {
   DataNumber,
   MustDataNumber,
   MustQuerySelector,
   QuerySelector,
-  QuerySelectorAll
+  QuerySelectorAll,
+  reportError
 };
