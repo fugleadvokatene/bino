@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/fugleadvokatene/bino/internal/db"
@@ -52,6 +53,13 @@ func (h *postInvite) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		newHomeName, err := request.GetFormValue(r, "new-home-name")
 		if err != nil {
 			handlererror.Error(w, r, err)
+			return
+		}
+
+		newHomeName = strings.TrimSpace(newHomeName)
+		if newHomeName == "" {
+			data.Error(data.Language.AdminNewHomeNameRequired, fmt.Errorf("empty new home name"))
+			request.Redirect(w, r, "/users")
 			return
 		}
 

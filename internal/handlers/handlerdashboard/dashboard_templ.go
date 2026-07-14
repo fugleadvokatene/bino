@@ -732,7 +732,7 @@ func DashboardForm(
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 44, "</label> <input class=\"form-control\" name=\"name\"></div><div class=\"form-row d-flex justify-content-between gap-2 mb-2\"><div class=\"form-group\"><label>")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 44, "</label> <input class=\"form-control\" name=\"name\" required></div><div class=\"form-row d-flex justify-content-between gap-2 mb-2\"><div class=\"form-group\"><label>")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}

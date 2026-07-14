@@ -46,6 +46,7 @@ type Language struct {
 	AdminInvitationOKNoEmail          string
 	AdminInvitationAccessLevelTooHigh string
 	AdminAccessLevelChangeDenied      string
+	AdminNewHomeNameRequired          string
 	AdminInviteCode                   string
 	AdminRoot                         string
 	AdminDebug                        string
@@ -485,6 +486,7 @@ var NO = &Language{
 	AdminInvitationOKNoEmail:          "Eposten ble lagt til i listen, men det er ikke sendt ut en epost. Send personen en lenke til forsiden og be dem om å opprette en bruker.",
 	AdminInvitationAccessLevelTooHigh: "Du kan ikke invitere en bruker med et høyere tilgangsnivå enn ditt eget.",
 	AdminAccessLevelChangeDenied:      "Du kan bare endre tilgangsnivået til brukere med lavere tilgangsnivå enn deg selv, og bare opp til ditt eget tilgangsnivå.",
+	AdminNewHomeNameRequired:          "Du må gi det nye rehabhjemmet et navn.",
 	AdminInviteCode:                   "Kode",
 	AdminRoot:                         "Verktøy",
 	AdminDebug:                        "Debug",
@@ -876,6 +878,7 @@ var EN = &Language{
 	AdminInvitationOKNoEmail:          "The user was added to the list of invited user. No email was sent; send them a link to the main page and ask them to log in.",
 	AdminInvitationAccessLevelTooHigh: "You cannot invite a user with a higher access level than your own.",
 	AdminAccessLevelChangeDenied:      "You can only change the access level of users with a lower access level than your own, and only up to your own access level.",
+	AdminNewHomeNameRequired:          "You must give the new rehab home a name.",
 	AdminInviteCode:                   "Code",
 	AdminRoot:                         "Tools",
 	AdminDebug:                        "Debug",

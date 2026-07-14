@@ -27,15 +27,21 @@ templ UserAdmin(data *request.CommonData, homes []model.Home, divisions []model.
                                     <div class="input-group">
                                         <select class="form-control form-select" id="home" name="home" placeholder={data.Language.DashboardSelectHome} onchange="binoToggleNewHomeFields(this)">
                                             <option value="0">{data.Language.AdminNewHomeForUser}</option>
-                                            for _, home := range homes {
-                                                <option value={home.ID}>{home.Name}</option>
+                                            for _, div := range divisions {
+                                                <optgroup label={div.Name}>
+                                                    for _, home := range homes {
+                                                        if home.Division == div.ID {
+                                                            <option value={home.ID}>{home.Name}</option>
+                                                        }
+                                                    }
+                                                </optgroup>
                                             }
                                         </select>
                                     </div>
-                                    <div class="ps-4 border-start ms-2">
+                                    <div class="ps-4 border-start ms-2" id="new-home-fields">
                                         <label for="new-home-name">{data.Language.GenericName}</label>
                                         <div class="input-group">
-                                            <input id="new-home-name" class="form-control" name="new-home-name" placeholder={data.Language.GenericName} autocomplete="off"></input>
+                                            <input id="new-home-name" class="form-control" name="new-home-name" placeholder={data.Language.GenericName} autocomplete="off" required></input>
                                         </div>
                                         <label for="new-home-division">{data.Language.HomesHomeDivision}</label>
                                         <div class="input-group">
@@ -65,9 +71,11 @@ templ UserAdmin(data *request.CommonData, homes []model.Home, divisions []model.
                                 <script>
                                     function binoToggleNewHomeFields(sel) {
                                         var form = sel.closest("form");
-                                        var disabled = sel.value !== "0";
-                                        form.querySelector('[name="new-home-name"]').disabled = disabled;
-                                        form.querySelector('[name="new-home-division"]').disabled = disabled;
+                                        var creatingNewHome = sel.value === "0";
+                                        var fields = form.querySelector("#new-home-fields");
+                                        fields.hidden = !creatingNewHome;
+                                        form.querySelector('[name="new-home-name"]').disabled = !creatingNewHome;
+                                        form.querySelector('[name="new-home-division"]').disabled = !creatingNewHome;
                                     }
                                     document.querySelectorAll('select[name="home"]').forEach(function (sel) {
                                         binoToggleNewHomeFields(sel);

@@ -192,7 +192,7 @@ if (divisionSelect) {
 }
 var checkinBtn = QuerySelector("#checkin-btn");
 if (checkinBtn) {
-  checkinBtn.addEventListener("click", () => {
+  checkinBtn.form?.addEventListener("submit", () => {
     checkinBtn.classList.add("waiting");
   });
 }
