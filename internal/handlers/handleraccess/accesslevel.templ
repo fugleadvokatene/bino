@@ -10,32 +10,33 @@ templ AccessLevelPage(data *request.CommonData) {
         <div class="card p-2">
             <p>{data.Language.CapabilitiesYourAccessLevelIs} <strong>{int(data.User.AccessLevel)} - {data.Language.AccessLevels[data.User.AccessLevel]}</strong></p>
             <p>{data.Language.CapabilitiesExplanation}</p>
-            <h3>{data.Language.AccessLevels[model.AccessLevelNone]}</h3>
-            <ul>
-                for _, cap := range capabilities.AccessLevelToCapabilities.None {
-                    <li>{data.Language.Capabilities[cap]}</li>
-                }
-            </ul>
+            <h3>{data.Language.AccessLevels[model.AccessLevelObserver]}</h3>
+            @CapList(data, capabilities.AccessLevelToCapabilities.Observer)
             <h3>{data.Language.AccessLevels[model.AccessLevelRehabber]}</h3>
-            <ul>
-                for _, cap := range capabilities.AccessLevelToCapabilities.Rehabber {
-                    <li>{data.Language.Capabilities[cap]}</li>
-                }
-            </ul>
+            <p>{data.Language.AllOfTheAbovePlus}</p>
+            @CapList(data, capabilities.AccessLevelToCapabilities.Rehabber)
             <h3>{data.Language.AccessLevels[model.AccessLevelCoordinator]}</h3>
-            <ul>
-                for _, cap := range capabilities.AccessLevelToCapabilities.Coordinator {
-                    <li>{data.Language.Capabilities[cap]}</li>
-                }
-            </ul>
+            <p>{data.Language.AllOfTheAbovePlus}</p>
+            @CapList(data, capabilities.AccessLevelToCapabilities.Coordinator)
             <h3>{data.Language.AccessLevels[model.AccessLevelAdmin]}</h3>
-            <ul>
-                for _, cap := range capabilities.AccessLevelToCapabilities.Admin {
-                    <li>{data.Language.Capabilities[cap]}</li>
-                }
-            </ul>
+            <p>{data.Language.AllOfTheAbovePlus}</p>
+            @CapList(data, capabilities.AccessLevelToCapabilities.Admin)
         </div>
     }
+}
+
+templ CapList(data *request.CommonData, caps []model.Cap) {
+    <ul>
+        for _, cap := range caps {
+            if capLang, ok := data.Language.Capabilities[cap]; ok {
+                if capLang != "" {
+                    <li>{capLang}</li>
+                }
+            } else {
+                <li>"{cap.String()}"</li>
+            }
+        }
+    </ul>
 }
 
 

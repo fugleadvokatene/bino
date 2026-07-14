@@ -7,49 +7,53 @@ import (
 )
 
 var RequiredAccessLevel = map[model.Cap]model.AccessLevel{
-	model.CapLoggedIn:              model.AccessLevelNone,
-	model.CapViewAllActivePatients: model.AccessLevelNone,
-	model.CapViewAllFormerPatients: model.AccessLevelNone,
-	model.CapViewAllHomes:          model.AccessLevelNone,
-	model.CapViewAllUsers:          model.AccessLevelNone,
-	model.CapViewCalendar:          model.AccessLevelNone,
-	model.CapSearch:                model.AccessLevelNone,
-	model.CapSetOwnPreferences:     model.AccessLevelNone,
-	model.CapLive:                  model.AccessLevelNone,
+	model.CapLoggedIn:              model.AccessLevelObserver,
+	model.CapViewAllActivePatients: model.AccessLevelObserver,
+	model.CapViewAllFormerPatients: model.AccessLevelObserver,
+	model.CapViewAllHomes:          model.AccessLevelObserver,
+	model.CapViewAllUsers:          model.AccessLevelObserver,
+	model.CapViewCalendar:          model.AccessLevelObserver,
+	model.CapSearch:                model.AccessLevelObserver,
+	model.CapSetOwnPreferences:     model.AccessLevelObserver,
+	model.CapLive:                  model.AccessLevelObserver,
+	model.CapViewEventLog:          model.AccessLevelObserver,
 
 	model.CapCheckInPatient:       model.AccessLevelRehabber,
 	model.CapManageOwnPatients:    model.AccessLevelRehabber,
 	model.CapManageOwnHomes:       model.AccessLevelRehabber,
 	model.CapCreatePatientJournal: model.AccessLevelRehabber,
-	model.CapViewGDriveSettings:   model.AccessLevelRehabber,
 	model.CapManageAllPatients:    model.AccessLevelRehabber,
 	model.CapUploadFile:           model.AccessLevelRehabber,
+	model.CapManageSpecies:        model.AccessLevelRehabber,
 
-	model.CapViewAdminTools: model.AccessLevelCoordinator,
-	model.CapManageAllHomes: model.AccessLevelCoordinator,
-	model.CapManageSpecies:  model.AccessLevelCoordinator,
-	model.CapUseImportTool:  model.AccessLevelCoordinator,
-	model.CapManageUsers:        model.AccessLevelAdmin,
-	model.CapDeleteUsers:        model.AccessLevelAdmin,
-	model.CapInviteToGDrive:     model.AccessLevelAdmin,
-	model.CapInviteToBino:       model.AccessLevelAdmin,
-	model.CapDebug:              model.AccessLevelAdmin,
-	model.CapManageFeatureFlags: model.AccessLevelAdmin,
-	model.CapHardDeletePatient:  model.AccessLevelAdmin,
-	model.CapSetIndexerState:    model.AccessLevelAdmin,
-	model.CapViewSysLog:         model.AccessLevelAdmin,
+	model.CapViewGDriveSettings: model.AccessLevelCoordinator,
+	model.CapViewAdminTools:     model.AccessLevelCoordinator,
+	model.CapUseImportTool:      model.AccessLevelCoordinator,
+	model.CapViewUserAdmin:      model.AccessLevelCoordinator,
+	model.CapInviteToGDrive:     model.AccessLevelCoordinator,
+	model.CapInviteToBino:       model.AccessLevelCoordinator,
+	model.CapManageUsers:        model.AccessLevelCoordinator,
+
+	model.CapManageAllHomes:      model.AccessLevelAdmin,
+	model.CapDeleteUsers:         model.AccessLevelAdmin,
+	model.CapDebug:               model.AccessLevelAdmin,
+	model.CapManageFeatureFlags:  model.AccessLevelAdmin,
+	model.CapHardDeletePatient:   model.AccessLevelAdmin,
+	model.CapSetIndexerState:     model.AccessLevelAdmin,
+	model.CapViewSysLog:          model.AccessLevelAdmin,
+	model.CapManageTaskTemplates: model.AccessLevelAdmin,
 }
 
 var AccessLevelToCapabilities = func() (out struct {
-	None        []model.Cap
+	Observer    []model.Cap
 	Rehabber    []model.Cap
 	Coordinator []model.Cap
 	Admin       []model.Cap
 }) {
 	for cap, al := range RequiredAccessLevel {
 		switch al {
-		case model.AccessLevelNone:
-			out.None = append(out.None, cap)
+		case model.AccessLevelObserver:
+			out.Observer = append(out.Observer, cap)
 		case model.AccessLevelRehabber:
 			out.Rehabber = append(out.Rehabber, cap)
 		case model.AccessLevelCoordinator:
@@ -58,7 +62,7 @@ var AccessLevelToCapabilities = func() (out struct {
 			out.Admin = append(out.Admin, cap)
 		}
 	}
-	slices.Sort(out.None)
+	slices.Sort(out.Observer)
 	slices.Sort(out.Rehabber)
 	slices.Sort(out.Coordinator)
 	slices.Sort(out.Admin)

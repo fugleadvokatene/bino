@@ -15,11 +15,11 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
-type invite struct {
+type postInvite struct {
 	DB *db.Database
 }
 
-func (h *invite) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+func (h *postInvite) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	data := request.MustLoadCommonData(ctx)
 
@@ -39,6 +39,29 @@ func (h *invite) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		handlererror.Error(w, r, err)
 		return
+	}
+
+	if home == 0 {
+		newHomeName, err := request.GetFormValue(r, "new-home-name")
+		if err != nil {
+			handlererror.Error(w, r, err)
+			return
+		}
+
+		newHomeDivision, err := request.GetFormID(r, "new-home-division")
+		if err != nil {
+			handlererror.Error(w, r, err)
+			return
+		}
+
+		home, err = h.DB.Q.InsertHomeReturningID(ctx, sql.InsertHomeReturningIDParams{
+			Name:     newHomeName,
+			Division: newHomeDivision,
+		})
+		if err != nil {
+			data.Error(data.Language.AdminInvitationFailed, err)
+			return
+		}
 	}
 
 	now := time.Now()

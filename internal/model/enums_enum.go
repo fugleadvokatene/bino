@@ -11,8 +11,8 @@ import (
 )
 
 const (
-	// AccessLevelNone is a AccessLevel of type None.
-	AccessLevelNone AccessLevel = 0
+	// AccessLevelObserver is a AccessLevel of type Observer.
+	AccessLevelObserver AccessLevel = 0
 	// AccessLevelRehabber is a AccessLevel of type Rehabber.
 	AccessLevelRehabber AccessLevel = 1
 	// AccessLevelCoordinator is a AccessLevel of type Coordinator.
@@ -23,12 +23,12 @@ const (
 
 var ErrInvalidAccessLevel = errors.New("not a valid AccessLevel")
 
-const _AccessLevelName = "NoneRehabberCoordinatorAdmin"
+const _AccessLevelName = "ObserverRehabberCoordinatorAdmin"
 
 // AccessLevelValues returns a list of the values for AccessLevel
 func AccessLevelValues() []AccessLevel {
 	return []AccessLevel{
-		AccessLevelNone,
+		AccessLevelObserver,
 		AccessLevelRehabber,
 		AccessLevelCoordinator,
 		AccessLevelAdmin,
@@ -36,10 +36,10 @@ func AccessLevelValues() []AccessLevel {
 }
 
 var _AccessLevelMap = map[AccessLevel]string{
-	AccessLevelNone:        _AccessLevelName[0:4],
-	AccessLevelRehabber:    _AccessLevelName[4:12],
-	AccessLevelCoordinator: _AccessLevelName[12:23],
-	AccessLevelAdmin:       _AccessLevelName[23:28],
+	AccessLevelObserver:    _AccessLevelName[0:8],
+	AccessLevelRehabber:    _AccessLevelName[8:16],
+	AccessLevelCoordinator: _AccessLevelName[16:27],
+	AccessLevelAdmin:       _AccessLevelName[27:32],
 }
 
 // String implements the Stringer interface.
@@ -58,10 +58,10 @@ func (x AccessLevel) IsValid() bool {
 }
 
 var _AccessLevelValue = map[string]AccessLevel{
-	_AccessLevelName[0:4]:   AccessLevelNone,
-	_AccessLevelName[4:12]:  AccessLevelRehabber,
-	_AccessLevelName[12:23]: AccessLevelCoordinator,
-	_AccessLevelName[23:28]: AccessLevelAdmin,
+	_AccessLevelName[0:8]:   AccessLevelObserver,
+	_AccessLevelName[8:16]:  AccessLevelRehabber,
+	_AccessLevelName[16:27]: AccessLevelCoordinator,
+	_AccessLevelName[27:32]: AccessLevelAdmin,
 }
 
 // ParseAccessLevel attempts to convert a string to a AccessLevel.
@@ -177,27 +177,33 @@ const (
 	CapInviteToGDrive Cap = 19
 	// CapInviteToBino is a Cap of type InviteToBino.
 	CapInviteToBino Cap = 20
+	// CapViewUserAdmin is a Cap of type ViewUserAdmin.
+	CapViewUserAdmin Cap = 21
 	// CapUseImportTool is a Cap of type UseImportTool.
-	CapUseImportTool Cap = 21
+	CapUseImportTool Cap = 22
 	// CapDebug is a Cap of type Debug.
-	CapDebug Cap = 22
+	CapDebug Cap = 23
 	// CapUploadFile is a Cap of type UploadFile.
-	CapUploadFile Cap = 23
+	CapUploadFile Cap = 24
 	// CapManageFeatureFlags is a Cap of type ManageFeatureFlags.
-	CapManageFeatureFlags Cap = 24
+	CapManageFeatureFlags Cap = 25
 	// CapHardDeletePatient is a Cap of type HardDeletePatient.
-	CapHardDeletePatient Cap = 25
+	CapHardDeletePatient Cap = 26
 	// CapLive is a Cap of type Live.
-	CapLive Cap = 26
+	CapLive Cap = 27
 	// CapSetIndexerState is a Cap of type SetIndexerState.
-	CapSetIndexerState Cap = 27
+	CapSetIndexerState Cap = 28
 	// CapViewSysLog is a Cap of type ViewSysLog.
-	CapViewSysLog Cap = 28
+	CapViewSysLog Cap = 29
+	// CapManageTaskTemplates is a Cap of type ManageTaskTemplates.
+	CapManageTaskTemplates Cap = 30
+	// CapViewEventLog is a Cap of type ViewEventLog.
+	CapViewEventLog Cap = 31
 )
 
 var ErrInvalidCap = errors.New("not a valid Cap")
 
-const _CapName = "LoggedInViewAllActivePatientsViewAllFormerPatientsViewAllHomesViewAllUsersViewCalendarSearchSetOwnPreferencesCheckInPatientManageOwnPatientsManageAllPatientsManageOwnHomesManageAllHomesCreatePatientJournalManageSpeciesManageUsersDeleteUsersViewAdminToolsViewGDriveSettingsInviteToGDriveInviteToBinoUseImportToolDebugUploadFileManageFeatureFlagsHardDeletePatientLiveSetIndexerStateViewSysLog"
+const _CapName = "LoggedInViewAllActivePatientsViewAllFormerPatientsViewAllHomesViewAllUsersViewCalendarSearchSetOwnPreferencesCheckInPatientManageOwnPatientsManageAllPatientsManageOwnHomesManageAllHomesCreatePatientJournalManageSpeciesManageUsersDeleteUsersViewAdminToolsViewGDriveSettingsInviteToGDriveInviteToBinoViewUserAdminUseImportToolDebugUploadFileManageFeatureFlagsHardDeletePatientLiveSetIndexerStateViewSysLogManageTaskTemplatesViewEventLog"
 
 // CapValues returns a list of the values for Cap
 func CapValues() []Cap {
@@ -223,6 +229,7 @@ func CapValues() []Cap {
 		CapViewGDriveSettings,
 		CapInviteToGDrive,
 		CapInviteToBino,
+		CapViewUserAdmin,
 		CapUseImportTool,
 		CapDebug,
 		CapUploadFile,
@@ -231,6 +238,8 @@ func CapValues() []Cap {
 		CapLive,
 		CapSetIndexerState,
 		CapViewSysLog,
+		CapManageTaskTemplates,
+		CapViewEventLog,
 	}
 }
 
@@ -256,14 +265,17 @@ var _CapMap = map[Cap]string{
 	CapViewGDriveSettings:    _CapName[254:272],
 	CapInviteToGDrive:        _CapName[272:286],
 	CapInviteToBino:          _CapName[286:298],
-	CapUseImportTool:         _CapName[298:311],
-	CapDebug:                 _CapName[311:316],
-	CapUploadFile:            _CapName[316:326],
-	CapManageFeatureFlags:    _CapName[326:344],
-	CapHardDeletePatient:     _CapName[344:361],
-	CapLive:                  _CapName[361:365],
-	CapSetIndexerState:       _CapName[365:380],
-	CapViewSysLog:            _CapName[380:390],
+	CapViewUserAdmin:         _CapName[298:311],
+	CapUseImportTool:         _CapName[311:324],
+	CapDebug:                 _CapName[324:329],
+	CapUploadFile:            _CapName[329:339],
+	CapManageFeatureFlags:    _CapName[339:357],
+	CapHardDeletePatient:     _CapName[357:374],
+	CapLive:                  _CapName[374:378],
+	CapSetIndexerState:       _CapName[378:393],
+	CapViewSysLog:            _CapName[393:403],
+	CapManageTaskTemplates:   _CapName[403:422],
+	CapViewEventLog:          _CapName[422:434],
 }
 
 // String implements the Stringer interface.
@@ -303,14 +315,17 @@ var _CapValue = map[string]Cap{
 	_CapName[254:272]: CapViewGDriveSettings,
 	_CapName[272:286]: CapInviteToGDrive,
 	_CapName[286:298]: CapInviteToBino,
-	_CapName[298:311]: CapUseImportTool,
-	_CapName[311:316]: CapDebug,
-	_CapName[316:326]: CapUploadFile,
-	_CapName[326:344]: CapManageFeatureFlags,
-	_CapName[344:361]: CapHardDeletePatient,
-	_CapName[361:365]: CapLive,
-	_CapName[365:380]: CapSetIndexerState,
-	_CapName[380:390]: CapViewSysLog,
+	_CapName[298:311]: CapViewUserAdmin,
+	_CapName[311:324]: CapUseImportTool,
+	_CapName[324:329]: CapDebug,
+	_CapName[329:339]: CapUploadFile,
+	_CapName[339:357]: CapManageFeatureFlags,
+	_CapName[357:374]: CapHardDeletePatient,
+	_CapName[374:378]: CapLive,
+	_CapName[378:393]: CapSetIndexerState,
+	_CapName[393:403]: CapViewSysLog,
+	_CapName[403:422]: CapManageTaskTemplates,
+	_CapName[422:434]: CapViewEventLog,
 }
 
 // ParseCap attempts to convert a string to a Cap.

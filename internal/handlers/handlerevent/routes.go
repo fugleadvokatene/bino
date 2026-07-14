@@ -13,7 +13,7 @@ func Routes(
 		{
 			Path:    "GET /event",
 			Handler: &list{DB: db},
-			Cap:     model.CapViewAllFormerPatients,
+			Cap:     model.CapViewEventLog,
 		},
 		{
 			Path:    "POST /event/{event}/set-note",

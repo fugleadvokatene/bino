@@ -484,6 +484,24 @@ func (q *Queries) InsertHome(ctx context.Context, arg InsertHomeParams) error {
 	return err
 }
 
+const insertHomeReturningID = `-- name: InsertHomeReturningID :one
+INSERT INTO home (name, division)
+VALUES ($1, $2)
+RETURNING id
+`
+
+type InsertHomeReturningIDParams struct {
+	Name     string
+	Division int32
+}
+
+func (q *Queries) InsertHomeReturningID(ctx context.Context, arg InsertHomeReturningIDParams) (int32, error) {
+	row := q.db.QueryRow(ctx, insertHomeReturningID, arg.Name, arg.Division)
+	var id int32
+	err := row.Scan(&id)
+	return id, err
+}
+
 const moveHome = `-- name: MoveHome :exec
 UPDATE home
 SET division = $2

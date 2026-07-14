@@ -11,7 +11,7 @@ import (
 
 // ENUM(
 //
-//	None        = 0,
+//	Observer    = 0,
 //	Rehabber    = 1,
 //	Coordinator = 2,
 //	Admin       = 3,
@@ -49,6 +49,7 @@ type Availability int
 // ViewGDriveSettings,
 // InviteToGDrive,
 // InviteToBino,
+// ViewUserAdmin,
 // UseImportTool,
 // Debug,
 // UploadFile,
@@ -57,6 +58,8 @@ type Availability int
 // Live,
 // SetIndexerState,
 // ViewSysLog,
+// ManageTaskTemplates,
+// ViewEventLog,
 // )
 type Cap int32
 

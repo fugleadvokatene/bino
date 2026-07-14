@@ -22,6 +22,12 @@ INSERT INTO home (name, division)
 VALUES ($1, $2)
 ;
 
+-- name: InsertHomeReturningID :one
+INSERT INTO home (name, division)
+VALUES ($1, $2)
+RETURNING id
+;
+
 -- name: UpdateHomeName :exec
 UPDATE home
 SET name = $2

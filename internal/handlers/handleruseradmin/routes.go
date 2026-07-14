@@ -13,7 +13,7 @@ func Routes(
 		{
 			Path:    "GET /users",
 			Handler: &page{DB: db},
-			Cap:     model.CapManageUsers,
+			Cap:     model.CapViewUserAdmin,
 		},
 		{
 			Path:    "GET /user/{user}/confirm-scrub",
@@ -38,18 +38,18 @@ func Routes(
 		{
 			// Invite-form
 			Path:    "POST /invite",
-			Handler: &invite{DB: db},
+			Handler: &postInvite{DB: db},
 			Cap:     model.CapInviteToBino,
 		},
 		{
 			// Invite-form on GDriveAdmin
 			Path:    "POST /invite/{email}",
-			Handler: &invite{DB: db},
+			Handler: &postInvite{DB: db},
 			Cap:     model.CapInviteToBino,
 		},
 		{
 			Path:    "POST /invite/{id}/delete",
-			Handler: &inviteDelete{DB: db},
+			Handler: &deleteInvite{DB: db},
 			Cap:     model.CapInviteToBino,
 		},
 	}

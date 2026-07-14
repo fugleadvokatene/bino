@@ -35,9 +35,16 @@ func (h *page) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	divisions, err := h.DB.GetDivisions(ctx)
+	if err != nil {
+		handlererror.Error(w, r, err)
+		return
+	}
+
 	UserAdmin(
 		data,
 		model.SliceToModel(homes),
+		divisions,
 		model.SliceToModel(users),
 		model.SliceToModel(invitations),
 	).Render(ctx, w)

@@ -16,11 +16,13 @@ type Language struct {
 	Months      map[time.Month]string
 	GDriveRoles map[string]string
 
-	AccessLevel  string
-	AccessLevels map[model.AccessLevel]string
+	AccessLevel       string
+	AccessLevels      map[model.AccessLevel]string
+	AllOfTheAbovePlus string
 
 	AdminDisplayName            string
 	AdminEmailAddress           string
+	AdminNewHomeForUser         string
 	AdminInviteToBino           string
 	AdminManageEvents           string
 	AdminManageGoogleDrive      string
@@ -451,11 +453,13 @@ var NO = &Language{
 		model.AccessLevelAdmin:       "Administrator",
 		model.AccessLevelCoordinator: "Koordinator",
 		model.AccessLevelRehabber:    "Rehabilitør",
-		model.AccessLevelNone:        "Bruker",
+		model.AccessLevelObserver:    "Observatør",
 	},
+	AllOfTheAbovePlus: "Alt det ovennevnte, pluss:",
 
 	AdminDisplayName:            "Navn",
 	AdminEmailAddress:           "Epostaddresse",
+	AdminNewHomeForUser:         "Lag nytt rehabhjem",
 	AdminInviteToBino:           "Inviter til Bino",
 	AdminManageEvents:           "Konfigurer hendelsestyper",
 	AdminManageGoogleDrive:      "Konfigurer Google Drive",
@@ -748,6 +752,18 @@ var NO = &Language{
 		model.CapViewGDriveSettings:    "Se Google Drive-innstillinger",
 		model.CapInviteToGDrive:        "Invitere brukere til Google Drive-mappen fra Bino",
 		model.CapInviteToBino:          "Invitere nye brukere til Bino",
+		model.CapLoggedIn:              "",
+		model.CapLive:                  "",
+		model.CapUseImportTool:         "",
+		model.CapDebug:                 "Se debug-siden",
+		model.CapManageFeatureFlags:    "Endre feature-flags",
+		model.CapHardDeletePatient:     "Slette pasienter",
+		model.CapSetIndexerState:       "Konfigurere indeksering av Google Drive",
+		model.CapViewSysLog:            "Se systemloggen",
+		model.CapUploadFile:            "Laste opp filer",
+		model.CapViewUserAdmin:         "Se brukerinformasjon",
+		model.CapManageTaskTemplates:   "Endre oppgavemaler",
+		model.CapViewEventLog:          "Se hendelsesloggen",
 	},
 
 	UnavailablePeriods:              "Utilgjengelig i følgende perioder:",
@@ -826,11 +842,13 @@ var EN = &Language{
 		model.AccessLevelAdmin:       "Administrator",
 		model.AccessLevelCoordinator: "Coordinator",
 		model.AccessLevelRehabber:    "Rehabilitator",
-		model.AccessLevelNone:        "User",
+		model.AccessLevelObserver:    "Observer",
 	},
+	AllOfTheAbovePlus: "All of the above, and:",
 
 	AdminDisplayName:            "Name",
 	AdminEmailAddress:           "Email address",
+	AdminNewHomeForUser:         "New rehab home",
 	AdminInviteToBino:           "Invite to Bino",
 	AdminManageEvents:           "Manage event types",
 	AdminManageGoogleDrive:      "Configure Google Drive",
@@ -1122,6 +1140,18 @@ var EN = &Language{
 		model.CapViewGDriveSettings:    "View Google Drive settings",
 		model.CapInviteToGDrive:        "Invite users to the Google Drive folder from Bino",
 		model.CapInviteToBino:          "Invite new users to Bino",
+		model.CapLoggedIn:              "",
+		model.CapLive:                  "",
+		model.CapUseImportTool:         "",
+		model.CapDebug:                 "View the debug page",
+		model.CapManageFeatureFlags:    "Configure feature flags",
+		model.CapHardDeletePatient:     "Delete patients",
+		model.CapSetIndexerState:       "Configure indexing of Google Drive",
+		model.CapViewSysLog:            "View the system log",
+		model.CapUploadFile:            "Upload files",
+		model.CapViewUserAdmin:         "View user information",
+		model.CapManageTaskTemplates:   "Edit task templates",
+		model.CapViewEventLog:          "View the event log",
 	},
 
 	UnavailablePeriods:              "Unavailable during the following periods:",

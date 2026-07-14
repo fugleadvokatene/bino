@@ -6,7 +6,7 @@ import (
 	"github.com/fugleadvokatene/bino/internal/templbase"
 )
 
-templ UserAdmin(data *request.CommonData, homes []model.Home, users []model.User, invitations []model.Invitation) {
+templ UserAdmin(data *request.CommonData, homes []model.Home, divisions []model.Division, users []model.User, invitations []model.Invitation) {
 	@templbase.Layout(data) {
         <h1>{data.Language.AdminManageUsers}</h1>
         @templbase.Card() {
@@ -25,12 +25,26 @@ templ UserAdmin(data *request.CommonData, homes []model.Home, users []model.User
                                         {data.Language.GenericHome}
                                     </label>
                                     <div class="input-group">
-                                        <select class="form-control form-select" id="home" name="home" placeholder={data.Language.DashboardSelectHome}>
-                                            <option value="0">{data.Language.GenericNone}</option>
+                                        <select class="form-control form-select" id="home" name="home" placeholder={data.Language.DashboardSelectHome} onchange="binoToggleNewHomeFields(this)">
+                                            <option value="0">{data.Language.AdminNewHomeForUser}</option>
                                             for _, home := range homes {
                                                 <option value={home.ID}>{home.Name}</option>
                                             }
                                         </select>
+                                    </div>
+                                    <div class="ps-4 border-start ms-2">
+                                        <label for="new-home-name">{data.Language.GenericName}</label>
+                                        <div class="input-group">
+                                            <input id="new-home-name" class="form-control" name="new-home-name" placeholder={data.Language.GenericName} autocomplete="off"></input>
+                                        </div>
+                                        <label for="new-home-division">{data.Language.HomesHomeDivision}</label>
+                                        <div class="input-group">
+                                            <select class="form-control form-select" id="new-home-division" name="new-home-division">
+                                                for _, div := range divisions {
+                                                    <option value={div.ID}>{div.Name}</option>
+                                                }
+                                            </select>
+                                        </div>
                                     </div>
                                     <label for="access-level">
                                         <a href="/access">
@@ -46,6 +60,17 @@ templ UserAdmin(data *request.CommonData, homes []model.Home, users []model.User
                                     </div>
                                     <button class="btn btn-primary mt-2 w-100" type="submit">{data.Language.AdminInviteToBino}</button>
                                 }
+                                <script>
+                                    function binoToggleNewHomeFields(sel) {
+                                        var form = sel.closest("form");
+                                        var disabled = sel.value !== "0";
+                                        form.querySelector('[name="new-home-name"]').disabled = disabled;
+                                        form.querySelector('[name="new-home-division"]').disabled = disabled;
+                                    }
+                                    document.querySelectorAll('select[name="home"]').forEach(function (sel) {
+                                        binoToggleNewHomeFields(sel);
+                                    });
+                                </script>
                             </td>
                         </tr>
                     </tbody>
@@ -94,7 +119,9 @@ templ UserAdmin(data *request.CommonData, homes []model.Home, users []model.User
                             <th>{data.Language.AdminDisplayName}</th>
                             <th>{data.Language.AdminEmailAddress}</th>
                             <th>{data.Language.AccessLevel}</th>
-                            <th colspan="2">{data.Language.GenericDelete}</th>
+                            if data.User.HasCapability(model.CapDeleteUsers) {
+                                <th colspan="2">{data.Language.GenericDelete}</th>
+                            }
                         </tr>
                     </thead>
                     <tbody>
@@ -103,21 +130,23 @@ templ UserAdmin(data *request.CommonData, homes []model.Home, users []model.User
                                 <td class="center">@templbase.Avatar(u)</td>
                                 <td><a href={templ.URL(u.URL())}>{u.Name}</a></td>
                                 <td>{u.Email}</td>
-                                <td>{int(u.AccessLevel)} - {data.Language.AccessLevels[u.AccessLevel]}</td>
-                                <td>
-                                    if u.ID != data.User.AppuserID && u.AccessLevel < model.AccessLevelAdmin{
-                                        <a class="btn btn-danger" href={templ.URL(u.URLSuffix("confirm-scrub"))}>
-                                            {data.Language.AdminScrubUserData}
-                                        </a>
-                                    }
-                                </td>
-                                <td>
-                                    if u.ID != data.User.AppuserID && u.AccessLevel < model.AccessLevelAdmin {
-                                        <a class="btn btn-danger"href={templ.URL(u.URLSuffix("confirm-nuke"))}>
-                                            {data.Language.AdminNukeUser}
-                                        </a>
-                                    }
-                                </td>
+                                <td>{int(u.AccessLevel)} - {data.Language.AccessLevels[u.AccessLevel]}</td>                            
+                                if data.User.HasCapability(model.CapDeleteUsers) {
+                                    <td>
+                                        if u.ID != data.User.AppuserID && u.AccessLevel < model.AccessLevelAdmin{
+                                            <a class="btn btn-danger" href={templ.URL(u.URLSuffix("confirm-scrub"))}>
+                                                {data.Language.AdminScrubUserData}
+                                            </a>
+                                        }
+                                    </td>
+                                    <td>
+                                        if u.ID != data.User.AppuserID && u.AccessLevel < model.AccessLevelAdmin {
+                                            <a class="btn btn-danger"href={templ.URL(u.URLSuffix("confirm-nuke"))}>
+                                                {data.Language.AdminNukeUser}
+                                            </a>
+                                        }
+                                    </td>
+                                }
                             </tr>
                         }
                     </tbody>
