@@ -81,57 +81,61 @@ templ UserAdmin(data *request.CommonData, homes []model.Home, divisions []model.
             if len(invitations) > 0 {
                 <h2>{data.Language.AdminPendingInvitations}</h2>
                 <div class="card">
-                    <table class="table table-striped table-bordered m-0">
-                        <thead>
-                            <tr>
-                                <th>{data.Language.AdminEmailAddress}</th>
-                                <th>{data.Language.AdminInviteExpires}</th>
-                                <th>{data.Language.AccessLevel}</th>
-                                <th>{data.Language.GenericHome}</th>
-                                <th></th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            for _, inv := range invitations {
+                    <div class="table-responsive">
+                        <table class="table table-striped table-bordered m-0">
+                            <thead>
                                 <tr>
-                                    <td>{inv.Email}</td>
-                                    <td>{data.Language.FormatTimeAbsWithRelParen(inv.Expires)}</td>
-                                    <td>{data.Language.AccessLevels[inv.AccessLevel]}</td>
-                                    <td>
-                                        if inv.HomeID != 0 {
-                                            <a href={model.HomeURL(inv.HomeID)}>{inv.HomeName}</a>
-                                        } else {
-                                            {data.Language.GenericNone}
-                                        }
-                                    </td>
-                                    <td>@templbase.SingleButtonForm(data, inv.DeleteURL(), data.Language.GenericDelete, "POST", "btn-danger")</td>
+                                    <th>{data.Language.AdminEmailAddress}</th>
+                                    <th>{data.Language.AdminInviteExpires}</th>
+                                    <th>{data.Language.AccessLevel}</th>
+                                    <th>{data.Language.GenericHome}</th>
+                                    <th></th>
                                 </tr>
-                            }
-                        </tbody>
-                    </table>
+                            </thead>
+                            <tbody>
+                                for _, inv := range invitations {
+                                    <tr>
+                                        <td class="text-break">{inv.Email}</td>
+                                        <td>{data.Language.FormatTimeAbsWithRelParen(inv.Expires)}</td>
+                                        <td>{data.Language.AccessLevels[inv.AccessLevel]}</td>
+                                        <td>
+                                            if inv.HomeID != 0 {
+                                                <a href={model.HomeURL(inv.HomeID)}>{inv.HomeName}</a>
+                                            } else {
+                                                {data.Language.GenericNone}
+                                            }
+                                        </td>
+                                        <td>@templbase.SingleButtonForm(data, inv.DeleteURL(), data.Language.GenericDelete, "POST", "btn-danger")</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             }
 
             <h2>{data.Language.AdminExistingUsers}</h2>
             <div class="card">
+              <div class="table-responsive">
                 <table class="table table-striped table-bordered m-0">
                     <thead>
                         <tr>
-                            <th>{data.Language.GenericAvatar}</th>
                             <th>{data.Language.AdminDisplayName}</th>
                             <th>{data.Language.AdminEmailAddress}</th>
                             <th>{data.Language.AccessLevel}</th>
                             if data.User.HasCapability(model.CapDeleteUsers) {
-                                <th colspan="2">{data.Language.GenericDelete}</th>
+                                <th>{data.Language.GenericDelete}</th>
                             }
                         </tr>
                     </thead>
                     <tbody>
                         for _, u := range users {
                             <tr class="filter-box">
-                                <td class="center">@templbase.Avatar(u)</td>
-                                <td><a href={templ.URL(u.URL())}>{u.Name}</a></td>
-                                <td>{u.Email}</td>
+                                <td class="d-flex align-items-center gap-2">
+                                    @templbase.Avatar(u)
+                                    <a href={templ.URL(u.URL())}>{u.Name}</a>
+                                </td>
+                                <td class="text-break">{u.Email}</td>
                                 <td>
                                     if u.ID != data.User.AppuserID && u.AccessLevel < data.User.AccessLevel {
                                         @templbase.Form(data, u.URLSuffix("access-level"), "POST", "form-inline") {
@@ -148,25 +152,24 @@ templ UserAdmin(data *request.CommonData, homes []model.Home, divisions []model.
                                     }
                                 </td>
                                 if data.User.HasCapability(model.CapDeleteUsers) {
-                                    <td>
-                                        if u.ID != data.User.AppuserID && u.AccessLevel < model.AccessLevelAdmin{
-                                            <a class="btn btn-danger" href={templ.URL(u.URLSuffix("confirm-scrub"))}>
-                                                {data.Language.AdminScrubUserData}
-                                            </a>
-                                        }
-                                    </td>
-                                    <td>
-                                        if u.ID != data.User.AppuserID && u.AccessLevel < model.AccessLevelAdmin {
-                                            <a class="btn btn-danger"href={templ.URL(u.URLSuffix("confirm-nuke"))}>
-                                                {data.Language.AdminNukeUser}
-                                            </a>
-                                        }
-                                    </td>
+                                    if u.ID != data.User.AppuserID && u.AccessLevel < model.AccessLevelAdmin{
+                                        <td class="d-flex flex-column gap-1">
+                                                <a class="btn btn-danger btn-sm" href={templ.URL(u.URLSuffix("confirm-scrub"))}>
+                                                    {data.Language.AdminScrubUserData}
+                                                </a>
+                                                <a class="btn btn-danger btn-sm" href={templ.URL(u.URLSuffix("confirm-nuke"))}>
+                                                    {data.Language.AdminNukeUser}
+                                                </a>
+                                        </td>
+                                    } else {
+                                        <td></td>
+                                    }
                                 }
                             </tr>
                         }
                     </tbody>
                 </table>
+              </div>
             </div>
         }
     }
