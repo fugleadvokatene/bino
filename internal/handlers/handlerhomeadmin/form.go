@@ -34,6 +34,8 @@ func (h *form) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		h.postHomeAddUser(w, r)
 	case "archive-home":
 		h.postHomeArchiveHome(w, r)
+	case "delete-division":
+		h.postHomeDeleteDivision(w, r)
 	default:
 		handlererror.Error(w, r, fmt.Errorf("unknown form ID: '%s'", formID))
 	}
@@ -114,6 +116,23 @@ func (h *form) postHomeArchiveHome(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := h.DB.Q.ArchiveHome(ctx, homeID); err != nil {
+		handlererror.Error(w, r, err)
+		return
+	}
+
+	request.RedirectToReferer(w, r)
+}
+
+func (h *form) postHomeDeleteDivision(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
+	divisionID, err := request.GetFormID(r, "division-id")
+	if err != nil {
+		handlererror.Error(w, r, err)
+		return
+	}
+
+	if err := h.DB.Q.DeleteDivision(ctx, divisionID); err != nil {
 		handlererror.Error(w, r, err)
 		return
 	}

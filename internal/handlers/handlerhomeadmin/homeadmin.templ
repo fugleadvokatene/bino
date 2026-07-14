@@ -69,6 +69,13 @@ templ HomesPage(
         // List of homes
         for _, division := range divisions {
             <h2 class="editable" data-action={division.URLSuffix("set-name")}>{division.Name}</h2>
+            if len(division.Homes) == 0 {
+                @templbase.Form(data, "/homes", "POST", "form-inline") {
+                    <input type="hidden" name="form-id" value="delete-division">
+                    <input type="hidden" name="division-id" value={division.ID}>
+                    <button type="submit" class="btn btn-warning mb-2 btn-sm">{data.Language.HomesDeleteDivision}</button>
+                }
+            }
             for _, home := range division.Homes {
                 @templbase.Card() {
                     <h3 class="editable" data-action={home.URLSuffix("set-name")}>{home.Name}</h3>

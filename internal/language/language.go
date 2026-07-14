@@ -187,6 +187,7 @@ type Language struct {
 	HomesCreateHomeNote             string
 	HomesCreateDivision             string
 	HomesCreateDivisionNote         string
+	HomesDeleteDivision             string
 	HomesMoveHomeToDivision         string
 	HomesEmptyHome                  string
 	HomesHomeName                   string
@@ -619,6 +620,7 @@ var NO = &Language{
 	HomesCreateHomeNote:             "Navnet er som regel navnet på en person, men det kan være flere personer i ett rehabhjem.",
 	HomesCreateDivision:             "Opprett ny avdeling",
 	HomesCreateDivisionNote:         "En avdeling er en samling rehabhjem innenfor et geografisk område.",
+	HomesDeleteDivision:             "Slett avdeling",
 	HomesMoveHomeToDivision:         "Flytt rehabhjem til en annen avdeling",
 	HomesEmptyHome:                  "Det er ingen brukere i dette rehabhjemmet.",
 	HomesHomeName:                   "Rehabhjem",
@@ -995,6 +997,7 @@ var EN = &Language{
 	HomesCreateHomeNote:             "The name is usually that of a person, but there can be multiple people in a rehab home.",
 	HomesCreateDivision:             "Create new division",
 	HomesCreateDivisionNote:         "A division is a collection of rehab homes within a geographical area.",
+	HomesDeleteDivision:             "Delete division",
 	HomesMoveHomeToDivision:         "Move rehab home to another division",
 	HomesEmptyHome:                  "There are no users in this rehab home.",
 	HomesHomeName:                   "Rehab home",
