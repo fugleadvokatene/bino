@@ -54,7 +54,9 @@ templ UserAdmin(data *request.CommonData, homes []model.Home, divisions []model.
                                     <div class="input-group">
                                         <select class="form-control form-select" id="access-level" name="access-level" placeholder={model.AccessLevelRehabber}>
                                             for _, al := range model.AccessLevelValues() {
-                                                <option value={int(al)} selected?={al == model.AccessLevelRehabber}>{data.Language.AccessLevels[al]}</option>
+                                                if al <= data.User.AccessLevel {
+                                                    <option value={int(al)} selected?={al == model.AccessLevelRehabber}>{data.Language.AccessLevels[al]}</option>
+                                                }
                                             }
                                         </select>
                                     </div>
@@ -94,7 +96,7 @@ templ UserAdmin(data *request.CommonData, homes []model.Home, divisions []model.
                                 <tr>
                                     <td>{inv.Email}</td>
                                     <td>{data.Language.FormatTimeAbsWithRelParen(inv.Expires)}</td>
-                                    <td>{int(inv.AccessLevel)} - {data.Language.AccessLevels[inv.AccessLevel]}</td>
+                                    <td>{data.Language.AccessLevels[inv.AccessLevel]}</td>
                                     <td>
                                         if inv.HomeID != 0 {
                                             <a href={model.HomeURL(inv.HomeID)}>{inv.HomeName}</a>
@@ -130,7 +132,21 @@ templ UserAdmin(data *request.CommonData, homes []model.Home, divisions []model.
                                 <td class="center">@templbase.Avatar(u)</td>
                                 <td><a href={templ.URL(u.URL())}>{u.Name}</a></td>
                                 <td>{u.Email}</td>
-                                <td>{int(u.AccessLevel)} - {data.Language.AccessLevels[u.AccessLevel]}</td>                            
+                                <td>
+                                    if u.ID != data.User.AppuserID && u.AccessLevel < data.User.AccessLevel {
+                                        @templbase.Form(data, u.URLSuffix("access-level"), "POST", "form-inline") {
+                                            <select class="form-control form-select form-select-sm" name="access-level" onchange="this.form.requestSubmit()">
+                                                for _, al := range model.AccessLevelValues() {
+                                                    if al <= data.User.AccessLevel {
+                                                        <option value={int(al)} selected?={al == u.AccessLevel}>{data.Language.AccessLevels[al]}</option>
+                                                    }
+                                                }
+                                            </select>
+                                        }
+                                    } else {
+                                        {data.Language.AccessLevels[u.AccessLevel]}
+                                    }
+                                </td>
                                 if data.User.HasCapability(model.CapDeleteUsers) {
                                     <td>
                                         if u.ID != data.User.AppuserID && u.AccessLevel < model.AccessLevelAdmin{

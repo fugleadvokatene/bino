@@ -20,33 +20,35 @@ type Language struct {
 	AccessLevels      map[model.AccessLevel]string
 	AllOfTheAbovePlus string
 
-	AdminDisplayName            string
-	AdminEmailAddress           string
-	AdminNewHomeForUser         string
-	AdminInviteToBino           string
-	AdminManageEvents           string
-	AdminManageGoogleDrive      string
-	AdminManageHomes            string
-	AdminManageSpecies          string
-	AdminManageStatuses         string
-	AdminManageInvites          string
-	AdminManageUsers            string
-	AdminScrubUserData          string
-	AdminScrubUserDataConfirm   string
-	AdminNukeUser               string
-	AdminNukeUserConfirm        string
-	AdminAbortedDueToWrongEmail string
-	AdminUserDeletionFailed     string
-	AdminUserWasDeleted         string
-	AdminExistingUsers          string
-	AdminInviteUsers            string
-	AdminInviteExpires          string
-	AdminPendingInvitations     string
-	AdminInvitationFailed       string
-	AdminInvitationOKNoEmail    string
-	AdminInviteCode             string
-	AdminRoot                   string
-	AdminDebug                  string
+	AdminDisplayName                  string
+	AdminEmailAddress                 string
+	AdminNewHomeForUser               string
+	AdminInviteToBino                 string
+	AdminManageEvents                 string
+	AdminManageGoogleDrive            string
+	AdminManageHomes                  string
+	AdminManageSpecies                string
+	AdminManageStatuses               string
+	AdminManageInvites                string
+	AdminManageUsers                  string
+	AdminScrubUserData                string
+	AdminScrubUserDataConfirm         string
+	AdminNukeUser                     string
+	AdminNukeUserConfirm              string
+	AdminAbortedDueToWrongEmail       string
+	AdminUserDeletionFailed           string
+	AdminUserWasDeleted               string
+	AdminExistingUsers                string
+	AdminInviteUsers                  string
+	AdminInviteExpires                string
+	AdminPendingInvitations           string
+	AdminInvitationFailed             string
+	AdminInvitationOKNoEmail          string
+	AdminInvitationAccessLevelTooHigh string
+	AdminAccessLevelChangeDenied      string
+	AdminInviteCode                   string
+	AdminRoot                         string
+	AdminDebug                        string
 
 	AuthLogOut string
 
@@ -457,33 +459,35 @@ var NO = &Language{
 	},
 	AllOfTheAbovePlus: "Alt det ovennevnte, pluss:",
 
-	AdminDisplayName:            "Navn",
-	AdminEmailAddress:           "Epostaddresse",
-	AdminNewHomeForUser:         "Lag nytt rehabhjem",
-	AdminInviteToBino:           "Inviter til Bino",
-	AdminManageEvents:           "Konfigurer hendelsestyper",
-	AdminManageGoogleDrive:      "Konfigurer Google Drive",
-	AdminManageHomes:            "Konfigurer rehabhjem",
-	AdminManageSpecies:          "Konfigurer arter",
-	AdminManageStatuses:         "Konfigurer statuser",
-	AdminManageInvites:          "Administrer invitasjoner",
-	AdminManageUsers:            "Administrer brukere",
-	AdminScrubUserData:          "Slett brukerdata",
-	AdminScrubUserDataConfirm:   "Skriv inn brukerens email-addresse for å bekrefte at du vil slette brukerdataen",
-	AdminNukeUser:               "Tilintetgjør bruker",
-	AdminNukeUserConfirm:        "Skriv inn brukerens email-addresse for å bekrefte at du vil tilintetgjøre brukeren (dette sletter også alt innhold brukeren har opprettet)",
-	AdminAbortedDueToWrongEmail: "Feil email-addresse innskrevet. Handlingen ble avbrutt.",
-	AdminUserDeletionFailed:     "Kunne ikke slette brukeren. Kontakt administrator.",
-	AdminUserWasDeleted:         "Brukeren ble slettet.",
-	AdminExistingUsers:          "Brukere i Bino",
-	AdminInviteUsers:            "Inviter brukere",
-	AdminInviteExpires:          "Utløper",
-	AdminPendingInvitations:     "Utsendte invitasjoner",
-	AdminInvitationFailed:       "Kunne ikke invitere brukeren. Kontakt administrator.",
-	AdminInvitationOKNoEmail:    "Eposten ble lagt til i listen, men det er ikke sendt ut en epost. Send personen en lenke til forsiden og be dem om å opprette en bruker.",
-	AdminInviteCode:             "Kode",
-	AdminRoot:                   "Verktøy",
-	AdminDebug:                  "Debug",
+	AdminDisplayName:                  "Navn",
+	AdminEmailAddress:                 "Epostaddresse",
+	AdminNewHomeForUser:               "Lag nytt rehabhjem",
+	AdminInviteToBino:                 "Inviter til Bino",
+	AdminManageEvents:                 "Konfigurer hendelsestyper",
+	AdminManageGoogleDrive:            "Konfigurer Google Drive",
+	AdminManageHomes:                  "Konfigurer rehabhjem",
+	AdminManageSpecies:                "Konfigurer arter",
+	AdminManageStatuses:               "Konfigurer statuser",
+	AdminManageInvites:                "Administrer invitasjoner",
+	AdminManageUsers:                  "Administrer brukere",
+	AdminScrubUserData:                "Slett brukerdata",
+	AdminScrubUserDataConfirm:         "Skriv inn brukerens email-addresse for å bekrefte at du vil slette brukerdataen",
+	AdminNukeUser:                     "Tilintetgjør bruker",
+	AdminNukeUserConfirm:              "Skriv inn brukerens email-addresse for å bekrefte at du vil tilintetgjøre brukeren (dette sletter også alt innhold brukeren har opprettet)",
+	AdminAbortedDueToWrongEmail:       "Feil email-addresse innskrevet. Handlingen ble avbrutt.",
+	AdminUserDeletionFailed:           "Kunne ikke slette brukeren. Kontakt administrator.",
+	AdminUserWasDeleted:               "Brukeren ble slettet.",
+	AdminExistingUsers:                "Brukere i Bino",
+	AdminInviteUsers:                  "Inviter brukere",
+	AdminInviteExpires:                "Utløper",
+	AdminPendingInvitations:           "Utsendte invitasjoner",
+	AdminInvitationFailed:             "Kunne ikke invitere brukeren. Kontakt administrator.",
+	AdminInvitationOKNoEmail:          "Eposten ble lagt til i listen, men det er ikke sendt ut en epost. Send personen en lenke til forsiden og be dem om å opprette en bruker.",
+	AdminInvitationAccessLevelTooHigh: "Du kan ikke invitere en bruker med et høyere tilgangsnivå enn ditt eget.",
+	AdminAccessLevelChangeDenied:      "Du kan bare endre tilgangsnivået til brukere med lavere tilgangsnivå enn deg selv, og bare opp til ditt eget tilgangsnivå.",
+	AdminInviteCode:                   "Kode",
+	AdminRoot:                         "Verktøy",
+	AdminDebug:                        "Debug",
 
 	AuthLogOut: "Logg ut",
 
@@ -846,33 +850,35 @@ var EN = &Language{
 	},
 	AllOfTheAbovePlus: "All of the above, and:",
 
-	AdminDisplayName:            "Name",
-	AdminEmailAddress:           "Email address",
-	AdminNewHomeForUser:         "New rehab home",
-	AdminInviteToBino:           "Invite to Bino",
-	AdminManageEvents:           "Manage event types",
-	AdminManageGoogleDrive:      "Configure Google Drive",
-	AdminManageHomes:            "Manage rehab homes",
-	AdminManageSpecies:          "Manage species",
-	AdminManageStatuses:         "Manage statuses",
-	AdminManageInvites:          "Invitations",
-	AdminManageUsers:            "Manage users",
-	AdminScrubUserData:          "Delete user data",
-	AdminScrubUserDataConfirm:   "Write the user's email address to confirm that you want to scrub all user data for this user",
-	AdminNukeUser:               "Destroy user",
-	AdminNukeUserConfirm:        "Write the user's email address to confirm that you want to destroy the user record (this also removes all content created by the user)",
-	AdminAbortedDueToWrongEmail: "Wrong email address. The action was cancelled.",
-	AdminUserDeletionFailed:     "Failed to delete the user. Contact site administrator.",
-	AdminUserWasDeleted:         "The user was deleted.",
-	AdminExistingUsers:          "Bino users",
-	AdminInviteUsers:            "Invite new users",
-	AdminInviteExpires:          "Expires",
-	AdminPendingInvitations:     "Pending invitations",
-	AdminInvitationFailed:       "Failed to invite user. Contact site administrator.",
-	AdminInvitationOKNoEmail:    "The user was added to the list of invited user. No email was sent; send them a link to the main page and ask them to log in.",
-	AdminInviteCode:             "Code",
-	AdminRoot:                   "Tools",
-	AdminDebug:                  "Debug",
+	AdminDisplayName:                  "Name",
+	AdminEmailAddress:                 "Email address",
+	AdminNewHomeForUser:               "New rehab home",
+	AdminInviteToBino:                 "Invite to Bino",
+	AdminManageEvents:                 "Manage event types",
+	AdminManageGoogleDrive:            "Configure Google Drive",
+	AdminManageHomes:                  "Manage rehab homes",
+	AdminManageSpecies:                "Manage species",
+	AdminManageStatuses:               "Manage statuses",
+	AdminManageInvites:                "Invitations",
+	AdminManageUsers:                  "Manage users",
+	AdminScrubUserData:                "Delete user data",
+	AdminScrubUserDataConfirm:         "Write the user's email address to confirm that you want to scrub all user data for this user",
+	AdminNukeUser:                     "Destroy user",
+	AdminNukeUserConfirm:              "Write the user's email address to confirm that you want to destroy the user record (this also removes all content created by the user)",
+	AdminAbortedDueToWrongEmail:       "Wrong email address. The action was cancelled.",
+	AdminUserDeletionFailed:           "Failed to delete the user. Contact site administrator.",
+	AdminUserWasDeleted:               "The user was deleted.",
+	AdminExistingUsers:                "Bino users",
+	AdminInviteUsers:                  "Invite new users",
+	AdminInviteExpires:                "Expires",
+	AdminPendingInvitations:           "Pending invitations",
+	AdminInvitationFailed:             "Failed to invite user. Contact site administrator.",
+	AdminInvitationOKNoEmail:          "The user was added to the list of invited user. No email was sent; send them a link to the main page and ask them to log in.",
+	AdminInvitationAccessLevelTooHigh: "You cannot invite a user with a higher access level than your own.",
+	AdminAccessLevelChangeDenied:      "You can only change the access level of users with a lower access level than your own, and only up to your own access level.",
+	AdminInviteCode:                   "Code",
+	AdminRoot:                         "Tools",
+	AdminDebug:                        "Debug",
 
 	AuthLogOut: "Log out",
 

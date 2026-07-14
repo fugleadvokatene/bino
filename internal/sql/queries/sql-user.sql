@@ -59,6 +59,12 @@ SET language_id = $2
 WHERE id = $1
 ;
 
+-- name: SetUserAccessLevel :exec
+UPDATE appuser
+SET access_level = $2
+WHERE id = $1
+;
+
 -- name: SetLoggingConsent :exec
 UPDATE appuser SET logging_consent = NOW() + sqlc.arg(period)::INT * INTERVAL '1 day'
 WHERE id = $1

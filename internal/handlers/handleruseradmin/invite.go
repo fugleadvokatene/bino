@@ -9,6 +9,7 @@ import (
 
 	"github.com/fugleadvokatene/bino/internal/db"
 	"github.com/fugleadvokatene/bino/internal/handlers/handlererror"
+	"github.com/fugleadvokatene/bino/internal/model"
 	"github.com/fugleadvokatene/bino/internal/request"
 	"github.com/fugleadvokatene/bino/internal/sql"
 	"github.com/jackc/pgx/v5/pgconn"
@@ -38,6 +39,12 @@ func (h *postInvite) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	accessLevel, err := request.GetFormID(r, "access-level")
 	if err != nil {
 		handlererror.Error(w, r, err)
+		return
+	}
+
+	if model.AccessLevel(accessLevel) > data.User.AccessLevel {
+		data.Error(data.Language.AdminInvitationAccessLevelTooHigh, fmt.Errorf("user with access level %d tried to invite a user with access level %d", data.User.AccessLevel, accessLevel))
+		request.Redirect(w, r, "/users")
 		return
 	}
 

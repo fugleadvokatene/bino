@@ -362,6 +362,22 @@ func (q *Queries) SetLoggingConsent(ctx context.Context, arg SetLoggingConsentPa
 	return err
 }
 
+const setUserAccessLevel = `-- name: SetUserAccessLevel :exec
+UPDATE appuser
+SET access_level = $2
+WHERE id = $1
+`
+
+type SetUserAccessLevelParams struct {
+	ID          int32
+	AccessLevel int32
+}
+
+func (q *Queries) SetUserAccessLevel(ctx context.Context, arg SetUserAccessLevelParams) error {
+	_, err := q.db.Exec(ctx, setUserAccessLevel, arg.ID, arg.AccessLevel)
+	return err
+}
+
 const setUserGDriveAccess = `-- name: SetUserGDriveAccess :exec
 UPDATE appuser
 SET has_gdrive_access = $2

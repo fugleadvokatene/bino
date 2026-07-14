@@ -36,6 +36,11 @@ func Routes(
 			Cap:     model.CapDeleteUsers,
 		},
 		{
+			Path:    "POST /user/{user}/access-level",
+			Handler: &postUserAccessLevel{DB: db},
+			Cap:     model.CapDeleteUsers,
+		},
+		{
 			// Invite-form
 			Path:    "POST /invite",
 			Handler: &postInvite{DB: db},
