@@ -14,10 +14,10 @@ templ SyslogPage(data *request.CommonData, entries []model.SysLogEntry, havePrev
         <h1>{data.Language.SystemLog}</h1>
         <div class="card p-2">
             if havePrev {
-                <a href={fmt.Sprintf("/syslog/%d", prevOffset)}>{data.Language.SyslogLater}</a>
+                <a href={templ.URL(fmt.Sprintf("/syslog/%d", prevOffset))}>{data.Language.SyslogLater}</a>
             }
             if haveNext {
-                <a href={fmt.Sprintf("/syslog/%d", nextOffset)}>{data.Language.SyslogEarlier}</a>
+                <a href={templ.URL(fmt.Sprintf("/syslog/%d", nextOffset))}>{data.Language.SyslogEarlier}</a>
             }
             <table class="table table-bordered table-sm table-striped">
             <thead>
