@@ -59,6 +59,25 @@ func (in GetFormerPatientsRow) ToModel() model.Patient {
 	}
 }
 
+func (in GetPastPatientsForHomeRow) ToModel() model.Patient {
+	return model.Patient{
+		ID:     in.ID,
+		Status: in.Status,
+		Name:   in.Name,
+		Species: model.Species{
+			Name: in.Species,
+		},
+		GoogleID:              in.GoogleID.String,
+		TimeCheckin:           in.TimeCheckin.Time,
+		TimeCheckout:          in.TimeCheckout.Time,
+		SuggestedGoogleID:     in.SuggestedGoogleID.String,
+		SuggestedJournalTitle: in.SuggestedJournalTitle.String,
+		CurrentHomeID:         in.CurrHomeID.Int32,
+		HasCurrentHome:        in.CurrHomeID.Valid,
+		JournalPending:        in.JournalPending,
+	}
+}
+
 func (in GetPatientWithSpeciesRow) ToModel() model.Patient {
 	return model.Patient{
 		ID:     in.ID,

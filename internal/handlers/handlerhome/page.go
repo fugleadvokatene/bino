@@ -50,6 +50,16 @@ func (h *page) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 	home.Patients = model.SliceToModel(patients)
 
+	pastPatients, err := h.DB.Q.GetPastPatientsForHome(ctx, sql.GetPastPatientsForHomeParams{
+		HomeID:     id,
+		LanguageID: commonData.Lang32(),
+	})
+	if err != nil {
+		handlererror.Error(w, r, err)
+		return
+	}
+	home.PastPatients = model.SliceToModel(pastPatients)
+
 	homes, err := h.DB.Q.GetHomes(ctx)
 	if err != nil {
 		handlererror.Error(w, r, err)

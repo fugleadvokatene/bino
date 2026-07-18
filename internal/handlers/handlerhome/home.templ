@@ -44,11 +44,55 @@ templ HomePage(ctx context.Context, data *request.CommonData, homes []model.Home
                     @handlerpatient.PatientCard(data, homes, patient)
                 }
             </div>
+
+            <h2>{data.Language.HomesPastPatients} ({len(self.PastPatients)})</h2>
+            @PastPatientsTable(data, homes, self.PastPatients)
         }
     }
 
     @templbase.JSModule(data, "home")
     @templbase.JSModule(data, "reorder-patients")
+}
+
+templ PastPatientsTable(data *request.CommonData, homes []model.Home, patients []model.Patient) {
+    <div class="card">
+        <table class="table table-striped table-bordered m-0">
+            <thead>
+                <tr>
+                    <th>{data.Language.GenericName}</th>
+                    <th>{data.Language.GenericSpecies}</th>
+                    <th>{data.Language.GenericStatus}</th>
+                </tr>
+            </thead>
+            <tbody>
+                for _, patient := range patients {
+                    <tr>
+                        <td><a href={templ.URL(patient.URL())}>{patient.Name}</a></td>
+                        <td>{patient.Species.Name}</td>
+                        <td>
+                            if patient.HasCurrentHome {
+                                for _, home := range homes {
+                                    if home.ID == patient.CurrentHomeID {
+                                        {data.Language.HomesPatientMovedTo} <a href={home.URL()}>{home.Name}</a>
+                                    }
+                                }
+                            } else {
+                                {data.Language.Status[model.Status(patient.Status)]}
+                                if model.IsCheckoutStatus[model.Status(patient.Status)] && !patient.TimeCheckout.IsZero() {
+                                    {" ("}{patient.TimeCheckout.Format("2006-01-02")}{")"}
+                                }
+                            }
+                        </td>
+                    </tr>
+                }
+                if len(patients) == 0 {
+                    <tr>
+                        <td class="center" colspan="3">{data.Language.GenericNotFound}</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
 }
 
 templ DateView(data *request.CommonData, dv *model.Date) {

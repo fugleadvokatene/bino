@@ -160,6 +160,30 @@ WHERE p.curr_home_id = $1
 ORDER BY p.sort_order, p.id
 ;
 
+-- name: GetPastPatientsForHome :many
+SELECT DISTINCT
+  p.id,
+  p.name,
+  p.curr_home_id,
+  p.status,
+  p.google_id,
+  p.time_checkin,
+  p.time_checkout,
+  COALESCE(sl.name, '???') AS species,
+  p.suggested_journal_title,
+  p.suggested_google_id,
+  p.journal_pending
+FROM patient AS p
+JOIN patient_event AS pe
+  ON pe.patient_id = p.id
+LEFT JOIN species_language AS sl
+  ON sl.species_id = p.species_id
+WHERE pe.home_id = $1
+  AND sl.language_id = $2
+  AND (p.curr_home_id IS NULL OR p.curr_home_id != $1)
+ORDER BY p.time_checkout DESC, p.name
+;
+
 -- name: SetPatientStatus :exec
 UPDATE patient
 SET status = $2

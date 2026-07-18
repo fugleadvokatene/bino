@@ -31,6 +31,7 @@ type Home struct {
 	// Optional
 	DivisionName        string
 	Patients            []Patient
+	PastPatients        []Patient
 	Users               []User
 	PreferredSpecies    []Species
 	NonPreferredSpecies []Species

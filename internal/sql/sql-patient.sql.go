@@ -447,6 +447,81 @@ func (q *Queries) GetFormerPatients(ctx context.Context, arg GetFormerPatientsPa
 	return items, nil
 }
 
+const getPastPatientsForHome = `-- name: GetPastPatientsForHome :many
+SELECT DISTINCT
+  p.id,
+  p.name,
+  p.curr_home_id,
+  p.status,
+  p.google_id,
+  p.time_checkin,
+  p.time_checkout,
+  COALESCE(sl.name, '???') AS species,
+  p.suggested_journal_title,
+  p.suggested_google_id,
+  p.journal_pending
+FROM patient AS p
+JOIN patient_event AS pe
+  ON pe.patient_id = p.id
+LEFT JOIN species_language AS sl
+  ON sl.species_id = p.species_id
+WHERE pe.home_id = $1
+  AND sl.language_id = $2
+  AND (p.curr_home_id IS NULL OR p.curr_home_id != $1)
+ORDER BY p.time_checkout DESC, p.name
+`
+
+type GetPastPatientsForHomeParams struct {
+	HomeID     int32
+	LanguageID int32
+}
+
+type GetPastPatientsForHomeRow struct {
+	ID                    int32
+	Name                  string
+	CurrHomeID            pgtype.Int4
+	Status                int32
+	GoogleID              pgtype.Text
+	TimeCheckin           pgtype.Timestamptz
+	TimeCheckout          pgtype.Timestamptz
+	Species               string
+	SuggestedJournalTitle pgtype.Text
+	SuggestedGoogleID     pgtype.Text
+	JournalPending        bool
+}
+
+func (q *Queries) GetPastPatientsForHome(ctx context.Context, arg GetPastPatientsForHomeParams) ([]GetPastPatientsForHomeRow, error) {
+	rows, err := q.db.Query(ctx, getPastPatientsForHome, arg.HomeID, arg.LanguageID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetPastPatientsForHomeRow
+	for rows.Next() {
+		var i GetPastPatientsForHomeRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.Name,
+			&i.CurrHomeID,
+			&i.Status,
+			&i.GoogleID,
+			&i.TimeCheckin,
+			&i.TimeCheckout,
+			&i.Species,
+			&i.SuggestedJournalTitle,
+			&i.SuggestedGoogleID,
+			&i.JournalPending,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getPatient = `-- name: GetPatient :one
 SELECT id, species_id, curr_home_id, name, status, google_id, sort_order, time_checkin, time_checkout, suggested_google_id, suggested_journal_title, journal_pending FROM patient
 WHERE id = $1

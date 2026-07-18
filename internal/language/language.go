@@ -201,6 +201,8 @@ type Language struct {
 	HomesViewHomes                  string
 	HomesUnassignedUsers            string
 	HomesPatients                   string
+	HomesPastPatients               string
+	HomesPatientMovedTo             string
 	HomesUsers                      string
 	HomeCapacity                    string
 	HomeCapacityInstruction         string
@@ -639,6 +641,8 @@ var NO = &Language{
 	HomesUnassignedUsers:            "Brukere som ikke er koblet til noe rehabhjem",
 	HomesViewHomes:                  "Rehabhjem",
 	HomesPatients:                   "Pasienter",
+	HomesPastPatients:               "Tidligere pasienter",
+	HomesPatientMovedTo:             "Flyttet til",
 	HomesUsers:                      "Brukere",
 	HomeCapacity:                    "Kapasitet",
 	HomeCapacityInstruction:         "Skriv inn hvor mange pasienter du har kapasitet til å ta, slik at andre vet om du har plass til flere eller trenger avlasting.",
@@ -1033,6 +1037,8 @@ var EN = &Language{
 	HomesUnassignedUsers:            "Users that are not associated with any rehab homes",
 	HomesViewHomes:                  "Rehab homes",
 	HomesPatients:                   "Patients",
+	HomesPastPatients:               "Former patients",
+	HomesPatientMovedTo:             "Moved to",
 	HomesUsers:                      "Users",
 	HomeCapacity:                    "Capacity",
 	HomeCapacityInstruction:         "Set the number of patients you can take, so that others can see if you have room for another or if you have too many.",
