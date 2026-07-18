@@ -181,7 +181,7 @@ LEFT JOIN species_language AS sl
 WHERE pe.home_id = $1
   AND sl.language_id = $2
   AND (p.curr_home_id IS NULL OR p.curr_home_id != $1)
-ORDER BY p.time_checkout DESC, p.name
+ORDER BY p.time_checkin DESC
 ;
 
 -- name: SetPatientStatus :exec
