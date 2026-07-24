@@ -21,6 +21,7 @@ type Appuser struct {
 	AccessLevel     int32
 	LanguageID      pgtype.Int4
 	HomeID          pgtype.Int4
+	Deactivated     bool
 }
 
 type Division struct {

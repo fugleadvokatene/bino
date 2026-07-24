@@ -44,6 +44,7 @@ type Availability int
 // CreatePatientJournal,
 // ManageSpecies,
 // ManageUsers,
+// DeactivateUsers,
 // DeleteUsers,
 // ViewAdminTools,
 // ViewGDriveSettings,

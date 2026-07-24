@@ -124,6 +124,17 @@ func (h *oauthCallbackHandler) ServeHTTP(
 		return
 	}
 
+	// User must not be deactivated
+	user, err := h.auth.db.Q.GetUser(ctx, userID)
+	if err != nil {
+		http.Error(w, "loading user failed", http.StatusInternalServerError)
+		return
+	}
+	if user.Deactivated {
+		http.Error(w, fmt.Sprintf("Brukeren med email-addressen %s er deaktivert. Send melding til administrator", claims.Email), http.StatusUnauthorized)
+		return
+	}
+
 	// Create session
 	sessionID := rand.Text()
 	if err := h.auth.db.Q.InsertSession(ctx, sql.InsertSessionParams{

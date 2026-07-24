@@ -41,6 +41,16 @@ func Routes(
 			Cap:     model.CapDeleteUsers,
 		},
 		{
+			Path:    "POST /user/{user}/deactivate",
+			Handler: &postUserDeactivate{DB: db, Deactivated: true},
+			Cap:     model.CapDeactivateUsers,
+		},
+		{
+			Path:    "POST /user/{user}/activate",
+			Handler: &postUserDeactivate{DB: db, Deactivated: false},
+			Cap:     model.CapDeactivateUsers,
+		},
+		{
 			// Invite-form
 			Path:    "POST /invite",
 			Handler: &postInvite{DB: db},

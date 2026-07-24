@@ -159,6 +159,7 @@ func (user Appuser) ToModel() model.User {
 		AvatarURL:    user.AvatarUrl.String,
 		HasAvatarURL: user.AvatarUrl.Valid,
 		AccessLevel:  model.AccessLevel(user.AccessLevel),
+		Deactivated:  user.Deactivated,
 		LanguageID:   user.LanguageID.Int32,
 		HomeID:       user.HomeID.Int32,
 	}

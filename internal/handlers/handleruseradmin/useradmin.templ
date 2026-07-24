@@ -131,9 +131,7 @@ templ UserAdmin(data *request.CommonData, homes []model.Home, divisions []model.
                             <th>{data.Language.AdminDisplayName}</th>
                             <th>{data.Language.AdminEmailAddress}</th>
                             <th>{data.Language.AccessLevel}</th>
-                            if data.User.HasCapability(model.CapDeleteUsers) {
-                                <th>{data.Language.GenericDelete}</th>
-                            }
+                            <th>{data.Language.AdminOffboarding}</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -159,20 +157,38 @@ templ UserAdmin(data *request.CommonData, homes []model.Home, divisions []model.
                                         {data.Language.AccessLevels[u.AccessLevel]}
                                     }
                                 </td>
-                                if data.User.HasCapability(model.CapDeleteUsers) {
-                                    if u.ID != data.User.AppuserID && u.AccessLevel < model.AccessLevelAdmin{
-                                        <td class="d-flex flex-column gap-1">
-                                                <a class="btn btn-danger btn-sm" href={templ.URL(u.URLSuffix("confirm-scrub"))}>
-                                                    {data.Language.AdminScrubUserData}
-                                                </a>
-                                                <a class="btn btn-danger btn-sm" href={templ.URL(u.URLSuffix("confirm-nuke"))}>
-                                                    {data.Language.AdminNukeUser}
-                                                </a>
-                                        </td>
+                                <td class="d-flex flex-column gap-1">
+                                    if data.User.HasCapability(model.CapDeactivateUsers) && u.ID != data.User.AppuserID && u.AccessLevel < data.User.AccessLevel {
+                                        if u.Deactivated {
+                                            @templbase.SingleButtonForm(data, u.URLSuffix("activate"), data.Language.AdminReactivateUser, "POST", "btn-success w-100")
+                                        } else {
+                                            @templbase.SingleButtonForm(data, u.URLSuffix("deactivate"), data.Language.AdminDeactivateUser, "POST", "btn-warning w-100")
+                                        }
                                     } else {
-                                        <td></td>
+                                        if u.Deactivated {
+                                            {data.Language.AdminUserStatusDeactivated}
+                                        } else {
+                                            {data.Language.AdminUserStatusActive}
+                                        }
                                     }
-                                }
+                                    if data.User.HasCapability(model.CapDeleteUsers) && u.ID != data.User.AppuserID && u.AccessLevel < model.AccessLevelAdmin {
+                                        if u.Deactivated {
+                                            <a class="btn btn-danger btn-sm w-100" href={templ.URL(u.URLSuffix("confirm-scrub"))}>
+                                                {data.Language.AdminScrubUserData}
+                                            </a>
+                                            <a class="btn btn-danger btn-sm w-100" href={templ.URL(u.URLSuffix("confirm-nuke"))}>
+                                                {data.Language.AdminNukeUser}
+                                            </a>
+                                        } else {
+                                            <a class="btn btn-danger btn-sm w-100 disabled" aria-disabled="true" tabindex="-1">
+                                                {data.Language.AdminScrubUserData}
+                                            </a>
+                                            <a class="btn btn-danger btn-sm w-100 disabled" aria-disabled="true" tabindex="-1">
+                                                {data.Language.AdminNukeUser}
+                                            </a>
+                                        }
+                                    }
+                                </td>
                             </tr>
                         }
                     </tbody>

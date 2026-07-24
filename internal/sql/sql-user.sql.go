@@ -87,7 +87,7 @@ func (q *Queries) DeleteSessionsForUser(ctx context.Context, appuserID int32) er
 }
 
 const getAppusers = `-- name: GetAppusers :many
-SELECT id, display_name, google_sub, email, logging_consent, avatar_url, has_gdrive_access, access_level, language_id, home_id
+SELECT id, display_name, google_sub, email, logging_consent, avatar_url, has_gdrive_access, access_level, language_id, home_id, deactivated
 FROM appuser
 ORDER BY id
 `
@@ -112,6 +112,7 @@ func (q *Queries) GetAppusers(ctx context.Context) ([]Appuser, error) {
 			&i.AccessLevel,
 			&i.LanguageID,
 			&i.HomeID,
+			&i.Deactivated,
 		); err != nil {
 			return nil, err
 		}
@@ -124,7 +125,7 @@ func (q *Queries) GetAppusers(ctx context.Context) ([]Appuser, error) {
 }
 
 const getAppusersForHome = `-- name: GetAppusersForHome :many
-SELECT id, display_name, google_sub, email, logging_consent, avatar_url, has_gdrive_access, access_level, language_id, home_id
+SELECT id, display_name, google_sub, email, logging_consent, avatar_url, has_gdrive_access, access_level, language_id, home_id, deactivated
 FROM appuser
 WHERE home_id = $1
 `
@@ -149,6 +150,7 @@ func (q *Queries) GetAppusersForHome(ctx context.Context, homeID pgtype.Int4) ([
 			&i.AccessLevel,
 			&i.LanguageID,
 			&i.HomeID,
+			&i.Deactivated,
 		); err != nil {
 			return nil, err
 		}
@@ -161,7 +163,7 @@ func (q *Queries) GetAppusersForHome(ctx context.Context, homeID pgtype.Int4) ([
 }
 
 const getAppusersInDivision = `-- name: GetAppusersInDivision :many
-SELECT au.id, au.display_name, au.google_sub, au.email, au.logging_consent, au.avatar_url, au.has_gdrive_access, au.access_level, au.language_id, au.home_id
+SELECT au.id, au.display_name, au.google_sub, au.email, au.logging_consent, au.avatar_url, au.has_gdrive_access, au.access_level, au.language_id, au.home_id, au.deactivated
 FROM appuser AS au
 LEFT JOIN home AS h
   ON h.id = au.home_id
@@ -189,6 +191,7 @@ func (q *Queries) GetAppusersInDivision(ctx context.Context, division int32) ([]
 			&i.AccessLevel,
 			&i.LanguageID,
 			&i.HomeID,
+			&i.Deactivated,
 		); err != nil {
 			return nil, err
 		}
@@ -243,7 +246,7 @@ func (q *Queries) GetHomeWithDataForUser(ctx context.Context, id int32) (Home, e
 }
 
 const getUser = `-- name: GetUser :one
-SELECT id, display_name, google_sub, email, logging_consent, avatar_url, has_gdrive_access, access_level, language_id, home_id
+SELECT id, display_name, google_sub, email, logging_consent, avatar_url, has_gdrive_access, access_level, language_id, home_id, deactivated
 FROM appuser
 WHERE id = $1
 `
@@ -262,6 +265,7 @@ func (q *Queries) GetUser(ctx context.Context, id int32) (Appuser, error) {
 		&i.AccessLevel,
 		&i.LanguageID,
 		&i.HomeID,
+		&i.Deactivated,
 	)
 	return i, err
 }
@@ -375,6 +379,22 @@ type SetUserAccessLevelParams struct {
 
 func (q *Queries) SetUserAccessLevel(ctx context.Context, arg SetUserAccessLevelParams) error {
 	_, err := q.db.Exec(ctx, setUserAccessLevel, arg.ID, arg.AccessLevel)
+	return err
+}
+
+const setUserDeactivated = `-- name: SetUserDeactivated :exec
+UPDATE appuser
+SET deactivated = $2
+WHERE id = $1
+`
+
+type SetUserDeactivatedParams struct {
+	ID          int32
+	Deactivated bool
+}
+
+func (q *Queries) SetUserDeactivated(ctx context.Context, arg SetUserDeactivatedParams) error {
+	_, err := q.db.Exec(ctx, setUserDeactivated, arg.ID, arg.Deactivated)
 	return err
 }
 

@@ -46,6 +46,14 @@ type Language struct {
 	AdminInvitationOKNoEmail          string
 	AdminInvitationAccessLevelTooHigh string
 	AdminAccessLevelChangeDenied      string
+	AdminDeactivateUser               string
+	AdminReactivateUser               string
+	AdminUserStatusActive             string
+	AdminUserStatusDeactivated        string
+	AdminOffboarding                  string
+	AdminUserDeactivationFailed       string
+	AdminUserWasDeactivated           string
+	AdminUserWasActivated             string
 	AdminNewHomeNameRequired          string
 	AdminInviteCode                   string
 	AdminRoot                         string
@@ -488,6 +496,14 @@ var NO = &Language{
 	AdminInvitationOKNoEmail:          "Eposten ble lagt til i listen, men det er ikke sendt ut en epost. Send personen en lenke til forsiden og be dem om å opprette en bruker.",
 	AdminInvitationAccessLevelTooHigh: "Du kan ikke invitere en bruker med et høyere tilgangsnivå enn ditt eget.",
 	AdminAccessLevelChangeDenied:      "Du kan bare endre tilgangsnivået til brukere med lavere tilgangsnivå enn deg selv, og bare opp til ditt eget tilgangsnivå.",
+	AdminDeactivateUser:               "Deaktiver",
+	AdminReactivateUser:               "Reaktiver",
+	AdminUserStatusActive:             "Aktiv",
+	AdminUserStatusDeactivated:        "Deaktivert",
+	AdminUserDeactivationFailed:       "Kunne ikke endre status for brukeren. Kontakt administrator.",
+	AdminUserWasDeactivated:           "Brukeren ble deaktivert og kan ikke lenger logge inn.",
+	AdminUserWasActivated:             "Brukeren ble aktivert og kan logge inn igjen.",
+	AdminOffboarding:                  "Utmelding",
 	AdminNewHomeNameRequired:          "Du må gi det nye rehabhjemmet et navn.",
 	AdminInviteCode:                   "Kode",
 	AdminRoot:                         "Verktøy",
@@ -882,6 +898,14 @@ var EN = &Language{
 	AdminInvitationOKNoEmail:          "The user was added to the list of invited user. No email was sent; send them a link to the main page and ask them to log in.",
 	AdminInvitationAccessLevelTooHigh: "You cannot invite a user with a higher access level than your own.",
 	AdminAccessLevelChangeDenied:      "You can only change the access level of users with a lower access level than your own, and only up to your own access level.",
+	AdminDeactivateUser:               "Deactivate",
+	AdminReactivateUser:               "Reactivate",
+	AdminUserStatusActive:             "Active",
+	AdminUserStatusDeactivated:        "Deactivated",
+	AdminUserDeactivationFailed:       "Failed to change the user's status. Contact site administrator.",
+	AdminUserWasDeactivated:           "The user was deactivated and can no longer log in.",
+	AdminUserWasActivated:             "The user was activated and can log in again.",
+	AdminOffboarding:                  "Offboarding",
 	AdminNewHomeNameRequired:          "You must give the new rehab home a name.",
 	AdminInviteCode:                   "Code",
 	AdminRoot:                         "Tools",

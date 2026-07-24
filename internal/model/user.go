@@ -11,6 +11,7 @@ type User struct {
 	AvatarURL    string
 	HasAvatarURL bool
 	AccessLevel  AccessLevel
+	Deactivated  bool
 	LanguageID   int32
 	HomeID       int32
 

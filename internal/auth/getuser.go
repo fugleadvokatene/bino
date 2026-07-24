@@ -82,6 +82,9 @@ func GetUser(
 	if err != nil {
 		return sql.Appuser{}, sql.Session{}, fmt.Errorf("database error: %w", err)
 	}
+	if user.Deactivated {
+		return sql.Appuser{}, sql.Session{}, fmt.Errorf("user %d is deactivated", user.ID)
+	}
 
 	return user, session, nil
 }
