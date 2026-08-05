@@ -32,6 +32,11 @@ func Routes(
 			Cap:     model.CapManageOwnPatients,
 		},
 		{
+			Path:    "POST /patient/{patient}/undo-checkout",
+			Handler: &undoCheckout{DB: db},
+			Cap:     model.CapManageOwnPatients,
+		},
+		{
 			Path:    "POST /patient/{patient}/delete",
 			Handler: &delete_{DB: db},
 			Cap:     model.CapHardDeletePatient,

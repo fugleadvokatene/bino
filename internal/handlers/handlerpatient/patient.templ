@@ -62,14 +62,15 @@ templ PatientPage(
             </tbody>
             </table>
 
-            @handlerschedule.PatientScheduleWidget(data, patient.ID, schedules, templates)
-
             <h2>{data.Language.GenericUpdate}</h2>
             <table class="patient-table table table-bordered mb-2">
                 <tbody>
                     @PatientJournalUpdate(data, patient)
 
                     if model.IsCheckoutStatus[model.Status(patient.Status)] {
+                        if patient.CurrentHomeID == 0 {
+                            @PatientUndoCheckout(data, patient)
+                        }
                         if data.User.HasCapability(model.CapHardDeletePatient) {
                             @PatientHardDelete(data, patient)
                         }
@@ -79,6 +80,8 @@ templ PatientPage(
                     }
                 </tbody>
             </table>
+
+            @handlerschedule.PatientScheduleWidget(data, patient.ID, schedules, templates)
 
             if patient.GoogleID != "" {
                 <h2>{data.Language.GenericJournal}</h2>
@@ -122,6 +125,21 @@ templ PatientHardDelete(data *request.CommonData, patient model.Patient) {
     <th class="w-25">{data.Language.GenericDelete}</th>
     <td>
         @PatientHardDeleteButton(data, patient)
+    </td>
+    </tr>
+}
+
+templ PatientUndoCheckout(data *request.CommonData, patient model.Patient) {
+    <tr>
+    <th class="w-25">{data.Language.DashboardUndoCheckout}</th>
+    <td>
+        @templbase.SingleButtonForm(
+            data,
+            patient.URLSuffix("undo-checkout"),
+            data.Language.DashboardUndoCheckout,
+            "POST",
+            "btn-warning",
+        )
     </td>
     </tr>
 }

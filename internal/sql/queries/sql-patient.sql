@@ -236,3 +236,9 @@ SET time_checkout = $2
 WHERE id = $1
 ;
 
+-- name: UndoCheckoutPatient :exec
+UPDATE patient
+SET time_checkout = NULL
+WHERE id = $1
+;
+

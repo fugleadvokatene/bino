@@ -768,6 +768,17 @@ func (q *Queries) SuggestJournal(ctx context.Context, arg SuggestJournalParams) 
 	return err
 }
 
+const undoCheckoutPatient = `-- name: UndoCheckoutPatient :exec
+UPDATE patient
+SET time_checkout = NULL
+WHERE id = $1
+`
+
+func (q *Queries) UndoCheckoutPatient(ctx context.Context, id int32) error {
+	_, err := q.db.Exec(ctx, undoCheckoutPatient, id)
+	return err
+}
+
 const updatePatientSortOrder = `-- name: UpdatePatientSortOrder :exec
 UPDATE patient as p
 SET sort_order = v.sort_order

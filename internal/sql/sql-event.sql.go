@@ -311,6 +311,31 @@ func (q *Queries) GetFirstEventOfTypeForPatient(ctx context.Context, arg GetFirs
 	return time, err
 }
 
+const getLastEventForPatient = `-- name: GetLastEventForPatient :one
+SELECT
+    pe.id, pe.patient_id, pe.home_id, pe.note, pe.event_id, pe.time, pe.status, pe.appuser_id
+FROM patient_event AS pe
+WHERE pe.patient_id = $1
+ORDER BY pe.time DESC, pe.id DESC
+LIMIT 1
+`
+
+func (q *Queries) GetLastEventForPatient(ctx context.Context, patientID int32) (PatientEvent, error) {
+	row := q.db.QueryRow(ctx, getLastEventForPatient, patientID)
+	var i PatientEvent
+	err := row.Scan(
+		&i.ID,
+		&i.PatientID,
+		&i.HomeID,
+		&i.Note,
+		&i.EventID,
+		&i.Time,
+		&i.Status,
+		&i.AppuserID,
+	)
+	return i, err
+}
+
 const numEvents = `-- name: NumEvents :one
 SELECT COUNT(*) AS n FROM patient_event
 `

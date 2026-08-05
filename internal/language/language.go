@@ -73,6 +73,7 @@ type Language struct {
 	DashboardGoToJournal           string
 	DashboardGoToPatientPage       string
 	DashboardCheckOut              string
+	DashboardUndoCheckout          string
 	DashboardSearch                string
 	DashboardSearchExplanation     string
 	DashboardSearchFilter          string
@@ -528,6 +529,7 @@ var NO = &Language{
 	DashboardGoToJournal:           "Til journal i GDrive",
 	DashboardGoToPatientPage:       "Til pasientside",
 	DashboardCheckOut:              "Sjekk ut",
+	DashboardUndoCheckout:          "Angre utsjekk",
 	DashboardSearch:                "Søk på pasienter",
 	DashboardSearchExplanation:     "Skriv i tekstboksten under for å finne pasienter basert på navn eller art.",
 	DashboardSearchFilter:          "Filtrer rehabhjem",
@@ -748,12 +750,12 @@ var NO = &Language{
 	Event: map[model.EventID]string{
 		model.EventIDUnknown:                        "Ukjent",
 		model.EventIDRegistered:                     "Registrert",
-		model.EventIDAdopted:                        "Adoptert",
-		model.EventIDReleased:                       "Sluppet fri",
+		model.EventIDAdopted:                        "Sjekket ut som adoptert",
+		model.EventIDReleased:                       "Sjekket ut som sluppet fri",
 		model.EventIDTransferredToOtherHome:         "Overført",
-		model.EventIDTransferredOutsideOrganization: "Overført til annen organisasjon",
-		model.EventIDDied:                           "Døde",
-		model.EventIDEuthanized:                     "Avlivet",
+		model.EventIDTransferredOutsideOrganization: "Sjekket ut som overført til annen organisasjon",
+		model.EventIDDied:                           "Sjekket ut som død",
+		model.EventIDEuthanized:                     "Sjekket ut som avlivet",
 		model.EventIDStatusChanged:                  "Endret status",
 		model.EventIDDeleted:                        "Slettet",
 		model.EventIDNameChanged:                    "Endret navn",
@@ -761,6 +763,7 @@ var NO = &Language{
 		model.EventIDJournalAttached:                "Koblet til journal i Google Drive",
 		model.EventIDJournalDetached:                "Koblet fra journal i Google Drive",
 		model.EventIDSpeciesChanged:                 "Endret art",
+		model.EventIDUndidCheckout:                  "Angret utsjekk",
 	},
 
 	CapabilitiesLink:              "Les om brukertilganger i Bino",
@@ -935,6 +938,7 @@ var EN = &Language{
 	DashboardGoToJournal:           "Go to journal in GDrive",
 	DashboardGoToPatientPage:       "Go to patient page",
 	DashboardCheckOut:              "Checkout",
+	DashboardUndoCheckout:          "Undo checkout",
 	DashboardSearch:                "Search for patients",
 	DashboardSearchExplanation:     "Write in the text box below to find patients based on name or species.",
 	DashboardSearchFilter:          "Filter homes",
@@ -1154,12 +1158,12 @@ var EN = &Language{
 	Event: map[model.EventID]string{
 		model.EventIDUnknown:                        "Unknown",
 		model.EventIDRegistered:                     "Registered",
-		model.EventIDAdopted:                        "Adopted",
-		model.EventIDReleased:                       "Released",
+		model.EventIDAdopted:                        "Checked out as adopted",
+		model.EventIDReleased:                       "Checked out as released",
 		model.EventIDTransferredToOtherHome:         "Transferred",
-		model.EventIDTransferredOutsideOrganization: "Transferred outside of organisation",
-		model.EventIDDied:                           "Died",
-		model.EventIDEuthanized:                     "Euthanized",
+		model.EventIDTransferredOutsideOrganization: "Checked out as transferred outside of organisation",
+		model.EventIDDied:                           "Checked out as dead",
+		model.EventIDEuthanized:                     "Checked out as euthanized",
 		model.EventIDStatusChanged:                  "Status changed",
 		model.EventIDDeleted:                        "Deleted",
 		model.EventIDNameChanged:                    "Name changed",
@@ -1167,6 +1171,7 @@ var EN = &Language{
 		model.EventIDJournalAttached:                "Linked journal",
 		model.EventIDJournalDetached:                "Unlinked journal",
 		model.EventIDSpeciesChanged:                 "Changed species",
+		model.EventIDUndidCheckout:                  "Undid checkout",
 	},
 
 	CapabilitiesHeader:            "Access levels and capabilities",
@@ -1570,6 +1575,17 @@ func (l *Language) CheckoutSuccessful(name string, event model.EventID) string {
 		fallthrough
 	default:
 		return fmt.Sprintf("%s was checked out: %s. %s", name, l.Event[event], l.ReminderUpdateJournal)
+	}
+}
+
+func (l *Language) UndoCheckoutSuccessful(name string) string {
+	switch l.ID {
+	case model.LanguageIDNO:
+		return fmt.Sprintf("Utsjekk av %s ble angret. %s", name, l.ReminderUpdateJournal)
+	case model.LanguageIDEN:
+		fallthrough
+	default:
+		return fmt.Sprintf("Checkout of %s was undone. %s", name, l.ReminderUpdateJournal)
 	}
 }
 

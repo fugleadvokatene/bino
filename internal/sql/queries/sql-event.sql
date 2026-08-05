@@ -73,6 +73,15 @@ WHERE pe.time >= @range_begin
 ORDER BY pe.time
 ;
 
+-- name: GetLastEventForPatient :one
+SELECT
+    pe.*
+FROM patient_event AS pe
+WHERE pe.patient_id = $1
+ORDER BY pe.time DESC, pe.id DESC
+LIMIT 1
+;
+
 -- name: GetFirstEventOfTypeForPatient :one
 SELECT
   pe.time
