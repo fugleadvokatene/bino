@@ -23,6 +23,8 @@ if (matchMedia('(width >= 1000px)').matches) {
   }
 
   lists.forEach((list) => {
+    if (list.dataset.autoSort === 'true') return
+
     new Sortable(list, {
       handle: '.card-gripper',
       animation: 0,

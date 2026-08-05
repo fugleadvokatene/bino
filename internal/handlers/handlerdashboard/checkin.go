@@ -102,9 +102,16 @@ func (h *checkin) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if cfg, err := h.DB.GetHomeConfig(ctx, fields["home"]); err == nil && cfg.TaskManagement {
-		if err := handlerschedule.CreateStandardTasksForPatient(ctx, h.DB, patientID); err != nil {
-			slog.Warn("creating standard tasks on checkin", "error", err)
+	if cfg, err := h.DB.GetHomeConfig(ctx, fields["home"]); err == nil {
+		if cfg.TaskManagement {
+			if err := handlerschedule.CreateStandardTasksForPatient(ctx, h.DB, patientID); err != nil {
+				slog.Warn("creating standard tasks on checkin", "error", err)
+			}
+		}
+		if cfg.PatientAutoSort {
+			if err := h.DB.ApplyPatientSort(ctx, fields["home"], commonData.Lang32()); err != nil {
+				slog.Warn("applying patient sort on checkin", "error", err)
+			}
 		}
 	}
 

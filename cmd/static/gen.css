@@ -12618,6 +12618,10 @@ pre {
   }
 }
 
+.dashboard-patient-list[data-auto-sort=true] .card-gripper {
+  display: none !important;
+}
+
 .sortable-fallback {
   opacity: 0;
 }

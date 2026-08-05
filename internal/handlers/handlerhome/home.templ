@@ -39,7 +39,8 @@ templ HomePage(ctx context.Context, data *request.CommonData, homes []model.Home
             }
 
             <h2>{data.Language.HomesPatients} ({len(self.Patients)})</h2>
-            <div class="dashboard-patient-list" data-home={self.ID}>
+            @PatientSortForm(data, self)
+            <div class="dashboard-patient-list" data-home={self.ID} data-auto-sort={fmt.Sprintf("%t", self.Config.PatientAutoSort)}>
                 for _, patient := range self.Patients {
                     @handlerpatient.PatientCard(data, homes, patient)
                 }
@@ -52,6 +53,32 @@ templ HomePage(ctx context.Context, data *request.CommonData, homes []model.Home
 
     @templbase.JSModule(data, "home")
     @templbase.JSModule(data, "reorder-patients")
+}
+
+templ PatientSortForm(data *request.CommonData, view *model.Home) {
+    @templbase.Form(
+        data,
+        view.URLSuffix("set-patient-sort"),
+        "POST",
+        "mb-2",
+    ) {
+        <div class="btn-group btn-group-sm" role="group" aria-label={data.Language.HomePatientSort}>
+            <input type="radio" class="btn-check" autocomplete="off" name="mode" id={FormID("", "sort-mode-manual", view.ID)} value={model.PatientSortModeManual} checked?={view.Config.PatientSortMode()==model.PatientSortModeManual} onchange="this.form.requestSubmit()"/>
+            <label class="btn btn-outline-secondary" for={FormID("", "sort-mode-manual", view.ID)}>{data.Language.HomePatientSortManual}</label>
+
+            <input type="radio" class="btn-check" autocomplete="off" name="mode" id={FormID("", "sort-mode-newest", view.ID)} value={model.PatientSortModeNewest} checked?={view.Config.PatientSortMode()==model.PatientSortModeNewest} onchange="this.form.requestSubmit()"/>
+            <label class="btn btn-outline-secondary" for={FormID("", "sort-mode-newest", view.ID)}>{data.Language.HomePatientSortNewest}</label>
+
+            <input type="radio" class="btn-check" autocomplete="off" name="mode" id={FormID("", "sort-mode-oldest", view.ID)} value={model.PatientSortModeOldest} checked?={view.Config.PatientSortMode()==model.PatientSortModeOldest} onchange="this.form.requestSubmit()"/>
+            <label class="btn btn-outline-secondary" for={FormID("", "sort-mode-oldest", view.ID)}>{data.Language.HomePatientSortOldest}</label>
+
+            <input type="radio" class="btn-check" autocomplete="off" name="mode" id={FormID("", "sort-mode-species", view.ID)} value={model.PatientSortModeSpecies} checked?={view.Config.PatientSortMode()==model.PatientSortModeSpecies} onchange="this.form.requestSubmit()"/>
+            <label class="btn btn-outline-secondary" for={FormID("", "sort-mode-species", view.ID)}>{data.Language.GenericSpecies} {data.Language.HomePatientSortAlpha}</label>
+
+            <input type="radio" class="btn-check" autocomplete="off" name="mode" id={FormID("", "sort-mode-name", view.ID)} value={model.PatientSortModeName} checked?={view.Config.PatientSortMode()==model.PatientSortModeName} onchange="this.form.requestSubmit()"/>
+            <label class="btn btn-outline-secondary" for={FormID("", "sort-mode-name", view.ID)}>{data.Language.GenericName} {data.Language.HomePatientSortAlpha}</label>
+        </div>
+    }
 }
 
 templ PastPatientsTable(data *request.CommonData, homes []model.Home, patients []model.Patient) {

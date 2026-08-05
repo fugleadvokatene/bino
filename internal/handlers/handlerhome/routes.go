@@ -31,6 +31,11 @@ func Routes(
 			Cap:     model.CapManageOwnHomes,
 		},
 		{
+			Path:    "POST /home/{home}/set-patient-sort",
+			Handler: &setPatientSort{DB: db},
+			Cap:     model.CapManageOwnHomes,
+		},
+		{
 			Path:    "POST /home/{home}/species/add",
 			Handler: &addPreferredSpecies{DB: db},
 			Cap:     model.CapManageOwnHomes,

@@ -6,6 +6,7 @@ import (
 
 	"github.com/fugleadvokatene/bino/internal/model"
 	"github.com/fugleadvokatene/bino/internal/sql"
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 func (db *Database) Homes(ctx context.Context, division int32) ([]model.Home, error) {
@@ -73,4 +74,36 @@ func (db *Database) GetHomeConfig(ctx context.Context, homeID int32) (model.Home
 		return model.HomeConfig{}, err
 	}
 	return settingsToConfig(rows), nil
+}
+
+// ApplyPatientSort re-sorts a home's current patients according to its stored
+// sort preference and persists the result as the patients' sort_order.
+func (db *Database) ApplyPatientSort(ctx context.Context, homeID int32, languageID int32) error {
+	cfg, err := db.GetHomeConfig(ctx, homeID)
+	if err != nil {
+		return err
+	}
+
+	rows, err := db.Q.GetCurrentPatientsForHome(ctx, sql.GetCurrentPatientsForHomeParams{
+		CurrHomeID: pgtype.Int4{Int32: homeID, Valid: true},
+		LanguageID: languageID,
+	})
+	if err != nil {
+		return err
+	}
+
+	patients := model.SliceToModel(rows)
+	model.SortPatients(patients, cfg.PatientSortField, cfg.PatientSortDirection)
+
+	ids := make([]int32, len(patients))
+	orders := make([]int32, len(patients))
+	for i, p := range patients {
+		ids[i] = p.ID
+		orders[i] = int32(i)
+	}
+
+	return db.Q.UpdatePatientSortOrder(ctx, sql.UpdatePatientSortOrderParams{
+		Ids:    ids,
+		Orders: orders,
+	})
 }

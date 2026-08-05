@@ -7,18 +7,63 @@ import (
 	"github.com/a-h/templ"
 )
 
+const (
+	PatientSortFieldCheckinDate = "checkin"
+	PatientSortFieldSpecies     = "species"
+	PatientSortFieldName        = "name"
+
+	SortDirectionAscending  = "asc"
+	SortDirectionDescending = "desc"
+
+	PatientSortModeManual  = "manual"
+	PatientSortModeNewest  = "newest"
+	PatientSortModeOldest  = "oldest"
+	PatientSortModeSpecies = "species"
+	PatientSortModeName    = "name"
+)
+
 type HomeConfig struct {
-	Capacity       int
-	TaskManagement bool
+	Capacity             int
+	TaskManagement       bool
+	PatientAutoSort      bool
+	PatientSortField     string
+	PatientSortDirection string
 }
 
 func HomeConfigFromMap(m map[string]string) HomeConfig {
-	cfg := HomeConfig{}
+	cfg := HomeConfig{
+		PatientSortField:     PatientSortFieldCheckinDate,
+		PatientSortDirection: SortDirectionDescending,
+	}
 	if v, ok := m["capacity"]; ok {
 		cfg.Capacity, _ = strconv.Atoi(v)
 	}
 	cfg.TaskManagement = m["task_management"] == "true"
+	cfg.PatientAutoSort = m["patient-auto-sort"] == "true"
+	if v, ok := m["patient-sort-field"]; ok {
+		cfg.PatientSortField = v
+	}
+	if v, ok := m["patient-sort-direction"]; ok {
+		cfg.PatientSortDirection = v
+	}
 	return cfg
+}
+
+func (cfg HomeConfig) PatientSortMode() string {
+	if !cfg.PatientAutoSort {
+		return PatientSortModeManual
+	}
+	switch cfg.PatientSortField {
+	case PatientSortFieldSpecies:
+		return PatientSortModeSpecies
+	case PatientSortFieldName:
+		return PatientSortModeName
+	default:
+		if cfg.PatientSortDirection == SortDirectionAscending {
+			return PatientSortModeOldest
+		}
+		return PatientSortModeNewest
+	}
 }
 
 type Home struct {

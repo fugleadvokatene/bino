@@ -214,6 +214,11 @@ type Language struct {
 	HomesUsers                      string
 	HomeCapacity                    string
 	HomeCapacityInstruction         string
+	HomePatientSort                 string
+	HomePatientSortManual           string
+	HomePatientSortNewest           string
+	HomePatientSortOldest           string
+	HomePatientSortAlpha            string
 	HomeTaskManagement              string
 	HomeTaskManagementDescription   string
 	HomePreferredSpecies            string
@@ -662,6 +667,11 @@ var NO = &Language{
 	HomesUsers:                      "Brukere",
 	HomeCapacity:                    "Kapasitet",
 	HomeCapacityInstruction:         "Skriv inn hvor mange pasienter du har kapasitet til å ta, slik at andre vet om du har plass til flere eller trenger avlasting.",
+	HomePatientSort:                 "Sortering av pasienter",
+	HomePatientSortManual:           "Usortert",
+	HomePatientSortNewest:           "Nyest først",
+	HomePatientSortOldest:           "Eldst først",
+	HomePatientSortAlpha:            "A-Å",
 	HomeTaskManagement:              "Slå på oppgavestyring",
 	HomeTaskManagementDescription:   "Legg til standard oppgaver automatisk ved innregistrering, og vis oppgave-seksjon i navigasjonslinjen.",
 	HomePreferredSpecies:            "Favoritt-arter",
@@ -1066,6 +1076,11 @@ var EN = &Language{
 	HomesUsers:                      "Users",
 	HomeCapacity:                    "Capacity",
 	HomeCapacityInstruction:         "Set the number of patients you can take, so that others can see if you have room for another or if you have too many.",
+	HomePatientSort:                 "Patient sorting",
+	HomePatientSortManual:           "No sorting",
+	HomePatientSortNewest:           "Newest first",
+	HomePatientSortOldest:           "Oldest first",
+	HomePatientSortAlpha:            "A-Z",
 	HomeTaskManagement:              "Use task management",
 	HomeTaskManagementDescription:   "Automatically add standard tasks on check-in, and add link to tasks in navbar.",
 	HomePreferredSpecies:            "Favorite species",

@@ -2,6 +2,8 @@ package model
 
 import (
 	"fmt"
+	"sort"
+	"strings"
 	"time"
 )
 
@@ -38,6 +40,24 @@ func (pv Patient) CheckoutStatusID(prefix string) string {
 
 func (pv Patient) AttachJournalID(prefix string) string {
 	return fmt.Sprintf("%spatient-attach-journal-%d", prefix, pv.ID)
+}
+
+func SortPatients(patients []Patient, field, direction string) {
+	less := func(i, j int) bool {
+		switch field {
+		case PatientSortFieldSpecies:
+			return strings.ToLower(patients[i].Species.Name) < strings.ToLower(patients[j].Species.Name)
+		case PatientSortFieldName:
+			return strings.ToLower(patients[i].Name) < strings.ToLower(patients[j].Name)
+		default:
+			return patients[i].TimeCheckin.Before(patients[j].TimeCheckin)
+		}
+	}
+	if direction == SortDirectionDescending {
+		sort.SliceStable(patients, func(i, j int) bool { return less(j, i) })
+	} else {
+		sort.SliceStable(patients, less)
+	}
 }
 
 func (pv Patient) CardID(prefix string) string {

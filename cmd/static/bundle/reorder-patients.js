@@ -2237,6 +2237,7 @@ if (matchMedia("(width >= 1000px)").matches) {
     });
   };
   lists.forEach((list) => {
+    if (list.dataset.autoSort === "true") return;
     new sortable_esm_default(list, {
       handle: ".card-gripper",
       animation: 0,
