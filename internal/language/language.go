@@ -113,6 +113,10 @@ type Language struct {
 
 	FormerPatients string
 
+	PatientFollowup                  string
+	PatientFollowupExplanation       string
+	PatientFollowupLastJournalUpdate string
+
 	GDriveBaseDir                          string
 	GDriveSelectFolder                     string
 	GDriveSelectFolderInstruction          string
@@ -171,6 +175,7 @@ type Language struct {
 	GenericMove         string
 	GenericMoveTo       string
 	GenericName         string
+	GenericPatient      string
 	GenericNone         string
 	GenericNever        string
 	GenericNote         string
@@ -569,6 +574,10 @@ var NO = &Language{
 
 	FormerPatients: "Tidligere pasienter",
 
+	PatientFollowup:                  "Oppfølging",
+	PatientFollowupExplanation:       "Nåværende pasienter sortert etter innsjekkingsdato og siste journaloppdatering, til hjelp for å se hvem som kan trenge mer oppfølging.",
+	PatientFollowupLastJournalUpdate: "Siste journaloppdatering",
+
 	GDriveSelectFolder:                     "Velg mappe",
 	GDriveSelectedFolder:                   "Valgt",
 	GDriveSelectFolderInstruction:          "Her kan du velge hvilken mappe nye journaler skal opprettes i.",
@@ -625,6 +634,7 @@ var NO = &Language{
 	GenericMove:         "Flytt",
 	GenericMoveTo:       "Flytt til",
 	GenericName:         "Navn",
+	GenericPatient:      "Pasient",
 	GenericNone:         "Ingen",
 	GenericNever:        "Aldri",
 	GenericNote:         "Notis",
@@ -791,6 +801,7 @@ var NO = &Language{
 		model.CapViewGDriveSettings:    "Se Google Drive-innstillinger",
 		model.CapInviteToGDrive:        "Invitere brukere til Google Drive-mappen fra Bino",
 		model.CapInviteToBino:          "Invitere nye brukere til Bino",
+		model.CapViewPatientFollowup:   "Se listen over pasienter som kan trenge oppfølging",
 		model.CapLoggedIn:              "",
 		model.CapLive:                  "",
 		model.CapUseImportTool:         "",
@@ -978,6 +989,10 @@ var EN = &Language{
 
 	FormerPatients: "Former patients",
 
+	PatientFollowup:                  "Follow-up",
+	PatientFollowupExplanation:       "Current patients sorted by checkin date and last journal update, to help see who may need more follow-up.",
+	PatientFollowupLastJournalUpdate: "Last journal update",
+
 	GDriveSelectFolder:                     "Select folder",
 	GDriveSelectedFolder:                   "Selected",
 	GDriveSelectFolderInstruction:          "Select the folder in which new patient journals will be created.",
@@ -1036,6 +1051,7 @@ var EN = &Language{
 	GenericMove:         "Move",
 	GenericMoveTo:       "Move to",
 	GenericName:         "Name",
+	GenericPatient:      "Pasient",
 	GenericNone:         "None",
 	GenericNever:        "Never",
 	GenericNote:         "Note",
@@ -1199,6 +1215,7 @@ var EN = &Language{
 		model.CapViewGDriveSettings:    "View Google Drive settings",
 		model.CapInviteToGDrive:        "Invite users to the Google Drive folder from Bino",
 		model.CapInviteToBino:          "Invite new users to Bino",
+		model.CapViewPatientFollowup:   "View the list of patients who may need follow-up",
 		model.CapLoggedIn:              "",
 		model.CapLive:                  "",
 		model.CapUseImportTool:         "",

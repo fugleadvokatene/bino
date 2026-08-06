@@ -13,6 +13,9 @@ templ AdminRootPage(data *request.CommonData) {
         if data.User.HasCapability(model.CapViewEventLog) {
             <li class="card mb-1"><div class="card-header"><a href="/event">{data.Language.EventList}</a></div></li>
         }
+        if data.User.HasCapability(model.CapViewPatientFollowup) {
+            <li class="card mb-1"><div class="card-header"><a href="/followup">{data.Language.PatientFollowup}</a></div></li>
+        }
         if data.User.HasCapability(model.CapManageSpecies) {
             <li class="card mb-1"><div class="card-header"><a href="/species">{data.Language.AdminManageSpecies}</a></div></li>
         }

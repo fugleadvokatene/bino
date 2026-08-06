@@ -200,6 +200,78 @@ func (q *Queries) GetActivePatients(ctx context.Context, languageID int32) ([]Ge
 	return items, nil
 }
 
+const getActivePatientsForFollowup = `-- name: GetActivePatientsForFollowup :many
+SELECT
+  p.id,
+  p.name,
+  p.curr_home_id,
+  p.status,
+  p.google_id,
+  p.time_checkin,
+  p.time_checkout,
+  COALESCE(sl.name, '???') AS species,
+  p.suggested_journal_title,
+  p.suggested_google_id,
+  p.journal_pending,
+  j.updated AS journal_updated
+FROM patient AS p
+LEFT JOIN species_language AS sl
+    ON sl.species_id = p.species_id
+LEFT JOIN journal AS j
+    ON j.google_id = p.google_id
+WHERE curr_home_id IS NOT NULL
+  AND language_id = $1
+ORDER BY p.time_checkin DESC
+`
+
+type GetActivePatientsForFollowupRow struct {
+	ID                    int32
+	Name                  string
+	CurrHomeID            pgtype.Int4
+	Status                int32
+	GoogleID              pgtype.Text
+	TimeCheckin           pgtype.Timestamptz
+	TimeCheckout          pgtype.Timestamptz
+	Species               string
+	SuggestedJournalTitle pgtype.Text
+	SuggestedGoogleID     pgtype.Text
+	JournalPending        bool
+	JournalUpdated        pgtype.Timestamptz
+}
+
+func (q *Queries) GetActivePatientsForFollowup(ctx context.Context, languageID int32) ([]GetActivePatientsForFollowupRow, error) {
+	rows, err := q.db.Query(ctx, getActivePatientsForFollowup, languageID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetActivePatientsForFollowupRow
+	for rows.Next() {
+		var i GetActivePatientsForFollowupRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.Name,
+			&i.CurrHomeID,
+			&i.Status,
+			&i.GoogleID,
+			&i.TimeCheckin,
+			&i.TimeCheckout,
+			&i.Species,
+			&i.SuggestedJournalTitle,
+			&i.SuggestedGoogleID,
+			&i.JournalPending,
+			&i.JournalUpdated,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getActivePatientsForStatCollection = `-- name: GetActivePatientsForStatCollection :many
 SELECT
   p.id,

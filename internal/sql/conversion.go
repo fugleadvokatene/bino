@@ -117,6 +117,27 @@ func (in GetActivePatientsRow) ToModel() model.Patient {
 	}
 }
 
+func (in GetActivePatientsForFollowupRow) ToModel() model.Patient {
+	return model.Patient{
+		ID: in.ID,
+		Species: model.Species{
+			Name: in.Species,
+		},
+		Name:                  in.Name,
+		Status:                in.Status,
+		GoogleID:              in.GoogleID.String,
+		TimeCheckin:           in.TimeCheckin.Time,
+		TimeCheckout:          in.TimeCheckout.Time,
+		SuggestedGoogleID:     in.SuggestedGoogleID.String,
+		SuggestedJournalTitle: in.SuggestedJournalTitle.String,
+		CurrentHomeID:         in.CurrHomeID.Int32,
+		HasCurrentHome:        in.CurrHomeID.Valid,
+		JournalPending:        in.JournalPending,
+		JournalUpdated:        in.JournalUpdated.Time,
+		HasJournalUpdated:     in.JournalUpdated.Valid,
+	}
+}
+
 // ---- Patient event
 
 func (in GetEventsRow) ToModel(lang *language.Language) model.Event {

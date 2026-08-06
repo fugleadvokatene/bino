@@ -19,6 +19,30 @@ WHERE curr_home_id IS NOT NULL
 ORDER BY p.curr_home_id, p.sort_order, p.id DESC
 ;
 
+-- name: GetActivePatientsForFollowup :many
+SELECT
+  p.id,
+  p.name,
+  p.curr_home_id,
+  p.status,
+  p.google_id,
+  p.time_checkin,
+  p.time_checkout,
+  COALESCE(sl.name, '???') AS species,
+  p.suggested_journal_title,
+  p.suggested_google_id,
+  p.journal_pending,
+  j.updated AS journal_updated
+FROM patient AS p
+LEFT JOIN species_language AS sl
+    ON sl.species_id = p.species_id
+LEFT JOIN journal AS j
+    ON j.google_id = p.google_id
+WHERE curr_home_id IS NOT NULL
+  AND language_id = $1
+ORDER BY p.time_checkin DESC
+;
+
 -- name: GetActivePatientsForStatCollection :many
 SELECT
   p.id,

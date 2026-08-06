@@ -1,0 +1,45 @@
+package handlerfollowup
+
+import "github.com/fugleadvokatene/bino/internal/model"
+import "github.com/fugleadvokatene/bino/internal/request"
+import "github.com/fugleadvokatene/bino/internal/templbase"
+import "github.com/fugleadvokatene/bino/internal/handlers/handlercalendar"
+
+templ FollowupPage(data *request.CommonData, patients []model.Patient) {
+	@templbase.Layout(data) {
+		<h1>{data.Language.PatientFollowup}</h1>
+		@templbase.Card("followup-results", "shadow-sm") {
+			<p class="small">{data.Language.PatientFollowupExplanation}</p>
+			<table class="table table-striped table-bordered m-0 search-container">
+				<thead>
+					<tr>
+						<th data-sort="0" class="sortable">{data.Language.GenericPatient}<span class="sort-icon"></span></th>
+						<th data-sort="1" class="sortable sort-desc">{data.Language.PatientRegisteredTime}<span class="sort-icon"></span></th>
+						<th data-sort="2" class="sortable">{data.Language.PatientFollowupLastJournalUpdate}<span class="sort-icon"></span></th>
+					</tr>
+				</thead>
+				<tbody>
+					for _, p := range patients {
+						<tr>
+							<td><a href={templ.URL(p.URL())}>{p.Name}</a> ({p.Species.Name})</td>
+							<td data-sort-key={p.TimeCheckin.Unix()}>@handlercalendar.CalendarLinkAbs(data.Language, p.TimeCheckin, "listDay")</td>
+							<td data-sort-key={p.JournalUpdated.Unix()}>
+								if p.HasJournalUpdated {
+									@handlercalendar.CalendarLinkAbs(data.Language, p.JournalUpdated, "listDay")
+								} else {
+									{data.Language.GenericNever}
+								}
+							</td>
+						</tr>
+					}
+					if len(patients) == 0 {
+						<tr>
+							<td class="center" colspan="3">{data.Language.GenericNotFound}</td>
+						</tr>
+					}
+				</tbody>
+			</table>
+		}
+	}
+	@templbase.JSModule(data, "formerpatients")
+}

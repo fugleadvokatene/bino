@@ -41,3 +41,11 @@ func (db *Database) GetFormerPatients(ctx context.Context, lang *language.Langua
 	}
 	return generic.SliceToSlice(rows, func(in sql.GetFormerPatientsRow) model.Patient { return in.ToModel() }), int32(n), nil
 }
+
+func (db *Database) GetActivePatientsForFollowup(ctx context.Context, lang *language.Language) ([]model.Patient, error) {
+	rows, err := db.Q.GetActivePatientsForFollowup(ctx, int32(lang.ID))
+	if err != nil {
+		return nil, err
+	}
+	return generic.SliceToSlice(rows, func(in sql.GetActivePatientsForFollowupRow) model.Patient { return in.ToModel() }), nil
+}

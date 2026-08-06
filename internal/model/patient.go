@@ -24,6 +24,8 @@ type Patient struct {
 	CurrentHomeID         int32
 	HasCurrentHome        bool
 	JournalPending        bool
+	JournalUpdated        time.Time
+	HasJournalUpdated     bool
 }
 
 func (pv Patient) CollapseID(prefix string) string {

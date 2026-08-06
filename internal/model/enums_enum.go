@@ -201,11 +201,13 @@ const (
 	CapManageTaskTemplates Cap = 31
 	// CapViewEventLog is a Cap of type ViewEventLog.
 	CapViewEventLog Cap = 32
+	// CapViewPatientFollowup is a Cap of type ViewPatientFollowup.
+	CapViewPatientFollowup Cap = 33
 )
 
 var ErrInvalidCap = errors.New("not a valid Cap")
 
-const _CapName = "LoggedInViewAllActivePatientsViewAllFormerPatientsViewAllHomesViewAllUsersViewCalendarSearchSetOwnPreferencesCheckInPatientManageOwnPatientsManageAllPatientsManageOwnHomesManageAllHomesCreatePatientJournalManageSpeciesManageUsersDeactivateUsersDeleteUsersViewAdminToolsViewGDriveSettingsInviteToGDriveInviteToBinoViewUserAdminUseImportToolDebugUploadFileManageFeatureFlagsHardDeletePatientLiveSetIndexerStateViewSysLogManageTaskTemplatesViewEventLog"
+const _CapName = "LoggedInViewAllActivePatientsViewAllFormerPatientsViewAllHomesViewAllUsersViewCalendarSearchSetOwnPreferencesCheckInPatientManageOwnPatientsManageAllPatientsManageOwnHomesManageAllHomesCreatePatientJournalManageSpeciesManageUsersDeactivateUsersDeleteUsersViewAdminToolsViewGDriveSettingsInviteToGDriveInviteToBinoViewUserAdminUseImportToolDebugUploadFileManageFeatureFlagsHardDeletePatientLiveSetIndexerStateViewSysLogManageTaskTemplatesViewEventLogViewPatientFollowup"
 
 // CapValues returns a list of the values for Cap
 func CapValues() []Cap {
@@ -243,6 +245,7 @@ func CapValues() []Cap {
 		CapViewSysLog,
 		CapManageTaskTemplates,
 		CapViewEventLog,
+		CapViewPatientFollowup,
 	}
 }
 
@@ -280,6 +283,7 @@ var _CapMap = map[Cap]string{
 	CapViewSysLog:            _CapName[408:418],
 	CapManageTaskTemplates:   _CapName[418:437],
 	CapViewEventLog:          _CapName[437:449],
+	CapViewPatientFollowup:   _CapName[449:468],
 }
 
 // String implements the Stringer interface.
@@ -331,6 +335,7 @@ var _CapValue = map[string]Cap{
 	_CapName[408:418]: CapViewSysLog,
 	_CapName[418:437]: CapManageTaskTemplates,
 	_CapName[437:449]: CapViewEventLog,
+	_CapName[449:468]: CapViewPatientFollowup,
 }
 
 // ParseCap attempts to convert a string to a Cap.

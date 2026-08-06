@@ -25,6 +25,7 @@ import (
 	"github.com/fugleadvokatene/bino/internal/handlers/handlerevent"
 	"github.com/fugleadvokatene/bino/internal/handlers/handlerfeatureflag"
 	"github.com/fugleadvokatene/bino/internal/handlers/handlerfile"
+	"github.com/fugleadvokatene/bino/internal/handlers/handlerfollowup"
 	"github.com/fugleadvokatene/bino/internal/handlers/handlerformerpatients"
 	"github.com/fugleadvokatene/bino/internal/handlers/handlergdriveadmin"
 	"github.com/fugleadvokatene/bino/internal/handlers/handlergdrivenotifications"
@@ -35,13 +36,13 @@ import (
 	"github.com/fugleadvokatene/bino/internal/handlers/handlerlogging"
 	"github.com/fugleadvokatene/bino/internal/handlers/handlerlogin"
 	"github.com/fugleadvokatene/bino/internal/handlers/handlerpatient"
-	"github.com/fugleadvokatene/bino/internal/handlers/handlerschedule"
-	"github.com/fugleadvokatene/bino/internal/handlers/handlertasktemplate"
 	"github.com/fugleadvokatene/bino/internal/handlers/handlerprivacy"
 	"github.com/fugleadvokatene/bino/internal/handlers/handlerrecover"
+	"github.com/fugleadvokatene/bino/internal/handlers/handlerschedule"
 	"github.com/fugleadvokatene/bino/internal/handlers/handlersearch"
 	"github.com/fugleadvokatene/bino/internal/handlers/handlerspeciesadmin"
 	"github.com/fugleadvokatene/bino/internal/handlers/handlersyslog"
+	"github.com/fugleadvokatene/bino/internal/handlers/handlertasktemplate"
 	"github.com/fugleadvokatene/bino/internal/handlers/handlertos"
 	"github.com/fugleadvokatene/bino/internal/handlers/handleruser"
 	"github.com/fugleadvokatene/bino/internal/handlers/handleruseradmin"
@@ -156,6 +157,7 @@ func realMain() error {
 		handlerevent.Routes(db),
 		handlerfeatureflag.Routes(db),
 		handlerfile.Routes(db, &jobs),
+		handlerfollowup.Routes(db),
 		handlerformerpatients.Routes(db),
 		handlergdriveadmin.Routes(db, gdriveWorker),
 		handlergdrivenotifications.Routes(db, gdriveWorker),
