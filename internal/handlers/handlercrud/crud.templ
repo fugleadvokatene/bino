@@ -8,14 +8,17 @@ import (
     "github.com/fugleadvokatene/bino/internal/templbase"
 )
 
-templ (page CRUDPage) Component(data *request.CommonData) {
-    @templbase.Layout(data) {
-        <h1>{page.Header}</h1>
-        @templbase.Card() {
-            <table>
+// A table of rows to create and update. Name scopes its buttons, see crud.ts,
+// so a page can have several.
+templ (t CRUDTable) Component() {
+        @templbase.Card("mb-2") {
+            if t.Header != "" {
+                <div class="card-header">{t.Header}</div>
+            }
+            <table data-crud={t.Name}>
             <thead>
                 <tr>
-                    for _, key := range page.LangIndependent {
+                    for _, key := range t.LangIndependent {
                         <th>{key}</th>
                     }
                     for _, lang := range model.LanguageIDValues() {
@@ -29,7 +32,6 @@ templ (page CRUDPage) Component(data *request.CommonData) {
             </tbody>
             </table>
         }
-    }
 }
 
 templ UpdateRow(data *request.CommonData,  id int32, obj interface{Name(id model.LanguageID) (string, bool)}) {
@@ -63,7 +65,7 @@ templ CreateRow(data *request.CommonData) {
             </td>
         }
         <td>
-            <button class="btn btn-outline-success w-100" id="new-submit">
+            <button class="btn btn-outline-success w-100 new-submit">
                 {data.Language.GenericAdd}
             </button>
         </td>

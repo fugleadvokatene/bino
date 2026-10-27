@@ -336,6 +336,60 @@ func (q *Queries) GetLastEventForPatient(ctx context.Context, patientID int32) (
 	return i, err
 }
 
+const getLifecycleEventsForStats = `-- name: GetLifecycleEventsForStats :many
+SELECT
+  pe.id,
+  pe.patient_id,
+  pe.home_id,
+  pe.event_id,
+  pe.status,
+  pe.time,
+  p.species_id
+FROM patient_event AS pe
+JOIN patient AS p
+  ON p.id = pe.patient_id
+WHERE pe.event_id = ANY($1::int[])
+ORDER BY pe.patient_id, pe.time, pe.id
+`
+
+type GetLifecycleEventsForStatsRow struct {
+	ID        int32
+	PatientID int32
+	HomeID    int32
+	EventID   int32
+	Status    pgtype.Int4
+	Time      pgtype.Timestamptz
+	SpeciesID int32
+}
+
+func (q *Queries) GetLifecycleEventsForStats(ctx context.Context, eventIds []int32) ([]GetLifecycleEventsForStatsRow, error) {
+	rows, err := q.db.Query(ctx, getLifecycleEventsForStats, eventIds)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetLifecycleEventsForStatsRow
+	for rows.Next() {
+		var i GetLifecycleEventsForStatsRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.PatientID,
+			&i.HomeID,
+			&i.EventID,
+			&i.Status,
+			&i.Time,
+			&i.SpeciesID,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const numEvents = `-- name: NumEvents :one
 SELECT COUNT(*) AS n FROM patient_event
 `

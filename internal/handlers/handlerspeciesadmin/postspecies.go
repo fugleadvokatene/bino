@@ -6,6 +6,7 @@ import (
 	"github.com/fugleadvokatene/bino/internal/db"
 	"github.com/fugleadvokatene/bino/internal/handlers/handlerjson"
 	"github.com/fugleadvokatene/bino/internal/sql"
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 type postSpecies struct {
@@ -15,12 +16,19 @@ type postSpecies struct {
 func (h *postSpecies) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	type reqT struct {
 		Latin     string
+		GroupID   int32
 		Languages map[int32]string
 	}
 	handlerjson.Handler(h.DB, w, r, func(db *db.Database, req reqT) error {
 		ctx := r.Context()
 		id, err := db.Q.AddSpecies(ctx, req.Latin)
 		if err != nil {
+			return err
+		}
+		if err := db.Q.SetSpeciesGroup(ctx, sql.SetSpeciesGroupParams{
+			ID:      id,
+			GroupID: pgtype.Int4{Int32: req.GroupID, Valid: req.GroupID != 0},
+		}); err != nil {
 			return err
 		}
 		for langID, name := range req.Languages {

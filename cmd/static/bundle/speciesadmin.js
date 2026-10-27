@@ -24,12 +24,12 @@ var MustDataNumber = (el, key) => {
 
 // crud.ts
 var collectFields = (root) => Array.from(root.querySelectorAll(".form-control"));
-var setupCreateButton = (listener) => {
-  const btn = document.getElementById("new-submit");
-  if (!btn) return;
-  btn.addEventListener("click", (e) => {
+var table = (name) => document.querySelector(`[data-crud="${name}"]`);
+var setupCreateButton = (name, listener) => {
+  table(name)?.addEventListener("click", (e) => {
     const target = e.target instanceof Element ? e.target : null;
-    const form = target?.closest("tr");
+    if (!target?.closest(".new-submit")) return;
+    const form = target.closest("tr");
     if (!form) return;
     const fields = collectFields(form);
     const { url, req } = listener(fields);
@@ -40,8 +40,8 @@ var setupCreateButton = (listener) => {
     }).then(() => location.reload());
   });
 };
-var setupUpdateButtons = (listener) => {
-  document.addEventListener("click", (e) => {
+var setupUpdateButtons = (name, listener) => {
+  table(name)?.addEventListener("click", (e) => {
     const target = e.target instanceof HTMLElement ? e.target : null;
     if (!target?.classList.contains("update-submit")) return;
     const id = MustDataNumber(target, "id");
@@ -63,6 +63,8 @@ var buildRequest = (formFields, base) => {
     const kind = field.dataset.field;
     if (kind === "latin") {
       base.Latin = field.value;
+    } else if (kind === "group") {
+      base.GroupID = Number(field.value);
     } else if (kind === "lang") {
       const lang = field.dataset.lang;
       if (lang) base.Languages[lang] = field.value;
@@ -70,18 +72,24 @@ var buildRequest = (formFields, base) => {
   });
   return base;
 };
-setupCreateButton((formFields) => {
-  const req = buildRequest(formFields, {
+setupCreateButton("species", (formFields) => ({
+  url: "/species",
+  req: buildRequest(formFields, { Latin: "", GroupID: 0, Languages: {} })
+}));
+setupUpdateButtons("species", (id, formFields) => ({
+  url: "/species",
+  req: buildRequest(formFields, {
+    ID: id,
     Latin: "",
+    GroupID: 0,
     Languages: {}
-  });
-  return { url: "/species", req };
-});
-setupUpdateButtons((id, formFields) => {
-  const req = buildRequest(formFields, {
-    Latin: "",
-    Languages: {},
-    ID: id
-  });
-  return { url: "/species", req };
-});
+  })
+}));
+setupCreateButton("species-groups", (formFields) => ({
+  url: "/species/groups",
+  req: buildRequest(formFields, { Languages: {} })
+}));
+setupUpdateButtons("species-groups", (id, formFields) => ({
+  url: "/species/groups",
+  req: buildRequest(formFields, { ID: id, Languages: {} })
+}));

@@ -41,6 +41,7 @@ import (
 	"github.com/fugleadvokatene/bino/internal/handlers/handlerschedule"
 	"github.com/fugleadvokatene/bino/internal/handlers/handlersearch"
 	"github.com/fugleadvokatene/bino/internal/handlers/handlerspeciesadmin"
+	"github.com/fugleadvokatene/bino/internal/handlers/handlerstatistics"
 	"github.com/fugleadvokatene/bino/internal/handlers/handlersyslog"
 	"github.com/fugleadvokatene/bino/internal/handlers/handlertasktemplate"
 	"github.com/fugleadvokatene/bino/internal/handlers/handlertos"
@@ -170,6 +171,7 @@ func realMain() error {
 		handlerprivacy.Routes(db, config.Privacy),
 		handlersearch.Routes(db),
 		handlerspeciesadmin.Routes(db),
+		handlerstatistics.Routes(db, config.Location()),
 		handlertos.Routes(),
 		handleruser.Routes(db),
 		handlerlive.Routes(broker),

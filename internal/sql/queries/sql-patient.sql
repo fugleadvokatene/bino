@@ -43,13 +43,10 @@ WHERE curr_home_id IS NOT NULL
 ORDER BY p.time_checkin DESC
 ;
 
--- name: GetActivePatientsForStatCollection :many
-SELECT
-  p.id,
-  p.species_id,
-  P.curr_home_id
-FROM patient AS p
-WHERE curr_home_id IS NOT NULL
+-- name: CountPatientsWithStatus :one
+SELECT count(*)
+FROM patient
+WHERE status = @status
 ;
 
 -- name: GetActivePatientsMissingJournal :many
@@ -266,3 +263,9 @@ SET time_checkout = NULL
 WHERE id = $1
 ;
 
+
+-- name: GetPatientNames :many
+SELECT id, name
+FROM patient
+WHERE id = ANY(@ids::int[])
+;

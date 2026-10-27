@@ -1,0 +1,284 @@
+package handlerstatistics
+
+import "fmt"
+import "github.com/fugleadvokatene/bino/internal/model"
+import "time"
+import "github.com/fugleadvokatene/bino/internal/request"
+import "github.com/fugleadvokatene/bino/internal/stats"
+import "github.com/fugleadvokatene/bino/internal/templbase"
+
+templ StatisticsPage(data *request.CommonData, v viewData) {
+	@templbase.Layout(data) {
+        <div class="d-flex justify-content-between align-items-center">
+            <h1>{data.Language.StatsTitle}</h1>
+            // The URL holds the whole form, see hx-push-url
+            <button type="button" class="btn btn-light btn-sm hide-on-mobile" id="stats-copy-link" data-copied={data.Language.StatsLinkCopied}>
+                {data.Language.StatsCopyLink}
+            </button>
+        </div>
+        // Not supported on small screens
+        @templbase.Card("shadow-sm", "mb-2", "p-2", "show-on-mobile") {
+            {data.Language.StatsDesktopOnly}
+        }
+        <div class="hide-on-mobile">
+            @StatisticsForm(data, v)
+            @StatisticsResults(data, v)
+        </div>
+    }
+    @templbase.JSModule(data, "stats")
+}
+
+// Swapped in by htmx when the form changes. The date inputs are updated
+// out-of-band, since the server snaps the dates to bucket boundaries and
+// switches between date and month pickers.
+templ StatisticsLive(data *request.CommonData, v viewData) {
+    @StatisticsResults(data, v)
+    @dateInput("from", v.From, v.Granularity, true)
+    @dateInput("to", v.To, v.Granularity, true)
+}
+
+templ StatisticsResults(data *request.CommonData, v viewData) {
+    <div id="stats-results">
+        if len(v.Days) == 0 {
+            @templbase.Card("shadow-sm", "mb-2", "p-2") {
+                {data.Language.StatsNoData}
+            }
+        } else {
+            @templbase.Card("shadow-sm", "mb-2", "p-2", "stats-description") {
+                {v.Description}
+            }
+            @StatisticsSummary(data, v)
+            @templbase.Card("shadow-sm", "mb-2", "p-2") {
+                @templ.JSONScript("stats-chart-data", v.Chart)
+                <div class="stats-chart"><canvas id="stats-chart"></canvas></div>
+            }
+            @StatisticsTable(data, v)
+            @StatisticsObservations(data, v)
+        }
+    </div>
+}
+
+templ dateInput(name string, t time.Time, g stats.Granularity, oob bool) {
+    <input
+        autocomplete="off"
+        class="form-control form-control-sm"
+        type={dateInputType(g)}
+        id={"stats-" + name}
+        name={name}
+        value={dateInputValue(t, g)}
+        if oob {
+            hx-swap-oob="true"
+        }
+    />
+}
+
+templ StatisticsForm(data *request.CommonData, v viewData) {
+    @templbase.Card("shadow-sm", "mb-2", "p-2") {
+        <form
+            method="get"
+            action="/statistics"
+            class="stats-form"
+            hx-get="/statistics"
+            hx-trigger="change, submit"
+            hx-target="#stats-results"
+            hx-swap="outerHTML"
+            hx-push-url="true"
+            hx-indicator="#stats-results"
+            hx-history="false"
+        >
+            <div class="row g-2 mb-2">
+                <div class="col-md-3">
+                    <label class="form-label small" for="stats-granularity">{data.Language.StatsGranularity}</label>
+                    <select autocomplete="off" class="form-select form-select-sm" id="stats-granularity" name="granularity">
+                        for _, g := range []stats.Granularity{stats.GranularityDay, stats.GranularityWeek, stats.GranularityMonth} {
+                            <option value={string(g)} selected?={g == v.Granularity}>{granularityName(data.Language, g)}</option>
+                        }
+                    </select>
+                </div>
+            </div>
+            <div class="row g-2 mb-2">
+                <div class="col-md-3">
+                    <label class="form-label small" for="stats-from">{data.Language.GenericFrom}</label>
+                    @dateInput("from", v.From, v.Granularity, false)
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label small" for="stats-to">{data.Language.GenericTo}</label>
+                    @dateInput("to", v.To, v.Granularity, false)
+                </div>
+            </div>
+            <div class="row g-2 mb-2">
+                <div class="col-md-4">
+                    <label class="form-label small" for="stats-metric">{data.Language.StatsMetric}</label>
+                    <select autocomplete="off" class="form-select form-select-sm" id="stats-metric" name="metric">
+                        for _, m := range []stats.Metric{stats.MetricIntake, stats.MetricOutcomes, stats.MetricCensus} {
+                            <option value={string(m)} selected?={m == v.Metric}>{metricName(data.Language, m)}</option>
+                        }
+                    </select>
+                </div>
+            </div>
+            <div class="row g-2">
+                <div class="col-md-4">
+                    @speciesTree(data, v)
+                </div>
+                <div class="col-md-4">
+                    @checkGroup("division", data.Language.GenericDivision, data.Language.StatsAll, v.Divisions, v.DivisionOptions)
+                </div>
+                <div class="col-md-4" id="stats-outcome-filter" hidden?={v.Metric != stats.MetricOutcomes}>
+                    @checkGroup("outcome", data.Language.StatsOutcome, data.Language.StatsAll, v.Outcomes, v.OutcomeOptions)
+                </div>
+            </div>
+        </form>
+    }
+}
+
+// Checkboxes with an "all" checkbox that disables the others, see stats.ts
+templ checkGroup(name, label, allLabel string, sel selection, options []option) {
+    <span class="form-label small d-block">{label}</span>
+    <input type="hidden" name={name} value="0"/>
+    <div class="form-check">
+        <input class="form-check-input" type="checkbox" name={name} value="all" id={"stats-" + name + "-all"} data-all-toggle={name} checked?={sel.All}/>
+        <label class="form-check-label small fw-semibold" for={"stats-" + name + "-all"}>{allLabel}</label>
+    </div>
+    <div class="stats-checklist" data-group={name}>
+        for _, o := range options {
+            <div class="form-check">
+                <input class="form-check-input" type="checkbox" name={name} value={fmt.Sprint(o.ID)} id={fmt.Sprintf("stats-%s-%d", name, o.ID)} checked?={sel.Checked(o.ID)} disabled?={sel.All}/>
+                <label class="form-check-label small" for={fmt.Sprintf("stats-%s-%d", name, o.ID)}>{o.Name}</label>
+            </div>
+        }
+    </div>
+}
+
+// Like checkGroup, but species are grouped, and a group checkbox works as an
+// "all" checkbox for its species
+templ speciesTree(data *request.CommonData, v viewData) {
+    <span class="form-label small d-block">{data.Language.GenericSpecies}</span>
+    <input type="hidden" name="species" value="0"/>
+    <div class="form-check">
+        <input class="form-check-input" type="checkbox" name="species" value="all" id="stats-species-all" data-all-toggle="species" checked?={v.Species.All}/>
+        <label class="form-check-label small fw-semibold" for="stats-species-all">{data.Language.StatsAll}</label>
+    </div>
+    <div class="stats-checklist stats-checklist-scroll" data-group="species">
+        for _, g := range v.SpeciesTree {
+            <div class="form-check">
+                <input class="form-check-input" type="checkbox" name="species_group" value={fmt.Sprint(g.ID)} id={fmt.Sprintf("stats-species-group-%d", g.ID)} data-all-toggle={fmt.Sprintf("species-group-%d", g.ID)} checked?={v.speciesGroupChecked(g.ID)} disabled?={v.Species.All}/>
+                <label class="form-check-label small fw-semibold" for={fmt.Sprintf("stats-species-group-%d", g.ID)}>{g.Name}</label>
+            </div>
+            <div class="stats-checklist-children" data-group={fmt.Sprintf("species-group-%d", g.ID)}>
+                for _, s := range g.Species {
+                    @speciesCheckbox(v, s, g.ID)
+                }
+            </div>
+        }
+        for _, s := range v.UngroupedSpecies {
+            @speciesCheckbox(v, s, 0)
+        }
+    </div>
+}
+
+templ speciesCheckbox(v viewData, s option, groupID int32) {
+    <div class="form-check">
+        <input class="form-check-input" type="checkbox" name="species" value={fmt.Sprint(s.ID)} id={fmt.Sprintf("stats-species-%d", s.ID)} checked?={v.speciesChecked(s.ID, groupID)} disabled?={v.speciesDisabled(groupID)}/>
+        <label class="form-check-label small" for={fmt.Sprintf("stats-species-%d", s.ID)}>{s.Name}</label>
+    </div>
+}
+
+templ StatisticsSummary(data *request.CommonData, v viewData) {
+    <div class="row g-2 mb-2">
+        if v.Metric == stats.MetricCensus {
+            @statTile(data.Language.StatsCurrent, fmt.Sprint(v.Summary.Current), data.Language.FormatDateAbs(v.Days[len(v.Days)-1].Date))
+            @statTile(data.Language.StatsAverage, formatRounded(v.Summary.Avg), "")
+            @statTile(data.Language.StatsMax, fmt.Sprint(v.Summary.Max), data.Language.FormatDateAbs(v.Summary.MaxAt))
+            @statTile(data.Language.StatsMin, fmt.Sprint(v.Summary.Min), data.Language.FormatDateAbs(v.Summary.MinAt))
+        } else {
+            @statTile(data.Language.StatsTotal, fmt.Sprint(v.Summary.Total), "")
+            @statTile(data.Language.StatsAverage, formatRounded(v.Summary.Avg), "/ " + granularityName(data.Language, v.Granularity))
+            @statTile(data.Language.StatsMax, fmt.Sprint(v.Summary.Max), bucketLabel(data.Language, v.Summary.MaxAt, v.Granularity))
+        }
+    </div>
+}
+
+templ statTile(label, value, detail string) {
+    <div class="col-6 col-md">
+        @templbase.Card("shadow-sm", "h-100", "p-2", "stats-tile") {
+            <div class="small text-muted">{label}</div>
+            <div class="stats-tile-value">{value}</div>
+            if detail != "" {
+                <div class="small text-muted">{detail}</div>
+            }
+        }
+    </div>
+}
+
+templ StatisticsTable(data *request.CommonData, v viewData) {
+    @templbase.Card("shadow-sm", "mb-2") {
+        <table class="table table-striped table-bordered table-sm m-0">
+            <thead>
+                <tr>
+                    <th>{data.Language.StatsPeriod}</th>
+                    <th class="text-end">{data.Language.StatsIntake}</th>
+                    <th class="text-end">{data.Language.StatsOutcomes}</th>
+                    if v.Granularity == stats.GranularityDay {
+                        <th class="text-end">{data.Language.StatsCensus}</th>
+                    } else {
+                        <th class="text-end">{data.Language.StatsCensus} ({data.Language.StatsAverage})</th>
+                        <th class="text-end">{data.Language.StatsCensus} ({data.Language.StatsMax})</th>
+                    }
+                </tr>
+            </thead>
+            <tbody>
+                for i := len(v.Buckets) - 1; i >= 0; i-- {
+                    <tr>
+                        <td>{bucketLabel(data.Language, v.Buckets[i].Start, v.Granularity)}</td>
+                        <td class="text-end">{fmt.Sprint(v.Buckets[i].Intake)}</td>
+                        <td class="text-end">{fmt.Sprint(v.Buckets[i].Outcomes)}</td>
+                        <td class="text-end">{formatRounded(v.Buckets[i].CensusAvg)}</td>
+                        if v.Granularity != stats.GranularityDay {
+                            <td class="text-end">{fmt.Sprint(v.Buckets[i].CensusMax)}</td>
+                        }
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+}
+
+templ StatisticsObservations(data *request.CommonData, v viewData) {
+    @templbase.Card("shadow-sm", "mb-2") {
+        <div class="card-header">{data.Language.StatsObservations} ({fmt.Sprint(len(v.Observations))})</div>
+        <table class="table table-striped table-bordered table-sm m-0">
+            <thead>
+                <tr>
+                    <th>{data.Language.GenericName}</th>
+                    <th>{data.Language.GenericSpecies}</th>
+                    <th>{data.Language.GenericHome}</th>
+                    <th>{data.Language.PatientRegisteredTime}</th>
+                    <th>{data.Language.PatientCheckedOutTime}</th>
+                    <th>{data.Language.GenericStatus}</th>
+                    if v.Metric == stats.MetricCensus {
+                        <th class="text-end">{data.Language.StatsDaysCounted}</th>
+                    }
+                </tr>
+            </thead>
+            <tbody>
+                for _, o := range v.Observations {
+                    <tr>
+                        <td><a href={templ.URL(model.PatientURL(o.PatientID))}>{o.Name}</a></td>
+                        <td>{o.Species}</td>
+                        <td>{o.Home}</td>
+                        <td>{data.Language.FormatDateAbs(o.Intake)}</td>
+                        <td>
+                            if o.Outcome != model.StatusAdmitted {
+                                {data.Language.FormatDateAbs(o.OutcomeTime)}
+                            }
+                        </td>
+                        <td>{data.Language.Status[o.Outcome]}</td>
+                        if v.Metric == stats.MetricCensus {
+                            <td class="text-end">{fmt.Sprint(o.Days)}</td>
+                        }
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+}

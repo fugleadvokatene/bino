@@ -349,6 +349,37 @@ func (q *Queries) GetHomesInDivision(ctx context.Context, division int32) ([]Hom
 	return items, nil
 }
 
+const getHomesIncludingArchived = `-- name: GetHomesIncludingArchived :many
+SELECT id, name, note, division, archived FROM home
+ORDER BY name
+`
+
+func (q *Queries) GetHomesIncludingArchived(ctx context.Context) ([]Home, error) {
+	rows, err := q.db.Query(ctx, getHomesIncludingArchived)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Home
+	for rows.Next() {
+		var i Home
+		if err := rows.Scan(
+			&i.ID,
+			&i.Name,
+			&i.Note,
+			&i.Division,
+			&i.Archived,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getPreferredSpecies = `-- name: GetPreferredSpecies :many
 SELECT hps.home_id, sl.species_id, sl.name FROM home_preferred_species AS hps
 JOIN species_language AS sl USING (species_id)

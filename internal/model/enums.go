@@ -62,6 +62,7 @@ type Availability int
 // ManageTaskTemplates,
 // ViewEventLog,
 // ViewPatientFollowup,
+// ViewStatistics,
 // )
 type Cap int32
 

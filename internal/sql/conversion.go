@@ -215,6 +215,7 @@ func (in GetSpeciesWithLanguageRow) ToModel(preferred bool) model.Species {
 		ID:        in.SpeciesID,
 		Name:      in.Name,
 		Preferred: preferred,
+		Group:     in.GroupName,
 	}
 }
 
@@ -347,15 +348,6 @@ func (in *ImageVariant) ToModel() model.ImageVariant {
 		SHA256:    in.Sha256,
 		Width:     in.Width,
 		Height:    in.Height,
-	}
-}
-
-// ---- Stats
-
-func (in StatPatientGetCurrentSpeciesDistributionRow) ToModel() model.SpeciesCountRow {
-	return model.SpeciesCountRow{
-		Species: in.Name,
-		Count:   int(in.Count),
 	}
 }
 

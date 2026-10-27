@@ -34,6 +34,7 @@ func (h *getSpecies) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		species := SpeciesLangs{
 			ID:        row.ID,
 			LatinName: row.ScientificName,
+			GroupID:   row.GroupID.Int32,
 			Names:     map[int32]string{},
 		}
 		for {
@@ -52,5 +53,21 @@ func (h *getSpecies) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		speciesView = append(speciesView, species)
 	}
 
-	_ = SpeciesPage(commonData, speciesView).Render(ctx, w)
+	groupRows, err := h.DB.Q.GetSpeciesGroupsWithLanguage(ctx, commonData.Lang32())
+	if err != nil {
+		handlererror.Error(w, r, err)
+		return
+	}
+	groups := make([]GroupOption, len(groupRows))
+	for i, g := range groupRows {
+		groups[i] = GroupOption{ID: g.GroupID, Name: g.Name}
+	}
+
+	groupLangs, err := getSpeciesGroupLangs(ctx, h.DB)
+	if err != nil {
+		handlererror.Error(w, r, err)
+		return
+	}
+
+	_ = SpeciesPage(commonData, speciesView, groups, groupLangs).Render(ctx, w)
 }

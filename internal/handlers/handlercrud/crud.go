@@ -2,7 +2,10 @@ package handlercrud
 
 import "github.com/fugleadvokatene/bino/internal/model"
 
-type CRUDPage struct {
+type CRUDTable struct {
+	// Identifies the table for crud.ts
+	Name string
+	// Optional
 	Header          string
 	LangIndependent []string
 }

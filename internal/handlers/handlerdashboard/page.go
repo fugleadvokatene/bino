@@ -2,9 +2,9 @@ package handlerdashboard
 
 import (
 	"cmp"
+	"log/slog"
 	"net/http"
 	"slices"
-	"time"
 
 	"github.com/fugleadvokatene/bino/internal/db"
 	"github.com/fugleadvokatene/bino/internal/generic"
@@ -70,21 +70,9 @@ func (h *Page) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	currSpeciesDistribution, err := h.DB.GetCurrentSpeciesDistribution(ctx, commonData.Lang())
+	nPatients, err := h.DB.Q.CountPatientsWithStatus(ctx, int32(model.StatusAdmitted))
 	if err != nil {
-		currSpeciesDistribution = nil
-	}
-	if len(currSpeciesDistribution) > 8 {
-		currSpeciesDistribution[7].Species = commonData.Language.SpeciesOther
-		for i := 8; i < len(currSpeciesDistribution); i++ {
-			currSpeciesDistribution[7].Count += currSpeciesDistribution[i].Count
-		}
-		currSpeciesDistribution = currSpeciesDistribution[:8]
-	}
-
-	historicalSpeciesDistribution, err := h.DB.GetSpeciesDistributionOverTime(ctx, time.Now().AddDate(-1, 0, 0), time.Now(), commonData.Lang())
-	if err != nil {
-		historicalSpeciesDistribution = nil
+		commonData.Log(slog.LevelWarn, "counting patients", "err", err)
 	}
 
 	// Attach patients to homes
@@ -143,8 +131,7 @@ func (h *Page) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		&preferredHomeView,
 		homes,
 		h.MascotURL,
-		currSpeciesDistribution,
-		historicalSpeciesDistribution,
+		int(nPatients),
 		divisions,
 		division,
 	).Render(r.Context(), w)

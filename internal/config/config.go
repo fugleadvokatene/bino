@@ -4,6 +4,9 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"time"
+	// Time zones regardless of what the host has installed
+	_ "time/tzdata"
 
 	"github.com/fugleadvokatene/bino/internal/gdrive"
 	"github.com/fugleadvokatene/bino/internal/model"
@@ -21,6 +24,11 @@ type Config struct {
 	Organization   string
 	MascotURL      string
 	Security       security.Config
+	// IANA time zone the organization works in, e.g. "Europe/Oslo". Used to
+	// split days in statistics. Defaults to the server's local time zone.
+	TimeZone string
+
+	location *time.Location
 }
 
 func Load(file string) (*Config, error) {
@@ -33,7 +41,19 @@ func Load(file string) (*Config, error) {
 	if err := json.Unmarshal(raw, &config); err != nil {
 		return nil, fmt.Errorf("corrupted config file '%s': %w", file, err)
 	}
+
+	config.location = time.Local
+	if config.TimeZone != "" {
+		if config.location, err = time.LoadLocation(config.TimeZone); err != nil {
+			return nil, fmt.Errorf("invalid TimeZone in config file '%s': %w", file, err)
+		}
+	}
 	return &config, nil
+}
+
+// Location is the organization's time zone, see TimeZone
+func (config *Config) Location() *time.Location {
+	return config.location
 }
 
 func (config *Config) BinoURLForPatient(patient int32) string {

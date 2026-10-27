@@ -17,11 +17,20 @@ const factories: Record<string, EditableFactory> = {
     const s = document.createElement('select')
     const options = JSON.parse(el.dataset.options)
     const selected = el.dataset.selected
-    for (const { Value: value, Label: label } of options) {
+    // Consecutive options with the same Group go in one optgroup
+    let parent: HTMLSelectElement | HTMLOptGroupElement = s
+    for (const { Value: value, Label: label, Group: group } of options) {
+      if (group && (parent === s || parent.label !== group)) {
+        parent = document.createElement('optgroup')
+        parent.label = group
+        s.appendChild(parent)
+      } else if (!group) {
+        parent = s
+      }
       const opt = document.createElement('option')
       opt.label = label
       opt.value = value
-      s.appendChild(opt)
+      parent.appendChild(opt)
     }
     s.value = selected
     return s

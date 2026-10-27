@@ -204,6 +204,19 @@ type Species struct {
 	ID int32
 	// The scientific name for this species
 	ScientificName string
+	GroupID        pgtype.Int4
+}
+
+// Each row is a group of species, e.g. gulls
+type SpeciesGroup struct {
+	ID int32
+}
+
+// Internationalization for species_group
+type SpeciesGroupLanguage struct {
+	GroupID    int32
+	LanguageID int32
+	Name       string
 }
 
 // Internationalization for species
@@ -218,13 +231,6 @@ type StatDebug struct {
 	Key   int16
 	Time  pgtype.Timestamptz
 	Value float32
-}
-
-type StatPatient struct {
-	Date      pgtype.Date
-	SpeciesID int32
-	HomeID    int32
-	PatientID int32
 }
 
 type Syslog struct {

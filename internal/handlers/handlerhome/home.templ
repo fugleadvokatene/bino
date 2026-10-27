@@ -254,8 +254,12 @@ templ PreferredSpecies(data *request.CommonData, view *model.Home) {
                 ) {
                     <select autocomplete="off" class="form-control form-select form-select-sm" name="species">
                         <option value="" disabled selected>{data.Language.DashboardSelectSpecies}</option>
-                        for _, otherSpecies := range view.NonPreferredSpecies {
-                            <option value={otherSpecies.ID}>{otherSpecies.Name}</option>
+                        for _, group := range model.GroupSpecies(view.NonPreferredSpecies) {
+                            <optgroup label={templbase.SpeciesGroupLabel(data, group.Name)}>
+                                for _, otherSpecies := range group.Species {
+                                    <option value={otherSpecies.ID}>{otherSpecies.Name}</option>
+                                }
+                            </optgroup>
                         }
                     </select>
                     <button type="submit" class="btn btn-primary btn-sm w-50">{data.Language.GenericAdd}</button>

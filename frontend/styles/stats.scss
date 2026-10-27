@@ -1,0 +1,37 @@
+@use 'vars';
+
+.stats-tile-value {
+  font-size: 1.75rem;
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+#stats-results.htmx-request {
+  opacity: 0.5;
+}
+
+.stats-checklist-scroll {
+  max-height: 12rem;
+  overflow-y: auto;
+}
+
+.stats-description {
+  font-size: 1.1rem;
+}
+
+// Chart.js fills this, see maintainAspectRatio in stats.ts. The custom
+// properties are read by stats.ts to style the chart.
+.stats-chart {
+  position: relative;
+  height: 24rem;
+  --stats-chart-line: #{vars.$primary};
+  --stats-chart-fill: #{rgba(vars.$primary, 0.12)};
+  --stats-chart-text: #{vars.$dark};
+  --stats-chart-grid: #{rgba(vars.$dark, 0.1)};
+  --stats-chart-tooltip: #{vars.$dark};
+  --stats-chart-tooltip-text: #{vars.$light};
+}
+
+.stats-checklist-children {
+  margin-left: 1.5rem;
+}

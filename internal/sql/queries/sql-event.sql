@@ -103,3 +103,19 @@ DELETE
 FROM patient_event
 WHERE appuser_id = $1
 ;
+
+-- name: GetLifecycleEventsForStats :many
+SELECT
+  pe.id,
+  pe.patient_id,
+  pe.home_id,
+  pe.event_id,
+  pe.status,
+  pe.time,
+  p.species_id
+FROM patient_event AS pe
+JOIN patient AS p
+  ON p.id = pe.patient_id
+WHERE pe.event_id = ANY(@event_ids::int[])
+ORDER BY pe.patient_id, pe.time, pe.id
+;

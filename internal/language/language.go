@@ -2,9 +2,11 @@ package language
 
 import (
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/fugleadvokatene/bino/internal/model"
+	"github.com/fugleadvokatene/bino/internal/stats"
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
@@ -28,6 +30,10 @@ type Language struct {
 	AdminManageGoogleDrive            string
 	AdminManageHomes                  string
 	AdminManageSpecies                string
+	SpeciesGroups                     string
+	SpeciesList                       string
+	SpeciesGroup                      string
+	SpeciesNoGroup                    string
 	AdminManageStatuses               string
 	AdminManageInvites                string
 	AdminManageUsers                  string
@@ -86,7 +92,6 @@ type Language struct {
 	DashboardNonPreferredSpecies   string
 	DashboardOtherHome             string
 	DashboardSelectDivision        string
-	DashboardShowMore              string
 	DashboardNoResults             string
 
 	YouCanAlso         string
@@ -272,8 +277,6 @@ type Language struct {
 
 	ReminderUpdateJournal string
 
-	SpeciesOther string
-
 	SystemLog      string
 	SyslogLater    string
 	SyslogEarlier  string
@@ -286,6 +289,30 @@ type Language struct {
 
 	NavbarCalendar  string
 	NavbarDashboard string
+
+	StatsTitle        string
+	StatsDesktopOnly  string
+	StatsCopyLink     string
+	StatsLinkCopied   string
+	StatsObservations string
+	StatsDaysCounted  string
+	StatsAll          string
+	StatsMetric       string
+	StatsIntake       string
+	StatsOutcomes     string
+	StatsCensus       string
+	StatsGranularity  string
+	StatsDay          string
+	StatsWeek         string
+	StatsMonth        string
+	StatsOutcome      string
+	StatsTotal        string
+	StatsAverage      string
+	StatsMax          string
+	StatsMin          string
+	StatsCurrent      string
+	StatsPeriod       string
+	StatsNoData       string
 
 	Status map[model.Status]string
 	Event  map[model.EventID]string
@@ -489,6 +516,10 @@ var NO = &Language{
 	AdminManageGoogleDrive:            "Konfigurer Google Drive",
 	AdminManageHomes:                  "Konfigurer rehabhjem",
 	AdminManageSpecies:                "Konfigurer arter",
+	SpeciesGroups:                     "Artsgrupper",
+	SpeciesList:                       "Arter",
+	SpeciesGroup:                      "Gruppe",
+	SpeciesNoGroup:                    "Ingen gruppe",
 	AdminManageStatuses:               "Konfigurer statuser",
 	AdminManageInvites:                "Administrer invitasjoner",
 	AdminManageUsers:                  "Administrer brukere",
@@ -547,7 +578,6 @@ var NO = &Language{
 	DashboardNonPreferredSpecies:   "Andre arter",
 	DashboardOtherHome:             "Andre rehabhjem",
 	DashboardSelectDivision:        "Gå til en annen avdeling",
-	DashboardShowMore:              "Vis mer",
 	DashboardNoResults:             "Ingen resultater",
 
 	YouCanAlso:         "Du kan også",
@@ -717,6 +747,30 @@ var NO = &Language{
 	NavbarCalendar:  "Kalender",
 	NavbarDashboard: "Hovedside",
 
+	StatsTitle:        "Statistikk",
+	StatsDesktopOnly:  "Statistikk er bare tilgjengelig på en større skjerm.",
+	StatsCopyLink:     "Kopier lenke",
+	StatsLinkCopied:   "Lenke kopiert",
+	StatsObservations: "Pasientene bak tallene",
+	StatsDaysCounted:  "Dager talt med",
+	StatsAll:          "Alle",
+	StatsMetric:       "Tall",
+	StatsIntake:       "Tatt inn",
+	StatsOutcomes:     "Ut av rehab",
+	StatsCensus:       "I rehab",
+	StatsGranularity:  "Per",
+	StatsDay:          "Dag",
+	StatsWeek:         "Uke",
+	StatsMonth:        "Måned",
+	StatsOutcome:      "Utfall",
+	StatsTotal:        "Totalt",
+	StatsAverage:      "Snitt",
+	StatsMax:          "Høyest",
+	StatsMin:          "Lavest",
+	StatsCurrent:      "Siste dag",
+	StatsPeriod:       "Periode",
+	StatsNoData:       "Ingen data i perioden",
+
 	PatientRegisteredTime: "Registrert",
 	PatientCheckedOutTime: "Sjekket ut",
 	PatientEventTime:      "Tidspunkt",
@@ -743,8 +797,6 @@ var NO = &Language{
 	SearchTimePreferenceNewer: "Nyere",
 
 	ReminderUpdateJournal: "Husk å oppdatere journalen.",
-
-	SpeciesOther: "Andre",
 
 	Status: map[model.Status]string{
 		model.StatusUnknown:                        "Ukjent",
@@ -802,6 +854,7 @@ var NO = &Language{
 		model.CapInviteToGDrive:        "Invitere brukere til Google Drive-mappen fra Bino",
 		model.CapInviteToBino:          "Invitere nye brukere til Bino",
 		model.CapViewPatientFollowup:   "Se listen over pasienter som kan trenge oppfølging",
+		model.CapViewStatistics:        "Se statistikk over pasienter",
 		model.CapLoggedIn:              "",
 		model.CapLive:                  "",
 		model.CapUseImportTool:         "",
@@ -904,6 +957,10 @@ var EN = &Language{
 	AdminManageGoogleDrive:            "Configure Google Drive",
 	AdminManageHomes:                  "Manage rehab homes",
 	AdminManageSpecies:                "Manage species",
+	SpeciesGroups:                     "Species groups",
+	SpeciesList:                       "Species",
+	SpeciesGroup:                      "Group",
+	SpeciesNoGroup:                    "No group",
 	AdminManageStatuses:               "Manage statuses",
 	AdminManageInvites:                "Invitations",
 	AdminManageUsers:                  "Manage users",
@@ -962,7 +1019,6 @@ var EN = &Language{
 	DashboardNonPreferredSpecies:   "Other species",
 	DashboardOtherHome:             "Other homes",
 	DashboardSelectDivision:        "Go to other division",
-	DashboardShowMore:              "Show more",
 	DashboardNoResults:             "No results found",
 
 	YouCanAlso:         "You can also",
@@ -1131,6 +1187,30 @@ var EN = &Language{
 	NavbarCalendar:  "Calendar",
 	NavbarDashboard: "Dashboard",
 
+	StatsTitle:        "Statistics",
+	StatsDesktopOnly:  "Statistics are only available on a larger screen.",
+	StatsCopyLink:     "Copy link",
+	StatsLinkCopied:   "Link copied",
+	StatsObservations: "Patients behind the numbers",
+	StatsDaysCounted:  "Days counted",
+	StatsAll:          "All",
+	StatsMetric:       "Measure",
+	StatsIntake:       "Taken in",
+	StatsOutcomes:     "Left rehab",
+	StatsCensus:       "In rehab",
+	StatsGranularity:  "Per",
+	StatsDay:          "Day",
+	StatsWeek:         "Week",
+	StatsMonth:        "Month",
+	StatsOutcome:      "Outcome",
+	StatsTotal:        "Total",
+	StatsAverage:      "Average",
+	StatsMax:          "Highest",
+	StatsMin:          "Lowest",
+	StatsCurrent:      "Last day",
+	StatsPeriod:       "Period",
+	StatsNoData:       "No data in this period",
+
 	PatientRegisteredTime: "Registered",
 	PatientCheckedOutTime: "Checked out",
 	PatientEventTime:      "Time",
@@ -1157,8 +1237,6 @@ var EN = &Language{
 	SearchTimePreferenceNewer: "Newer",
 
 	ReminderUpdateJournal: "Remember to update the journal.",
-
-	SpeciesOther: "Other",
 
 	Status: map[model.Status]string{
 		model.StatusUnknown:                        "Unknown",
@@ -1216,6 +1294,7 @@ var EN = &Language{
 		model.CapInviteToGDrive:        "Invite users to the Google Drive folder from Bino",
 		model.CapInviteToBino:          "Invite new users to Bino",
 		model.CapViewPatientFollowup:   "View the list of patients who may need follow-up",
+		model.CapViewStatistics:        "View patient statistics",
 		model.CapLoggedIn:              "",
 		model.CapLive:                  "",
 		model.CapUseImportTool:         "",
@@ -1650,4 +1729,104 @@ func GetLanguage(id int32) *Language {
 		return EN
 	}
 	return lang
+}
+
+// StatsDescription describes what the statistics page shows. Empty species,
+// divisions or outcomes mean all.
+func (l *Language) StatsDescription(
+	metric stats.Metric,
+	granularity stats.Granularity,
+	from, to time.Time,
+	species, divisions, outcomes []string,
+) string {
+	switch l.ID {
+	case model.LanguageIDNO:
+		var what string
+		per := map[stats.Granularity]string{
+			stats.GranularityDay:   "dag",
+			stats.GranularityWeek:  "uke",
+			stats.GranularityMonth: "måned",
+		}[granularity]
+		switch metric {
+		case stats.MetricIntake:
+			what = "Pasienter tatt inn per " + per
+		case stats.MetricOutcomes:
+			what = "Pasienter som gikk ut av rehab"
+			if len(outcomes) > 0 {
+				what += " (" + joinList(outcomes, "eller", "") + ")"
+			}
+			what += " per " + per
+		default:
+			if granularity == stats.GranularityDay {
+				what = "Pasienter i rehab ved slutten av hver dag"
+			} else {
+				what = "Gjennomsnittlig antall pasienter i rehab ved slutten av hver dag, per " + per + ","
+			}
+		}
+		speciesText := "alle arter"
+		if len(species) > 0 {
+			speciesText = joinList(species, "og", "%d til")
+		}
+		divisionText := "alle avdelinger"
+		if len(divisions) > 0 {
+			divisionText = joinList(divisions, "og", "%d til")
+		}
+		return fmt.Sprintf("%s fra %s til %s, for %s i %s.", what, l.statsDate(from, granularity), l.statsDate(to, granularity), speciesText, divisionText)
+	case model.LanguageIDEN:
+		fallthrough
+	default:
+		var what string
+		per := string(granularity)
+		switch metric {
+		case stats.MetricIntake:
+			what = "Patients taken in per " + per
+		case stats.MetricOutcomes:
+			what = "Patients who left rehab"
+			if len(outcomes) > 0 {
+				what += " (" + joinList(outcomes, "or", "") + ")"
+			}
+			what += " per " + per
+		default:
+			if granularity == stats.GranularityDay {
+				what = "Patients in rehab at the end of each day"
+			} else {
+				what = "Average number of patients in rehab at the end of each day, per " + per + ","
+			}
+		}
+		speciesText := "all species"
+		if len(species) > 0 {
+			speciesText = joinList(species, "and", "%d more")
+		}
+		divisionText := "all divisions"
+		if len(divisions) > 0 {
+			divisionText = joinList(divisions, "and", "%d more")
+		}
+		return fmt.Sprintf("%s from %s to %s, for %s in %s.", what, l.statsDate(from, granularity), l.statsDate(to, granularity), speciesText, divisionText)
+	}
+}
+
+// statsDate formats a date as the week or month it falls in when grouping by
+// those
+func (l *Language) statsDate(t time.Time, g stats.Granularity) string {
+	switch g {
+	case stats.GranularityWeek:
+		year, week := t.ISOWeek()
+		return fmt.Sprintf("%s %d, %d", strings.ToLower(l.StatsWeek), week, year)
+	case stats.GranularityMonth:
+		return fmt.Sprintf("%s %d", l.Months[t.Month()], t.Year())
+	default:
+		return l.FormatDateAbs(t)
+	}
+}
+
+// joinList joins items as "a, b and c". With more than three items and a
+// non-empty more format, the rest are summarized, e.g. "a, b, c and 4 more".
+func joinList(items []string, conjunction, more string) string {
+	if more != "" && len(items) > 3 {
+		return strings.Join(items[:3], ", ") + " " + conjunction + " " + fmt.Sprintf(more, len(items)-3)
+	}
+	if len(items) == 1 {
+		return items[0]
+	}
+	return strings.Join(items[:len(items)-1], ", ") + " " + conjunction + " " + items[len(items)-1]
 }

@@ -1,22 +1,49 @@
 package handlerspeciesadmin
 
+import "fmt"
 import "github.com/fugleadvokatene/bino/internal/request"
 import "github.com/fugleadvokatene/bino/internal/templbase"
 import "github.com/fugleadvokatene/bino/internal/handlers/handlercrud"
 
-templ SpeciesPage(data *request.CommonData, species []SpeciesLangs) {
-    @handlercrud.CRUDPage{
-        Header: data.Language.AdminManageSpecies,
-        LangIndependent: []string{data.Language.GenericLatin},
-    }.Component(data) {
-        for _, species := range species {
-            @handlercrud.UpdateRow(data, species.ID, species) {
-                <td><input class="form-control" data-field="latin" value={species.LatinName}/></td>
+templ SpeciesPage(data *request.CommonData, species []SpeciesLangs, groups []GroupOption, groupLangs []SpeciesGroupLangs) {
+    @templbase.Layout(data) {
+        <h1>{data.Language.AdminManageSpecies}</h1>
+        @handlercrud.CRUDTable{
+            Name: "species-groups",
+            Header: data.Language.SpeciesGroups,
+        }.Component() {
+            for _, group := range groupLangs {
+                @handlercrud.UpdateRow(data, group.ID, group) {
+                }
+            }
+            @handlercrud.CreateRow(data) {
             }
         }
-        @handlercrud.CreateRow(data) {
-            <td><input class="form-control" value="" data-field="latin" placeholder={data.Language.GenericLatin}/></td>
+        @handlercrud.CRUDTable{
+            Name: "species",
+            Header: data.Language.SpeciesList,
+            LangIndependent: []string{data.Language.GenericLatin, data.Language.SpeciesGroup},
+        }.Component() {
+            for _, species := range species {
+                @handlercrud.UpdateRow(data, species.ID, species) {
+                    <td><input class="form-control" data-field="latin" value={species.LatinName}/></td>
+                    <td>@groupSelect(data, groups, species.GroupID)</td>
+                }
+            }
+            @handlercrud.CreateRow(data) {
+                <td><input class="form-control" value="" data-field="latin" placeholder={data.Language.GenericLatin}/></td>
+                <td>@groupSelect(data, groups, 0)</td>
+            }
         }
     }
     @templbase.JSModule(data, "speciesadmin")
+}
+
+templ groupSelect(data *request.CommonData, groups []GroupOption, selected int32) {
+    <select class="form-control form-select" data-field="group">
+        <option value="0">{data.Language.SpeciesNoGroup}</option>
+        for _, g := range groups {
+            <option value={fmt.Sprint(g.ID)} selected?={g.ID == selected}>{g.Name}</option>
+        }
+    </select>
 }

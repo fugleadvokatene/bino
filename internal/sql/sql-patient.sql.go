@@ -112,6 +112,19 @@ func (q *Queries) CheckoutPatient(ctx context.Context, arg CheckoutPatientParams
 	return err
 }
 
+const countPatientsWithStatus = `-- name: CountPatientsWithStatus :one
+SELECT count(*)
+FROM patient
+WHERE status = $1
+`
+
+func (q *Queries) CountPatientsWithStatus(ctx context.Context, status int32) (int64, error) {
+	row := q.db.QueryRow(ctx, countPatientsWithStatus, status)
+	var count int64
+	err := row.Scan(&count)
+	return count, err
+}
+
 const declineSuggestedJournal = `-- name: DeclineSuggestedJournal :exec
 UPDATE patient
 SET suggested_google_id = '', suggested_journal_title = ''
@@ -262,41 +275,6 @@ func (q *Queries) GetActivePatientsForFollowup(ctx context.Context, languageID i
 			&i.JournalPending,
 			&i.JournalUpdated,
 		); err != nil {
-			return nil, err
-		}
-		items = append(items, i)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	return items, nil
-}
-
-const getActivePatientsForStatCollection = `-- name: GetActivePatientsForStatCollection :many
-SELECT
-  p.id,
-  p.species_id,
-  P.curr_home_id
-FROM patient AS p
-WHERE curr_home_id IS NOT NULL
-`
-
-type GetActivePatientsForStatCollectionRow struct {
-	ID         int32
-	SpeciesID  int32
-	CurrHomeID pgtype.Int4
-}
-
-func (q *Queries) GetActivePatientsForStatCollection(ctx context.Context) ([]GetActivePatientsForStatCollectionRow, error) {
-	rows, err := q.db.Query(ctx, getActivePatientsForStatCollection)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	var items []GetActivePatientsForStatCollectionRow
-	for rows.Next() {
-		var i GetActivePatientsForStatCollectionRow
-		if err := rows.Scan(&i.ID, &i.SpeciesID, &i.CurrHomeID); err != nil {
 			return nil, err
 		}
 		items = append(items, i)
@@ -617,6 +595,37 @@ func (q *Queries) GetPatient(ctx context.Context, id int32) (Patient, error) {
 		&i.JournalPending,
 	)
 	return i, err
+}
+
+const getPatientNames = `-- name: GetPatientNames :many
+SELECT id, name
+FROM patient
+WHERE id = ANY($1::int[])
+`
+
+type GetPatientNamesRow struct {
+	ID   int32
+	Name string
+}
+
+func (q *Queries) GetPatientNames(ctx context.Context, ids []int32) ([]GetPatientNamesRow, error) {
+	rows, err := q.db.Query(ctx, getPatientNames, ids)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetPatientNamesRow
+	for rows.Next() {
+		var i GetPatientNamesRow
+		if err := rows.Scan(&i.ID, &i.Name); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
 }
 
 const getPatientWithSpecies = `-- name: GetPatientWithSpecies :one

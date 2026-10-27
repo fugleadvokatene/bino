@@ -2,17 +2,24 @@ import { setupCreateButton, setupUpdateButtons } from './crud'
 
 type SpeciesRequest = {
   Latin: string
+  GroupID: number
   Languages: Record<string, string>
 }
 
-const buildRequest = (
+type SpeciesGroupRequest = {
+  Languages: Record<string, string>
+}
+
+const buildRequest = <T extends SpeciesGroupRequest & Partial<SpeciesRequest>>(
   formFields: HTMLInputElement[],
-  base: SpeciesRequest
-): SpeciesRequest => {
+  base: T
+): T => {
   formFields.forEach((field) => {
     const kind = field.dataset.field
     if (kind === 'latin') {
       base.Latin = field.value
+    } else if (kind === 'group') {
+      base.GroupID = Number(field.value)
     } else if (kind === 'lang') {
       const lang = field.dataset.lang
       if (lang) base.Languages[lang] = field.value
@@ -21,21 +28,27 @@ const buildRequest = (
   return base
 }
 
-setupCreateButton((formFields) => {
-  const req = buildRequest(formFields, {
+setupCreateButton('species', (formFields) => ({
+  url: '/species',
+  req: buildRequest(formFields, { Latin: '', GroupID: 0, Languages: {} })
+}))
+
+setupUpdateButtons('species', (id, formFields) => ({
+  url: '/species',
+  req: buildRequest(formFields, {
+    ID: id,
     Latin: '',
+    GroupID: 0,
     Languages: {}
   })
+}))
 
-  return { url: '/species', req }
-})
+setupCreateButton('species-groups', (formFields) => ({
+  url: '/species/groups',
+  req: buildRequest(formFields, { Languages: {} })
+}))
 
-setupUpdateButtons((id, formFields) => {
-  const req = buildRequest(formFields, {
-    Latin: '',
-    Languages: {},
-    ID: id
-  } as SpeciesRequest & { ID: number })
-
-  return { url: '/species', req }
-})
+setupUpdateButtons('species-groups', (id, formFields) => ({
+  url: '/species/groups',
+  req: buildRequest(formFields, { ID: id, Languages: {} })
+}))

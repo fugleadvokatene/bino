@@ -16,8 +16,7 @@ templ DashboardPage(
     selfHome *model.Home,
     homes []model.Home,
     mascotURL string,
-    speciesDistribution []model.SpeciesCountRow,
-    historicalSpeciesDistribution []model.SpeciesDistributionSeries,
+    nPatients int,
     divisions []model.Division,
     selectedDivision int32,
 ) {
@@ -28,7 +27,7 @@ templ DashboardPage(
             if len(divisions) > 1 {
                 @DashboardChangeDivision(data, divisions, selectedDivision)
             }
-            @DashboardTotalPatients(data, speciesDistribution, historicalSpeciesDistribution)
+            @DashboardTotalPatients(data, nPatients)
             @templbase.Mascot(data, mascotURL, true)
         </div>
         if selfHome.ID != 0 {
@@ -58,32 +57,11 @@ templ DashboardChangeDivision(data *request.CommonData, divisions []model.Divisi
     </div>
 }
 
-templ DashboardTotalPatients(data *request.CommonData, speciesDistribution []model.SpeciesCountRow, historicalSpeciesDistribution []model.SpeciesDistributionSeries) {
+templ DashboardTotalPatients(data *request.CommonData, nPatients int) {
     <div class="hide-on-mobile m-auto w-100 center">
-        <p class="micro total-patients m-auto center">{data.Language.TotalPatientsNow(nPatients(speciesDistribution))}
-        if len(speciesDistribution) > 0 {
-            <a href="#" class="expander" data-target="#patient-distribution-chart">{data.Language.DashboardShowMore}</a>
-        }
-        </p>
-        if len(speciesDistribution) > 0 {
-            <div id="patient-distribution-chart" class="hide-on-mobile w-100" hidden>
-                @templ.JSONScript("patient-chart-data", speciesDistribution)
-                <canvas id={"patient-chart"} height="200"></canvas>
-                @templ.JSONScript("historical-chart-data", historicalSpeciesDistribution)
-                <canvas id={"historical-chart"} height="200"></canvas>
-                @templbase.JSModule(data, "patientchart")
-            </div>
-        }
+        <p class="micro total-patients m-auto center">{data.Language.TotalPatientsNow(nPatients)}</p>
     </div>
 }
-
-func nPatients(dist []model.SpeciesCountRow) int {
-    n := 0
-    for _, s := range dist {
-        n += s.Count
-    }
-    return n
-} 
 
 templ DashboardSearch(data *request.CommonData) {
     @templbase.Card("dashboard-search", "shadow-sm", "mb-2") {
@@ -176,11 +154,13 @@ templ DashboardForm(
                                 <option value={sp.ID} selected?={sp.ID == defaultSelectedSpecies}>{sp.Name}</option>
                             }
                         </optgroup>
-                        <optgroup label={data.Language.DashboardNonPreferredSpecies}>
-                            for _, sp := range selfHome.NonPreferredSpecies {
-                                <option value={sp.ID} selected?={sp.ID == defaultSelectedSpecies}>{sp.Name}</option>
-                            }
-                        </optgroup>
+                        for _, group := range model.GroupSpecies(selfHome.NonPreferredSpecies) {
+                            <optgroup label={templbase.SpeciesGroupLabel(data, group.Name)}>
+                                for _, sp := range group.Species {
+                                    <option value={sp.ID} selected?={sp.ID == defaultSelectedSpecies}>{sp.Name}</option>
+                                }
+                            </optgroup>
+                        }
                     </select>
                 </div>
                 <div class="form-group">

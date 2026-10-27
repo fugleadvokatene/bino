@@ -7,6 +7,8 @@ package sql
 
 import (
 	"context"
+
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 const addSpecies = `-- name: AddSpecies :one
@@ -17,6 +19,18 @@ RETURNING id
 
 func (q *Queries) AddSpecies(ctx context.Context, scientificName string) (int32, error) {
 	row := q.db.QueryRow(ctx, addSpecies, scientificName)
+	var id int32
+	err := row.Scan(&id)
+	return id, err
+}
+
+const addSpeciesGroup = `-- name: AddSpeciesGroup :one
+INSERT INTO species_group DEFAULT VALUES
+RETURNING id
+`
+
+func (q *Queries) AddSpeciesGroup(ctx context.Context) (int32, error) {
+	row := q.db.QueryRow(ctx, addSpeciesGroup)
 	var id int32
 	err := row.Scan(&id)
 	return id, err
@@ -41,7 +55,7 @@ func (q *Queries) GetNameOfSpecies(ctx context.Context, arg GetNameOfSpeciesPara
 }
 
 const getSpecies = `-- name: GetSpecies :many
-SELECT id, scientific_name FROM species
+SELECT id, scientific_name, group_id FROM species
 ORDER BY id
 `
 
@@ -54,7 +68,7 @@ func (q *Queries) GetSpecies(ctx context.Context) ([]Species, error) {
 	var items []Species
 	for rows.Next() {
 		var i Species
-		if err := rows.Scan(&i.ID, &i.ScientificName); err != nil {
+		if err := rows.Scan(&i.ID, &i.ScientificName, &i.GroupID); err != nil {
 			return nil, err
 		}
 		items = append(items, i)
@@ -91,6 +105,93 @@ func (q *Queries) GetSpeciesByName(ctx context.Context, name string) ([]int32, e
 	return items, nil
 }
 
+const getSpeciesGroupLanguage = `-- name: GetSpeciesGroupLanguage :many
+SELECT group_id, language_id, name FROM species_group_language
+ORDER BY (group_id, language_id)
+`
+
+func (q *Queries) GetSpeciesGroupLanguage(ctx context.Context) ([]SpeciesGroupLanguage, error) {
+	rows, err := q.db.Query(ctx, getSpeciesGroupLanguage)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []SpeciesGroupLanguage
+	for rows.Next() {
+		var i SpeciesGroupLanguage
+		if err := rows.Scan(&i.GroupID, &i.LanguageID, &i.Name); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getSpeciesGroups = `-- name: GetSpeciesGroups :many
+SELECT id FROM species_group
+ORDER BY id
+`
+
+func (q *Queries) GetSpeciesGroups(ctx context.Context) ([]int32, error) {
+	rows, err := q.db.Query(ctx, getSpeciesGroups)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []int32
+	for rows.Next() {
+		var id int32
+		if err := rows.Scan(&id); err != nil {
+			return nil, err
+		}
+		items = append(items, id)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getSpeciesGroupsWithLanguage = `-- name: GetSpeciesGroupsWithLanguage :many
+SELECT g.id AS group_id, COALESCE((
+    SELECT gl.name FROM species_group_language AS gl
+    WHERE gl.group_id = g.id AND gl.name <> ''
+    ORDER BY (gl.language_id = $1) DESC, gl.language_id
+    LIMIT 1
+  ), '?')::text AS name
+FROM species_group AS g
+ORDER BY g.id
+`
+
+type GetSpeciesGroupsWithLanguageRow struct {
+	GroupID int32
+	Name    string
+}
+
+// Every group, named in the given language if possible, otherwise in another
+func (q *Queries) GetSpeciesGroupsWithLanguage(ctx context.Context, languageID int32) ([]GetSpeciesGroupsWithLanguageRow, error) {
+	rows, err := q.db.Query(ctx, getSpeciesGroupsWithLanguage, languageID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetSpeciesGroupsWithLanguageRow
+	for rows.Next() {
+		var i GetSpeciesGroupsWithLanguageRow
+		if err := rows.Scan(&i.GroupID, &i.Name); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getSpeciesLanguage = `-- name: GetSpeciesLanguage :many
 SELECT species_id, language_id, name FROM species_language
 ORDER BY (species_id, language_id)
@@ -117,16 +218,28 @@ func (q *Queries) GetSpeciesLanguage(ctx context.Context) ([]SpeciesLanguage, er
 }
 
 const getSpeciesWithLanguage = `-- name: GetSpeciesWithLanguage :many
-SELECT species_id, name FROM species_language
-WHERE language_id = $1
-ORDER BY (species_id)
+SELECT sl.species_id, sl.name, s.group_id, (CASE WHEN s.group_id IS NULL THEN '' ELSE COALESCE((
+    SELECT gl.name FROM species_group_language AS gl
+    WHERE gl.group_id = s.group_id AND gl.name <> ''
+    ORDER BY (gl.language_id = sl.language_id) DESC, gl.language_id
+    LIMIT 1
+  ), '?') END)::text AS group_name
+FROM species_language AS sl
+JOIN species AS s
+  ON s.id = sl.species_id
+WHERE sl.language_id = $1
+ORDER BY (sl.species_id)
 `
 
 type GetSpeciesWithLanguageRow struct {
 	SpeciesID int32
 	Name      string
+	GroupID   pgtype.Int4
+	GroupName string
 }
 
+// group_name is empty without a group, and falls back to another language like
+// GetSpeciesGroupsWithLanguage
 func (q *Queries) GetSpeciesWithLanguage(ctx context.Context, languageID int32) ([]GetSpeciesWithLanguageRow, error) {
 	rows, err := q.db.Query(ctx, getSpeciesWithLanguage, languageID)
 	if err != nil {
@@ -136,7 +249,12 @@ func (q *Queries) GetSpeciesWithLanguage(ctx context.Context, languageID int32) 
 	var items []GetSpeciesWithLanguageRow
 	for rows.Next() {
 		var i GetSpeciesWithLanguageRow
-		if err := rows.Scan(&i.SpeciesID, &i.Name); err != nil {
+		if err := rows.Scan(
+			&i.SpeciesID,
+			&i.Name,
+			&i.GroupID,
+			&i.GroupName,
+		); err != nil {
 			return nil, err
 		}
 		items = append(items, i)
@@ -145,6 +263,56 @@ func (q *Queries) GetSpeciesWithLanguage(ctx context.Context, languageID int32) 
 		return nil, err
 	}
 	return items, nil
+}
+
+const setSpeciesGroup = `-- name: SetSpeciesGroup :exec
+UPDATE species
+SET group_id = $2
+WHERE id = $1
+`
+
+type SetSpeciesGroupParams struct {
+	ID      int32
+	GroupID pgtype.Int4
+}
+
+func (q *Queries) SetSpeciesGroup(ctx context.Context, arg SetSpeciesGroupParams) error {
+	_, err := q.db.Exec(ctx, setSpeciesGroup, arg.ID, arg.GroupID)
+	return err
+}
+
+const setSpeciesScientificName = `-- name: SetSpeciesScientificName :exec
+UPDATE species
+SET scientific_name = $2
+WHERE id = $1
+`
+
+type SetSpeciesScientificNameParams struct {
+	ID             int32
+	ScientificName string
+}
+
+func (q *Queries) SetSpeciesScientificName(ctx context.Context, arg SetSpeciesScientificNameParams) error {
+	_, err := q.db.Exec(ctx, setSpeciesScientificName, arg.ID, arg.ScientificName)
+	return err
+}
+
+const upsertSpeciesGroupLanguage = `-- name: UpsertSpeciesGroupLanguage :exec
+INSERT INTO species_group_language (group_id, language_id, name)
+VALUES ($1, $2, $3)
+ON CONFLICT (group_id, language_id) DO UPDATE
+    SET name = EXCLUDED.name
+`
+
+type UpsertSpeciesGroupLanguageParams struct {
+	GroupID    int32
+	LanguageID int32
+	Name       string
+}
+
+func (q *Queries) UpsertSpeciesGroupLanguage(ctx context.Context, arg UpsertSpeciesGroupLanguageParams) error {
+	_, err := q.db.Exec(ctx, upsertSpeciesGroupLanguage, arg.GroupID, arg.LanguageID, arg.Name)
+	return err
 }
 
 const upsertSpeciesLanguage = `-- name: UpsertSpeciesLanguage :exec

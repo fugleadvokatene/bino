@@ -15,3 +15,9 @@
     display: none;
   }
 }
+
+.show-on-mobile {
+  @media (min-width: vars.$mobilethreshold) {
+    display: none;
+  }
+}

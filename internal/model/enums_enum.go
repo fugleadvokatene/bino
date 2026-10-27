@@ -203,11 +203,13 @@ const (
 	CapViewEventLog Cap = 32
 	// CapViewPatientFollowup is a Cap of type ViewPatientFollowup.
 	CapViewPatientFollowup Cap = 33
+	// CapViewStatistics is a Cap of type ViewStatistics.
+	CapViewStatistics Cap = 34
 )
 
 var ErrInvalidCap = errors.New("not a valid Cap")
 
-const _CapName = "LoggedInViewAllActivePatientsViewAllFormerPatientsViewAllHomesViewAllUsersViewCalendarSearchSetOwnPreferencesCheckInPatientManageOwnPatientsManageAllPatientsManageOwnHomesManageAllHomesCreatePatientJournalManageSpeciesManageUsersDeactivateUsersDeleteUsersViewAdminToolsViewGDriveSettingsInviteToGDriveInviteToBinoViewUserAdminUseImportToolDebugUploadFileManageFeatureFlagsHardDeletePatientLiveSetIndexerStateViewSysLogManageTaskTemplatesViewEventLogViewPatientFollowup"
+const _CapName = "LoggedInViewAllActivePatientsViewAllFormerPatientsViewAllHomesViewAllUsersViewCalendarSearchSetOwnPreferencesCheckInPatientManageOwnPatientsManageAllPatientsManageOwnHomesManageAllHomesCreatePatientJournalManageSpeciesManageUsersDeactivateUsersDeleteUsersViewAdminToolsViewGDriveSettingsInviteToGDriveInviteToBinoViewUserAdminUseImportToolDebugUploadFileManageFeatureFlagsHardDeletePatientLiveSetIndexerStateViewSysLogManageTaskTemplatesViewEventLogViewPatientFollowupViewStatistics"
 
 // CapValues returns a list of the values for Cap
 func CapValues() []Cap {
@@ -246,6 +248,7 @@ func CapValues() []Cap {
 		CapManageTaskTemplates,
 		CapViewEventLog,
 		CapViewPatientFollowup,
+		CapViewStatistics,
 	}
 }
 
@@ -284,6 +287,7 @@ var _CapMap = map[Cap]string{
 	CapManageTaskTemplates:   _CapName[418:437],
 	CapViewEventLog:          _CapName[437:449],
 	CapViewPatientFollowup:   _CapName[449:468],
+	CapViewStatistics:        _CapName[468:482],
 }
 
 // String implements the Stringer interface.
@@ -336,6 +340,7 @@ var _CapValue = map[string]Cap{
 	_CapName[418:437]: CapManageTaskTemplates,
 	_CapName[437:449]: CapViewEventLog,
 	_CapName[449:468]: CapViewPatientFollowup,
+	_CapName[468:482]: CapViewStatistics,
 }
 
 // ParseCap attempts to convert a string to a Cap.

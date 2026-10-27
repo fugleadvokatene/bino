@@ -25,5 +25,15 @@ func Routes(
 			Handler: &putSpecies{DB: db},
 			Cap:     model.CapManageSpecies,
 		},
+		{
+			Path:    "POST /species/groups",
+			Handler: &postSpeciesGroup{DB: db},
+			Cap:     model.CapManageSpecies,
+		},
+		{
+			Path:    "PUT /species/groups",
+			Handler: &putSpeciesGroup{DB: db},
+			Cap:     model.CapManageSpecies,
+		},
 	}
 }

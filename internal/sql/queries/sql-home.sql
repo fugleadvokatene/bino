@@ -170,3 +170,8 @@ LEFT JOIN division AS d
   ON h.division = d.id
 WHERE h.id = $1
 ;
+
+-- name: GetHomesIncludingArchived :many
+SELECT * FROM home
+ORDER BY name
+;

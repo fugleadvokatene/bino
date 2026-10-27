@@ -27,6 +27,7 @@
         "JournalEditDebugDir": ""
     },
     "SystemLanguage": 1,
+    "TimeZone": "Europe/Oslo",
     "SystemBaseURL": "bino.<your-domain>",
     "MascotURL": "",
     "Security": {

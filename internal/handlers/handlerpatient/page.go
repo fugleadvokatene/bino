@@ -38,15 +38,23 @@ func (h *page) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 
 	preferred, nonPreferred, err := h.DB.GetSpeciesForUser(ctx, commonData.User.AppuserID, commonData.Language.ID)
-	speciesList := generic.SliceToSlice(
-		append(preferred, nonPreferred...),
-		func(in model.Species) templbase.Option {
-			return templbase.Option{
-				Value: fmt.Sprintf("%d", in.ID),
-				Label: in.Name,
-			}
-		},
-	)
+	var speciesList []templbase.Option
+	for _, sp := range preferred {
+		speciesList = append(speciesList, templbase.Option{
+			Value: fmt.Sprintf("%d", sp.ID),
+			Label: sp.Name,
+			Group: commonData.Language.HomePreferredSpecies,
+		})
+	}
+	for _, group := range model.GroupSpecies(nonPreferred) {
+		for _, sp := range group.Species {
+			speciesList = append(speciesList, templbase.Option{
+				Value: fmt.Sprintf("%d", sp.ID),
+				Label: sp.Name,
+				Group: templbase.SpeciesGroupLabel(commonData, group.Name),
+			})
+		}
+	}
 
 	commonData.Subtitle = patientData.Name
 

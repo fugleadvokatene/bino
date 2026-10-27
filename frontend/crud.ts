@@ -16,13 +16,18 @@ type UpdateListener<T> = (
 const collectFields = (root: Element): HTMLInputElement[] =>
   Array.from(root.querySelectorAll<HTMLInputElement>('.form-control'))
 
-export const setupCreateButton = <T>(listener: CreateListener<T>) => {
-  const btn = document.getElementById('new-submit')
-  if (!btn) return
+// The table rendered by handlercrud.CRUDTable with the given name
+const table = (name: string) =>
+  document.querySelector<HTMLElement>(`[data-crud="${name}"]`)
 
-  btn.addEventListener('click', (e) => {
+export const setupCreateButton = <T>(
+  name: string,
+  listener: CreateListener<T>
+) => {
+  table(name)?.addEventListener('click', (e) => {
     const target = e.target instanceof Element ? e.target : null
-    const form = target?.closest('tr')
+    if (!target?.closest('.new-submit')) return
+    const form = target.closest('tr')
     if (!form) return
 
     const fields = collectFields(form)
@@ -36,8 +41,11 @@ export const setupCreateButton = <T>(listener: CreateListener<T>) => {
   })
 }
 
-export const setupUpdateButtons = <T>(listener: UpdateListener<T>) => {
-  document.addEventListener('click', (e) => {
+export const setupUpdateButtons = <T>(
+  name: string,
+  listener: UpdateListener<T>
+) => {
+  table(name)?.addEventListener('click', (e) => {
     const target = e.target instanceof HTMLElement ? e.target : null
     if (!target?.classList.contains('update-submit')) return
 

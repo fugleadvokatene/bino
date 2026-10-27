@@ -34,6 +34,7 @@ var RequiredAccessLevel = map[model.Cap]model.AccessLevel{
 	model.CapManageUsers:         model.AccessLevelCoordinator,
 	model.CapDeactivateUsers:     model.AccessLevelCoordinator,
 	model.CapViewPatientFollowup: model.AccessLevelCoordinator,
+	model.CapViewStatistics:      model.AccessLevelCoordinator,
 
 	model.CapViewGDriveSettings:  model.AccessLevelAdmin,
 	model.CapManageAllHomes:      model.AccessLevelAdmin,
