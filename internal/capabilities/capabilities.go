@@ -25,6 +25,7 @@ var RequiredAccessLevel = map[model.Cap]model.AccessLevel{
 	model.CapManageAllPatients:    model.AccessLevelRehabber,
 	model.CapUploadFile:           model.AccessLevelRehabber,
 	model.CapManageSpecies:        model.AccessLevelRehabber,
+	model.CapViewStatistics:       model.AccessLevelRehabber,
 
 	model.CapViewAdminTools:      model.AccessLevelCoordinator,
 	model.CapUseImportTool:       model.AccessLevelCoordinator,
@@ -34,7 +35,6 @@ var RequiredAccessLevel = map[model.Cap]model.AccessLevel{
 	model.CapManageUsers:         model.AccessLevelCoordinator,
 	model.CapDeactivateUsers:     model.AccessLevelCoordinator,
 	model.CapViewPatientFollowup: model.AccessLevelCoordinator,
-	model.CapViewStatistics:      model.AccessLevelCoordinator,
 
 	model.CapViewGDriveSettings:  model.AccessLevelAdmin,
 	model.CapManageAllHomes:      model.AccessLevelAdmin,
