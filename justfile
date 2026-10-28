@@ -36,6 +36,9 @@ tstest:
 
 test: gotest tstest
 
+vuln:
+	go tool govulncheck ./...
+
 e2e: build-e2e
 	./e2e/e2e
 

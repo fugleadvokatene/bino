@@ -91,13 +91,6 @@ SET suggested_google_id = '', suggested_journal_title = ''
 WHERE id = @id
 ;
 
--- name: GetPatientsByJournalURL :many
-SELECT
-  p.id
-FROM patient AS p
-WHERE p.google_id LIKE CONCAT('%', @lookup::TEXT, '%')
-;
-
 -- name: GetFormerPatients :many
 SELECT
   p.id,
