@@ -35,7 +35,7 @@
     "filepond-plugin-image-transform": "^3.8.7",
     "filepond-plugin-image-validate-size": "^1.2.7",
     "htmx.org": "^2.0.8",
-    "jquery": "^3.7.1",
+    "jquery": "^4.0.0",
     "lightbox2": "^2.11.5",
     "sortablejs": "^1.15.6"
   },
