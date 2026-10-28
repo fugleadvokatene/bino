@@ -5,7 +5,11 @@ var __getOwnPropNames = Object.getOwnPropertyNames;
 var __getProtoOf = Object.getPrototypeOf;
 var __hasOwnProp = Object.prototype.hasOwnProperty;
 var __commonJS = (cb, mod) => function __require() {
-  return mod || (0, cb[__getOwnPropNames(cb)[0]])((mod = { exports: {} }).exports, mod), mod.exports;
+  try {
+    return mod || (0, cb[__getOwnPropNames(cb)[0]])((mod = { exports: {} }).exports, mod), mod.exports;
+  } catch (e) {
+    throw mod = 0, e;
+  }
 };
 var __copyProps = (to, from, except, desc) => {
   if (from && typeof from === "object" || typeof from === "function") {
@@ -24,9 +28,9 @@ var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__ge
   mod
 ));
 
-// node_modules/jquery/dist/jquery.js
+// node_modules/lightbox2/node_modules/jquery/dist/jquery.js
 var require_jquery = __commonJS({
-  "node_modules/jquery/dist/jquery.js"(exports, module) {
+  "node_modules/lightbox2/node_modules/jquery/dist/jquery.js"(exports, module) {
     (function(global, factory) {
       "use strict";
       if (typeof module === "object" && typeof module.exports === "object") {
@@ -6389,6 +6393,9 @@ var require_lightbox = __commonJS({
       function Lightbox(options) {
         this.album = [];
         this.currentImageIndex = void 0;
+        this._preloader = null;
+        this._sizeOverlayProxy = null;
+        this.$triggerElement = null;
         this.init();
         this.options = $.extend({}, this.constructor.defaults);
         this.option(options);
@@ -6431,7 +6438,7 @@ var require_lightbox = __commonJS({
       };
       Lightbox.prototype.enable = function() {
         var self2 = this;
-        $("body").on("click", "a[rel^=lightbox], area[rel^=lightbox], a[data-lightbox], area[data-lightbox]", function(event) {
+        $("body").on("click.lightbox", "a[rel^=lightbox], area[rel^=lightbox], a[data-lightbox], area[data-lightbox]", function(event) {
           self2.start($(event.currentTarget));
           return false;
         });
@@ -6441,13 +6448,20 @@ var require_lightbox = __commonJS({
           return;
         }
         var self2 = this;
-        $('<div id="lightboxOverlay" tabindex="-1" class="lightboxOverlay"></div><div id="lightbox" tabindex="-1" class="lightbox"><div class="lb-outerContainer"><div class="lb-container"><img class="lb-image" src="data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw==" alt=""/><div class="lb-nav"><a class="lb-prev" role="button" tabindex="0" aria-label="Previous image" href="" ></a><a class="lb-next" role="button" tabindex="0" aria-label="Next image" href="" ></a></div><div class="lb-loader"><a class="lb-cancel" role="button" tabindex="0"></a></div></div></div><div class="lb-dataContainer"><div class="lb-data"><div class="lb-details"><span class="lb-caption"></span><span class="lb-number"></span></div><div class="lb-closeContainer"><a class="lb-close" role="button" tabindex="0"></a></div></div></div></div>').appendTo($("body"));
+        $('<div id="lightboxOverlay" tabindex="-1" class="lightboxOverlay"></div><div id="lightbox" tabindex="-1" class="lightbox" role="dialog" aria-modal="true" aria-label="Image lightbox"><div class="lb-outerContainer"><div class="lb-container"><img class="lb-image" src="data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw==" alt="" aria-describedby="lb-caption"/><div class="lb-nav"><a class="lb-prev" role="button" tabindex="0" aria-label="Previous image"></a><a class="lb-next" role="button" tabindex="0" aria-label="Next image"></a></div><div class="lb-loader"><a class="lb-cancel" role="button" tabindex="0"></a></div></div></div><div class="lb-dataContainer"><div class="lb-data"><div class="lb-details"><span id="lb-caption" class="lb-caption"></span><span class="lb-number" aria-live="polite"></span></div><div class="lb-closeContainer"><a class="lb-close" role="button" tabindex="0"></a></div></div></div></div>').appendTo($("body"));
         this.$lightbox = $("#lightbox");
         this.$overlay = $("#lightboxOverlay");
         this.$outerContainer = this.$lightbox.find(".lb-outerContainer");
         this.$container = this.$lightbox.find(".lb-container");
         this.$image = this.$lightbox.find(".lb-image");
         this.$nav = this.$lightbox.find(".lb-nav");
+        this.$prev = this.$lightbox.find(".lb-prev");
+        this.$next = this.$lightbox.find(".lb-next");
+        this.$loader = this.$lightbox.find(".lb-loader");
+        this.$dataContainer = this.$lightbox.find(".lb-dataContainer");
+        this.$caption = this.$lightbox.find(".lb-caption");
+        this.$number = this.$lightbox.find(".lb-number");
+        this.$close = this.$lightbox.find(".lb-close");
         this.containerPadding = {
           top: parseInt(this.$container.css("padding-top"), 10),
           right: parseInt(this.$container.css("padding-right"), 10),
@@ -6475,33 +6489,33 @@ var require_lightbox = __commonJS({
           }
           return false;
         });
-        this.$lightbox.find(".lb-prev").on("click", function() {
+        this.$prev.on("click", function(event) {
+          event.preventDefault();
           if (self2.currentImageIndex === 0) {
             self2.changeImage(self2.album.length - 1);
           } else {
             self2.changeImage(self2.currentImageIndex - 1);
           }
-          return false;
         });
-        this.$lightbox.find(".lb-next").on("click", function() {
+        this.$next.on("click", function(event) {
+          event.preventDefault();
           if (self2.currentImageIndex === self2.album.length - 1) {
             self2.changeImage(0);
           } else {
             self2.changeImage(self2.currentImageIndex + 1);
           }
-          return false;
         });
         this.$nav.on("mousedown", function(event) {
           if (event.which === 3) {
             self2.$nav.css("pointer-events", "none");
             self2.$lightbox.one("contextmenu", function() {
               setTimeout(function() {
-                this.$nav.css("pointer-events", "auto");
-              }.bind(self2), 0);
+                self2.$nav.css("pointer-events", "auto");
+              }, 0);
             });
           }
         });
-        this.$lightbox.find(".lb-loader, .lb-close").on("click keyup", function(e) {
+        this.$loader.add(this.$close).on("click keyup", function(e) {
           if (e.type === "click" || e.type === "keyup" && (e.which === 13 || e.which === 32)) {
             self2.end();
             return false;
@@ -6510,9 +6524,7 @@ var require_lightbox = __commonJS({
       };
       Lightbox.prototype.start = function($link) {
         var self2 = this;
-        var $window = $(window);
-        $window.on("resize", $.proxy(this.sizeOverlay, this));
-        this.sizeOverlay();
+        this.$triggerElement = $link;
         this.album = [];
         var imageNumber = 0;
         function addToAlbum($link2) {
@@ -6525,8 +6537,10 @@ var require_lightbox = __commonJS({
         var dataLightboxValue = $link.attr("data-lightbox");
         var $links;
         if (dataLightboxValue) {
-          $links = $($link.prop("tagName") + '[data-lightbox="' + dataLightboxValue + '"]');
-          for (var i = 0; i < $links.length; i = ++i) {
+          $links = $($link.prop("tagName")).filter(function() {
+            return $(this).attr("data-lightbox") === dataLightboxValue;
+          });
+          for (var i = 0; i < $links.length; i++) {
             addToAlbum($($links[i]));
             if ($links[i] === $link[0]) {
               imageNumber = i;
@@ -6536,8 +6550,11 @@ var require_lightbox = __commonJS({
           if ($link.attr("rel") === "lightbox") {
             addToAlbum($link);
           } else {
-            $links = $($link.prop("tagName") + '[rel="' + $link.attr("rel") + '"]');
-            for (var j = 0; j < $links.length; j = ++j) {
+            var relValue = $link.attr("rel");
+            $links = $($link.prop("tagName")).filter(function() {
+              return $(this).attr("rel") === relValue;
+            });
+            for (var j = 0; j < $links.length; j++) {
               addToAlbum($($links[j]));
               if ($links[j] === $link[0]) {
                 imageNumber = j;
@@ -6545,43 +6562,55 @@ var require_lightbox = __commonJS({
             }
           }
         }
-        var top = $window.scrollTop() + this.options.positionFromTop;
-        var left = $window.scrollLeft();
         this.$lightbox.css({
-          top: top + "px",
-          left: left + "px"
+          top: this.options.positionFromTop + "px",
+          left: "0px"
         }).fadeIn(this.options.fadeDuration);
         if (this.options.disableScrolling) {
           $("body").addClass("lb-disable-scrolling");
         }
+        this.$lightbox.on("keydown.focustrap", $.proxy(this._trapFocus, this));
+        this.$overlay.on("keydown.focustrap", $.proxy(this._trapFocus, this));
         this.changeImage(imageNumber);
+        $(document).trigger("lightbox:open", [{ album: this.album, currentImageIndex: imageNumber }]);
       };
       Lightbox.prototype.changeImage = function(imageNumber) {
         var self2 = this;
         var filename = this.album[imageNumber].link;
-        var filetype = filename.split(".").slice(-1)[0];
-        var $image = this.$lightbox.find(".lb-image");
+        var filetype = filename.split("?")[0].split("#")[0].split(".").slice(-1)[0];
         this.disableKeyboardNav();
         this.$overlay.fadeIn(this.options.fadeDuration);
-        $(".lb-loader").fadeIn("slow");
-        this.$lightbox.find(".lb-image, .lb-nav, .lb-prev, .lb-next, .lb-dataContainer, .lb-numbers, .lb-caption").hide();
+        this.$loader.fadeIn("slow");
+        this.$image.hide();
+        this.$nav.hide();
+        this.$prev.hide();
+        this.$next.hide();
+        this.$dataContainer.hide();
+        this.$number.hide();
+        this.$caption.hide();
         this.$outerContainer.addClass("animating");
+        if (this._preloader) {
+          this._preloader.onload = null;
+          this._preloader.onerror = null;
+        }
         var preloader = new Image();
+        this._preloader = preloader;
         preloader.onload = function() {
-          var $preloader;
+          if (preloader !== self2._preloader) {
+            return;
+          }
           var imageHeight;
           var imageWidth;
           var maxImageHeight;
           var maxImageWidth;
           var windowHeight;
           var windowWidth;
-          $image.attr({
+          self2.$image.attr({
             "alt": self2.album[imageNumber].alt,
             "src": filename
           });
-          $preloader = $(preloader);
-          $image.width(preloader.width);
-          $image.height(preloader.height);
+          self2.$image.width(preloader.width);
+          self2.$image.height(preloader.height);
           var aspectRatio = preloader.width / preloader.height;
           windowWidth = $(window).width();
           windowHeight = $(window).height();
@@ -6595,8 +6624,8 @@ var require_lightbox = __commonJS({
               imageWidth = parseInt(maxImageHeight / aspectRatio, 10);
               imageHeight = maxImageHeight;
             }
-            $image.width(imageWidth);
-            $image.height(imageHeight);
+            self2.$image.width(imageWidth);
+            self2.$image.height(imageHeight);
           } else {
             if (self2.options.fitImagesInViewport) {
               if (self2.options.maxWidth && self2.options.maxWidth < maxImageWidth) {
@@ -6613,26 +6642,30 @@ var require_lightbox = __commonJS({
               if (preloader.width / maxImageWidth > preloader.height / maxImageHeight) {
                 imageWidth = maxImageWidth;
                 imageHeight = parseInt(preloader.height / (preloader.width / imageWidth), 10);
-                $image.width(imageWidth);
-                $image.height(imageHeight);
+                self2.$image.width(imageWidth);
+                self2.$image.height(imageHeight);
               } else {
                 imageHeight = maxImageHeight;
                 imageWidth = parseInt(preloader.width / (preloader.height / imageHeight), 10);
-                $image.width(imageWidth);
-                $image.height(imageHeight);
+                self2.$image.width(imageWidth);
+                self2.$image.height(imageHeight);
               }
             }
           }
-          self2.sizeContainer($image.width(), $image.height());
+          self2.sizeContainer(self2.$image.width(), self2.$image.height());
+        };
+        preloader.onerror = function() {
+          if (preloader !== self2._preloader) {
+            return;
+          }
+          self2.$loader.stop(true).hide();
+          self2.$outerContainer.removeClass("animating");
+          self2.enableKeyboardNav();
         };
         preloader.src = this.album[imageNumber].link;
         this.currentImageIndex = imageNumber;
       };
       Lightbox.prototype.sizeOverlay = function() {
-        var self2 = this;
-        setTimeout(function() {
-          self2.$overlay.width($(document).width()).height($(document).height());
-        }, 0);
       };
       Lightbox.prototype.sizeContainer = function(imageWidth, imageHeight) {
         var self2 = this;
@@ -6641,9 +6674,9 @@ var require_lightbox = __commonJS({
         var newWidth = imageWidth + this.containerPadding.left + this.containerPadding.right + this.imageBorderWidth.left + this.imageBorderWidth.right;
         var newHeight = imageHeight + this.containerPadding.top + this.containerPadding.bottom + this.imageBorderWidth.top + this.imageBorderWidth.bottom;
         function postResize() {
-          self2.$lightbox.find(".lb-dataContainer").width(newWidth);
-          self2.$lightbox.find(".lb-prevLink").height(newHeight);
-          self2.$lightbox.find(".lb-nextLink").height(newHeight);
+          self2.$dataContainer.width(newWidth);
+          self2.$prev.height(newHeight);
+          self2.$next.height(newHeight);
           self2.$overlay.trigger("focus");
           self2.showImage();
         }
@@ -6659,64 +6692,66 @@ var require_lightbox = __commonJS({
         }
       };
       Lightbox.prototype.showImage = function() {
-        this.$lightbox.find(".lb-loader").stop(true).hide();
-        this.$lightbox.find(".lb-image").fadeIn(this.options.imageFadeDuration);
+        this.$loader.stop(true).hide();
+        this.$image.fadeIn(this.options.imageFadeDuration);
         this.updateNav();
         this.updateDetails();
         this.preloadNeighboringImages();
         this.enableKeyboardNav();
+        $(document).trigger("lightbox:change", [{
+          album: this.album,
+          currentImageIndex: this.currentImageIndex
+        }]);
       };
       Lightbox.prototype.updateNav = function() {
         var alwaysShowNav = false;
         try {
           document.createEvent("TouchEvent");
           alwaysShowNav = this.options.alwaysShowNavOnTouchDevices ? true : false;
-        } catch (e) {
+        } catch (ignore) {
         }
-        this.$lightbox.find(".lb-nav").show();
+        this.$nav.show();
         if (this.album.length > 1) {
           if (this.options.wrapAround) {
             if (alwaysShowNav) {
-              this.$lightbox.find(".lb-prev, .lb-next").css("opacity", "1");
+              this.$prev.css("opacity", "1");
+              this.$next.css("opacity", "1");
             }
-            this.$lightbox.find(".lb-prev, .lb-next").show();
+            this.$prev.show();
+            this.$next.show();
           } else {
             if (this.currentImageIndex > 0) {
-              this.$lightbox.find(".lb-prev").show();
+              this.$prev.show();
               if (alwaysShowNav) {
-                this.$lightbox.find(".lb-prev").css("opacity", "1");
+                this.$prev.css("opacity", "1");
               }
             }
             if (this.currentImageIndex < this.album.length - 1) {
-              this.$lightbox.find(".lb-next").show();
+              this.$next.show();
               if (alwaysShowNav) {
-                this.$lightbox.find(".lb-next").css("opacity", "1");
+                this.$next.css("opacity", "1");
               }
             }
           }
         }
       };
       Lightbox.prototype.updateDetails = function() {
-        var self2 = this;
         if (typeof this.album[this.currentImageIndex].title !== "undefined" && this.album[this.currentImageIndex].title !== "") {
-          var $caption = this.$lightbox.find(".lb-caption");
           if (this.options.sanitizeTitle) {
-            $caption.text(this.album[this.currentImageIndex].title);
+            this.$caption.text(this.album[this.currentImageIndex].title);
           } else {
-            $caption.html(this.album[this.currentImageIndex].title);
+            this.$caption.html(this.album[this.currentImageIndex].title);
           }
-          $caption.fadeIn("fast");
+          this.$caption.fadeIn("fast");
         }
         if (this.album.length > 1 && this.options.showImageNumberLabel) {
           var labelText = this.imageCountLabel(this.currentImageIndex + 1, this.album.length);
-          this.$lightbox.find(".lb-number").text(labelText).fadeIn("fast");
+          this.$number.text(labelText).fadeIn("fast");
         } else {
-          this.$lightbox.find(".lb-number").hide();
+          this.$number.hide();
         }
         this.$outerContainer.removeClass("animating");
-        this.$lightbox.find(".lb-dataContainer").fadeIn(this.options.resizeDuration, function() {
-          return self2.sizeOverlay();
-        });
+        this.$dataContainer.fadeIn(this.options.resizeDuration);
       };
       Lightbox.prototype.preloadNeighboringImages = function() {
         if (this.album.length > this.currentImageIndex + 1) {
@@ -6758,13 +6793,105 @@ var require_lightbox = __commonJS({
           }
         }
       };
+      Lightbox.prototype._trapFocus = function(event) {
+        if (event.keyCode !== 9) {
+          return;
+        }
+        var focusable = this.$lightbox.find("[tabindex]:visible").filter(function() {
+          return parseInt($(this).attr("tabindex"), 10) >= 0;
+        });
+        if (focusable.length === 0) {
+          return;
+        }
+        var first = focusable.first()[0];
+        var last = focusable.last()[0];
+        var active = document.activeElement;
+        if (event.shiftKey) {
+          if (active === first || active === this.$lightbox[0] || active === this.$overlay[0]) {
+            event.preventDefault();
+            last.focus();
+          }
+        } else {
+          if (active === last) {
+            event.preventDefault();
+            first.focus();
+          }
+        }
+      };
       Lightbox.prototype.end = function() {
         this.disableKeyboardNav();
-        $(window).off("resize", this.sizeOverlay);
+        this.$lightbox.off(".focustrap");
+        this.$overlay.off(".focustrap");
         this.$lightbox.fadeOut(this.options.fadeDuration);
         this.$overlay.fadeOut(this.options.fadeDuration);
         if (this.options.disableScrolling) {
           $("body").removeClass("lb-disable-scrolling");
+        }
+        if (this._preloader) {
+          this._preloader.onload = null;
+          this._preloader.onerror = null;
+          this._preloader = null;
+        }
+        if (this.$triggerElement) {
+          this.$triggerElement.trigger("focus");
+          this.$triggerElement = null;
+        }
+        $(document).trigger("lightbox:close");
+      };
+      Lightbox.prototype.open = function(images, startIndex) {
+        startIndex = startIndex || 0;
+        this.album = [];
+        if (typeof images === "string") {
+          images = [{ link: images }];
+        }
+        for (var i = 0; i < images.length; i++) {
+          var img = typeof images[i] === "string" ? { link: images[i] } : images[i];
+          this.album.push({
+            link: img.link || img.src || img.href,
+            alt: img.alt || "",
+            title: img.title || ""
+          });
+        }
+        if (this.album.length === 0) {
+          return;
+        }
+        this.$lightbox.css({
+          top: this.options.positionFromTop + "px",
+          left: "0px"
+        }).fadeIn(this.options.fadeDuration);
+        if (this.options.disableScrolling) {
+          $("body").addClass("lb-disable-scrolling");
+        }
+        this.$lightbox.on("keydown.focustrap", $.proxy(this._trapFocus, this));
+        this.$overlay.on("keydown.focustrap", $.proxy(this._trapFocus, this));
+        this.changeImage(startIndex);
+        $(document).trigger("lightbox:open", [{ album: this.album, currentImageIndex: startIndex }]);
+      };
+      Lightbox.prototype.close = function() {
+        this.end();
+      };
+      Lightbox.prototype.next = function() {
+        if (this.currentImageIndex !== this.album.length - 1) {
+          this.changeImage(this.currentImageIndex + 1);
+        } else if (this.options.wrapAround && this.album.length > 1) {
+          this.changeImage(0);
+        }
+      };
+      Lightbox.prototype.prev = function() {
+        if (this.currentImageIndex !== 0) {
+          this.changeImage(this.currentImageIndex - 1);
+        } else if (this.options.wrapAround && this.album.length > 1) {
+          this.changeImage(this.album.length - 1);
+        }
+      };
+      Lightbox.prototype.destroy = function() {
+        this.end();
+        $("body").off("click.lightbox");
+        if (this.$lightbox) {
+          this.$lightbox.remove();
+        }
+        if (this.$overlay) {
+          this.$overlay.remove();
         }
       };
       return new Lightbox();
@@ -9672,7 +9799,7 @@ var require_filepond = __commonJS({
         // custom initial files array
         files: [[], Type.ARRAY],
         // show support by displaying credits
-        credits: [["https://pqina.nl/", "Powered by PQINA"], Type.ARRAY]
+        credits: [["https://filepond.com", "Powered by FilePond"], Type.ARRAY]
       };
       var getItemByQuery = function getItemByQuery2(items, query) {
         if (isEmpty(query)) {
@@ -11923,6 +12050,9 @@ var require_filepond = __commonJS({
             });
             item2.onOnce("process-error", function(error2) {
               failure({ error: error2, file: createItemAPI(item2) });
+              processNext();
+            });
+            item2.onOnce("process-abort", function() {
               processNext();
             });
             var options = state2.options;
@@ -22338,7 +22468,7 @@ jquery/dist/jquery.js:
 
 lightbox2/dist/js/lightbox.js:
   (*!
-   * Lightbox v2.11.5
+   * Lightbox v2.12.0
    * by Lokesh Dhakar
    *
    * More info:
@@ -22353,7 +22483,7 @@ lightbox2/dist/js/lightbox.js:
 
 filepond/dist/filepond.js:
   (*!
-   * FilePond 4.32.10
+   * FilePond 4.32.12
    * Licensed under MIT, https://opensource.org/licenses/MIT/
    * Please visit https://pqina.nl/filepond/ for details.
    *)
@@ -22395,7 +22525,7 @@ filepond-plugin-image-edit/dist/filepond-plugin-image-edit.js:
 
 filepond-plugin-image-transform/dist/filepond-plugin-image-transform.js:
   (*!
-   * FilePondPluginImageTransform 3.8.7
+   * FilePondPluginImageTransform 3.8.8
    * Licensed under MIT, https://opensource.org/licenses/MIT/
    * Please visit https://pqina.nl/filepond/ for details.
    *)

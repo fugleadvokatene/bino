@@ -1049,20 +1049,32 @@
 }
 
 /* node_modules/lightbox2/dist/css/lightbox.css */
+:root {
+  --lb-overlay-opacity: 0.8;
+  --lb-overlay-bg: black;
+  --lb-border-radius: 3px;
+  --lb-image-border-width: 4px;
+  --lb-image-border-color: white;
+  --lb-container-bg: white;
+  --lb-text-color: #ccc;
+  --lb-caption-link-color: #4ae;
+  --lb-number-color: #999999;
+  --lb-nav-transition-speed: 0.6s;
+  --lb-close-transition-speed: 0.2s;
+}
 body.lb-disable-scrolling {
   overflow: hidden;
 }
 .lightboxOverlay {
-  position: absolute;
-  top: 0;
-  left: 0;
+  position: fixed;
+  inset: 0;
   z-index: 9999;
-  background-color: black;
-  opacity: 0.8;
+  background-color: var(--lb-overlay-bg);
+  opacity: var(--lb-overlay-opacity);
   display: none;
 }
 .lightbox {
-  position: absolute;
+  position: fixed;
   left: 0;
   width: 100%;
   z-index: 10000;
@@ -1076,8 +1088,8 @@ body.lb-disable-scrolling {
   height: auto;
   max-width: inherit;
   max-height: none;
-  border-radius: 3px;
-  border: 4px solid white;
+  border-radius: var(--lb-border-radius);
+  border: var(--lb-image-border-width) solid var(--lb-image-border-color);
 }
 .lightbox a img {
   border: none;
@@ -1088,7 +1100,7 @@ body.lb-disable-scrolling {
   height: 250px;
   margin: 0 auto;
   border-radius: 4px;
-  background-color: white;
+  background-color: var(--lb-container-bg);
 }
 .lb-outerContainer:after {
   content: "";
@@ -1138,10 +1150,7 @@ body.lb-disable-scrolling {
   float: left;
   background: url("./prev.png") left 48% no-repeat;
   opacity: 0;
-  -webkit-transition: opacity 0.6s;
-  -moz-transition: opacity 0.6s;
-  -o-transition: opacity 0.6s;
-  transition: opacity 0.6s;
+  transition: opacity var(--lb-nav-transition-speed);
 }
 .lb-nav a.lb-prev:hover {
   opacity: 1;
@@ -1152,10 +1161,7 @@ body.lb-disable-scrolling {
   float: right;
   background: url("./next.png") right 48% no-repeat;
   opacity: 0;
-  -webkit-transition: opacity 0.6s;
-  -moz-transition: opacity 0.6s;
-  -o-transition: opacity 0.6s;
-  transition: opacity 0.6s;
+  transition: opacity var(--lb-nav-transition-speed);
 }
 .lb-nav a.lb-next:hover {
   opacity: 1;
@@ -1174,7 +1180,7 @@ body.lb-disable-scrolling {
 }
 .lb-data {
   padding: 0 4px;
-  color: #ccc;
+  color: var(--lb-text-color);
 }
 .lb-data .lb-details {
   width: 85%;
@@ -1188,14 +1194,14 @@ body.lb-disable-scrolling {
   line-height: 1em;
 }
 .lb-data .lb-caption a {
-  color: #4ae;
+  color: var(--lb-caption-link-color);
 }
 .lb-data .lb-number {
   display: block;
   clear: left;
   padding-bottom: 1em;
   font-size: 12px;
-  color: #999999;
+  color: var(--lb-number-color);
 }
 .lb-data .lb-close {
   display: block;
@@ -1206,10 +1212,7 @@ body.lb-disable-scrolling {
   text-align: right;
   outline: none;
   opacity: 0.7;
-  -webkit-transition: opacity 0.2s;
-  -moz-transition: opacity 0.2s;
-  -o-transition: opacity 0.2s;
-  transition: opacity 0.2s;
+  transition: opacity var(--lb-close-transition-speed);
 }
 .lb-data .lb-close:hover {
   cursor: pointer;
@@ -1219,7 +1222,7 @@ body.lb-disable-scrolling {
 
 filepond/dist/filepond.css:
   (*!
-   * FilePond 4.32.10
+   * FilePond 4.32.12
    * Licensed under MIT, https://opensource.org/licenses/MIT/
    * Please visit https://pqina.nl/filepond/ for details.
    *)

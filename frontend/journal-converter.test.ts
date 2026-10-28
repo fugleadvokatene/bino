@@ -1,190 +1,156 @@
 import { describe, expect, it } from 'vitest'
 import {
-  FLAG_BOLD,
-  FLAG_ITALIC,
-  FLAG_LINK,
-  FLAG_STRIKETHROUGH,
-  FLAG_UNDERLINE,
-  documentToTiptap,
-  tiptapToDocument,
-  type DocElement,
+  gdocsToTiptap,
+  tiptapToGdocs,
+  type GDocsDoc,
+  type GDocsPara,
+  type GDocsRun,
   type TiptapNode
 } from './journal-converter'
 
-// Helpers to build DocElement fixtures concisely
-function text(content: string, flags = 0, linkURL = ''): DocElement {
-  return {
-    Type: 'text',
-    Value: { Content: content, Flags: flags, FontSize: 0, LinkURL: linkURL }
-  }
+// Helpers to build GDocsDoc fixtures concisely
+function text(content: string, style: Partial<GDocsRun> = {}): GDocsRun {
+  return { text: content, ...style }
 }
 
-function para(elements: DocElement[], headingLevel = 0): DocElement {
-  return {
-    Type: 'paragraph',
-    Value: { Elements: elements, HeadingLevel: headingLevel }
-  }
+function para(runs: GDocsRun[], heading = 0, paraId = -1): GDocsPara {
+  return { paraId, heading, list: false, ordered: false, nesting: 0, runs }
 }
 
-function list(items: DocElement[], ordered = false, nesting = 0): DocElement {
-  return {
-    Type: 'list',
-    Value: { Items: items, Ordered: ordered, Nesting: nesting }
-  }
+function item(runs: GDocsRun[], ordered = false, paraId = -1): GDocsPara {
+  return { paraId, heading: 0, list: true, ordered, nesting: 0, runs }
 }
 
 function image(
+  imageId: string,
   url: string,
-  description = '',
   width = 100,
   height = 100,
   crop: [number, number, number, number] = [0, 0, 0, 0]
-): DocElement {
-  return {
-    Type: 'image',
-    Value: {
-      Title: '',
-      Description: description,
-      Width: width,
-      Height: height,
-      Crop: crop,
-      URL: url,
-      InlineObjectID: ''
-    }
-  }
+): GDocsRun {
+  return { imageId, url, width, height, crop }
 }
 
-function roundtrip(input: DocElement[]): DocElement[] {
-  return tiptapToDocument(documentToTiptap(input))
+function doc(...paragraphs: GDocsPara[]): GDocsDoc {
+  return { paragraphs }
 }
 
-describe('roundtrip: DocElement[] → TipTap → DocElement[]', () => {
+function roundtrip(input: GDocsDoc): GDocsDoc {
+  return tiptapToGdocs(gdocsToTiptap(input))
+}
+
+describe('roundtrip: GDocsDoc → TipTap → GDocsDoc', () => {
   it('plain paragraph', () => {
-    const input = [para([text('Hello world')])]
+    const input = doc(para([text('Hello world')]))
     expect(roundtrip(input)).toEqual(input)
   })
 
   it('bold text', () => {
-    const input = [para([text('bold', FLAG_BOLD)])]
+    const input = doc(para([text('bold', { bold: true })]))
     expect(roundtrip(input)).toEqual(input)
   })
 
   it('italic text', () => {
-    const input = [para([text('italic', FLAG_ITALIC)])]
+    const input = doc(para([text('italic', { italic: true })]))
     expect(roundtrip(input)).toEqual(input)
   })
 
   it('underline text', () => {
-    const input = [para([text('underline', FLAG_UNDERLINE)])]
+    const input = doc(para([text('underline', { underline: true })]))
     expect(roundtrip(input)).toEqual(input)
   })
 
   it('strikethrough text', () => {
-    const input = [para([text('strike', FLAG_STRIKETHROUGH)])]
+    const input = doc(para([text('strike', { strikethrough: true })]))
     expect(roundtrip(input)).toEqual(input)
   })
 
   it('combined marks: bold + italic', () => {
-    const input = [para([text('both', FLAG_BOLD | FLAG_ITALIC)])]
+    const input = doc(para([text('both', { bold: true, italic: true })]))
     expect(roundtrip(input)).toEqual(input)
   })
 
   it('link', () => {
-    const input = [para([text('click', FLAG_LINK, 'https://example.com')])]
+    const input = doc(para([text('click', { link: 'https://example.com' })]))
     expect(roundtrip(input)).toEqual(input)
   })
 
   it('mixed marks in one paragraph', () => {
-    const input = [
+    const input = doc(
       para([
         text('plain '),
-        text('bold ', FLAG_BOLD),
-        text('italic', FLAG_ITALIC)
+        text('bold ', { bold: true }),
+        text('italic', { italic: true })
       ])
-    ]
+    )
     expect(roundtrip(input)).toEqual(input)
   })
 
-  it('heading level 1', () => {
-    const input = [para([text('Title')], 1)]
+  it('paragraph IDs are preserved', () => {
+    const input = doc(para([text('first')], 0, 3), para([text('second')], 2, 7))
     expect(roundtrip(input)).toEqual(input)
   })
 
-  it('heading level 2', () => {
-    const input = [para([text('Section')], 2)]
+  it('title', () => {
+    const input = doc(para([text('Title')], 1))
     expect(roundtrip(input)).toEqual(input)
   })
 
-  it('heading with empty elements is preserved', () => {
-    const input = [para([], 2)]
+  it('heading', () => {
+    const input = doc(para([text('Section')], 2))
+    expect(roundtrip(input)).toEqual(input)
+  })
+
+  it('heading with no runs is preserved', () => {
+    const input = doc(para([], 2))
     expect(roundtrip(input)).toEqual(input)
   })
 
   it('bullet list', () => {
-    const input = [list([para([text('first')]), para([text('second')])])]
+    const input = doc(item([text('first')]), item([text('second')]))
     expect(roundtrip(input)).toEqual(input)
   })
 
   it('ordered list', () => {
-    const input = [list([para([text('one')]), para([text('two')])], true)]
-    expect(roundtrip(input)).toEqual(input)
-  })
-
-  it('nested list', () => {
-    // The inner list is at depth 1; tiptapListToDoc reconstructs Nesting from structure
-    const input = [
-      list([
-        para([text('parent')]),
-        list([para([text('child')])], false, 1),
-        para([text('sibling')])
-      ])
-    ]
+    const input = doc(item([text('one')], true), item([text('two')], true))
     expect(roundtrip(input)).toEqual(input)
   })
 
   it('inline image', () => {
-    const input = [
+    const input = doc(
       para([
-        image('/files/bird.jpg', 'A bird', 800, 600, [0.1, 0.05, 0.1, 0.05])
+        image('kix.abc', '/files/bird.jpg', 800, 600, [0.1, 0.05, 0.1, 0.05])
       ])
-    ]
+    )
     expect(roundtrip(input)).toEqual(input)
   })
 
   it('mixed content: heading, paragraph, list', () => {
-    const input = [
+    const input = doc(
       para([text('My heading')], 2),
-      para([text('Intro text with '), text('bold', FLAG_BOLD)]),
-      list([para([text('item A')]), para([text('item B')])])
-    ]
+      para([text('Intro text with '), text('bold', { bold: true })]),
+      item([text('item A')]),
+      item([text('item B')])
+    )
     expect(roundtrip(input)).toEqual(input)
   })
 
-  it('empty paragraphs are dropped', () => {
-    const input = [
+  it('empty paragraphs are kept', () => {
+    const input = doc(
       para([text('real content')]),
       para([]),
-      para([text('  ')]),
-      para([text('more content')])
-    ]
-    const expected = [
-      para([text('real content')]),
-      para([text('more content')])
-    ]
-    expect(roundtrip(input)).toEqual(expected)
+      para([text('more')])
+    )
+    expect(roundtrip(input)).toEqual(input)
   })
 
-  it('multiple paragraphs', () => {
-    const input = [
-      para([text('First paragraph')]),
-      para([text('Second paragraph')]),
-      para([text('Third paragraph')])
-    ]
-    expect(roundtrip(input)).toEqual(input)
+  it('empty text runs are dropped', () => {
+    const input = doc(para([text('a'), text(''), text('b')]))
+    expect(roundtrip(input)).toEqual(doc(para([text('a'), text('b')])))
   })
 })
 
-describe('tiptapToDocument', () => {
+describe('tiptapToGdocs', () => {
   it('unknown node types are ignored', () => {
     const tiptap: TiptapNode = {
       type: 'doc',
@@ -193,12 +159,12 @@ describe('tiptapToDocument', () => {
         { type: 'paragraph', content: [{ type: 'text', text: 'kept' }] }
       ]
     }
-    expect(tiptapToDocument(tiptap)).toEqual([para([text('kept')])])
+    expect(tiptapToGdocs(tiptap)).toEqual(doc(para([text('kept')])))
   })
 
   it('null/missing content is treated as empty', () => {
     const tiptap: TiptapNode = { type: 'doc' }
-    expect(tiptapToDocument(tiptap)).toEqual([])
+    expect(tiptapToGdocs(tiptap)).toEqual(doc())
   })
 
   it('heading level is read from attrs', () => {
@@ -212,32 +178,70 @@ describe('tiptapToDocument', () => {
         }
       ]
     }
-    expect(tiptapToDocument(tiptap)).toEqual([para([text('Deep')], 3)])
+    expect(tiptapToGdocs(tiptap)).toEqual(doc(para([text('Deep')], 3)))
+  })
+
+  it('nested lists get increasing nesting', () => {
+    const tiptap: TiptapNode = {
+      type: 'doc',
+      content: [
+        {
+          type: 'bulletList',
+          content: [
+            {
+              type: 'listItem',
+              content: [
+                {
+                  type: 'paragraph',
+                  content: [{ type: 'text', text: 'parent' }]
+                },
+                {
+                  type: 'orderedList',
+                  content: [
+                    {
+                      type: 'listItem',
+                      content: [
+                        {
+                          type: 'paragraph',
+                          content: [{ type: 'text', text: 'child' }]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+    expect(tiptapToGdocs(tiptap)).toEqual(
+      doc(item([text('parent')]), {
+        ...item([text('child')], true),
+        nesting: 1
+      })
+    )
   })
 })
 
-describe('documentToTiptap', () => {
-  it('empty array produces empty doc', () => {
-    expect(documentToTiptap([])).toEqual({ type: 'doc', content: [] })
+describe('gdocsToTiptap', () => {
+  it('empty doc produces empty doc', () => {
+    expect(gdocsToTiptap(doc())).toEqual({ type: 'doc', content: [] })
   })
 
-  it('heading always included even with no elements', () => {
-    const input = [para([], 2)]
-    const result = documentToTiptap(input)
-    expect(result.content).toHaveLength(1)
-    expect(result.content![0].type).toBe('heading')
+  it('consecutive list items are grouped into one list', () => {
+    const result = gdocsToTiptap(
+      doc(item([text('a')]), item([text('b')]), para([text('after')]))
+    )
+    expect(result.content).toHaveLength(2)
+    expect(result.content![0].type).toBe('bulletList')
+    expect(result.content![0].content).toHaveLength(2)
+    expect(result.content![1].type).toBe('paragraph')
   })
 
-  it('whitespace-only paragraph is excluded', () => {
-    const input = [para([text('   ')])]
-    const result = documentToTiptap(input)
-    expect(result.content).toHaveLength(0)
-  })
-
-  it('paragraph with image is included', () => {
-    const input = [para([image('/img.jpg')])]
-    const result = documentToTiptap(input)
-    expect(result.content).toHaveLength(1)
-    expect(result.content![0].type).toBe('paragraph')
+  it('null runs are treated as empty', () => {
+    const p = { ...para([]), runs: null as unknown as GDocsRun[] }
+    const result = gdocsToTiptap(doc(p))
+    expect(result.content![0].content).toEqual([])
   })
 })
