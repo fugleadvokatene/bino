@@ -2,6 +2,8 @@ module github.com/fugleadvokatene/bino
 
 go 1.26.0
 
+toolchain go1.27.3
+
 require (
 	github.com/a-h/htmlformat v0.0.0-20250209132643-c2a3d62ad1fc
 	github.com/a-h/templ v0.3.943
