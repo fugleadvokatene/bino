@@ -2,6 +2,7 @@ name: build
 
 on:
   push:
+    branches: [master]
   pull_request:
   workflow_dispatch:
 
@@ -11,8 +12,14 @@ permissions:
 jobs:
   build:
     runs-on: ubuntu-latest
+    permissions:
+      # Lets PR runs push regenerated code back to the branch.
+      contents: write
     steps:
       - uses: actions/checkout@v7
+        with:
+          # On PRs, check out the branch itself (not the merge commit) so we can push to it.
+          ref: ${{ github.head_ref }}
       - uses: actions/setup-go@v7
         with:
           go-version-file: go.mod
@@ -28,8 +35,20 @@ jobs:
         working-directory: frontend
       - run: just build
       # Generated code (templ, sqlc, go-enum, sass, frontend bundle) is committed,
-      # so dependency bumps must come with regenerated output.
+      # so dependency bumps must come with regenerated output. On PRs we commit it
+      # for you; elsewhere it's an error.
+      - name: Commit regenerated code
+        if: github.event_name == 'pull_request'
+        run: |
+          if [ -n "$(git status --porcelain)" ]; then
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add -A
+            git commit -m "Regenerate generated code"
+            git push
+          fi
       - name: Check generated code is committed
+        if: github.event_name != 'pull_request'
         run: |
           if [ -n "$(git status --porcelain)" ]; then
             git status --short
