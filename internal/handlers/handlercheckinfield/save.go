@@ -85,7 +85,10 @@ func parseField(lang *language.Language, values map[string]string) (model.Checki
 	if field.Variable == "" || field.Label == "" {
 		return field, errors.New(lang.CheckinFieldsVariableRequired)
 	}
-	if slices.Contains(model.TemplateValues(), model.Template(field.Variable)) {
+	if !model.IsTemplateToken(field.Variable) {
+		return field, errors.New(lang.CheckinFieldsVariableInvalid)
+	}
+	if slices.Contains(model.TemplateValues(), model.Template(model.TemplateVariableName(field.Variable))) {
 		return field, errors.New(lang.CheckinFieldsVariableReserved)
 	}
 

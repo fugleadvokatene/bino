@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"log/slog"
 	"net/http"
-	"strings"
 	"time"
 
 	"github.com/fugleadvokatene/bino/internal/config"
@@ -78,7 +77,7 @@ func (h *checkin) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	extraVars := make(map[string]string, len(checkinFields))
 	for _, f := range checkinFields {
 		// Fields not submitted (e.g. added after the form was loaded) are empty
-		extraVars[f.Variable] = strings.TrimSpace(r.Form.Get(f.FormName()))
+		extraVars[f.Variable] = f.ValueFromForm(r.Form.Get(f.FormName()))
 	}
 
 	systemSpeciesName, err := h.DB.Q.GetNameOfSpecies(ctx, sql.GetNameOfSpeciesParams{

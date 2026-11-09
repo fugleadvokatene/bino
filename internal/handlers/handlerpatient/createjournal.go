@@ -64,7 +64,7 @@ func (h *createJournal) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 	extraVars := make(map[string]string, len(checkinFields))
 	for _, f := range checkinFields {
-		extraVars[f.Variable] = f.DefaultValue
+		extraVars[f.Variable] = f.UnfilledValue()
 	}
 
 	// Patients without a current home (e.g. checked out) get an empty Rehabber

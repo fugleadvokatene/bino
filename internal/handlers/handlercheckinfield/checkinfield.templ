@@ -13,7 +13,13 @@ templ CheckinFieldsPage(data *request.CommonData, fields []model.CheckinField) {
 	@templbase.Layout(data, "checkin-fields-page") {
 		<h1>{ data.Language.CheckinFields }</h1>
 		@templbase.Card() {
-			<p class="mb-0">{ data.Language.CheckinFieldsInstruction }</p>
+			<p>{ data.Language.CheckinFieldsInstruction }</p>
+			<p class="mb-0">
+				{ data.Language.CheckinFieldsBuiltins }
+				for _, t := range model.TemplateValues() {
+					<code class="ms-1">{ t.Token() }</code>
+				}
+			</p>
 		}
 		if len(fields) == 0 {
 			@templbase.Card() {
@@ -34,7 +40,9 @@ templ CheckinFieldsPage(data *request.CommonData, fields []model.CheckinField) {
 								: { strings.Join(f.Options, ", ") }
 							}
 						</div>
-						if f.DefaultValue != "" {
+						if f.Kind == model.CheckinFieldKindCheckbox {
+							<div class="text-muted small">{ data.Language.CheckinFieldsCheckedText }: { f.CheckedValue() }</div>
+						} else if f.DefaultValue != "" {
 							<div class="text-muted small">{ data.Language.CheckinFieldsDefault }: { f.DefaultValue }</div>
 						}
 					</div>
@@ -85,6 +93,7 @@ templ CheckinFieldForm(data *request.CommonData, f model.CheckinField, action st
 			<div>
 				<label class="form-label fw-bold">{ data.Language.CheckinFieldsDefault }</label>
 				<input type="text" name="default" class="form-control form-control-sm" value={ f.DefaultValue }/>
+				<div class="form-text">{ data.Language.CheckinFieldsDefaultHelp }</div>
 			</div>
 			<div>
 				<label class="form-label fw-bold">{ data.Language.CheckinFieldsSortOrder }</label>

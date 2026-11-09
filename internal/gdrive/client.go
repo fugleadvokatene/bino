@@ -144,8 +144,12 @@ func (g *Client) CreateDocument(conf DivisionConfig, vars TemplateVars) (Item, e
 		return Item{}, fmt.Errorf("creating copy: %w", err)
 	}
 
-	updateCall := g.Docs.Documents.BatchUpdate(f.Id, vars.ReplaceRequests())
-	_, err = updateCall.Do()
+	// Read the copy (not the cached template, which may be stale) to find
+	// leftover $-tokens to remove
+	doc, err := g.GetDocument(f.Id)
+	if err == nil {
+		_, err = g.Docs.Documents.BatchUpdate(f.Id, vars.ReplaceRequests(DocumentText(doc))).Do()
+	}
 	if err != nil {
 		deleteCall := g.Drive.Files.Delete(f.Id)
 

@@ -361,23 +361,27 @@ const (
 	CheckinFieldKindText CheckinFieldKind = 0
 	// CheckinFieldKindDropdown is a CheckinFieldKind of type Dropdown.
 	CheckinFieldKindDropdown CheckinFieldKind = 1
+	// CheckinFieldKindCheckbox is a CheckinFieldKind of type Checkbox.
+	CheckinFieldKindCheckbox CheckinFieldKind = 2
 )
 
 var ErrInvalidCheckinFieldKind = errors.New("not a valid CheckinFieldKind")
 
-const _CheckinFieldKindName = "TextDropdown"
+const _CheckinFieldKindName = "TextDropdownCheckbox"
 
 // CheckinFieldKindValues returns a list of the values for CheckinFieldKind
 func CheckinFieldKindValues() []CheckinFieldKind {
 	return []CheckinFieldKind{
 		CheckinFieldKindText,
 		CheckinFieldKindDropdown,
+		CheckinFieldKindCheckbox,
 	}
 }
 
 var _CheckinFieldKindMap = map[CheckinFieldKind]string{
 	CheckinFieldKindText:     _CheckinFieldKindName[0:4],
 	CheckinFieldKindDropdown: _CheckinFieldKindName[4:12],
+	CheckinFieldKindCheckbox: _CheckinFieldKindName[12:20],
 }
 
 // String implements the Stringer interface.
@@ -396,8 +400,9 @@ func (x CheckinFieldKind) IsValid() bool {
 }
 
 var _CheckinFieldKindValue = map[string]CheckinFieldKind{
-	_CheckinFieldKindName[0:4]:  CheckinFieldKindText,
-	_CheckinFieldKindName[4:12]: CheckinFieldKindDropdown,
+	_CheckinFieldKindName[0:4]:   CheckinFieldKindText,
+	_CheckinFieldKindName[4:12]:  CheckinFieldKindDropdown,
+	_CheckinFieldKindName[12:20]: CheckinFieldKindCheckbox,
 }
 
 // ParseCheckinFieldKind attempts to convert a string to a CheckinFieldKind.

@@ -214,6 +214,7 @@ type Severity int32
 // ENUM(
 // Text     = 0,
 // Dropdown = 1,
+// Checkbox = 2,
 // )
 type CheckinFieldKind int16
 

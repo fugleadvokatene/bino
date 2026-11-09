@@ -373,11 +373,15 @@ type Language struct {
 	CheckinFieldsOptions          string
 	CheckinFieldsOptionsHelp      string
 	CheckinFieldsDefault          string
+	CheckinFieldsDefaultHelp      string
+	CheckinFieldsCheckedText      string
 	CheckinFieldsSortOrder        string
 	CheckinFieldsVariableRequired string
 	CheckinFieldsVariableReserved string
 	CheckinFieldsOptionsRequired  string
 	CheckinFieldsDefaultNotOption string
+	CheckinFieldsVariableInvalid  string
+	CheckinFieldsBuiltins         string
 }
 
 func (l *Language) HomeMultipleUsers(n int) string {
@@ -890,7 +894,7 @@ var NO = &Language{
 		model.CapUploadFile:            "Laste opp filer",
 		model.CapViewUserAdmin:         "Se brukerinformasjon",
 		model.CapManageTaskTemplates:   "Endre oppgavemaler",
-		model.CapManageCheckinFields:  "Endre ekstra felter ved innsjekk",
+		model.CapManageCheckinFields:   "Endre ekstra felter ved innsjekk",
 		model.CapViewEventLog:          "Se hendelsesloggen",
 	},
 
@@ -929,26 +933,31 @@ var NO = &Language{
 
 	CheckinFields:             "Ekstra felter ved innsjekk",
 	CheckinFieldsShowMore:     "Vis flere felter",
-	CheckinFieldsInstruction:  "Disse feltene vises under «Vis flere felter» når en pasient sjekkes inn. Alle feltene er valgfrie. Når journalen opprettes fra malen, erstattes hver forekomst av variabelen med verdien som ble fylt inn, eller med ingenting hvis feltet er tomt.",
+	CheckinFieldsInstruction:  "Disse feltene vises under «Vis flere felter» når en pasient sjekkes inn. Alle feltene er valgfrie. Når journalen opprettes fra malen, erstattes hver forekomst av variabelen med verdien som ble fylt inn, eller med ingenting hvis feltet er tomt. Ord i malen som starter med $ og ikke er en variabel, fjernes.",
 	CheckinFieldsNone:         "Ingen ekstra felter er definert.",
 	CheckinFieldsAdd:          "+ Legg til felt",
 	CheckinFieldsDelete:       "Slett felt",
 	CheckinFieldsVariable:     "Variabel",
-	CheckinFieldsVariableHelp: "Teksten i journalmalen som skal erstattes, f.eks. $Slippsted$. Skiller mellom store og små bokstaver.",
+	CheckinFieldsVariableHelp: "Teksten i journalmalen som skal erstattes, f.eks. $Slippsted. Skiller mellom store og små bokstaver.",
 	CheckinFieldsLabel:        "Visningsnavn",
 	CheckinFieldsKind:         "Type",
 	CheckinFieldsKinds: map[model.CheckinFieldKind]string{
 		model.CheckinFieldKindText:     "Fritekst",
 		model.CheckinFieldKindDropdown: "Nedtrekksliste",
+		model.CheckinFieldKindCheckbox: "Avkrysningsboks",
 	},
 	CheckinFieldsOptions:          "Valg",
 	CheckinFieldsOptionsHelp:      "Ett valg per linje. Brukes bare for nedtrekkslister.",
 	CheckinFieldsDefault:          "Standardverdi",
+	CheckinFieldsDefaultHelp:      "For avkrysningsbokser: teksten som settes inn når boksen er krysset av (OK hvis tom). Boksen starter alltid uten kryss.",
+	CheckinFieldsCheckedText:      "Tekst når avkrysset",
 	CheckinFieldsSortOrder:        "Rekkefølge",
 	CheckinFieldsVariableRequired: "Variabel og visningsnavn må fylles inn",
 	CheckinFieldsVariableReserved: "Variabelen er reservert av en innebygd malvariabel",
 	CheckinFieldsOptionsRequired:  "En nedtrekksliste må ha minst ett valg",
 	CheckinFieldsDefaultNotOption: "Standardverdien må være ett av valgene",
+	CheckinFieldsVariableInvalid:  "Variabelen må starte med $ og bare inneholde bokstaver, tall og _, f.eks. $Slippsted",
+	CheckinFieldsBuiltins:         "Innebygde variabler som alltid er tilgjengelige i malen:",
 }
 
 var EN = &Language{
@@ -1356,7 +1365,7 @@ var EN = &Language{
 		model.CapUploadFile:            "Upload files",
 		model.CapViewUserAdmin:         "View user information",
 		model.CapManageTaskTemplates:   "Edit task templates",
-		model.CapManageCheckinFields:  "Edit extra check-in fields",
+		model.CapManageCheckinFields:   "Edit extra check-in fields",
 		model.CapViewEventLog:          "View the event log",
 	},
 
@@ -1395,26 +1404,31 @@ var EN = &Language{
 
 	CheckinFields:             "Extra check-in fields",
 	CheckinFieldsShowMore:     "Show more fields",
-	CheckinFieldsInstruction:  "These fields are shown under \"Show more fields\" when a patient is checked in. All of them are optional. When the journal is created from the template, every occurrence of the variable is replaced with the value entered, or with nothing if the field is left empty.",
+	CheckinFieldsInstruction:  "These fields are shown under \"Show more fields\" when a patient is checked in. All of them are optional. When the journal is created from the template, every occurrence of the variable is replaced with the value entered, or with nothing if the field is left empty. Words in the template starting with $ that aren't a variable are removed.",
 	CheckinFieldsNone:         "No extra fields are defined.",
 	CheckinFieldsAdd:          "+ Add field",
 	CheckinFieldsDelete:       "Delete field",
 	CheckinFieldsVariable:     "Variable",
-	CheckinFieldsVariableHelp: "The text in the journal template to replace, e.g. $ReleaseSite$. Case sensitive.",
+	CheckinFieldsVariableHelp: "The text in the journal template to replace, e.g. $ReleaseSite. Case sensitive.",
 	CheckinFieldsLabel:        "Label",
 	CheckinFieldsKind:         "Type",
 	CheckinFieldsKinds: map[model.CheckinFieldKind]string{
 		model.CheckinFieldKindText:     "Free text",
 		model.CheckinFieldKindDropdown: "Dropdown",
+		model.CheckinFieldKindCheckbox: "Checkbox",
 	},
 	CheckinFieldsOptions:          "Options",
 	CheckinFieldsOptionsHelp:      "One option per line. Only used for dropdowns.",
 	CheckinFieldsDefault:          "Default value",
+	CheckinFieldsDefaultHelp:      "For checkboxes: the text inserted when ticked (OK if empty). Checkboxes always start unticked.",
+	CheckinFieldsCheckedText:      "Text when ticked",
 	CheckinFieldsSortOrder:        "Order",
 	CheckinFieldsVariableRequired: "Variable and label are required",
 	CheckinFieldsVariableReserved: "The variable is reserved by a built-in template variable",
 	CheckinFieldsOptionsRequired:  "A dropdown needs at least one option",
 	CheckinFieldsDefaultNotOption: "The default value must be one of the options",
+	CheckinFieldsVariableInvalid:  "The variable must start with $ and contain only letters, digits and _, e.g. $ReleaseSite",
+	CheckinFieldsBuiltins:         "Built-in variables that are always available in the template:",
 }
 
 func (l *Language) FormatDeleteRemainingHint(count pgtype.Int4) string {

@@ -267,21 +267,35 @@ templ CheckinExtraFields(data *request.CommonData, checkinFields []model.Checkin
     if len(checkinFields) > 0 {
         <details class="checkin-extra-fields mb-2">
             <summary class="small">{data.Language.CheckinFieldsShowMore}</summary>
+            // Text and dropdown fields first...
             for _, f := range checkinFields {
-                <div class="form-group">
-                    <label for={f.FormName()}>{f.Label}</label>
-                    if f.Kind == model.CheckinFieldKindDropdown {
-                        <select autocomplete="off" class="form-control form-select" id={f.FormName()} name={f.FormName()}>
-                            <option value="" selected?={!f.HasDefaultOption()}></option>
-                            for _, opt := range f.Options {
-                                <option value={opt} selected?={opt == f.DefaultValue}>{opt}</option>
-                            }
-                        </select>
-                    } else {
-                        <input autocomplete="off" type="text" class="form-control" id={f.FormName()} name={f.FormName()} value={f.DefaultValue}>
-                    }
-                </div>
+                if f.Kind != model.CheckinFieldKindCheckbox {
+                    <div class="form-group">
+                        <label for={f.FormName()}>{f.Label}</label>
+                        if f.Kind == model.CheckinFieldKindDropdown {
+                            <select autocomplete="off" class="form-control form-select" id={f.FormName()} name={f.FormName()}>
+                                <option value="" selected?={!f.HasDefaultOption()}></option>
+                                for _, opt := range f.Options {
+                                    <option value={opt} selected?={opt == f.DefaultValue}>{opt}</option>
+                                }
+                            </select>
+                        } else {
+                            <input autocomplete="off" type="text" class="form-control" id={f.FormName()} name={f.FormName()} value={f.DefaultValue}>
+                        }
+                    </div>
+                }
             }
+            // ...then the checkboxes, as a checklist
+            <div class="form-group mt-2">
+                for _, f := range checkinFields {
+                    if f.Kind == model.CheckinFieldKindCheckbox {
+                        <div class="form-check">
+                            <input autocomplete="off" type="checkbox" class="form-check-input" id={f.FormName()} name={f.FormName()} value="1">
+                            <label class="form-check-label" for={f.FormName()}>{f.Label}</label>
+                        </div>
+                    }
+                }
+            </div>
         </details>
     }
 }
