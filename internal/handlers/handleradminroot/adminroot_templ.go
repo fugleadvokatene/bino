@@ -200,15 +200,15 @@ func AdminRootPage(data *request.CommonData) templ.Component {
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			if data.User.HasCapability(model.CapManageAllHomes) {
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 21, "<li class=\"card mb-1\"><div class=\"card-header\"><a href=\"/homes\">")
+			if data.User.HasCapability(model.CapViewUserAdmin) {
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 21, "<li class=\"card mb-1\"><div class=\"card-header\"><a href=\"/users\">")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
 				var templ_7745c5c3_Var10 string
-				templ_7745c5c3_Var10, templ_7745c5c3_Err = templ.JoinStringErrs(data.Language.HomeAdmin)
+				templ_7745c5c3_Var10, templ_7745c5c3_Err = templ.JoinStringErrs(data.Language.AdminManageUsers)
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handlers/handleradminroot/adminroot.templ`, Line: 29, Col: 100}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handlers/handleradminroot/adminroot.templ`, Line: 29, Col: 107}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var10))
 				if templ_7745c5c3_Err != nil {
@@ -223,15 +223,15 @@ func AdminRootPage(data *request.CommonData) templ.Component {
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			if data.User.HasCapability(model.CapViewUserAdmin) {
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 24, "<li class=\"card mb-1\"><div class=\"card-header\"><a href=\"/users\">")
+			if data.User.HasCapability(model.CapManageAllHomes) {
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 24, "<li class=\"card mb-1\"><div class=\"card-header\"><a href=\"/homes\">")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
 				var templ_7745c5c3_Var11 string
-				templ_7745c5c3_Var11, templ_7745c5c3_Err = templ.JoinStringErrs(data.Language.AdminManageUsers)
+				templ_7745c5c3_Var11, templ_7745c5c3_Err = templ.JoinStringErrs(data.Language.HomeAdmin)
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handlers/handleradminroot/adminroot.templ`, Line: 32, Col: 107}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/handlers/handleradminroot/adminroot.templ`, Line: 32, Col: 100}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var11))
 				if templ_7745c5c3_Err != nil {

@@ -25,11 +25,11 @@ templ AdminRootPage(data *request.CommonData) {
         if data.User.HasCapability(model.CapManageTaskTemplates) {
             <li class="card mb-1"><div class="card-header"><a href="/task-templates">{data.Language.TasksTemplates}</a></div></li>
         }
-        if data.User.HasCapability(model.CapManageAllHomes) {
-            <li class="card mb-1"><div class="card-header"><a href="/homes">{data.Language.HomeAdmin}</a></div></li>
-        }
         if data.User.HasCapability(model.CapViewUserAdmin) {
             <li class="card mb-1"><div class="card-header"><a href="/users">{data.Language.AdminManageUsers}</a></div></li>
+        }
+        if data.User.HasCapability(model.CapManageAllHomes) {
+            <li class="card mb-1"><div class="card-header"><a href="/homes">{data.Language.HomeAdmin}</a></div></li>
         }
         if data.User.HasCapability(model.CapViewGDriveSettings) {
             <li class="card mb-1"><div class="card-header"><a href="/gdrive">{data.Language.AdminManageGoogleDrive}</a></div></li>

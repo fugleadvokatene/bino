@@ -11,6 +11,9 @@ templ HomesPage(
 ) {
     @templbase.Layout(data) {
         <h1>{data.Language.HomeAdmin}</h1>
+        @templbase.Card() {
+            <p class="mb-0">{data.Language.HomesInviteUserNote} <a href="/users">{data.Language.HomesInviteUserLink}</a>.</p>
+        }
 
         // Create division-form
         @templbase.Card() {
