@@ -63,6 +63,7 @@ type Availability int
 // ViewEventLog,
 // ViewPatientFollowup,
 // ViewStatistics,
+// ManageCheckinFields,
 // )
 type Cap int32
 
@@ -150,6 +151,7 @@ type Status int32
 //	Name,
 //	Species,
 //	BinoURL,
+//	Rehabber,
 //
 // )
 type Template string
@@ -208,6 +210,12 @@ type JournalOriginID int16
 // Error = 8
 // )
 type Severity int32
+
+// ENUM(
+// Text     = 0,
+// Dropdown = 1,
+// )
+type CheckinFieldKind int16
 
 func (s Severity) ToSlogLevel() slog.Level {
 	return slog.Level(s)

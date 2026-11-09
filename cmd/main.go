@@ -18,6 +18,7 @@ import (
 	"github.com/fugleadvokatene/bino/internal/handlers/handleraccess"
 	"github.com/fugleadvokatene/bino/internal/handlers/handleradminroot"
 	"github.com/fugleadvokatene/bino/internal/handlers/handlercalendar"
+	"github.com/fugleadvokatene/bino/internal/handlers/handlercheckinfield"
 	"github.com/fugleadvokatene/bino/internal/handlers/handlerclienterror"
 	"github.com/fugleadvokatene/bino/internal/handlers/handlerdashboard"
 	"github.com/fugleadvokatene/bino/internal/handlers/handlerdebug"
@@ -152,6 +153,7 @@ func realMain() error {
 		handleraccess.Routes(),
 		handleradminroot.Routes(),
 		handlercalendar.Routes(db),
+		handlercheckinfield.Routes(db),
 		handlerclienterror.Routes(),
 		handlerdashboard.Routes(ctx, db, gdriveWorker, broker, config),
 		handlerdebug.Routes(db, bespokeName),

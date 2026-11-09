@@ -205,11 +205,13 @@ const (
 	CapViewPatientFollowup Cap = 33
 	// CapViewStatistics is a Cap of type ViewStatistics.
 	CapViewStatistics Cap = 34
+	// CapManageCheckinFields is a Cap of type ManageCheckinFields.
+	CapManageCheckinFields Cap = 35
 )
 
 var ErrInvalidCap = errors.New("not a valid Cap")
 
-const _CapName = "LoggedInViewAllActivePatientsViewAllFormerPatientsViewAllHomesViewAllUsersViewCalendarSearchSetOwnPreferencesCheckInPatientManageOwnPatientsManageAllPatientsManageOwnHomesManageAllHomesCreatePatientJournalManageSpeciesManageUsersDeactivateUsersDeleteUsersViewAdminToolsViewGDriveSettingsInviteToGDriveInviteToBinoViewUserAdminUseImportToolDebugUploadFileManageFeatureFlagsHardDeletePatientLiveSetIndexerStateViewSysLogManageTaskTemplatesViewEventLogViewPatientFollowupViewStatistics"
+const _CapName = "LoggedInViewAllActivePatientsViewAllFormerPatientsViewAllHomesViewAllUsersViewCalendarSearchSetOwnPreferencesCheckInPatientManageOwnPatientsManageAllPatientsManageOwnHomesManageAllHomesCreatePatientJournalManageSpeciesManageUsersDeactivateUsersDeleteUsersViewAdminToolsViewGDriveSettingsInviteToGDriveInviteToBinoViewUserAdminUseImportToolDebugUploadFileManageFeatureFlagsHardDeletePatientLiveSetIndexerStateViewSysLogManageTaskTemplatesViewEventLogViewPatientFollowupViewStatisticsManageCheckinFields"
 
 // CapValues returns a list of the values for Cap
 func CapValues() []Cap {
@@ -249,6 +251,7 @@ func CapValues() []Cap {
 		CapViewEventLog,
 		CapViewPatientFollowup,
 		CapViewStatistics,
+		CapManageCheckinFields,
 	}
 }
 
@@ -288,6 +291,7 @@ var _CapMap = map[Cap]string{
 	CapViewEventLog:          _CapName[437:449],
 	CapViewPatientFollowup:   _CapName[449:468],
 	CapViewStatistics:        _CapName[468:482],
+	CapManageCheckinFields:   _CapName[482:501],
 }
 
 // String implements the Stringer interface.
@@ -341,6 +345,7 @@ var _CapValue = map[string]Cap{
 	_CapName[437:449]: CapViewEventLog,
 	_CapName[449:468]: CapViewPatientFollowup,
 	_CapName[468:482]: CapViewStatistics,
+	_CapName[482:501]: CapManageCheckinFields,
 }
 
 // ParseCap attempts to convert a string to a Cap.
@@ -349,6 +354,58 @@ func ParseCap(name string) (Cap, error) {
 		return x, nil
 	}
 	return Cap(0), fmt.Errorf("%s is %w", name, ErrInvalidCap)
+}
+
+const (
+	// CheckinFieldKindText is a CheckinFieldKind of type Text.
+	CheckinFieldKindText CheckinFieldKind = 0
+	// CheckinFieldKindDropdown is a CheckinFieldKind of type Dropdown.
+	CheckinFieldKindDropdown CheckinFieldKind = 1
+)
+
+var ErrInvalidCheckinFieldKind = errors.New("not a valid CheckinFieldKind")
+
+const _CheckinFieldKindName = "TextDropdown"
+
+// CheckinFieldKindValues returns a list of the values for CheckinFieldKind
+func CheckinFieldKindValues() []CheckinFieldKind {
+	return []CheckinFieldKind{
+		CheckinFieldKindText,
+		CheckinFieldKindDropdown,
+	}
+}
+
+var _CheckinFieldKindMap = map[CheckinFieldKind]string{
+	CheckinFieldKindText:     _CheckinFieldKindName[0:4],
+	CheckinFieldKindDropdown: _CheckinFieldKindName[4:12],
+}
+
+// String implements the Stringer interface.
+func (x CheckinFieldKind) String() string {
+	if str, ok := _CheckinFieldKindMap[x]; ok {
+		return str
+	}
+	return fmt.Sprintf("CheckinFieldKind(%d)", x)
+}
+
+// IsValid provides a quick way to determine if the typed value is
+// part of the allowed enumerated values
+func (x CheckinFieldKind) IsValid() bool {
+	_, ok := _CheckinFieldKindMap[x]
+	return ok
+}
+
+var _CheckinFieldKindValue = map[string]CheckinFieldKind{
+	_CheckinFieldKindName[0:4]:  CheckinFieldKindText,
+	_CheckinFieldKindName[4:12]: CheckinFieldKindDropdown,
+}
+
+// ParseCheckinFieldKind attempts to convert a string to a CheckinFieldKind.
+func ParseCheckinFieldKind(name string) (CheckinFieldKind, error) {
+	if x, ok := _CheckinFieldKindValue[name]; ok {
+		return x, nil
+	}
+	return CheckinFieldKind(0), fmt.Errorf("%s is %w", name, ErrInvalidCheckinFieldKind)
 }
 
 const (
@@ -1091,6 +1148,8 @@ const (
 	TemplateSpecies Template = "Species"
 	// TemplateBinoURL is a Template of type BinoURL.
 	TemplateBinoURL Template = "BinoURL"
+	// TemplateRehabber is a Template of type Rehabber.
+	TemplateRehabber Template = "Rehabber"
 )
 
 var ErrInvalidTemplate = errors.New("not a valid Template")
@@ -1104,6 +1163,7 @@ func TemplateValues() []Template {
 		TemplateName,
 		TemplateSpecies,
 		TemplateBinoURL,
+		TemplateRehabber,
 	}
 }
 
@@ -1120,12 +1180,13 @@ func (x Template) IsValid() bool {
 }
 
 var _TemplateValue = map[string]Template{
-	"YYYY":    TemplateYYYY,
-	"MM":      TemplateMM,
-	"DD":      TemplateDD,
-	"Name":    TemplateName,
-	"Species": TemplateSpecies,
-	"BinoURL": TemplateBinoURL,
+	"YYYY":     TemplateYYYY,
+	"MM":       TemplateMM,
+	"DD":       TemplateDD,
+	"Name":     TemplateName,
+	"Species":  TemplateSpecies,
+	"BinoURL":  TemplateBinoURL,
+	"Rehabber": TemplateRehabber,
 }
 
 // ParseTemplate attempts to convert a string to a Template.

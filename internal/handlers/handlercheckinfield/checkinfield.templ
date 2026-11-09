@@ -1,0 +1,98 @@
+package handlercheckinfield
+
+import (
+	"fmt"
+	"strings"
+
+	"github.com/fugleadvokatene/bino/internal/model"
+	"github.com/fugleadvokatene/bino/internal/request"
+	"github.com/fugleadvokatene/bino/internal/templbase"
+)
+
+templ CheckinFieldsPage(data *request.CommonData, fields []model.CheckinField) {
+	@templbase.Layout(data, "checkin-fields-page") {
+		<h1>{ data.Language.CheckinFields }</h1>
+		@templbase.Card() {
+			<p class="mb-0">{ data.Language.CheckinFieldsInstruction }</p>
+		}
+		if len(fields) == 0 {
+			@templbase.Card() {
+				<p class="text-muted mb-0">{ data.Language.CheckinFieldsNone }</p>
+			}
+		}
+		for _, f := range fields {
+			@templbase.Card() {
+				<div class="d-flex justify-content-between align-items-start gap-3">
+					<div class="min-width-0">
+						<div>
+							<strong>{ f.Label }</strong>
+							<code class="ms-1">{ f.Variable }</code>
+						</div>
+						<div class="text-muted small">
+							{ data.Language.CheckinFieldsKinds[f.Kind] }
+							if f.Kind == model.CheckinFieldKindDropdown {
+								: { strings.Join(f.Options, ", ") }
+							}
+						</div>
+						if f.DefaultValue != "" {
+							<div class="text-muted small">{ data.Language.CheckinFieldsDefault }: { f.DefaultValue }</div>
+						}
+					</div>
+					<div class="d-flex flex-column gap-1 flex-shrink-0">
+						@templbase.Form(data, fmt.Sprintf("/checkin-field/%d/delete", f.ID), "POST", "") {
+							<button type="submit" class="btn btn-sm btn-outline-danger">{ data.Language.CheckinFieldsDelete }</button>
+						}
+					</div>
+				</div>
+				<details class="mt-2">
+					<summary class="btn btn-sm btn-outline-secondary">{ data.Language.GenericEdit }</summary>
+					@CheckinFieldForm(data, f, fmt.Sprintf("/checkin-field/%d/edit", f.ID))
+				</details>
+			}
+		}
+		<h2 class="mt-3">{ data.Language.CheckinFieldsAdd }</h2>
+		@templbase.Card() {
+			@CheckinFieldForm(data, model.CheckinField{}, "/checkin-fields/add")
+		}
+	}
+}
+
+templ CheckinFieldForm(data *request.CommonData, f model.CheckinField, action string) {
+	@templbase.Form(data, action, "POST", "mt-2") {
+		<div class="d-flex flex-column gap-2">
+			<div>
+				<label class="form-label fw-bold">{ data.Language.CheckinFieldsVariable }</label>
+				<input type="text" name="variable" class="form-control form-control-sm" value={ f.Variable } required/>
+				<div class="form-text">{ data.Language.CheckinFieldsVariableHelp }</div>
+			</div>
+			<div>
+				<label class="form-label fw-bold">{ data.Language.CheckinFieldsLabel }</label>
+				<input type="text" name="label" class="form-control form-control-sm" value={ f.Label } required/>
+			</div>
+			<div>
+				<label class="form-label fw-bold">{ data.Language.CheckinFieldsKind }</label>
+				<select name="kind" class="form-select form-select-sm" autocomplete="off">
+					for _, kind := range model.CheckinFieldKindValues() {
+						<option value={ fmt.Sprint(int16(kind)) } selected?={ kind == f.Kind }>{ data.Language.CheckinFieldsKinds[kind] }</option>
+					}
+				</select>
+			</div>
+			<div>
+				<label class="form-label fw-bold">{ data.Language.CheckinFieldsOptions }</label>
+				<textarea name="options" class="form-control form-control-sm" rows="4">{ strings.Join(f.Options, "\n") }</textarea>
+				<div class="form-text">{ data.Language.CheckinFieldsOptionsHelp }</div>
+			</div>
+			<div>
+				<label class="form-label fw-bold">{ data.Language.CheckinFieldsDefault }</label>
+				<input type="text" name="default" class="form-control form-control-sm" value={ f.DefaultValue }/>
+			</div>
+			<div>
+				<label class="form-label fw-bold">{ data.Language.CheckinFieldsSortOrder }</label>
+				<input type="number" name="sort-order" class="form-control form-control-sm" style="width:6rem" value={ fmt.Sprint(f.SortOrder) }/>
+			</div>
+			<div>
+				<button type="submit" class="btn btn-sm btn-primary">{ data.Language.GenericSave }</button>
+			</div>
+		</div>
+	}
+}

@@ -24,6 +24,16 @@ type Appuser struct {
 	Deactivated     bool
 }
 
+type CheckinField struct {
+	ID           int32
+	Variable     string
+	Label        string
+	Kind         int16
+	Options      []string
+	DefaultValue string
+	SortOrder    int32
+}
+
 type Division struct {
 	ID                  int32
 	Name                string

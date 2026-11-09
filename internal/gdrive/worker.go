@@ -377,7 +377,7 @@ func validateTemplate(tpl *docs.Document) error {
 	s := document.ExtractIndexableText(tpl)
 	errs := []error{}
 	for _, k := range model.TemplateValues() {
-		if !strings.Contains(s, k.String()) {
+		if k.IsRequired() && !strings.Contains(s, k.String()) {
 			errs = append(errs, fmt.Errorf("template is missing variable '%s'", k))
 		}
 	}

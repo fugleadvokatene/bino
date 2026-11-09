@@ -19,10 +19,11 @@ templ DashboardPage(
     nPatients int,
     divisions []model.Division,
     selectedDivision int32,
+    checkinFields []model.CheckinField,
 ) {
 	@templbase.Layout(data, "dashboard-container") {
         <div class="dashboard-left-sidebar">
-            @DashboardForm(data, defaultSelectedSpecies, selfHome, homes)
+            @DashboardForm(data, defaultSelectedSpecies, selfHome, homes, checkinFields)
             @DashboardSearch(data)
             if len(divisions) > 1 {
                 @DashboardChangeDivision(data, divisions, selectedDivision)
@@ -136,6 +137,7 @@ templ DashboardForm(
     defaultSelectedSpecies int32,
     selfHome *model.Home,
     homes []model.Home,
+    checkinFields []model.CheckinField,
 ) {
     @templbase.Card("dashboard-form", "shadow-sm") {
         @templbase.Form(data, "/checkin", "POST") {
@@ -178,6 +180,8 @@ templ DashboardForm(
                     </select>
                 </div>
             </div>
+
+            @CheckinExtraFields(data, checkinFields)
            
             <div class="form-group">
                 <div class="form-check-inline">
@@ -256,4 +260,28 @@ templ DashboardHomeCard(data *request.CommonData, homes []model.Home, home *mode
             }
         }
     </div>
+}
+
+// Optional, admin-defined template variables, hidden behind "show more".
+templ CheckinExtraFields(data *request.CommonData, checkinFields []model.CheckinField) {
+    if len(checkinFields) > 0 {
+        <details class="checkin-extra-fields mb-2">
+            <summary class="small">{data.Language.CheckinFieldsShowMore}</summary>
+            for _, f := range checkinFields {
+                <div class="form-group">
+                    <label for={f.FormName()}>{f.Label}</label>
+                    if f.Kind == model.CheckinFieldKindDropdown {
+                        <select autocomplete="off" class="form-control form-select" id={f.FormName()} name={f.FormName()}>
+                            <option value="" selected?={!f.HasDefaultOption()}></option>
+                            for _, opt := range f.Options {
+                                <option value={opt} selected?={opt == f.DefaultValue}>{opt}</option>
+                            }
+                        </select>
+                    } else {
+                        <input autocomplete="off" type="text" class="form-control" id={f.FormName()} name={f.FormName()} value={f.DefaultValue}>
+                    }
+                </div>
+            }
+        </details>
+    }
 }

@@ -46,7 +46,7 @@ init_tables:
 	psql -U bino -d bino -h localhost -f sql/migrations/000_init.sql
 
 psql:
-	@PGPASSWORD=${BINO_DB_PASSWORD} psql -U bino -d bino -h localhost - 
+	@PGPASSWORD=${BINO_DB_PASSWORD} psql -U bino -d bino -h localhost -p 5051
 
 session_key:
 	openssl rand -base64 32 > secret/session_key

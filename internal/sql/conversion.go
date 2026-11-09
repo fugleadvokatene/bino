@@ -374,3 +374,17 @@ func (in Syslog) ToModel() model.SysLogEntry {
 		Message:  in.Message,
 	}
 }
+
+// ---- Checkin field
+
+func (in CheckinField) ToModel() model.CheckinField {
+	return model.CheckinField{
+		ID:           in.ID,
+		Variable:     in.Variable,
+		Label:        in.Label,
+		Kind:         model.CheckinFieldKind(in.Kind),
+		Options:      in.Options,
+		DefaultValue: in.DefaultValue,
+		SortOrder:    in.SortOrder,
+	}
+}

@@ -37,14 +37,15 @@ var RequiredAccessLevel = map[model.Cap]model.AccessLevel{
 	model.CapViewPatientFollowup: model.AccessLevelCoordinator,
 	model.CapManageAllHomes:      model.AccessLevelCoordinator,
 
-	model.CapViewGDriveSettings:  model.AccessLevelAdmin,
-	model.CapDeleteUsers:         model.AccessLevelAdmin,
-	model.CapDebug:               model.AccessLevelAdmin,
-	model.CapManageFeatureFlags:  model.AccessLevelAdmin,
-	model.CapHardDeletePatient:   model.AccessLevelAdmin,
-	model.CapSetIndexerState:     model.AccessLevelAdmin,
-	model.CapViewSysLog:          model.AccessLevelAdmin,
-	model.CapManageTaskTemplates: model.AccessLevelAdmin,
+	model.CapViewGDriveSettings:   model.AccessLevelAdmin,
+	model.CapDeleteUsers:          model.AccessLevelAdmin,
+	model.CapDebug:                model.AccessLevelAdmin,
+	model.CapManageFeatureFlags:   model.AccessLevelAdmin,
+	model.CapHardDeletePatient:    model.AccessLevelAdmin,
+	model.CapSetIndexerState:      model.AccessLevelAdmin,
+	model.CapViewSysLog:           model.AccessLevelAdmin,
+	model.CapManageTaskTemplates:  model.AccessLevelAdmin,
+	model.CapManageCheckinFields: model.AccessLevelAdmin,
 }
 
 var AccessLevelToCapabilities = func() (out struct {

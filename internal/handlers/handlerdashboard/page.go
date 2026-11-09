@@ -125,6 +125,12 @@ func (h *Page) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	slices.SortStableFunc(homes, func(a, b model.Home) int { return cmp.Compare(a.Name, b.Name) })
 
+	checkinFields, err := h.DB.GetCheckinFields(ctx)
+	if err != nil {
+		handlererror.Error(w, r, err)
+		return
+	}
+
 	_ = DashboardPage(
 		commonData,
 		defaultSpecies,
@@ -134,5 +140,6 @@ func (h *Page) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		int(nPatients),
 		divisions,
 		division,
+		checkinFields,
 	).Render(r.Context(), w)
 }

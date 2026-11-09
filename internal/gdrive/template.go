@@ -15,6 +15,10 @@ type TemplateVars struct {
 	Name    string
 	Species string
 	BinoURL string
+	// Rehabber is the name of the rehab home the patient was checked in to.
+	Rehabber string
+	// Extra maps admin-defined variables (see model.CheckinField) to their values.
+	Extra map[string]string
 }
 
 func (vars *TemplateVars) Replacement(template model.Template) string {
@@ -31,6 +35,8 @@ func (vars *TemplateVars) Replacement(template model.Template) string {
 		return vars.Species
 	case model.TemplateBinoURL:
 		return vars.BinoURL
+	case model.TemplateRehabber:
+		return vars.Rehabber
 	default:
 		return template.String()
 	}
@@ -49,6 +55,18 @@ func (vars *TemplateVars) ReplaceRequests() *docs.BatchUpdateDocumentRequest {
 		}
 	})
 
+	for from, to := range vars.Extra {
+		requests = append(requests, &docs.Request{
+			ReplaceAllText: &docs.ReplaceAllTextRequest{
+				ContainsText: &docs.SubstringMatchCriteria{
+					MatchCase: true,
+					Text:      from,
+				},
+				ReplaceText: to,
+			},
+		})
+	}
+
 	return &docs.BatchUpdateDocumentRequest{
 		Requests: requests,
 	}
@@ -57,6 +75,9 @@ func (vars *TemplateVars) ReplaceRequests() *docs.BatchUpdateDocumentRequest {
 func (vars *TemplateVars) ApplyToString(s string) string {
 	for _, t := range model.TemplateValues() {
 		s = strings.ReplaceAll(s, t.String(), vars.Replacement(t))
+	}
+	for from, to := range vars.Extra {
+		s = strings.ReplaceAll(s, from, to)
 	}
 	return s
 }

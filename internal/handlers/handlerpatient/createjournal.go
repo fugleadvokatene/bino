@@ -55,11 +55,33 @@ func (h *createJournal) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		created = pgtype.Timestamptz{Time: time.Now(), Valid: true}
 	}
 
+	// The checkin form isn't available here, so use each extra field's default
+	checkinFields, err := h.DB.GetCheckinFields(ctx)
+	if err != nil {
+		commonData.Error(commonData.Language.TODO("failed to create"), err)
+		request.RedirectToReferer(w, r)
+		return
+	}
+	extraVars := make(map[string]string, len(checkinFields))
+	for _, f := range checkinFields {
+		extraVars[f.Variable] = f.DefaultValue
+	}
+
+	// Patients without a current home (e.g. checked out) get an empty Rehabber
+	var rehabber string
+	if patientData.CurrHomeID.Valid {
+		if home, err := h.DB.Q.GetHome(ctx, patientData.CurrHomeID.Int32); err == nil {
+			rehabber = home.Name
+		}
+	}
+
 	item, err := h.GDriveWorker.CreateJournal(patientData.CurrHomeID.Int32, gdrive.TemplateVars{
-		Time:    created.Time,
-		Name:    patientData.Name,
-		Species: patientData.SpeciesName,
-		BinoURL: h.Config.BinoURLForPatient(patient),
+		Time:     created.Time,
+		Name:     patientData.Name,
+		Species:  patientData.SpeciesName,
+		BinoURL:  h.Config.BinoURLForPatient(patient),
+		Rehabber: rehabber,
+		Extra:    extraVars,
 	})
 	if err != nil {
 		commonData.Error(commonData.Language.TODO("failed to create"), err)

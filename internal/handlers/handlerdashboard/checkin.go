@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log/slog"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/fugleadvokatene/bino/internal/config"
@@ -61,6 +62,23 @@ func (h *checkin) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		handlererror.Error(w, r, err)
 		return
+	}
+
+	home, err := h.DB.Q.GetHome(ctx, fields["home"])
+	if err != nil {
+		handlererror.Error(w, r, err)
+		return
+	}
+
+	checkinFields, err := h.DB.GetCheckinFields(ctx)
+	if err != nil {
+		handlererror.Error(w, r, err)
+		return
+	}
+	extraVars := make(map[string]string, len(checkinFields))
+	for _, f := range checkinFields {
+		// Fields not submitted (e.g. added after the form was loaded) are empty
+		extraVars[f.Variable] = strings.TrimSpace(r.Form.Get(f.FormName()))
 	}
 
 	systemSpeciesName, err := h.DB.Q.GetNameOfSpecies(ctx, sql.GetNameOfSpeciesParams{
@@ -122,7 +140,9 @@ func (h *checkin) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		systemSpeciesName,
 		patientID,
 		fields["home"],
+		home.Name,
 		createJournal,
+		extraVars,
 	)
 
 	commonData.Info(commonData.Language.CheckinSuccessful(name), handlerpatient.PatientButtons(commonData, patientID, url)...)
@@ -136,17 +156,21 @@ func (h *checkin) createOrSuggestJournal(
 	systemSpeciesName string,
 	patientID int32,
 	homeID int32,
+	homeName string,
 	tryCreate bool,
+	extraVars map[string]string,
 ) string {
 	ctx := h.BackgroundCtx
 	if tryCreate {
 		if item, err := h.GDriveWorker.CreateJournal(
 			homeID,
 			gdrive.TemplateVars{
-				Time:    time.Now(),
-				Name:    name,
-				Species: systemSpeciesName,
-				BinoURL: h.Config.BinoURLForPatient(patientID),
+				Time:     time.Now(),
+				Name:     name,
+				Species:  systemSpeciesName,
+				BinoURL:  h.Config.BinoURLForPatient(patientID),
+				Rehabber: homeName,
+				Extra:    extraVars,
 			},
 		); err != nil {
 			slog.Warn(language.GDriveCreateJournalFailed, "error", err)
