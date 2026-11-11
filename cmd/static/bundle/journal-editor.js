@@ -13104,25 +13104,47 @@ var blur = () => ({ editor, view }) => {
 var clearContent = (emitUpdate = true) => ({ commands }) => {
   return commands.setContent("", { emitUpdate });
 };
-var clearNodes = () => ({ state, tr: tr2, dispatch }) => {
+var clearNodes = () => ({ tr: tr2, dispatch }) => {
   const { selection } = tr2;
   const { ranges } = selection;
   if (!dispatch) return true;
+  const startMapsLength = tr2.mapping.maps.length;
   ranges.forEach(({ $from, $to }) => {
-    state.doc.nodesBetween($from.pos, $to.pos, (node, pos) => {
-      if (node.type.isText) return;
-      const { doc: doc3, mapping } = tr2;
-      const $mappedFrom = doc3.resolve(mapping.map(pos));
-      const $mappedTo = doc3.resolve(mapping.map(pos + node.nodeSize));
-      const nodeRange = $mappedFrom.blockRange($mappedTo);
-      if (!nodeRange) return;
-      const targetLiftDepth = liftTarget(nodeRange);
-      if (node.type.isTextblock) {
-        const { defaultType } = $mappedFrom.parent.contentMatchAt($mappedFrom.index());
-        tr2.setNodeMarkup(nodeRange.start, defaultType);
-      }
-      if (targetLiftDepth || targetLiftDepth === 0) tr2.lift(nodeRange, targetLiftDepth);
+    const from2 = $from.pos;
+    const to = $to.pos;
+    const depthMapping = tr2.mapping.slice(startMapsLength);
+    let maxSweeps = 1;
+    tr2.doc.nodesBetween(depthMapping.map(from2), depthMapping.map(to), (_node, pos) => {
+      maxSweeps = Math.max(maxSweeps, tr2.doc.resolve(pos).depth + 1);
     });
+    for (let sweep = 0; sweep < maxSweeps; sweep += 1) {
+      const docBefore = tr2.doc;
+      const sweepMapsLength = tr2.mapping.maps.length;
+      const rangeMapping = tr2.mapping.slice(startMapsLength);
+      let cachedMapsLength = sweepMapsLength;
+      let sweepMapping = tr2.mapping.slice(sweepMapsLength);
+      const mappedFrom = rangeMapping.map(from2);
+      const mappedTo = rangeMapping.map(to);
+      docBefore.nodesBetween(mappedFrom, mappedTo, (node, pos) => {
+        if (node.type.isText) return;
+        if (tr2.mapping.maps.length !== cachedMapsLength) {
+          cachedMapsLength = tr2.mapping.maps.length;
+          sweepMapping = tr2.mapping.slice(sweepMapsLength);
+        }
+        const $mappedFrom = tr2.doc.resolve(sweepMapping.map(pos));
+        const $mappedTo = tr2.doc.resolve(sweepMapping.map(pos + node.nodeSize));
+        const nodeRange = $mappedFrom.blockRange($mappedTo);
+        if (!nodeRange) return;
+        const targetLiftDepth = liftTarget(nodeRange);
+        if (node.type.isTextblock) {
+          const { defaultType } = $mappedFrom.parent.contentMatchAt($mappedFrom.index());
+          const target = tr2.doc.nodeAt(nodeRange.start);
+          if (defaultType && target && !target.hasMarkup(defaultType) && defaultType.validContent(target.content)) tr2.setNodeMarkup(nodeRange.start, defaultType);
+        }
+        if (targetLiftDepth || targetLiftDepth === 0) tr2.lift(nodeRange, targetLiftDepth);
+      });
+      if (tr2.doc.eq(docBefore)) break;
+    }
   });
   return true;
 };
@@ -13203,6 +13225,7 @@ var deleteSelection2 = () => ({ state, dispatch }) => {
   if (dispatch) {
     const tr2 = state.tr;
     const { ranges } = state.selection;
+    const marks = state.selection instanceof TextSelection ? state.selection.$from.marksAcross(state.selection.$to) : null;
     const mapFrom = tr2.steps.length;
     ranges.forEach((range) => {
       const mapping = tr2.mapping.slice(mapFrom);
@@ -13212,6 +13235,7 @@ var deleteSelection2 = () => ({ state, dispatch }) => {
       tr2.deleteRange(from2, to);
     });
     if (!tr2.selection.empty) tr2.setSelection(TextSelection.near(tr2.doc.resolve(tr2.selection.from)));
+    if (marks) tr2.ensureMarks(marks);
     tr2.scrollIntoView();
     dispatch(tr2);
   }
@@ -14366,6 +14390,7 @@ function simplifyChangedRanges(changes) {
 function getChangedRanges(transform) {
   const { mapping, steps } = transform;
   const changes = [];
+  const inverted = mapping.invert();
   mapping.maps.forEach((stepMap, index) => {
     const ranges = [];
     if (!stepMap.ranges.length) {
@@ -14381,11 +14406,12 @@ function getChangedRanges(transform) {
         to
       });
     });
+    const rest = mapping.slice(index);
     ranges.forEach(({ from: from2, to }) => {
-      const newStart = mapping.slice(index).map(from2, -1);
-      const newEnd = mapping.slice(index).map(to);
-      const oldStart = mapping.invert().map(newStart, -1);
-      const oldEnd = mapping.invert().map(newEnd);
+      const newStart = rest.map(from2, -1);
+      const newEnd = rest.map(to);
+      const oldStart = inverted.map(newStart, -1);
+      const oldEnd = inverted.map(newEnd);
       changes.push({
         oldRange: {
           from: oldStart,
@@ -15832,6 +15858,35 @@ function isPlainObject(value) {
   if (getType(value) !== "Object") return false;
   return value.constructor === Object && Object.getPrototypeOf(value) === Object.prototype;
 }
+function dedentLine(line, indentSize) {
+  return line.replace(/^[ \t]*/, (whitespace2) => {
+    const tabSize = 4;
+    let columns = 0;
+    for (const character of whitespace2) columns += character === "	" ? tabSize - columns % tabSize : 1;
+    return " ".repeat(Math.max(0, columns - indentSize));
+  });
+}
+function continuesParagraph(line, blockTokens) {
+  const source = `text
+${line}
+`;
+  const token = blockTokens(source)[0];
+  return ((token === null || token === void 0 ? void 0 : token.type) === "paragraph" || (token === null || token === void 0 ? void 0 : token.type) === "text") && token.raw === source;
+}
+function parseContinuation(mainContent, nestedContent, lexer) {
+  var _lexer$isParagraphCon;
+  const lines = nestedContent.split("\n");
+  const isContinuation = (_lexer$isParagraphCon = lexer.isParagraphContinuation) !== null && _lexer$isParagraphCon !== void 0 ? _lexer$isParagraphCon : ((line) => continuesParagraph(line, lexer.blockTokens));
+  let continuationLength = 0;
+  for (const line of lines) {
+    if (!line.trim() || !isContinuation(line)) break;
+    continuationLength += 1;
+  }
+  return {
+    mainContent: [mainContent, ...lines.slice(0, continuationLength).map((line) => line.trimStart())].join("\n"),
+    nestedContent: lines.slice(continuationLength).join("\n")
+  };
+}
 function parseIndentedBlocks(src, config, lexer) {
   const lines = src.split("\n");
   const items = [];
@@ -15881,7 +15936,9 @@ function parseIndentedBlocks(src, config, lexer) {
     let nestedTokens;
     const nestedContent = itemContent.slice(1);
     if (nestedContent.length > 0) {
-      const dedentedNested = nestedContent.map((nestedLine) => nestedLine.slice(indentLevel + baseIndentSize)).join("\n");
+      const continuation = parseContinuation(mainContent, nestedContent.map((nestedLine) => dedentLine(nestedLine, indentLevel + baseIndentSize)).join("\n"), lexer);
+      itemData.mainContent = continuation.mainContent;
+      const dedentedNested = continuation.nestedContent;
       if (dedentedNested.trim()) {
         if (config.customNestedParser) nestedTokens = config.customNestedParser(dedentedNested);
         else nestedTokens = lexer.blockTokens(dedentedNested);
@@ -15893,7 +15950,7 @@ function parseIndentedBlocks(src, config, lexer) {
   if (items.length === 0) return;
   return {
     items,
-    raw: totalRaw
+    raw: totalRaw.slice(0, src.length)
   };
 }
 var TAB_STOP = 4;
@@ -15906,7 +15963,8 @@ function renderNestedMarkdownContent(node, h2, prefixOrGenerator, ctx, options) 
   if (!node || !Array.isArray(node.content)) return "";
   const prefix = typeof prefixOrGenerator === "function" ? prefixOrGenerator(ctx) : prefixOrGenerator;
   const [content, ...children] = node.content;
-  let output = `${prefix}${h2.renderChildren([content])}`;
+  const mainContent = h2.renderChildren([content]);
+  let output = `${prefix}${(options === null || options === void 0 ? void 0 : options.indentMainContent) ? mainContent.split("\n").map((line, index) => index === 0 ? line : h2.indent(line)).join("\n") : mainContent}`;
   if (children && children.length > 0) children.forEach((child, index) => {
     var _h$renderChild, _h$renderChild2;
     const childContent = (_h$renderChild = (_h$renderChild2 = h2.renderChild) === null || _h$renderChild2 === void 0 ? void 0 : _h$renderChild2.call(h2, child, index + 1)) !== null && _h$renderChild !== void 0 ? _h$renderChild : h2.renderChildren([child]);
@@ -18045,8 +18103,10 @@ var Heading = Node2.create({
       0
     ];
   },
-  parseMarkdown: (token, helpers) => {
-    return helpers.createNode("heading", { level: token.depth || 1 }, helpers.parseInline(token.tokens || []));
+  parseMarkdown(token, helpers) {
+    const level = token.depth || 1;
+    if (!this.options.levels.includes(level)) return helpers.createNode("paragraph", void 0, helpers.parseInline(token.tokens || []));
+    return helpers.createNode("heading", { level }, helpers.parseInline(token.tokens || []));
   },
   renderMarkdown: (node, h2) => {
     var _node$attrs;
@@ -20453,7 +20513,7 @@ var Link = Mark2.create({
       const foundLinks = [];
       if (text) {
         const { protocols, defaultProtocol } = this.options;
-        find(text).filter((item) => item.isLink && this.options.isAllowedUri(item.value, {
+        find(text, { defaultProtocol }).filter((item) => item.isLink && this.options.isAllowedUri(item.value, {
           defaultValidate: (href) => !!isAllowedUri(href, protocols),
           protocols,
           defaultProtocol
@@ -20791,6 +20851,24 @@ function getListMarker(type, index, separator = ". ") {
       return `${position}${separator}`;
   }
 }
+function ensureLeadingParagraph(content) {
+  if (!content[0] || content[0].type === "paragraph") return content;
+  return [{
+    type: "paragraph",
+    content: []
+  }, ...content];
+}
+function hasEmptyLeadingParagraph(node) {
+  var _node$content, _first$content;
+  const first2 = (_node$content = node.content) === null || _node$content === void 0 ? void 0 : _node$content[0];
+  return (first2 === null || first2 === void 0 ? void 0 : first2.type) === "paragraph" && !((_first$content = first2.content) === null || _first$content === void 0 ? void 0 : _first$content.length);
+}
+var EMPTY_ITEM_TEXT = "&nbsp;";
+var TOP_LEVEL = 1;
+var isNested = (ctx) => {
+  var _ctx$level;
+  return ((_ctx$level = ctx === null || ctx === void 0 ? void 0 : ctx.level) !== null && _ctx$level !== void 0 ? _ctx$level : TOP_LEVEL) > TOP_LEVEL;
+};
 function isSameLineOrderedListToken(token) {
   var _token$tokens, _token$tokens2;
   const nestedToken = (_token$tokens = token.tokens) === null || _token$tokens === void 0 ? void 0 : _token$tokens[0];
@@ -20839,20 +20917,28 @@ var ListItem = Node2.create({
           content: parseSameLineOrderedListText(token.text || "", helpers)
         }]
       };
-      if (token.tokens.some((t) => t.type === "paragraph")) content = parseBlockChildren(token.tokens);
-      else {
-        const firstToken = token.tokens[0];
-        if (firstToken && firstToken.type === "text" && firstToken.tokens && firstToken.tokens.length > 0) {
-          content = [{
+      const [firstToken, ...remainingTokens] = token.tokens;
+      if (firstToken.type === "heading") {
+        var _firstToken$tokens;
+        return {
+          type: "listItem",
+          content: [{
             type: "paragraph",
-            content: helpers.parseInline(firstToken.tokens)
-          }];
-          if (token.tokens.length > 1) {
-            const additionalContent = parseBlockChildren(token.tokens.slice(1));
-            content.push(...additionalContent);
-          }
-        } else content = parseBlockChildren(token.tokens);
+            content: helpers.parseInline((_firstToken$tokens = firstToken.tokens) !== null && _firstToken$tokens !== void 0 ? _firstToken$tokens : [])
+          }, ...remainingTokens.length > 0 ? parseBlockChildren(remainingTokens) : []]
+        };
       }
+      if (token.tokens.some((t) => t.type === "paragraph")) content = parseBlockChildren(token.tokens);
+      else if (firstToken.type === "text" && firstToken.tokens && firstToken.tokens.length > 0) {
+        content = [{
+          type: "paragraph",
+          content: helpers.parseInline(firstToken.tokens)
+        }];
+        if (token.tokens.length > 1) {
+          const additionalContent = parseBlockChildren(token.tokens.slice(1));
+          content.push(...additionalContent);
+        }
+      } else content = parseBlockChildren(token.tokens);
     }
     if (content.length === 0) content = [{
       type: "paragraph",
@@ -20860,11 +20946,11 @@ var ListItem = Node2.create({
     }];
     return {
       type: "listItem",
-      content
+      content: ensureLeadingParagraph(content)
     };
   },
   renderMarkdown: (node, h2, ctx) => {
-    return renderNestedMarkdownContent(node, h2, (context) => {
+    const getPrefix = (context) => {
       if (context.parentType === "bulletList") return "- ";
       if (context.parentType === "orderedList") {
         var _context$meta, _context$meta2;
@@ -20872,7 +20958,11 @@ var ListItem = Node2.create({
         return getListMarker((_context$meta2 = context.meta) === null || _context$meta2 === void 0 || (_context$meta2 = _context$meta2.parentAttrs) === null || _context$meta2 === void 0 ? void 0 : _context$meta2.type, start - 1 + (context.index || 0), ". ");
       }
       return "- ";
-    }, ctx, { alignNestedToPrefix: (ctx === null || ctx === void 0 ? void 0 : ctx.parentType) === "orderedList" });
+    };
+    const output = renderNestedMarkdownContent(node, h2, getPrefix, ctx, { alignNestedToPrefix: (ctx === null || ctx === void 0 ? void 0 : ctx.parentType) === "orderedList" });
+    if (!hasEmptyLeadingParagraph(node) || !isNested(ctx)) return output;
+    const prefix = getPrefix(ctx);
+    return `${prefix}${EMPTY_ITEM_TEXT}${output.slice(prefix.length)}`;
   },
   addExtensions() {
     return [createBranchingListDeleteKeymap(this.name, [this.options.bulletListTypeName, this.options.orderedListTypeName])];
@@ -20935,10 +21025,15 @@ var handleBackspace2 = (editor, name, parentListTypes) => {
     const lastItem = listDescendants.at(-1);
     if (!lastItem) return false;
     const $lastItemPos = editor.state.doc.resolve($listPos.start() + lastItem.pos + 1);
-    return editor.chain().cut({
-      from: $anchor.start() - 1,
-      to: $anchor.end() + 1
-    }, $lastItemPos.end()).joinForward().run();
+    return editor.chain().command(({ tr: tr2 }) => {
+      const target = $lastItemPos.end();
+      tr2.delete($anchor.before(), $anchor.after()).insert(target, $anchor.parent);
+      tr2.setSelection(TextSelection.create(tr2.doc, target + 1));
+      return true;
+    }).command(({ state, dispatch }) => {
+      joinTextblockBackward(state, dispatch);
+      return true;
+    }).run();
   }
   if (!isNodeActive(editor.state, name)) return false;
   if (!isAtStartOfNode(editor.state)) return false;
@@ -20964,11 +21059,9 @@ var nextListIsHigher = (typeOrName, state) => {
 var handleDelete = (editor, name) => {
   if (!isNodeActive(editor.state, name)) return false;
   if (!isAtEndOfNode(editor.state, name)) return false;
-  const { selection } = editor.state;
-  const { $from, $to } = selection;
-  if (!selection.empty && $from.sameParent($to)) return false;
+  if (!editor.state.selection.empty) return false;
   if (nextListIsDeeper(name, editor.state)) return editor.chain().focus(editor.state.selection.from + 4).lift(name).joinBackward().run();
-  if (nextListIsHigher(name, editor.state)) return editor.chain().joinForward().joinBackward().run();
+  if (nextListIsHigher(name, editor.state)) return editor.commands.command(({ state, dispatch }) => joinTextblockForward(state, dispatch));
   return editor.commands.joinItemForward();
 };
 var handleTab = (editor, name, parentListTypes) => {
@@ -21530,7 +21623,7 @@ var TaskItem = Node2.create({
   renderMarkdown: (node, h2) => {
     var _node$attrs;
     const prefix = `- [${((_node$attrs = node.attrs) === null || _node$attrs === void 0 ? void 0 : _node$attrs.checked) ? "x" : " "}] `;
-    return renderNestedMarkdownContent(node, h2, prefix);
+    return renderNestedMarkdownContent(node, h2, prefix, void 0, { indentMainContent: true });
   },
   addExtensions() {
     if (!this.options.nested) return [];
@@ -21858,24 +21951,35 @@ var Underline = Mark2.create({
     return helpers.applyMark(this.name || "underline", helpers.parseInline(token.tokens || []));
   },
   renderMarkdown(node, helpers) {
-    return `++${helpers.renderChildren(node)}++`;
+    return `<u>${helpers.renderChildren(node)}</u>`;
   },
   markdownTokenizer: {
     name: "underline",
     level: "inline",
     start(src) {
-      return src.indexOf("++");
+      return src.toLowerCase().indexOf("<u>");
     },
     tokenize(src, _tokens, lexer) {
-      const match = /^(\+\+)([\s\S]+?)(\+\+)/.exec(src);
-      if (!match) return;
-      const innerContent = match[2].trim();
-      return {
-        type: "underline",
-        raw: match[0],
-        text: innerContent,
-        tokens: lexer.inlineTokens(innerContent)
-      };
+      if (!/^<u>/i.test(src)) return;
+      const delimiters = /\\[\s\S]|`+|<\/u>/gi;
+      delimiters.lastIndex = 3;
+      let match = delimiters.exec(src);
+      while (match) {
+        if (match[0].startsWith("`")) {
+          const codeSpan = /^(`+)([^`]|[^`][\s\S]*?[^`])\1(?!`)/.exec(src.slice(match.index));
+          if (codeSpan) delimiters.lastIndex = match.index + codeSpan[0].length;
+        } else if (!match[0].startsWith("\\")) {
+          const text = src.slice(3, match.index);
+          if (!text) return;
+          return {
+            type: "underline",
+            raw: src.slice(0, delimiters.lastIndex),
+            text,
+            tokens: lexer.inlineTokens(text)
+          };
+        }
+        match = delimiters.exec(src);
+      }
     }
   },
   addCommands() {
@@ -22512,8 +22616,8 @@ function resolveTopLevelRange(doc3, pos) {
 }
 function toContentRelativeRange(doc3, range) {
   return {
-    from: Math.max(0, range.from - 1),
-    to: Math.min(doc3.content.size, range.to - 1)
+    from: Math.max(0, range.from),
+    to: Math.min(doc3.content.size, range.to)
   };
 }
 function getTopLevelBlocksInRange(doc3, from2, to) {
